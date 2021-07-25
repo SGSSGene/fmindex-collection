@@ -16,6 +16,8 @@
 #include <bitset>
 #include <cassert>
 #include <cmath>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -31,6 +33,16 @@ inline auto construct_bwt_from_sa(std::vector<int64_t> const& sa, std::string_vi
     }
     return bwt;
 }
+inline auto readFile(std::filesystem::path const& file) -> std::vector<uint8_t> {
+    auto ifs = std::ifstream{file, std::ios::binary};
+    ifs.seekg(0, std::ios::end);
+    std::size_t size = ifs.tellg();
+    auto buffer = std::vector<uint8_t>(size);
+    ifs.seekg(0, std::ios::beg);
+    ifs.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+    return buffer;
+}
+
 
 template <FMIndex Index, typename T>
 void printFMIndex(Index const& index, T const& bwt) {
@@ -127,8 +139,8 @@ void constructIndex(std::string name, T const& bwt) {
 int main() {
     StopWatch watch;
 
-    std::string text;
     constexpr size_t Sigma = 6;
+/*    std::string text;
     text.resize(1ul<<30, '\0');
     for (size_t i{0}; i < text.size(); ++i) {
         text[i] = (xorshf96() % (Sigma-1))+1;
@@ -137,9 +149,9 @@ int main() {
 
     auto time_generation = watch.reset();
     std::cout << "text size: " << text.size()/1024/1024 << " million chars, "<<  text.size()/1024/1024*std::log(Sigma)/std::log(2) << " million bits\n";
-    std::cout << "text generation: "<< time_generation << "s\n";
+    std::cout << "text generation: "<< time_generation << "s\n";*/
 
-    auto bwt = [&]() {
+/*    auto bwt = [&]() {
         std::vector<int64_t> sa;
         sa.resize(text.size());
         auto error = divsufsort64((uint8_t const*)text.data(), sa.data(), text.size());
@@ -151,9 +163,11 @@ int main() {
         std::cout << "sa - construction time: "<< time_saconstruction << "s\n";
 
         return construct_bwt_from_sa(sa, text);
-    }();
+    }();*/
+    auto bwt = readFile("/home/gene/hg38/text.dna5.bwt");
+
     auto time_bwtconstruction = watch.reset();
-    std::cout << "bwt - construction time: "<< time_bwtconstruction << "s\n";
+    std::cout << "bwt - construction time: "<< time_bwtconstruction << "s, length: " << bwt.size() << "\n";
 
     constructIndex<simpleocc::FMIndex<Sigma>>("simple", bwt);
     constructIndex<compactocc::FMIndex<Sigma>>("compact", bwt);

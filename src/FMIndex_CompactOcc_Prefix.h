@@ -13,7 +13,7 @@ namespace compactocc_prefix {
 
 template <size_t TSigma>
 struct Bitvector {
-    struct alignas(64) Block {
+    struct Block {
         std::array<uint32_t, TSigma> blocks{};
         std::array<uint64_t, TSigma> bits{};
         uint64_t rank(uint8_t symb, uint8_t idx) const {
@@ -57,7 +57,7 @@ struct Bitvector {
 template <size_t TSigma, typename CB>
 Bitvector<TSigma> construct_bitvector(size_t length, CB cb) {
     Bitvector<TSigma> bitvector;
-    bitvector.blocks.reserve(length/256+1);
+    bitvector.blocks.reserve(length/64+2);
 
     bitvector.blocks.emplace_back();
     bitvector.superBlocks.emplace_back();

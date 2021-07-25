@@ -61,7 +61,7 @@ struct Bitvector {
 template <size_t TSigma, typename CB>
 Bitvector<TSigma> construct_bitvector(size_t length, CB cb) {
     Bitvector<TSigma> bitvector;
-    bitvector.blocks.reserve(length/256+1);
+    bitvector.blocks.reserve(length/64+2);
 
     bitvector.blocks.emplace_back();
     bitvector.superBlocks.emplace_back();
