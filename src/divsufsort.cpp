@@ -6,6 +6,7 @@
 #include "FMIndex_CompactOcc2_Aligned.h"
 #include "FMIndex_Bitvector.h"
 #include "FMIndex_Bitvector_Prefix.h"
+#include "FMIndex_Wavelet.h"
 
 #include "random.h"
 #include "StopWatch.h"
@@ -177,6 +178,7 @@ int main() {
     constructIndex<compactocc2_align::FMIndex<Sigma>>("compact2_aligned", bwt);
     constructIndex<bitvectorocc::FMIndex<Sigma>>("bitvector", bwt);
     constructIndex<bitvectorocc_prefix::FMIndex<Sigma>>("bitvector_prefix", bwt);
+    constructIndex<wavelet::FMIndex<Sigma>>("bitvector_wavelet", bwt);
 
     return 0;
 }
