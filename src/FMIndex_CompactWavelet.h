@@ -36,14 +36,6 @@ struct Bitvector {
         std::array<uint32_t, TSigma> blocks{};
         std::array<uint64_t, bitct>  bits{};
 
-        uint64_t rank_range(size_t begin, size_t end) const { // assume end-begin <= 64
-            if (end <= 0) return 0;
-            auto b1 = begin / 64;
-            auto c1 = begin % 64;
-            auto b = (bits[b1] >> c1) << (64-end);
-            return std::bitset<64>(b).count();
-        }
-
         uint64_t rank(uint8_t symb, uint8_t idx) const {
             auto which_bv = [](uint8_t symb, auto cb) {
                 size_t id{0};
@@ -60,21 +52,20 @@ struct Bitvector {
             size_t l1 = 64;
             size_t l2 = idx+1;
 //            std::cout << "symb: " << int(symb) << " " << int(idx) << "\n";
+            auto const& bbits = bits;
             size_t depth = 0;
             which_bv(symb, [&](size_t id, size_t bit) {
-                auto c1 = rank_range(depth * 64 + s, l1);
-                auto c0 = l1 - c1;
+                auto bits = std::bitset<64>(bbits[depth]) >> s;
+                auto c1 = (bits << (64-l1)).count();
+                auto d1 = (bits << (64-l2)).count();
 
-                auto d1 = rank_range(depth * 64 + s, l2);
-                auto d0 = l2 - d1;
-//                std::cout << depth * 64 + s << " " << l2 << " " << l1 << ", bit: " << bit << " c:" << c0 << " " << c1 << " d:" << d0 << " " << d1 << "\n";
-//                std::cout << "bits: " << std::bitset<64>{bits[depth]} << "\n";
+
                 if (bit == 0) {
                     s = s;
-                    l2 = d0;
-                    l1 = c0;
+                    l2 = l2 - d1;
+                    l1 = l1 - c1;
                 } else {
-                    s = s + c0;
+                    s = s + l1 - c1;
                     l2 = d1;
                     l1 = c1;
                 }
@@ -101,11 +92,13 @@ struct Bitvector {
             size_t l2 = idx+1;
             size_t a{};
             size_t depth = 0;
+            auto const& bbits = bits;
             which_bv(symb+1, [&](size_t id, size_t bit) {
-                auto c1 = rank_range(depth * 64 + s, l1);
-                auto c0 = l1 - c1;
+                auto bits = std::bitset<64>(bbits[depth]) >> s;
+                auto c1 = (bits << (64-l1)).count();
+                auto d1 = (bits << (64-l2)).count();
 
-                auto d1 = rank_range(depth * 64 + s, l2);
+                auto c0 = l1 - c1;
                 auto d0 = l2 - d1;
                 if (bit == 0) {
                     s = s;
@@ -169,12 +162,11 @@ struct Bitvector {
                 }
             }
         };
-        which_bv(7, [&](size_t id, size_t bit) {
-//            std::cout << "test: " << id << " " << bit << "\n";
+        which_bv(bvct-1, [&](size_t id, size_t bit) {
             waveletcount[id].push_back(bit);
         });
-        sblock_acc[7] += 1;
-        block_acc[7]  += 1;
+        sblock_acc[bvct-1] += 1;
+        block_acc[bvct-1]  += 1;
 
         for (size_t size{1}; size <= length; ++size) {
             if (size % (1ul<<32) == 0) { // new super block + new block
@@ -217,12 +209,12 @@ struct Bitvector {
             sblock_acc[symb] += 1;
         }
         while (waveletcount[0].size() < 64) {
-            which_bv(7, [&](size_t id, size_t bit) {
+            which_bv(bvct-1, [&](size_t id, size_t bit) {
 //                     std::cout << "id2: " << id << "\n";
                 waveletcount[id].push_back(bit);
             });
-            block_acc[7] += 1;
-            sblock_acc[7] += 1;
+            block_acc[bvct-1] += 1;
+            sblock_acc[bvct-1] += 1;
         }
         insertCount(blocks.size()-1);
 
@@ -259,6 +251,7 @@ struct FMIndex {
     static constexpr size_t Sigma = TSigma;
 
     Bitvector<Sigma> bitvector;
+    size_t size_{};
 
     static size_t expectedMemoryUsage(size_t length) {
         using Block = typename Bitvector<TSigma>::Block;
@@ -275,10 +268,11 @@ struct FMIndex {
         : bitvector(_bwt.size(), [&](size_t i) -> uint8_t {
             return _bwt[i];
         })
+        , size_{_bwt.size()}
     {}
 
     uint64_t size() const {
-        return bitvector.C.back();
+        return size_;
     }
 
 
