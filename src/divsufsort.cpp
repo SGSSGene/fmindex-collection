@@ -7,6 +7,7 @@
 #include "FMIndex_Bitvector.h"
 #include "FMIndex_Bitvector_Prefix.h"
 #include "FMIndex_Wavelet.h"
+#include "FMIndex_CompactWavelet.h"
 
 #include "random.h"
 #include "StopWatch.h"
