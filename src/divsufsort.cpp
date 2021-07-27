@@ -26,6 +26,8 @@
 #include <string>
 #include <vector>
 
+#include <fmt/format.h>
+
 
 inline auto construct_bwt_from_sa(std::vector<int64_t> const& sa, std::string_view const& text) -> std::vector<uint8_t> {
     assert(sa.size() == text.size());
@@ -67,81 +69,93 @@ void printFMIndex(Index const& index, T const& bwt) {
         std::cout << "\n";
     }
 }
+
+struct Result {
+    std::string name;
+    double expectedMemory                  = std::numeric_limits<double>::quiet_NaN();
+    double constructionTime                = std::numeric_limits<double>::quiet_NaN();
+    double benchV1                         = std::numeric_limits<double>::quiet_NaN();
+    size_t benchV1CheckSum                 = 0;
+    double benchV2                         = std::numeric_limits<double>::quiet_NaN();
+    size_t benchV2CheckSum                 = 0;
+    double benchV3                         = std::numeric_limits<double>::quiet_NaN();
+    std::array<size_t, 2> benchV3CheckSum  = {0, 0};
+    double benchV4                         = std::numeric_limits<double>::quiet_NaN();
+    std::array<size_t, 2> benchV4CheckSum  = {0, 0};
+    double totalTime                       = std::numeric_limits<double>::quiet_NaN();
+};
 template <FMIndex Index, typename T>
-void benchmarkFMIndex(Index const& index, T const& bwt) {
+auto benchmarkIndex(std::string name, T const& bwt) -> Result {
+    StopWatch allTime;
 
-    StopWatch watch;
-    xorshf96_reset();
-    uint64_t a{};
-    for (size_t i{0}; i < 1'000'000; ++i) {
-        auto symb = xorshf96() % Index::Sigma;
-        auto row = xorshf96() % index.size();
-        a += index.rank(symb, row);
-    }
-    auto time_accesstime = watch.reset();
-    std::cout << "FMIndex - rank time: "<< time_accesstime << "s\n";
-    std::cout << "a: " << a << "\n";
-
-    a = 0;
-    for (size_t i{0}; i < 1'000'000; ++i) {
-        auto symb = xorshf96() % Index::Sigma;
-        auto row = xorshf96() % index.size();
-        a += index.prefix_rank(symb, row);
-    }
-    auto time_accesstime2 = watch.reset();
-    std::cout << "FMIndex - rank2 time: "<< time_accesstime2 << "s\n";
-    std::cout << "a: " << a << "\n";
-
-    {
-        uint64_t jumps{1};
-        uint64_t pos = index.rank(bwt[0], 0);
-        while (pos != 0 && jumps/2 < bwt.size()) {
-            jumps += 1;
-            pos = index.rank(bwt[pos], pos);
-        }
-
-        auto time_fullbackwardsjump = watch.reset();
-        std::cout << "FMIndex - backwards: "<< time_fullbackwardsjump << "s\n";
-        std::cout << "jumps: " << jumps << "/" << bwt.size() << "\n";
-    }
-    {
-        uint64_t a{};
-        uint64_t jumps{1};
-        uint64_t pos = index.rank(bwt[0], 0);
-        while (pos != 0 && jumps/2 < bwt.size()) {
-            jumps += 1;
-            pos = index.rank(bwt[pos], pos);
-            a += index.prefix_rank(bwt[pos], pos);
-        }
-
-        auto time_fullbackwardsjump = watch.reset();
-        std::cout << "FMIndex - backwards: "<< time_fullbackwardsjump << "s\n";
-        std::cout << "jumps: " << jumps << "/" << bwt.size() << " " << a << "\n";
-    }
-
-}
-
-template <FMIndex Index, typename T>
-void constructIndex(std::string name, T const& bwt) {
-    std::cout << "measuring " << name << "\n";
+    Result result;
+    result.name = name;
     size_t s = Index::expectedMemoryUsage(bwt.size());
-    std::cout << "Expected memory consumption: " << s/(1024*1024) << "MB\n";
+
+    result.expectedMemory = s;
 
     if (s < 1024*1024*1024*8ul) {
         StopWatch watch;
         auto index = Index{bwt};
 
-        auto time_fmconstruction = watch.reset();
-        std::cout << "FMIndex - construction time: "<< time_fmconstruction << "s\n";
+        result.constructionTime = watch.reset();
         printFMIndex(index, bwt);
-        benchmarkFMIndex(index, bwt);
+        xorshf96_reset();
+
+        { // benchmark V1
+            uint64_t a{};
+            for (size_t i{0}; i < 10'000'000; ++i) {
+                auto symb = xorshf96() % Index::Sigma;
+                auto row = xorshf96() % index.size();
+                a += index.rank(symb, row);
+            }
+            result.benchV1CheckSum = a;
+            result.benchV1 = watch.reset();
+        }
+        { // benchmark V2
+            size_t a = 0;
+            for (size_t i{0}; i < 10'000'000; ++i) {
+                auto symb = xorshf96() % Index::Sigma;
+                auto row = xorshf96() % index.size();
+                a += index.prefix_rank(symb, row);
+            }
+            result.benchV2CheckSum = a;
+            result.benchV2 = watch.reset();
+        }
+        { // benchmark V3
+            uint64_t jumps{1};
+            uint64_t pos = index.rank(bwt[0], 0);
+            uint64_t a{};
+            while (pos != 0 && jumps/2 < bwt.size()) {
+                jumps += 1;
+                pos = index.rank(bwt[pos], pos);
+                a += pos;
+            }
+
+            result.benchV3CheckSum = {jumps, a};
+            result.benchV3 = watch.reset();
+        }
+        { // benchmark V4
+            uint64_t a{};
+            uint64_t jumps{1};
+            uint64_t pos = index.rank(bwt[0], 0);
+            while (pos != 0 && jumps/2 < bwt.size()) {
+                jumps += 1;
+                pos = index.rank(bwt[pos], pos);
+                a += index.prefix_rank(bwt[pos], pos);
+            }
+            result.benchV4CheckSum = {jumps, a};
+            result.benchV4 = watch.reset();
+        }
+
     }
-    std::cout << "===\n\n";
+    result.totalTime = allTime.reset();
+    std::cout << "finised " << result.name << "\n";
+    return result;
 }
 
 int main() {
     StopWatch watch;
-
     constexpr size_t Sigma = 6;
 /*    std::string text;
     text.resize(1ul<<30, '\0');
@@ -166,23 +180,56 @@ int main() {
         std::cout << "sa - construction time: "<< time_saconstruction << "s\n";
 
         return construct_bwt_from_sa(sa, text);
-    }();*/
-    auto bwt = readFile("/home/gene/hg38/text.dna5.bwt");
+    }();
+//    auto bwt = readFile("/home/gene/hg38/text.dna5.bwt");
+//    auto bwt = readFile("/home/gene/hg38/text.short.bwt");
+//    bwt.resize(9);
+/*    std::vector<uint8_t> bwt;
+    bwt.resize(6, '\1');
+    bwt[0] = 2;
+    bwt[1] = 1;*/
+
+
 
     auto time_bwtconstruction = watch.reset();
     std::cout << "bwt - construction time: "<< time_bwtconstruction << "s, length: " << bwt.size() << "\n";
 
-    constructIndex<simpleocc::FMIndex<Sigma>>("simple", bwt);
-    constructIndex<compactocc::FMIndex<Sigma>>("compact", bwt);
-    constructIndex<compactocc_align::FMIndex<Sigma>>("compact_aligned", bwt);
-    constructIndex<compactocc_prefix::FMIndex<Sigma>>("compact_prefix", bwt);
-    constructIndex<compactocc2::FMIndex<Sigma>>("compact2", bwt);
-    constructIndex<compactocc2_align::FMIndex<Sigma>>("compact2_aligned", bwt);
-    constructIndex<bitvectorocc::FMIndex<Sigma>>("bitvector", bwt);
-    constructIndex<bitvectorocc_prefix::FMIndex<Sigma>>("bitvector_prefix", bwt);
-    constructIndex<wavelet::FMIndex<Sigma>>("bitvector_wavelet", bwt);
-    constructIndex<compactwavelet::FMIndex<Sigma>>("compact_wavelet", bwt);
-    constructIndex<sdsl::FMIndex<Sigma>>("sdsl_wavelet", bwt);
+    auto results = std::vector<Result>{};
+    results.emplace_back(benchmarkIndex<simpleocc::FMIndex<Sigma>>("simple", bwt));
+    results.emplace_back(benchmarkIndex<compactocc::FMIndex<Sigma>>("compact", bwt));
+    results.emplace_back(benchmarkIndex<compactocc_align::FMIndex<Sigma>>("compact_aligned", bwt));
+    results.emplace_back(benchmarkIndex<compactocc_prefix::FMIndex<Sigma>>("compact_prefix", bwt));
+    results.emplace_back(benchmarkIndex<compactocc2::FMIndex<Sigma>>("compact2", bwt));
+    results.emplace_back(benchmarkIndex<compactocc2_align::FMIndex<Sigma>>("compact2_aligned", bwt));
+    results.emplace_back(benchmarkIndex<bitvectorocc::FMIndex<Sigma>>("bitvector", bwt));
+    results.emplace_back(benchmarkIndex<bitvectorocc_prefix::FMIndex<Sigma>>("bitvector_prefix", bwt));
+    results.emplace_back(benchmarkIndex<wavelet::FMIndex<Sigma>>("bitvector_wavelet", bwt));
+    results.emplace_back(benchmarkIndex<compactwavelet::FMIndex<Sigma>>("compact_wavelet", bwt));
+    results.emplace_back(benchmarkIndex<sdsl::FMIndex<Sigma>>("sdsl_wavelet", bwt));
+
+    fmt::print(" {:^20} | {:^9} | {:^9} | {:^9} | {:^9} | {:^9} | {:^9} |"
+               " {:^15} | {:^15} | {:^15} | {:^15} | {:^15} | {:^15} | {:^9}|\n",
+                "name", "const", "mem(MB)", "bench 1", "bench 2", "bench 3", "bench 4",
+                "check 1", "check 2", "check 3a", "check 3b", "check 4a", "check 4b", "total time");
+
+    for (auto const& result : results) {
+        fmt::print(" {:<20} | {:> 9.3} | {:> 9.0} | {:> 9.3} | {:> 9.3} | {:> 9.3} | {:> 9.3} |"
+                   " {:>15} | {:>15} | {:>15} | {:>15} | {:>15} | {:>15} | {:> 9.3} |\n",
+                   result.name,
+                   result.constructionTime,
+                   result.expectedMemory / 1024 / 1024,
+                   result.benchV1,
+                   result.benchV2,
+                   result.benchV3,
+                   result.benchV4,
+                   result.benchV1CheckSum,
+                   result.benchV2CheckSum,
+                   result.benchV3CheckSum[0],
+                   result.benchV3CheckSum[1],
+                   result.benchV4CheckSum[0],
+                   result.benchV4CheckSum[1],
+                   result.totalTime);
+    }
 
     return 0;
 }
