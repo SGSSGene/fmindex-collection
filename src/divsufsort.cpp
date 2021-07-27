@@ -8,6 +8,7 @@
 #include "FMIndex_Bitvector_Prefix.h"
 #include "FMIndex_Wavelet.h"
 #include "FMIndex_CompactWavelet.h"
+#include "FMIndex_CompactWavelet2.h"
 #include "FMIndex_sdsl.h"
 
 #include "random.h"
@@ -205,6 +206,7 @@ int main() {
     results.emplace_back(benchmarkIndex<bitvectorocc_prefix::FMIndex<Sigma>>("bitvector_prefix", bwt));
     results.emplace_back(benchmarkIndex<wavelet::FMIndex<Sigma>>("bitvector_wavelet", bwt));
     results.emplace_back(benchmarkIndex<compactwavelet::FMIndex<Sigma>>("compact_wavelet", bwt));
+    results.emplace_back(benchmarkIndex<compactwavelet2::FMIndex<Sigma>>("compact_wavelet2", bwt));
     results.emplace_back(benchmarkIndex<sdsl::FMIndex<Sigma>>("sdsl_wavelet", bwt));
 
     fmt::print(" {:^20} | {:^9} | {:^9} | {:^9} | {:^9} | {:^9} | {:^9} |"
