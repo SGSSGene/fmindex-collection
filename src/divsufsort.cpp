@@ -8,6 +8,7 @@
 #include "FMIndex_Bitvector_Prefix.h"
 #include "FMIndex_Wavelet.h"
 #include "FMIndex_CompactWavelet.h"
+#include "FMIndex_sdsl.h"
 
 #include "random.h"
 #include "StopWatch.h"
@@ -180,6 +181,8 @@ int main() {
     constructIndex<bitvectorocc::FMIndex<Sigma>>("bitvector", bwt);
     constructIndex<bitvectorocc_prefix::FMIndex<Sigma>>("bitvector_prefix", bwt);
     constructIndex<wavelet::FMIndex<Sigma>>("bitvector_wavelet", bwt);
+    constructIndex<compactwavelet::FMIndex<Sigma>>("compact_wavelet", bwt);
+    constructIndex<sdsl::FMIndex<Sigma>>("sdsl_wavelet", bwt);
 
     return 0;
 }
