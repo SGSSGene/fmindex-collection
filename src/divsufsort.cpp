@@ -52,7 +52,7 @@ inline auto readFile(std::filesystem::path const& file) -> std::vector<uint8_t> 
 
 template <FMIndex Index, typename T>
 void printFMIndex(Index const& index, T const& bwt) {
-    if (bwt.size() > 16) return;
+    if (bwt.size() > 128) return;
     for (size_t i{0}; i < bwt.size(); ++i) {
         std::cout << i << " " << int(bwt[i]) << "\t";
         for (size_t j{0}; j < index.Sigma; ++j) {
@@ -151,13 +151,14 @@ auto benchmarkIndex(std::string name, T const& bwt) -> Result {
 
     }
     result.totalTime = allTime.reset();
-    std::cout << "finised " << result.name << "\n";
+    std::cout << "finished " << result.name << "\n";
     return result;
 }
 
 int main() {
     StopWatch watch;
     constexpr size_t Sigma = 6;
+
 /*    std::string text;
     text.resize(1ul<<30, '\0');
     for (size_t i{0}; i < text.size(); ++i) {
@@ -167,9 +168,9 @@ int main() {
 
     auto time_generation = watch.reset();
     std::cout << "text size: " << text.size()/1024/1024 << " million chars, "<<  text.size()/1024/1024*std::log(Sigma)/std::log(2) << " million bits\n";
-    std::cout << "text generation: "<< time_generation << "s\n";*/
+    std::cout << "text generation: "<< time_generation << "s\n";
 
-/*    auto bwt = [&]() {
+    auto bwt = [&]() {
         std::vector<int64_t> sa;
         sa.resize(text.size());
         auto error = divsufsort64((uint8_t const*)text.data(), sa.data(), text.size());
@@ -181,8 +182,8 @@ int main() {
         std::cout << "sa - construction time: "<< time_saconstruction << "s\n";
 
         return construct_bwt_from_sa(sa, text);
-    }();
-//    auto bwt = readFile("/home/gene/hg38/text.dna5.bwt");
+    }();*/
+    auto bwt = readFile("/home/gene/hg38/text.dna5.bwt");
 //    auto bwt = readFile("/home/gene/hg38/text.short.bwt");
 //    bwt.resize(9);
 /*    std::vector<uint8_t> bwt;
