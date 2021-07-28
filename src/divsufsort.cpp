@@ -56,7 +56,7 @@ void printOccTable(Table const& table, T const& bwt) {
     for (size_t i{0}; i < bwt.size(); ++i) {
         std::cout << i << " " << int(bwt[i]) << "\t";
         for (size_t j{0}; j < table.Sigma; ++j) {
-            std::cout << " " << table.rank(j, i);
+            std::cout << " " << table.rank(i, j);
         }
         std::cout << "\n";
     }
@@ -65,7 +65,7 @@ void printOccTable(Table const& table, T const& bwt) {
     for (size_t i{0}; i < bwt.size(); ++i) {
         std::cout << i << " " << int(bwt[i]) << "\t";
         for (size_t j{0}; j < table.Sigma; ++j) {
-            std::cout << " " << table.prefix_rank(j, i);
+            std::cout << " " << table.prefix_rank(i, j);
         }
         std::cout << "\n";
     }
@@ -108,7 +108,7 @@ auto benchmarkTable(std::string name, T const& bwt) -> Result {
             for (size_t i{0}; i < 10'000'000; ++i) {
                 auto symb = xorshf96() % Table::Sigma;
                 auto row = xorshf96() % table.size();
-                a += table.rank(symb, row);
+                a += table.rank(row, symb);
             }
             result.benchV1CheckSum = a;
             result.benchV1 = watch.reset();
@@ -118,18 +118,18 @@ auto benchmarkTable(std::string name, T const& bwt) -> Result {
             for (size_t i{0}; i < 10'000'000; ++i) {
                 auto symb = xorshf96() % Table::Sigma;
                 auto row = xorshf96() % table.size();
-                a += table.prefix_rank(symb, row);
+                a += table.prefix_rank(row, symb);
             }
             result.benchV2CheckSum = a;
             result.benchV2 = watch.reset();
         }
         { // benchmark V3
             uint64_t jumps{1};
-            uint64_t pos = table.rank(bwt[0], 0);
+            uint64_t pos = table.rank(0, bwt[0]);
             uint64_t a{};
             while (pos != 0 && jumps/2 < bwt.size()) {
                 jumps += 1;
-                pos = table.rank(bwt[pos], pos);
+                pos = table.rank(pos, bwt[pos]);
                 a += pos;
             }
 
@@ -139,11 +139,11 @@ auto benchmarkTable(std::string name, T const& bwt) -> Result {
         { // benchmark V4
             uint64_t a{};
             uint64_t jumps{1};
-            uint64_t pos = table.rank(bwt[0], 0);
+            uint64_t pos = table.rank(0, bwt[0]);
             while (pos != 0 && jumps/2 < bwt.size()) {
                 jumps += 1;
-                pos = table.rank(bwt[pos], pos);
-                a += table.prefix_rank(bwt[pos], pos);
+                pos = table.rank(pos, bwt[pos]);
+                a += table.prefix_rank(pos, bwt[pos]);
             }
             result.benchV4CheckSum = {jumps, a};
             result.benchV4 = watch.reset();

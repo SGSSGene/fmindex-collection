@@ -15,12 +15,12 @@ struct Bitvector {
     struct alignas(64) Block {
         std::array<uint16_t, TSigma> blocks{};
         std::array<uint64_t, TSigma> bits{};
-        uint64_t rank(uint8_t symb, uint8_t idx) const {
+        uint64_t rank(uint8_t idx, uint8_t symb) const {
             auto bitset = std::bitset<64>(bits[symb] << (63-idx));
             return blocks[symb] + bitset.count();
         }
 
-        uint64_t prefix_rank(uint8_t symb, uint8_t idx) const {
+        uint64_t prefix_rank(uint8_t idx, uint8_t symb) const {
             uint64_t b = {};
             uint64_t block = 0;
             for (size_t i{0}; i <= symb; ++i) {
@@ -37,14 +37,14 @@ struct Bitvector {
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
     std::array<uint64_t, TSigma+1> C;
 
-    uint64_t rank(uint8_t symb, uint64_t idx) const {
+    uint64_t rank(uint64_t idx, uint8_t symb) const {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> 16;
         auto bitId        = idx &  63;
-        return blocks[blockId].rank(symb, bitId) + superBlocks[superBlockId][symb] + C[symb];
+        return blocks[blockId].rank(bitId, symb) + superBlocks[superBlockId][symb] + C[symb];
     }
 
-    uint64_t prefix_rank(uint8_t symb, uint64_t idx) const {
+    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> 16;
         auto bitId        = idx &  63;
@@ -52,7 +52,7 @@ struct Bitvector {
         for (size_t i{0}; i<= symb; ++i) {
             a += superBlocks[superBlockId][i];
         }
-        return blocks[blockId].prefix_rank(symb, bitId) + a;
+        return blocks[blockId].prefix_rank(bitId, symb) + a;
     }
 
 };
@@ -125,12 +125,12 @@ struct OccTable {
         return bitvector.C.back();
     }
 
-    uint64_t rank(uint8_t symb, uint64_t idx) const {
-        return bitvector.rank(symb, idx);
+    uint64_t rank(uint64_t idx, uint8_t symb) const {
+        return bitvector.rank(idx, symb);
     }
 
-    uint64_t prefix_rank(uint8_t symb, uint64_t idx) const {
-        return bitvector.prefix_rank(symb, idx);
+    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+        return bitvector.prefix_rank(idx, symb);
     }
 };
 static_assert(checkOccTable<OccTable>);

@@ -145,11 +145,11 @@ struct OccTable {
         return C.back();
     }
 
-    uint64_t rank(uint8_t symb, uint64_t idx) const {
+    uint64_t rank(uint64_t idx, uint8_t symb) const {
         return bitvector1[symb].rank(idx) + C[symb];
     }
 
-    uint64_t prefix_rank(uint8_t symb, uint64_t idx) const {
+    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
         return bitvector2[symb].rank(idx);
     }
 };

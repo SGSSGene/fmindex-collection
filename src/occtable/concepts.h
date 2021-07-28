@@ -6,8 +6,8 @@
 
 template<typename T>
 concept OccTable = requires(T t) {
-    t.rank(uint8_t{}, uint64_t{});
-    t.prefix_rank(uint8_t{}, uint64_t{});
+    t.rank(uint64_t{}, uint8_t{});
+    t.prefix_rank(uint64_t{}, uint8_t{});
     T::Sigma;
     t.size();
     T::expectedMemoryUsage(0);

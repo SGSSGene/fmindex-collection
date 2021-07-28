@@ -185,7 +185,7 @@ struct OccTable {
         return C.back();
     }
 
-    uint64_t rank(uint8_t symb, uint64_t idx) const {
+    uint64_t rank(uint64_t idx, uint8_t symb) const {
         auto which_bv = [](uint8_t symb, auto cb) {
             size_t id{0};
             size_t factor{1};
@@ -210,7 +210,7 @@ struct OccTable {
         return a + C[symb];
     }
 
-    uint64_t prefix_rank(uint8_t symb, uint64_t idx) const {
+    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
         auto which_bv = [](uint8_t symb, auto cb) {
             size_t id{0};
             size_t factor{1};
