@@ -6,10 +6,11 @@
 #include <cstdint>
 #include <vector>
 
-namespace simpleocc {
+namespace occtable {
+namespace naive {
 
 template <size_t TSigma>
-struct FMIndex {
+struct OccTable {
     static constexpr size_t Sigma = TSigma;
 
     std::vector<std::array<uint64_t, Sigma>> occ{};
@@ -21,7 +22,7 @@ struct FMIndex {
         return C + entries;
     }
 
-    FMIndex(std::vector<uint8_t> const& _bwt) {
+    OccTable(std::vector<uint8_t> const& _bwt) {
         occ.reserve(_bwt.size()+1);
         occ.push_back(std::array<uint64_t, Sigma>{});
 
@@ -52,6 +53,7 @@ struct FMIndex {
     }
 };
 
-static_assert(checkFMIndex<FMIndex>);
+static_assert(checkOccTable<OccTable>);
 
+}
 }

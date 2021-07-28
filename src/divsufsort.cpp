@@ -1,16 +1,16 @@
-#include "FMIndex_SimpleOcc.h"
-#include "FMIndex_CompactOcc.h"
-#include "FMIndex_CompactOcc_Aligned.h"
-#include "FMIndex_CompactOcc_Prefix.h"
-#include "FMIndex_CompactOcc2.h"
-#include "FMIndex_CompactOcc2_Aligned.h"
-#include "FMIndex_Bitvector.h"
-#include "FMIndex_Bitvector_Prefix.h"
-#include "FMIndex_Wavelet.h"
-#include "FMIndex_CompactWavelet.h"
-#include "FMIndex_CompactWavelet2.h"
-#include "FMIndex_sdsl.h"
+#include "occtable/Bitvector.h"
+#include "occtable/BitvectorPrefix.h"
+#include "occtable/Compact.h"
+#include "occtable/Compact2.h"
+#include "occtable/Compact2Aligned.h"
+#include "occtable/CompactAligned.h"
+#include "occtable/CompactPrefix.h"
+#include "occtable/CompactWavelet.h"
+#include "occtable/Naive.h"
+#include "occtable/Sdsl.h"
+#include "occtable/Wavelet.h"
 
+#include "concepts.h"
 #include "random.h"
 #include "StopWatch.h"
 
@@ -50,13 +50,13 @@ inline auto readFile(std::filesystem::path const& file) -> std::vector<uint8_t> 
 }
 
 
-template <FMIndex Index, typename T>
-void printFMIndex(Index const& index, T const& bwt) {
+template <OccTable Table, typename T>
+void printOccTable(Table const& table, T const& bwt) {
     if (bwt.size() > 128) return;
     for (size_t i{0}; i < bwt.size(); ++i) {
         std::cout << i << " " << int(bwt[i]) << "\t";
-        for (size_t j{0}; j < index.Sigma; ++j) {
-            std::cout << " " << index.rank(j, i);
+        for (size_t j{0}; j < table.Sigma; ++j) {
+            std::cout << " " << table.rank(j, i);
         }
         std::cout << "\n";
     }
@@ -64,8 +64,8 @@ void printFMIndex(Index const& index, T const& bwt) {
 
     for (size_t i{0}; i < bwt.size(); ++i) {
         std::cout << i << " " << int(bwt[i]) << "\t";
-        for (size_t j{0}; j < index.Sigma; ++j) {
-            std::cout << " " << index.prefix_rank(j, i);
+        for (size_t j{0}; j < table.Sigma; ++j) {
+            std::cout << " " << table.prefix_rank(j, i);
         }
         std::cout << "\n";
     }
@@ -85,30 +85,30 @@ struct Result {
     std::array<size_t, 2> benchV4CheckSum  = {0, 0};
     double totalTime                       = std::numeric_limits<double>::quiet_NaN();
 };
-template <FMIndex Index, typename T>
-auto benchmarkIndex(std::string name, T const& bwt) -> Result {
+template <OccTable Table, typename T>
+auto benchmarkTable(std::string name, T const& bwt) -> Result {
     StopWatch allTime;
 
     Result result;
     result.name = name;
-    size_t s = Index::expectedMemoryUsage(bwt.size());
+    size_t s = Table::expectedMemoryUsage(bwt.size());
 
     result.expectedMemory = s;
 
     if (s < 1024*1024*1024*8ul) {
         StopWatch watch;
-        auto index = Index{bwt};
+        auto table = Table{bwt};
 
         result.constructionTime = watch.reset();
-        printFMIndex(index, bwt);
+        printOccTable(table, bwt);
         xorshf96_reset();
 
         { // benchmark V1
             uint64_t a{};
             for (size_t i{0}; i < 10'000'000; ++i) {
-                auto symb = xorshf96() % Index::Sigma;
-                auto row = xorshf96() % index.size();
-                a += index.rank(symb, row);
+                auto symb = xorshf96() % Table::Sigma;
+                auto row = xorshf96() % table.size();
+                a += table.rank(symb, row);
             }
             result.benchV1CheckSum = a;
             result.benchV1 = watch.reset();
@@ -116,20 +116,20 @@ auto benchmarkIndex(std::string name, T const& bwt) -> Result {
         { // benchmark V2
             size_t a = 0;
             for (size_t i{0}; i < 10'000'000; ++i) {
-                auto symb = xorshf96() % Index::Sigma;
-                auto row = xorshf96() % index.size();
-                a += index.prefix_rank(symb, row);
+                auto symb = xorshf96() % Table::Sigma;
+                auto row = xorshf96() % table.size();
+                a += table.prefix_rank(symb, row);
             }
             result.benchV2CheckSum = a;
             result.benchV2 = watch.reset();
         }
         { // benchmark V3
             uint64_t jumps{1};
-            uint64_t pos = index.rank(bwt[0], 0);
+            uint64_t pos = table.rank(bwt[0], 0);
             uint64_t a{};
             while (pos != 0 && jumps/2 < bwt.size()) {
                 jumps += 1;
-                pos = index.rank(bwt[pos], pos);
+                pos = table.rank(bwt[pos], pos);
                 a += pos;
             }
 
@@ -139,11 +139,11 @@ auto benchmarkIndex(std::string name, T const& bwt) -> Result {
         { // benchmark V4
             uint64_t a{};
             uint64_t jumps{1};
-            uint64_t pos = index.rank(bwt[0], 0);
+            uint64_t pos = table.rank(bwt[0], 0);
             while (pos != 0 && jumps/2 < bwt.size()) {
                 jumps += 1;
-                pos = index.rank(bwt[pos], pos);
-                a += index.prefix_rank(bwt[pos], pos);
+                pos = table.rank(bwt[pos], pos);
+                a += table.prefix_rank(bwt[pos], pos);
             }
             result.benchV4CheckSum = {jumps, a};
             result.benchV4 = watch.reset();
@@ -197,18 +197,18 @@ int main() {
     std::cout << "bwt - construction time: "<< time_bwtconstruction << "s, length: " << bwt.size() << "\n";
 
     auto results = std::vector<Result>{};
-    results.emplace_back(benchmarkIndex<simpleocc::FMIndex<Sigma>>("simple", bwt));
-    results.emplace_back(benchmarkIndex<compactocc::FMIndex<Sigma>>("compact", bwt));
-    results.emplace_back(benchmarkIndex<compactocc_align::FMIndex<Sigma>>("compact_aligned", bwt));
-    results.emplace_back(benchmarkIndex<compactocc_prefix::FMIndex<Sigma>>("compact_prefix", bwt));
-    results.emplace_back(benchmarkIndex<compactocc2::FMIndex<Sigma>>("compact2", bwt));
-    results.emplace_back(benchmarkIndex<compactocc2_align::FMIndex<Sigma>>("compact2_aligned", bwt));
-    results.emplace_back(benchmarkIndex<bitvectorocc::FMIndex<Sigma>>("bitvector", bwt));
-    results.emplace_back(benchmarkIndex<bitvectorocc_prefix::FMIndex<Sigma>>("bitvector_prefix", bwt));
-    results.emplace_back(benchmarkIndex<wavelet::FMIndex<Sigma>>("bitvector_wavelet", bwt));
-    results.emplace_back(benchmarkIndex<compactwavelet::FMIndex<Sigma>>("compact_wavelet", bwt));
-    results.emplace_back(benchmarkIndex<compactwavelet2::FMIndex<Sigma>>("compact_wavelet2", bwt));
-    results.emplace_back(benchmarkIndex<sdsl::FMIndex<Sigma>>("sdsl_wavelet", bwt));
+    using namespace occtable;
+    results.emplace_back(benchmarkTable<naive::OccTable<Sigma>>("simple", bwt));
+    results.emplace_back(benchmarkTable<compact::OccTable<Sigma>>("compact", bwt));
+    results.emplace_back(benchmarkTable<compactAligned::OccTable<Sigma>>("compact_aligned", bwt));
+    results.emplace_back(benchmarkTable<compactPrefix::OccTable<Sigma>>("compact_prefix", bwt));
+    results.emplace_back(benchmarkTable<compact2::OccTable<Sigma>>("compact2", bwt));
+    results.emplace_back(benchmarkTable<compact2Aligned::OccTable<Sigma>>("compact2_aligned", bwt));
+    results.emplace_back(benchmarkTable<bitvector::OccTable<Sigma>>("bitvector", bwt));
+    results.emplace_back(benchmarkTable<bitvectorPrefix::OccTable<Sigma>>("bitvectorPrefix", bwt));
+    results.emplace_back(benchmarkTable<wavelet::OccTable<Sigma>>("bitvector_wavelet", bwt));
+    results.emplace_back(benchmarkTable<compactWavelet::OccTable<Sigma>>("compact_wavelet2", bwt));
+    results.emplace_back(benchmarkTable<occtable::sdsl::OccTable<Sigma>>("sdsl_wavelet", bwt));
 
     fmt::print(" {:^20} | {:^9} | {:^9} | {:^9} | {:^9} | {:^9} | {:^9} |"
                " {:^15} | {:^15} | {:^15} | {:^15} | {:^15} | {:^15} | {:^9}|\n",

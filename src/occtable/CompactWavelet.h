@@ -9,7 +9,8 @@
 
 #include <iostream>
 
-namespace compactwavelet2 {
+namespace occtable {
+namespace compactWavelet {
 
 constexpr inline size_t bits_count(size_t y) {
     if (y == 0) return 1;
@@ -249,7 +250,7 @@ struct Bitvector {
 
 
 template <size_t TSigma>
-struct FMIndex {
+struct OccTable {
     static constexpr size_t Sigma = TSigma;
 
     Bitvector<Sigma> bitvector;
@@ -266,7 +267,7 @@ struct FMIndex {
     }
 
 
-    FMIndex(std::vector<uint8_t> const& _bwt)
+    OccTable(std::vector<uint8_t> const& _bwt)
         : bitvector(_bwt.size(), [&](size_t i) -> uint8_t {
             return _bwt[i];
         })
@@ -286,6 +287,7 @@ struct FMIndex {
         return bitvector.prefix_rank(symb, idx);
     }
 };
-static_assert(checkFMIndex<FMIndex>);
+static_assert(checkOccTable<OccTable>);
 
+}
 }

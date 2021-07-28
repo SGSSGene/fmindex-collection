@@ -9,6 +9,7 @@
 #include <tuple>
 #include <vector>
 
+namespace occtable {
 namespace wavelet {
 
 constexpr inline size_t bits_count(size_t y) {
@@ -157,7 +158,7 @@ auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvect
 };
 
 template <size_t TSigma>
-struct FMIndex {
+struct OccTable {
     static constexpr size_t Sigma = TSigma;
     static constexpr auto bits = bits_count(TSigma);
     static constexpr auto bvct = pow(2, bits);
@@ -174,7 +175,7 @@ struct FMIndex {
         return C + blocks;
     }
 
-    FMIndex(std::vector<uint8_t> const& _bwt) {
+    OccTable(std::vector<uint8_t> const& _bwt) {
         std::tie(bitvector, C) = construct_bitvectors<Sigma>(_bwt.size(), [&](size_t i) -> uint8_t {
             return _bwt[i];
         });
@@ -237,6 +238,7 @@ struct FMIndex {
         return a;
     }
 };
-static_assert(checkFMIndex<FMIndex>);
+static_assert(checkOccTable<OccTable>);
 
+}
 }

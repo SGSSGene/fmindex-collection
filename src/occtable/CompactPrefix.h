@@ -9,11 +9,12 @@
 
 #include <iostream>
 
-namespace compactocc_align {
+namespace occtable {
+namespace compactPrefix {
 
 template <size_t TSigma>
 struct Bitvector {
-    struct alignas(64) Block {
+    struct Block {
         std::array<uint32_t, TSigma> blocks{};
         std::array<uint64_t, TSigma> bits{};
         uint64_t rank(uint8_t symb, uint8_t idx) const {
@@ -39,21 +40,17 @@ struct Bitvector {
     std::array<uint64_t, TSigma+1> C;
 
     uint64_t rank(uint8_t symb, uint64_t idx) const {
-        auto blockId      = idx >>  6;
-        auto superBlockId = idx >> 32;
-        auto bitId        = idx &  63;
-        return blocks[blockId].rank(symb, bitId) + superBlocks[superBlockId][symb] + C[symb];
+        if (symb == 0) {
+            return prefix_rank(symb, idx) + C[symb];
+        }
+        return prefix_rank(symb, idx) - prefix_rank(symb-1, idx) + C[symb];
     }
 
     uint64_t prefix_rank(uint8_t symb, uint64_t idx) const {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> 32;
         auto bitId        = idx &  63;
-        uint64_t a={};
-        for (size_t i{0}; i<= symb; ++i) {
-            a += superBlocks[superBlockId][i];
-        }
-        return blocks[blockId].prefix_rank(symb, bitId) + a;
+        return blocks[blockId].rank(symb, bitId) + superBlocks[superBlockId][symb];
     }
 
 };
@@ -84,23 +81,24 @@ Bitvector<TSigma> construct_bitvector(size_t length, CB cb) {
         auto superBlockId = size >> 32;
         auto bitId        = size &  63;
 
-        auto symb = cb(size-1);
-
-        auto& bits = bv.blocks[blockId].bits[symb];
-        bits = bits | (1ul << bitId);
-        block_acc[symb] += 1;
-        sblock_acc[symb] += 1;
+        auto start = cb(size-1);
+        for (size_t symb{start}; symb < TSigma; ++symb) {
+            auto& bits = bv.blocks[blockId].bits[symb];
+            bits = bits | (1ul << bitId);
+            block_acc[symb] += 1;
+            sblock_acc[symb] += 1;
+        }
     }
 
     bv.C[0] = 0;
     for (size_t i{0}; i < TSigma; ++i) {
-        bv.C[i+1] = sblock_acc[i] + bv.C[i];
+        bv.C[i+1] = sblock_acc[i];
     }
     return bv;
 };
 
 template <size_t TSigma>
-struct FMIndex {
+struct OccTable {
     static constexpr size_t Sigma = TSigma;
 
     Bitvector<Sigma> bitvector;
@@ -110,13 +108,13 @@ struct FMIndex {
         auto blockSize = std::max(alignof(Block), sizeof(Block));
 
         size_t C           = sizeof(uint64_t) * (Sigma+1);
-        size_t blocks      = blockSize        * (length+1) / 64;
-        size_t superblocks = sizeof(uint64_t) * (length+1) / (1ul << 32);
+        size_t blocks      = blockSize        * (length+1) / 64 * 2;
+        size_t superblocks = sizeof(uint64_t) * (length+1) / (1ul << 32) * 2;
         return C + blocks + superblocks;
     }
 
 
-    FMIndex(std::vector<uint8_t> const& _bwt) {
+    OccTable(std::vector<uint8_t> const& _bwt) {
         bitvector = construct_bitvector<Sigma>(_bwt.size(), [&](size_t i) -> uint8_t {
             return _bwt[i];
         });
@@ -135,6 +133,7 @@ struct FMIndex {
         return bitvector.prefix_rank(symb, idx);
     }
 };
-static_assert(checkFMIndex<FMIndex>);
+static_assert(checkOccTable<OccTable>);
 
+}
 }

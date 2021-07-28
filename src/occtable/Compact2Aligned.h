@@ -7,7 +7,8 @@
 #include <cstdint>
 #include <vector>
 
-namespace compactocc2_align {
+namespace occtable {
+namespace compact2Aligned {
 
 template <size_t TSigma>
 struct Bitvector {
@@ -98,7 +99,7 @@ Bitvector<TSigma> construct_bitvector(size_t length, CB cb) {
 };
 
 template <size_t TSigma>
-struct FMIndex {
+struct OccTable {
     static constexpr size_t Sigma = TSigma;
 
     Bitvector<Sigma> bitvector;
@@ -114,7 +115,7 @@ struct FMIndex {
     }
 
 
-    FMIndex(std::vector<uint8_t> const& _bwt) {
+    OccTable(std::vector<uint8_t> const& _bwt) {
         bitvector = construct_bitvector<Sigma>(_bwt.size(), [&](size_t i) -> uint8_t {
             return _bwt[i];
         });
@@ -132,6 +133,7 @@ struct FMIndex {
         return bitvector.prefix_rank(symb, idx);
     }
 };
-static_assert(checkFMIndex<FMIndex>);
+static_assert(checkOccTable<OccTable>);
 
+}
 }
