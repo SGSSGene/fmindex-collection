@@ -13,7 +13,7 @@
 #include <iostream>
 
 namespace occtable {
-namespace sdsl {
+namespace sdsl_wt_bldc {
 
 constexpr inline size_t bits_count(size_t y) {
     if (y == 0) return 1;
@@ -37,10 +37,10 @@ inline void writeFile(std::filesystem::path const& file, std::vector<uint8_t> co
 
 
 using sdsl_wt_index_type =
-    ::sdsl::wt_blcd<::sdsl::bit_vector, // Wavelet tree type
-                    ::sdsl::rank_support_v<1>,
-                    ::sdsl::select_support_scan<>,
-                    ::sdsl::select_support_scan<0>>;
+    sdsl::wt_blcd<sdsl::bit_vector, // Wavelet tree type
+                    sdsl::rank_support_v<1>,
+                    sdsl::select_support_scan<>,
+                    sdsl::select_support_scan<0>>;
 
 template <size_t TSigma>
 struct OccTable {
@@ -64,7 +64,7 @@ struct OccTable {
             c += 1;
         }
         writeFile("tmp.sdsl.tmp", _bwt);
-        ::sdsl::construct(index, "tmp.sdsl.tmp", 1);
+        sdsl::construct(index, "tmp.sdsl.tmp", 1);
 
 /*        for (size_t i{0}; i < index.size(); ++i) {
             std::cout << i << ": " << int (_bwt[i]) << "   ";

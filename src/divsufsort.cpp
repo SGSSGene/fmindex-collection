@@ -7,7 +7,7 @@
 #include "occtable/CompactPrefix.h"
 #include "occtable/CompactWavelet.h"
 #include "occtable/Naive.h"
-#include "occtable/Sdsl.h"
+#include "occtable/Sdsl_wt_bldc.h"
 #include "occtable/Wavelet.h"
 
 #include "concepts.h"
@@ -198,17 +198,17 @@ int main() {
 
     auto results = std::vector<Result>{};
     using namespace occtable;
-    results.emplace_back(benchmarkTable<naive::OccTable<Sigma>>("simple", bwt));
+    results.emplace_back(benchmarkTable<naive::OccTable<Sigma>>("naive", bwt));
     results.emplace_back(benchmarkTable<compact::OccTable<Sigma>>("compact", bwt));
-    results.emplace_back(benchmarkTable<compactAligned::OccTable<Sigma>>("compact_aligned", bwt));
-    results.emplace_back(benchmarkTable<compactPrefix::OccTable<Sigma>>("compact_prefix", bwt));
+    results.emplace_back(benchmarkTable<compactAligned::OccTable<Sigma>>("compactAligned", bwt));
+    results.emplace_back(benchmarkTable<compactPrefix::OccTable<Sigma>>("compactPrefix", bwt));
     results.emplace_back(benchmarkTable<compact2::OccTable<Sigma>>("compact2", bwt));
-    results.emplace_back(benchmarkTable<compact2Aligned::OccTable<Sigma>>("compact2_aligned", bwt));
+    results.emplace_back(benchmarkTable<compact2Aligned::OccTable<Sigma>>("compact2Aligned", bwt));
     results.emplace_back(benchmarkTable<bitvector::OccTable<Sigma>>("bitvector", bwt));
     results.emplace_back(benchmarkTable<bitvectorPrefix::OccTable<Sigma>>("bitvectorPrefix", bwt));
-    results.emplace_back(benchmarkTable<wavelet::OccTable<Sigma>>("bitvector_wavelet", bwt));
-    results.emplace_back(benchmarkTable<compactWavelet::OccTable<Sigma>>("compact_wavelet2", bwt));
-    results.emplace_back(benchmarkTable<occtable::sdsl::OccTable<Sigma>>("sdsl_wavelet", bwt));
+    results.emplace_back(benchmarkTable<wavelet::OccTable<Sigma>>("wavelet", bwt));
+    results.emplace_back(benchmarkTable<compactWavelet::OccTable<Sigma>>("compactWavelet", bwt));
+    results.emplace_back(benchmarkTable<sdsl_wt_bldc::OccTable<Sigma>>("sdsl_wt_bldc", bwt));
 
     fmt::print(" {:^20} | {:^9} | {:^9} | {:^9} | {:^9} | {:^9} | {:^9} |"
                " {:^15} | {:^15} | {:^15} | {:^15} | {:^15} | {:^15} | {:^9}|\n",
