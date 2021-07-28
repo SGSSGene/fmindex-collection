@@ -10,7 +10,6 @@
 #include "occtable/Sdsl_wt_bldc.h"
 #include "occtable/Wavelet.h"
 
-#include "concepts.h"
 #include "random.h"
 #include "StopWatch.h"
 
