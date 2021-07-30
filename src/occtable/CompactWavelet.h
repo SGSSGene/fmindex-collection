@@ -119,7 +119,69 @@ struct Bitvector {
             }
             return a;
         }
+
+        template <typename CB>
+        void bvAccess(size_t idx, CB cb) const {
+            bvAccess(0, 64, idx, cb);
+/*            auto bv = std::bitset<64>(bits[0]);
+            auto d1 = (bv << (64-idx)).count();
+            auto d0 = idx - d1;
+            auto c1 = bv.count();
+            auto c0 = 64 - c1;
+            bvAccess<1, 0>(0,  c0, d0, cb);
+            bvAccess<1, 1>(c0, c1, d1, cb);*/
+        }
+
+
+
+
+        template <size_t Depth=0, size_t I=0, typename CB>
+        void bvAccess(size_t s, size_t l1, size_t idx, CB cb) const {
+/*            if (s == 64 or l1 == 0 or idx == 0) {
+                bvAccess0<Depth, I>(cb);
+                return;
+            }*/
+            auto bv = std::bitset<64>(bits[Depth]) >> s;
+            auto d1 = (bv << (64-idx)).count();
+            auto d0 = idx - d1;
+            if constexpr (Depth < bitct-1) {
+                auto c1 = (bv << (64-l1)).count();
+                auto c0 = l1 - c1;
+                bvAccess<Depth+1, (I << 1)>  (s,    c0, d0, cb);
+                bvAccess<Depth+1, (I << 1)+1>(s+c0, c1, d1, cb);
+            } else {
+                cb(d0, d1, std::index_sequence<(I << 1)>{});
+            }
+        }
+        template <size_t Depth, size_t I, typename CB>
+        void bvAccess0(CB cb) const {
+            if constexpr (Depth < bitct-1) {
+                bvAccess0<Depth+1, (I << 1)>(cb);
+                bvAccess0<Depth+1, (I << 1)+1>(cb);
+            } else {
+                cb(0, 0, std::index_sequence<(I << 1)>{});
+            }
+        }
+
+        auto all_ranks(uint8_t idx) const -> std::array<uint64_t, TSigma> {
+            std::array<uint64_t, TSigma> rs{0};
+//            if (idx > 0) {
+                bvAccess(idx, [&]<size_t I>(size_t d0, size_t d1, std::index_sequence<I>) {
+                    if constexpr (I+1 < TSigma) {;
+                        rs[I]    = d0 + blocks[I];
+                        rs[I+1]  = d1 + blocks[I+1];
+                    }
+                });
+  /*          } else {
+                for (size_t i{0}; i < TSigma; ++i) {
+                    rs[i] = blocks[i];
+                }
+            }*/
+
+            return rs;
+        }
     };
+
 
     std::vector<Block> blocks;
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
@@ -246,6 +308,26 @@ struct Bitvector {
         return blocks[blockId].prefix_rank(bitId, symb) + a;
     }
 
+    auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
+        auto blockId      = idx >>  6;
+        auto superBlockId = idx >> 32;
+        auto bitId        = idx &  63;
+
+        auto rs = blocks[blockId].all_ranks(bitId);
+        std::array<uint64_t, TSigma> prs{0};
+
+        rs[0] += superBlocks[superBlockId][0];
+        prs[0] = rs[0];
+        for (size_t i{1}; i < TSigma; ++i) {
+            rs[i] += superBlocks[superBlockId][i];
+            prs[i] = prs[i-1] + rs[i];
+            rs[i] += C[i];
+        }
+        rs[0] += C[0];
+
+        return {rs, prs};
+    }
+
 };
 
 
@@ -286,6 +368,11 @@ struct OccTable {
     uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
         return bitvector.prefix_rank(idx, symb);
     }
+
+    auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
+        return bitvector.all_ranks(idx);
+    }
+
 };
 static_assert(checkOccTable<OccTable>);
 

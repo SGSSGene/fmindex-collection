@@ -44,6 +44,19 @@ struct OccTable {
         return occ[idx][symb] + C[symb];
     }
 
+    auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
+        std::array<uint64_t, Sigma> rs{0};
+        std::array<uint64_t, Sigma> prs{0};
+        uint64_t a{0};
+        for (size_t i{0}; i < Sigma; ++i) {
+            auto r = occ[idx][i];
+            rs[i] = r + C[i];
+            a += r;
+            prs[i] = a;
+        }
+        return {rs, prs};
+    }
+
     uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
         uint64_t a{};
         for (size_t i{0}; i <= symb; ++i) {

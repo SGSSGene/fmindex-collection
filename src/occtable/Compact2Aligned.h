@@ -132,6 +132,16 @@ struct OccTable {
     uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
         return bitvector.prefix_rank(idx, symb);
     }
+    auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
+        std::array<uint64_t, Sigma> rs{0};
+        std::array<uint64_t, Sigma> prs{0};
+        for (size_t i{0}; i < Sigma; ++i) {
+            rs[i] = rank(idx, i);
+            prs[i] = prefix_rank(idx, i);
+        }
+        return {rs, prs};
+    }
+
 };
 static_assert(checkOccTable<OccTable>);
 

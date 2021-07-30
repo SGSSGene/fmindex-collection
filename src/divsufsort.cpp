@@ -10,6 +10,9 @@
 #include "occtable/Sdsl_wt_bldc.h"
 #include "occtable/Wavelet.h"
 
+#include "FMIndex.h"
+#include "BiFMIndex.h"
+
 #include "random.h"
 #include "StopWatch.h"
 
@@ -53,9 +56,11 @@ template <OccTable Table, typename T>
 void printOccTable(Table const& table, T const& bwt) {
     if (bwt.size() > 128) return;
     for (size_t i{0}; i < bwt.size(); ++i) {
+        auto r = std::get<0>(table.all_ranks(i));
         std::cout << i << " " << int(bwt[i]) << "\t";
         for (size_t j{0}; j < table.Sigma; ++j) {
-            std::cout << " " << table.rank(i, j);
+            std::cout << " " << r[j];
+//            std::cout << " " << table.rank(i, j);
         }
         std::cout << "\n";
     }
@@ -64,7 +69,7 @@ void printOccTable(Table const& table, T const& bwt) {
     for (size_t i{0}; i < bwt.size(); ++i) {
         std::cout << i << " " << int(bwt[i]) << "\t";
         for (size_t j{0}; j < table.Sigma; ++j) {
-            std::cout << " " << table.prefix_rank(i, j);
+            std::cout << " " << std::get<1>(table.all_ranks(i))[j];
         }
         std::cout << "\n";
     }
@@ -82,6 +87,10 @@ struct Result {
     std::array<size_t, 2> benchV3CheckSum  = {0, 0};
     double benchV4                         = std::numeric_limits<double>::quiet_NaN();
     std::array<size_t, 2> benchV4CheckSum  = {0, 0};
+    double benchV5                         = std::numeric_limits<double>::quiet_NaN();
+    size_t benchV5CheckSum                 = 0;
+    double benchV6                         = std::numeric_limits<double>::quiet_NaN();
+    std::array<size_t, 2> benchV6CheckSum  = {0, 0};
     double totalTime                       = std::numeric_limits<double>::quiet_NaN();
 };
 template <OccTable Table, typename T>
@@ -100,9 +109,8 @@ auto benchmarkTable(std::string name, T const& bwt) -> Result {
 
         result.constructionTime = watch.reset();
         printOccTable(table, bwt);
-        xorshf96_reset();
-
         { // benchmark V1
+            xorshf96_reset();
             uint64_t a{};
             for (size_t i{0}; i < 10'000'000; ++i) {
                 auto symb = xorshf96() % Table::Sigma;
@@ -113,6 +121,7 @@ auto benchmarkTable(std::string name, T const& bwt) -> Result {
             result.benchV1 = watch.reset();
         }
         { // benchmark V2
+            xorshf96_reset();
             size_t a = 0;
             for (size_t i{0}; i < 10'000'000; ++i) {
                 auto symb = xorshf96() % Table::Sigma;
@@ -141,12 +150,45 @@ auto benchmarkTable(std::string name, T const& bwt) -> Result {
             uint64_t pos = table.rank(0, bwt[0]);
             while (pos != 0 && jumps/2 < bwt.size()) {
                 jumps += 1;
-                pos = table.rank(pos, bwt[pos]);
                 a += table.prefix_rank(pos, bwt[pos]);
+                pos = table.rank(pos, bwt[pos]);
             }
             result.benchV4CheckSum = {jumps, a};
             result.benchV4 = watch.reset();
         }
+        { // benchmark V5
+            xorshf96_reset();
+            uint64_t a{};
+            for (size_t i{0}; i < 10'000'000; ++i) {
+                auto symb = xorshf96() % Table::Sigma;
+                auto row = xorshf96() % table.size();
+                auto [rs, prs] = table.all_ranks(row);
+                for (size_t j{0}; j < Table::Sigma; ++j) {
+                    a += rs[j] + prs[j];
+                }
+            }
+            result.benchV5CheckSum = a;
+            result.benchV5 = watch.reset();
+        }
+        { // benchmark V6
+            uint64_t jumps{1};
+            uint64_t pos = table.rank(0, bwt[0]);
+            uint64_t a{};
+            while (pos != 0 && jumps/2 < bwt.size()) {
+                jumps += 1;
+                auto [rs, prs] = table.all_ranks(pos);
+                pos = rs[bwt[pos]];
+
+                for (size_t j{0}; j < Table::Sigma; ++j) {
+                    a += rs[j] + prs[j];
+                }
+            }
+
+            result.benchV6CheckSum = {jumps, a};
+            result.benchV6 = watch.reset();
+        }
+
+
 
     }
     result.totalTime = allTime.reset();
@@ -159,7 +201,7 @@ int main() {
     constexpr size_t Sigma = 6;
 
 /*    std::string text;
-    text.resize(1ul<<30, '\0');
+    text.resize(1ul<<28, '\0');
     for (size_t i{0}; i < text.size(); ++i) {
         text[i] = (xorshf96() % (Sigma-1))+1;
     }
@@ -181,14 +223,71 @@ int main() {
         std::cout << "sa - construction time: "<< time_saconstruction << "s\n";
 
         return construct_bwt_from_sa(sa, text);
+    }();
+    auto bwtRev = [&]() {
+        std::vector<int64_t> sa;
+        std::reverse(text.begin(), text.end());
+        sa.resize(text.size());
+        auto error = divsufsort64((uint8_t const*)text.data(), sa.data(), text.size());
+        if (error != 0) {
+            throw std::runtime_error("some error while creating the suffix array");
+        }
+
+        auto time_saconstruction = watch.reset();
+        std::cout << "sa - rev construction time: "<< time_saconstruction << "s\n";
+
+        return construct_bwt_from_sa(sa, text);
     }();*/
+
     auto bwt = readFile("/home/gene/hg38/text.dna5.bwt");
+    auto bwtRev = readFile("/home/gene/hg38/text.dna5.rev.bwt");
+
 //    auto bwt = readFile("/home/gene/hg38/text.short.bwt");
 //    bwt.resize(9);
 /*    std::vector<uint8_t> bwt;
     bwt.resize(6, '\1');
     bwt[0] = 2;
-    bwt[1] = 1;*/
+    bwt[1] = 1;
+    bwt[2] = 3;
+    bwt[3] = 3;*/
+
+/*    auto index = BiFMIndex<occtable::compact::OccTable<Sigma>>{bwt, bwtRev};
+    auto cursor = BiFMIndexCursor{index};
+    std::cout << "start: " << cursor.lb << ", " << cursor.lbRev << " len: " << cursor.len << "\n";
+    for (size_t i{1}; i < Sigma; ++i) {
+        for (size_t j{1}; j < Sigma; ++j) {
+            auto c = cursor.extendLeft(j);
+            auto c2 = c.extendLeft(i);
+            std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
+        }
+    }
+    std::cout << "same as?\n";
+    for (size_t i{1}; i < Sigma; ++i) {
+        for (size_t j{1}; j < Sigma; ++j) {
+            auto c = cursor.extendRight(j);
+            auto c2 = c.extendLeft(i);
+            std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
+        }
+    }
+    std::cout << "same as?\n";
+    for (size_t i{1}; i < Sigma; ++i) {
+        for (size_t j{1}; j < Sigma; ++j) {
+            auto c = cursor.extendLeft(i);
+            auto c2 = c.extendRight(j);
+            std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
+        }
+    }
+    std::cout << "same as?\n";
+    for (size_t i{1}; i < Sigma; ++i) {
+        for (size_t j{1}; j < Sigma; ++j) {
+            auto c = cursor.extendRight(i);
+            auto c2 = c.extendRight(j);
+            std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
+        }
+    }*/
+
+
+//    return 0;
 
 
 
@@ -209,14 +308,14 @@ int main() {
     results.emplace_back(benchmarkTable<compactWavelet::OccTable<Sigma>>("compactWavelet", bwt));
     results.emplace_back(benchmarkTable<sdsl_wt_bldc::OccTable<Sigma>>("sdsl_wt_bldc", bwt));
 
-    fmt::print(" {:^20} | {:^9} | {:^9} | {:^9} | {:^9} | {:^9} | {:^9} |"
-               " {:^15} | {:^15} | {:^15} | {:^15} | {:^15} | {:^15} | {:^9}|\n",
-                "name", "const", "mem(MB)", "bench 1", "bench 2", "bench 3", "bench 4",
-                "check 1", "check 2", "check 3a", "check 3b", "check 4a", "check 4b", "total time");
+    fmt::print(" {:^20} | {:^9} | {:^9} | {:^9} | {:^9} | {:^9} | {:^9} | {:^9} | {:^9} |"
+               " {:^15} | {:^15} | {:^15} | {:^15} | {:^15} | {:^15} | {:^15} | {:^15} | {:^9} | \n",
+                "name", "const", "mem(MB)", "bench 1", "bench 2", "bench 3", "bench 4", "bench 5", "bench 6",
+                "check 1", "check 2", "check 3a", "check 3b", "check 4a", "check 4b", "check 5", "check 6a", "check 6b", "total time");
 
     for (auto const& result : results) {
-        fmt::print(" {:<20} | {:> 9.3} | {:> 9.0} | {:> 9.3} | {:> 9.3} | {:> 9.3} | {:> 9.3} |"
-                   " {:>15} | {:>15} | {:>15} | {:>15} | {:>15} | {:>15} | {:> 9.3} |\n",
+        fmt::print(" {:<20} | {:> 9.3} | {:> 9.0} | {:> 9.3} | {:> 9.3} | {:> 9.3} | {:> 9.3} | {:> 9.3} | {:> 9.3} |"
+                   " {:>15} | {:>15} | {:>15} | {:>15} | {:>15} | {:>15} | {:>15} | {:>15} | {:>15} | {:> 9.3} |\n",
                    result.name,
                    result.constructionTime,
                    result.expectedMemory / 1024 / 1024,
@@ -224,12 +323,17 @@ int main() {
                    result.benchV2,
                    result.benchV3,
                    result.benchV4,
+                   result.benchV5,
+                   result.benchV6,
                    result.benchV1CheckSum,
                    result.benchV2CheckSum,
                    result.benchV3CheckSum[0],
                    result.benchV3CheckSum[1],
                    result.benchV4CheckSum[0],
                    result.benchV4CheckSum[1],
+                   result.benchV5CheckSum,
+                   result.benchV6CheckSum[0],
+                   result.benchV6CheckSum[1],
                    result.totalTime);
     }
 
