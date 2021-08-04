@@ -13,6 +13,17 @@ struct BiFMIndex {
     {
         assert(bwt.size() == bwtRev.size());
         assert(occ.size() == occRev.size());
+        if (bwt.size() != bwtRev.size()) {
+            throw std::runtime_error("bwt don't have the same size");
+        }
+        if (occ.size() != occRev.size()) {
+            throw std::runtime_error("occ don't have the same size");
+        }
+        for (size_t sym{0}; sym < Sigma; ++sym) {
+            if (occ.rank(occ.size(), sym) != occRev.rank(occ.size(), sym)) {
+                throw std::runtime_error("wrong rank");
+            }
+        }
     }
 
     size_t size() const {
@@ -28,6 +39,9 @@ struct BiFMIndexCursor {
     size_t lb;
     size_t lbRev;
     size_t len;
+    BiFMIndexCursor()
+        : index{nullptr}
+    {}
     BiFMIndexCursor(Index const& index)
         : BiFMIndexCursor{index, 0, 0, index.size()}
     {}
@@ -37,12 +51,18 @@ struct BiFMIndexCursor {
         , lbRev{lbRev}
         , len{len}
     {}
+    bool empty() const {
+        return len == 0;
+    }
+    size_t count() const {
+        return len;
+    }
     auto extendLeft() const -> std::array<BiFMIndexCursor, Sigma> {
         auto const& occ = index->occ;
         auto [rs1, prs1] = occ.all_ranks(lb);
         auto [rs2, prs2] = occ.all_ranks(lb+len);
 
-        auto cursors = std::array<BiFMIndexCursor, Sigma>{*index};
+        auto cursors = std::array<BiFMIndexCursor, Sigma>{};
         cursors[0] = BiFMIndexCursor{*index, rs1[0], lbRev, prs2[0] - rs1[0]};
         for (size_t i{1}; i < Sigma; ++i) {
             cursors[i] = BiFMIndexCursor{*index, rs1[i], lbRev + prs2[i-1] - prs1[i-1], prs2[i] - rs1[i]};
@@ -51,17 +71,30 @@ struct BiFMIndexCursor {
     }
 
     auto extendRight() const -> std::array<BiFMIndexCursor, Sigma> {
-        auto const& occ = index->occ;
+        auto const& occ = index->occRev;
         auto [rs1, prs1] = occ.all_ranks(lbRev);
         auto [rs2, prs2] = occ.all_ranks(lbRev+len);
 
-        auto cursors = std::array<BiFMIndexCursor, Sigma>{*index};
+        auto cursors = std::array<BiFMIndexCursor, Sigma>{};
         cursors[0] = BiFMIndexCursor{*index, lb, rs1[0], prs2[0] - rs1[0]};
         for (size_t i{1}; i < Sigma; ++i) {
-            cursors[i] = BiFMIndexCursor{*index, lbRev + prs2[i-1] - prs1[i-1], rs1[i], prs2[i] - rs1[i]};
+            cursors[i] = BiFMIndexCursor{*index, lb + prs2[i-1] - prs1[i-1], rs1[i], prs2[i] - rs1[i]};
         }
         return cursors;
     }
+/*    void prefetchLeft() const {
+        auto& occ = index->occ;
+        occ.prefetch(lb);
+        occ.prefetch(lb+len);
+    }
+    void prefetchRight() const {
+        auto& occ = index->occ;
+        occ.prefetch(lb);
+        occ.prefetch(lb+len);
+
+//    __builtin_prefetch((const void*)(prefetch_address),0,0);
+
+    }*/
 
     auto extendLeft(uint8_t symb) const -> BiFMIndexCursor {
         assert(symb > 0);
@@ -77,7 +110,6 @@ struct BiFMIndexCursor {
         size_t newLb    = lb + occ.prefix_rank(lbRev+len, symb-1) - occ.prefix_rank(lbRev, symb-1);
         size_t newLbRev = occ.rank(lbRev, symb);
         size_t newLen   = occ.rank(lbRev+len, symb) - newLbRev;
-
         return {*index, newLb, newLbRev, newLen};
     }
 

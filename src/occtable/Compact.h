@@ -31,7 +31,6 @@ struct Bitvector {
             }
             auto bitset = std::bitset<64>(b << (63-idx));
             return block + bitset.count();
-
         }
     };
 
@@ -143,7 +142,6 @@ struct OccTable {
         }
         return {rs, prs};
     }
-
 };
 static_assert(checkOccTable<OccTable>);
 

@@ -12,196 +12,23 @@
 
 #include "FMIndex.h"
 #include "BiFMIndex.h"
+#include "utils.h"
 
-#include "random.h"
-#include "StopWatch.h"
+#include "SearchNg12.h"
 
 #include <divsufsort64.h>
 
-#include <array>
-#include <bitset>
-#include <cassert>
-#include <cmath>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
-#include <string>
-#include <vector>
-
 #include <fmt/format.h>
 
-
-inline auto construct_bwt_from_sa(std::vector<int64_t> const& sa, std::string_view const& text) -> std::vector<uint8_t> {
-    assert(sa.size() == text.size());
-    std::vector<uint8_t> bwt;
-    bwt.resize(text.size());
-    for (size_t i{0}; i < sa.size(); ++i) {
-        bwt[i] = text[(sa[i] + text.size()- 1) % text.size()];
-    }
-    return bwt;
-}
-inline auto readFile(std::filesystem::path const& file) -> std::vector<uint8_t> {
-    auto ifs = std::ifstream{file, std::ios::binary};
-    ifs.seekg(0, std::ios::end);
-    std::size_t size = ifs.tellg();
-    auto buffer = std::vector<uint8_t>(size);
-    ifs.seekg(0, std::ios::beg);
-    ifs.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
-    return buffer;
-}
-
-
-template <OccTable Table, typename T>
-void printOccTable(Table const& table, T const& bwt) {
-    if (bwt.size() > 128) return;
-    for (size_t i{0}; i < bwt.size(); ++i) {
-        auto r = std::get<0>(table.all_ranks(i));
-        std::cout << i << " " << int(bwt[i]) << "\t";
-        for (size_t j{0}; j < table.Sigma; ++j) {
-            std::cout << " " << r[j];
-//            std::cout << " " << table.rank(i, j);
-        }
-        std::cout << "\n";
-    }
-    std::cout << "\n\n";
-
-    for (size_t i{0}; i < bwt.size(); ++i) {
-        std::cout << i << " " << int(bwt[i]) << "\t";
-        for (size_t j{0}; j < table.Sigma; ++j) {
-            std::cout << " " << std::get<1>(table.all_ranks(i))[j];
-        }
-        std::cout << "\n";
-    }
-}
-
-struct Result {
-    std::string name;
-    double expectedMemory                  = std::numeric_limits<double>::quiet_NaN();
-    double constructionTime                = std::numeric_limits<double>::quiet_NaN();
-    double benchV1                         = std::numeric_limits<double>::quiet_NaN();
-    size_t benchV1CheckSum                 = 0;
-    double benchV2                         = std::numeric_limits<double>::quiet_NaN();
-    size_t benchV2CheckSum                 = 0;
-    double benchV3                         = std::numeric_limits<double>::quiet_NaN();
-    std::array<size_t, 2> benchV3CheckSum  = {0, 0};
-    double benchV4                         = std::numeric_limits<double>::quiet_NaN();
-    std::array<size_t, 2> benchV4CheckSum  = {0, 0};
-    double benchV5                         = std::numeric_limits<double>::quiet_NaN();
-    size_t benchV5CheckSum                 = 0;
-    double benchV6                         = std::numeric_limits<double>::quiet_NaN();
-    std::array<size_t, 2> benchV6CheckSum  = {0, 0};
-    double totalTime                       = std::numeric_limits<double>::quiet_NaN();
-};
-template <OccTable Table, typename T>
-auto benchmarkTable(std::string name, T const& bwt) -> Result {
-    StopWatch allTime;
-
-    Result result;
-    result.name = name;
-    size_t s = Table::expectedMemoryUsage(bwt.size());
-
-    result.expectedMemory = s;
-
-    if (s < 1024*1024*1024*8ul) {
-        StopWatch watch;
-        auto table = Table{bwt};
-
-        result.constructionTime = watch.reset();
-        printOccTable(table, bwt);
-        { // benchmark V1
-            xorshf96_reset();
-            uint64_t a{};
-            for (size_t i{0}; i < 10'000'000; ++i) {
-                auto symb = xorshf96() % Table::Sigma;
-                auto row = xorshf96() % table.size();
-                a += table.rank(row, symb);
-            }
-            result.benchV1CheckSum = a;
-            result.benchV1 = watch.reset();
-        }
-        { // benchmark V2
-            xorshf96_reset();
-            size_t a = 0;
-            for (size_t i{0}; i < 10'000'000; ++i) {
-                auto symb = xorshf96() % Table::Sigma;
-                auto row = xorshf96() % table.size();
-                a += table.prefix_rank(row, symb);
-            }
-            result.benchV2CheckSum = a;
-            result.benchV2 = watch.reset();
-        }
-        { // benchmark V3
-            uint64_t jumps{1};
-            uint64_t pos = table.rank(0, bwt[0]);
-            uint64_t a{};
-            while (pos != 0 && jumps/2 < bwt.size()) {
-                jumps += 1;
-                pos = table.rank(pos, bwt[pos]);
-                a += pos;
-            }
-
-            result.benchV3CheckSum = {jumps, a};
-            result.benchV3 = watch.reset();
-        }
-        { // benchmark V4
-            uint64_t a{};
-            uint64_t jumps{1};
-            uint64_t pos = table.rank(0, bwt[0]);
-            while (pos != 0 && jumps/2 < bwt.size()) {
-                jumps += 1;
-                a += table.prefix_rank(pos, bwt[pos]);
-                pos = table.rank(pos, bwt[pos]);
-            }
-            result.benchV4CheckSum = {jumps, a};
-            result.benchV4 = watch.reset();
-        }
-        { // benchmark V5
-            xorshf96_reset();
-            uint64_t a{};
-            for (size_t i{0}; i < 10'000'000; ++i) {
-                auto symb = xorshf96() % Table::Sigma;
-                auto row = xorshf96() % table.size();
-                auto [rs, prs] = table.all_ranks(row);
-                for (size_t j{0}; j < Table::Sigma; ++j) {
-                    a += rs[j] + prs[j];
-                }
-            }
-            result.benchV5CheckSum = a;
-            result.benchV5 = watch.reset();
-        }
-        { // benchmark V6
-            uint64_t jumps{1};
-            uint64_t pos = table.rank(0, bwt[0]);
-            uint64_t a{};
-            while (pos != 0 && jumps/2 < bwt.size()) {
-                jumps += 1;
-                auto [rs, prs] = table.all_ranks(pos);
-                pos = rs[bwt[pos]];
-
-                for (size_t j{0}; j < Table::Sigma; ++j) {
-                    a += rs[j] + prs[j];
-                }
-            }
-
-            result.benchV6CheckSum = {jumps, a};
-            result.benchV6 = watch.reset();
-        }
-
-
-
-    }
-    result.totalTime = allTime.reset();
-    std::cout << "finished " << result.name << "\n";
-    return result;
-}
+#include "oss/generator/pigeon.h"
+#include "oss/expand.h"
 
 int main() {
     StopWatch watch;
     constexpr size_t Sigma = 6;
 
 /*    std::string text;
-    text.resize(1ul<<28, '\0');
+    text.resize(1ul<<20, '\0');
     for (size_t i{0}; i < text.size(); ++i) {
         text[i] = (xorshf96() % (Sigma-1))+1;
     }
@@ -242,6 +69,31 @@ int main() {
     auto bwt = readFile("/home/gene/hg38/text.dna5.bwt");
     auto bwtRev = readFile("/home/gene/hg38/text.dna5.rev.bwt");
 
+
+    std::vector<std::vector<uint8_t>> queries;
+    {
+        auto b = readFile("/home/gene/hg38/sampled_illumina_reads.fastq");
+        auto ptr = b.data();
+        std::vector<uint8_t> query;
+        while (ptr != (b.data() + b.size())) {
+            if (*ptr == '\n') {
+                queries.push_back(query);
+                std::reverse(query.begin(), query.end());
+                queries.push_back(query);
+                query.clear();
+            } else {
+                if (*ptr == '$') query.push_back(0);
+                else if (*ptr == 'A') query.push_back(1);
+                else if (*ptr == 'C') query.push_back(2);
+                else if (*ptr == 'G') query.push_back(3);
+                else if (*ptr == 'T') query.push_back(4);
+                else if (*ptr == 'N') query.push_back(5);
+            }
+            ++ptr;
+        }
+    }
+
+
 //    auto bwt = readFile("/home/gene/hg38/text.short.bwt");
 //    bwt.resize(9);
 /*    std::vector<uint8_t> bwt;
@@ -251,9 +103,64 @@ int main() {
     bwt[2] = 3;
     bwt[3] = 3;*/
 
-/*    auto index = BiFMIndex<occtable::compact::OccTable<Sigma>>{bwt, bwtRev};
+//    auto index = BiFMIndex<occtable::compact::OccTable<Sigma>>{bwt, bwtRev};
+    auto index = BiFMIndex<occtable::compactWavelet::OccTable<Sigma>>{bwt, bwtRev};
     auto cursor = BiFMIndexCursor{index};
     std::cout << "start: " << cursor.lb << ", " << cursor.lbRev << " len: " << cursor.len << "\n";
+    {
+        StopWatch sw;
+        size_t resultCt{};
+        for (size_t i{0}; i < queries.size(); ++i) {
+            auto const& q = queries[i];
+            auto cursor = BiFMIndexCursor{index};
+            for (size_t j{0}; j < q.size(); ++j) {
+                cursor = cursor.extendRight(q[j]);
+                if (cursor.empty()) {
+                    break;
+                }
+            }
+            if (!cursor.empty()) {
+                resultCt += cursor.len;
+            }
+        }
+        auto t = sw.reset();
+        fmt::print("right: queries {}, took {}s, results: {}\n", queries.size(), t, resultCt);
+    }
+
+    {
+        StopWatch sw;
+        size_t resultCt{};
+        for (size_t i{0}; i < queries.size(); ++i) {
+            auto const& q = queries[i];
+            auto cursor = BiFMIndexCursor{index};
+            for (size_t j{0}; j < q.size(); ++j) {
+                cursor = cursor.extendLeft(q[q.size() - j - 1]);
+                if (cursor.empty()) {
+                    break;
+                }
+            }
+            if (!cursor.empty()) {
+                resultCt += cursor.len;
+            }
+        }
+        auto t = sw.reset();
+        fmt::print("left: queries {}, took {}s, results: {}\n", queries.size(), t, resultCt);
+    }
+
+
+
+/*    fmt::print("one expansion\n");
+    for (size_t i{1}; i < Sigma; ++i) {
+        auto c2 = cursor.extendLeft(i);
+        std::cout << i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
+    }
+    std::cout << "same as?\n";
+    for (size_t i{1}; i < Sigma; ++i) {
+        auto c2 = cursor.extendRight(i);
+        std::cout << i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
+    }
+
+    fmt::print("two expansions\n");
     for (size_t i{1}; i < Sigma; ++i) {
         for (size_t j{1}; j < Sigma; ++j) {
             auto c = cursor.extendLeft(j);
@@ -287,7 +194,28 @@ int main() {
     }*/
 
 
-//    return 0;
+    for (size_t k{0}; k<10; ++k)
+    {
+        auto search_scheme = oss::expand(oss::generator::pigeon_trivial(0, k), queries[0].size());
+        for (size_t i{0}; i < search_scheme.size(); ++i) {
+            auto& tree = search_scheme[i];
+//            fmt::print("pi: ");
+            for (size_t j{0}; j < tree.pi.size(); ++j) {
+                tree.pi[j] -= 1;
+//                fmt::print("{} ", tree.pi[j]);
+            }
+//            fmt::print("\n");
+        }
+        size_t resultCt{};
+        StopWatch sw;
+        search_ng12::search(index, queries, 0, search_scheme, [&](size_t idx, auto cursor) {
+            resultCt += cursor.len;
+        });
+        auto t = sw.reset();
+        fmt::print("queries {}, took {}s, results: {}\n", queries.size(), t, resultCt);
+    }
+
+    return 0;
 
 
 
