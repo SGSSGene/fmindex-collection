@@ -177,14 +177,12 @@ int main() {
 //        auto search_scheme = oss::expand(oss::generator::pigeon_trivial(0, k), queries[0].size());
         auto search_scheme = oss::expand(oss::generator::h2(k+2, 0, k), queries[0].size());
 //        auto search_scheme = oss::expand(oss::generator::kucherov(k+2, 0, k), queries[0].size());
+//
         for (size_t i{0}; i < search_scheme.size(); ++i) {
             auto& tree = search_scheme[i];
-//            fmt::print("pi: ");
             for (size_t j{0}; j < tree.pi.size(); ++j) {
                 tree.pi[j] -= 1;
-//                fmt::print("{} ", tree.pi[j]);
             }
-//            fmt::print("\n");
         }
         size_t resultCt{};
         StopWatch sw;
@@ -192,8 +190,6 @@ int main() {
         search_ng12::search(index, queries, 0, search_scheme, [&](size_t idx, auto cursor) {
             for (size_t i{cursor.lb}; i < cursor.lb + cursor.len; ++i) {
                 results.push_back(index.locate(i));
-    //            fmt::print("found at {} (index: {})\n", index.locate(i), i);
-//                fmt::print("found at {} (index: {})\n", csa.value(i).value_or(99999), i);
             }
             resultCt += cursor.len;
         });
