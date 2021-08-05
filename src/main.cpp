@@ -17,6 +17,7 @@
 #include "utils/utils.h"
 
 #include "search/SearchNg12.h"
+#include "search/SearchPseudo.h"
 
 #include "oss/generator/pigeon.h"
 #include "oss/generator/h2.h"
@@ -187,7 +188,9 @@ int main() {
         size_t resultCt{};
         StopWatch sw;
         std::vector<size_t> results{};
-        search_ng12::search(index, queries, 0, search_scheme, [&](size_t idx, auto cursor) {
+        search_ng12::search(index, queries, search_scheme, [&](size_t idx, auto cursor) {
+//        search_pseudo::search<true>(index, queries, search_scheme, [&](size_t idx, auto cursor) {
+
             for (size_t i{cursor.lb}; i < cursor.lb + cursor.len; ++i) {
                 results.push_back(index.locate(i));
             }

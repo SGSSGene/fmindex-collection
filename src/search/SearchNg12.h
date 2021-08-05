@@ -15,19 +15,15 @@ struct Block {
 
 template <typename index_t, typename search_scheme_t, typename delegate_t>
 struct Search {
+    constexpr static size_t Sigma = index_t::Sigma;
+
     using cursor_t = BiFMIndexCursor<index_t>;
+    using BlockIter = typename search_scheme_t::const_iterator;
 
     index_t const& index;
     search_scheme_t const& search;
-
-
     size_t qidx;
     delegate_t const& delegate;
-
-    using BlockIter = typename search_scheme_t::const_iterator;
-
-    constexpr static size_t Sigma = index_t::Sigma;
-
 
     Search(index_t const& _index, search_scheme_t const& _search, size_t _qidx, delegate_t const& _delegate)
         : index     {_index}
@@ -277,11 +273,10 @@ struct Search {
 
 
 template <typename index_t, typename queries_t, typename search_schemes_t, typename delegate_t>
-void search(index_t const & index, queries_t && queries, uint8_t _max_error, search_schemes_t const & search_scheme, delegate_t && delegate)
+void search(index_t const & index, queries_t && queries, search_schemes_t const & search_scheme, delegate_t && delegate)
 {
     if (search_scheme.empty()) return;
-    auto len = queries[0].size();
-    auto internal_delegate = [&delegate, len] (size_t qidx, auto const & it) {
+    auto internal_delegate = [&delegate] (size_t qidx, auto const & it) {
         delegate(qidx, it);
     };
 
