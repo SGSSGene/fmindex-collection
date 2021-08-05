@@ -77,10 +77,10 @@ struct Bitvector {
             if (cb(size-1)) {
                 auto& bits = superblocks.back().bits[blockId];
                 bits = bits | (1ul << bitId);
-            }
 
-            block_acc  += 1;
-            sblock_acc += 1;
+                block_acc  += 1;
+                sblock_acc += 1;
+            }
         }
     }
 };

@@ -207,7 +207,9 @@ int main() {
 
     for (size_t k{0}; k<10; ++k)
     {
-        auto search_scheme = oss::expand(oss::generator::pigeon_trivial(0, k), queries[0].size());
+//        auto search_scheme = oss::expand(oss::generator::pigeon_trivial(0, k), queries[0].size());
+//        auto search_scheme = oss::expand(oss::generator::h2(k+2, 0, k), queries[0].size());
+//        auto search_scheme = oss::expand(oss::generator::kucherov(k+2, 0, k), queries[0].size());
         for (size_t i{0}; i < search_scheme.size(); ++i) {
             auto& tree = search_scheme[i];
 //            fmt::print("pi: ");
@@ -219,15 +221,17 @@ int main() {
         }
         size_t resultCt{};
         StopWatch sw;
+        std::vector<size_t> results{};
         search_ng12::search(index, queries, 0, search_scheme, [&](size_t idx, auto cursor) {
             for (size_t i{cursor.lb}; i < cursor.lb + cursor.len; ++i) {
-                fmt::print("found at {} (index: {})\n", index.locate(i), i);
+                results.push_back(index.locate(i));
+    //            fmt::print("found at {} (index: {})\n", index.locate(i), i);
 //                fmt::print("found at {} (index: {})\n", csa.value(i).value_or(99999), i);
             }
             resultCt += cursor.len;
         });
         auto t = sw.reset();
-        fmt::print("queries {}, took {}s, results: {}\n", queries.size(), t, resultCt);
+        fmt::print("queries {}, took {}s, results: {}/{}\n", queries.size(), t, resultCt, results.size());
     }
 
     return 0;

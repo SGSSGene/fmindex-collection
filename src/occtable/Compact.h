@@ -34,12 +34,12 @@ struct Bitvector {
         }
         uint8_t symbol(uint8_t idx) const {
             auto bit = (1ul << idx);
-            for (size_t symb{0}; symb < TSigma; ++symb) {
+            for (size_t symb{0}; symb < TSigma-1; ++symb) {
                 if (bits[symb] & bit) {
                     return symb;
                 }
             }
-            assert(false);
+            return TSigma-1;
         }
     };
 
