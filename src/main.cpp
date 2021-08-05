@@ -23,63 +23,13 @@
 #include "oss/generator/kucherov.h"
 #include "oss/expand.h"
 
-#include <divsufsort64.h>
 #include <fmt/format.h>
 
-
-int main() {
-    StopWatch watch;
-    constexpr size_t Sigma = 5;
-
-/*    std::string text;
-    text.resize(1ul<<20, '\0');
-    for (size_t i{0}; i < text.size(); ++i) {
-        text[i] = (xorshf96() % (Sigma-1))+1;
-    }
-    text.back() = '\0';
-
-    auto time_generation = watch.reset();
-    std::cout << "text size: " << text.size()/1024/1024 << " million chars, "<<  text.size()/1024/1024*std::log(Sigma)/std::log(2) << " million bits\n";
-    std::cout << "text generation: "<< time_generation << "s\n";
-
-    auto bwt = [&]() {
-        std::vector<int64_t> sa;
-        sa.resize(text.size());
-        auto error = divsufsort64((uint8_t const*)text.data(), sa.data(), text.size());
-        if (error != 0) {
-            throw std::runtime_error("some error while creating the suffix array");
-        }
-
-        auto time_saconstruction = watch.reset();
-        std::cout << "sa - construction time: "<< time_saconstruction << "s\n";
-
-        return construct_bwt_from_sa(sa, text);
-    }();
-    auto bwtRev = [&]() {
-        std::vector<int64_t> sa;
-        std::reverse(text.begin(), text.end());
-        sa.resize(text.size());
-        auto error = divsufsort64((uint8_t const*)text.data(), sa.data(), text.size());
-        if (error != 0) {
-            throw std::runtime_error("some error while creating the suffix array");
-        }
-
-        auto time_saconstruction = watch.reset();
-        std::cout << "sa - rev construction time: "<< time_saconstruction << "s\n";
-
-        return construct_bwt_from_sa(sa, text);
-    }();*/
-
-//    auto bwt = readFile("/home/gene/hg38/text.dna5.bwt");
-//    auto bwtRev = readFile("/home/gene/hg38/text.dna5.rev.bwt");
-
-/*    auto bwt       = readFile("/home/gene/hg38/short.bwt");
-    auto bwtRev    = readFile("/home/gene/hg38/short.rev.bwt");
-    auto csaBuffer = readFile("/home/gene/hg38/short.csa");*/
-    auto bwt       = readFile("/home/gene/hg38/text.dna4.bwt");
-    auto bwtRev    = readFile("/home/gene/hg38/text.dna4.rev.bwt");
-    auto csaBuffer = readFile("/home/gene/hg38/text.dna4.csa");
-
+template <size_t Sigma, typename CSA, template <size_t> typename Table>
+auto loadIndex(std::string path) {
+    auto bwt       = readFile(path + ".bwt");
+    auto bwtRev    = readFile(path + ".rev.bwt");
+    auto csaBuffer = readFile(path + ".csa");
 
     CSA csa = [&]() {
         BitStack bitStack;
@@ -89,6 +39,16 @@ int main() {
         memcpy(ssa.data(), csaBuffer.data() + readLen, ssa.size()* sizeof(uint64_t));
         return CSA(ssa, bitStack);
     }();
+    auto index = BiFMIndex<Table<Sigma>>{bwt, bwtRev, csa};
+    return index;
+}
+
+int main() {
+    StopWatch watch;
+    constexpr size_t Sigma = 5;
+
+//    auto [bwt, bwtRev] = generateBWT<Sigma>(1ul<<20);
+    auto index = loadIndex<Sigma, CSA, occtable::compact::OccTable>("/home/gene/hg38/short");
 
     std::vector<std::vector<uint8_t>> queries;
     {
@@ -113,14 +73,6 @@ int main() {
             ++ptr;
         }
     }
-
-    auto index = BiFMIndex<occtable::compact::OccTable<Sigma>>{bwt, bwtRev, csa};
-//    auto index = BiFMIndex<occtable::compactWavelet::OccTable<Sigma>>{bwt, bwtRev, csa};
-
-/*    for (size_t i{0}; i < bwt.size(); ++i) {
-       fmt::print("found at {} (index: {})\n", index.locate(i), i);
-    }
-    return 0;*/
 
     auto cursor = BiFMIndexCursor{index};
     std::cout << "start: " << cursor.lb << ", " << cursor.lbRev << " len: " << cursor.len << "\n";
@@ -243,9 +195,9 @@ int main() {
     return 0;
 
 
-
+/*
     auto time_bwtconstruction = watch.reset();
-    std::cout << "bwt - construction time: "<< time_bwtconstruction << "s, length: " << bwt.size() << "\n";
+    std::cout << "bwt - construction time: "<< time_bwtconstruction << "s, length: " << index.size() << "\n";
 
     auto results = std::vector<Result>{};
     using namespace occtable;
@@ -288,7 +240,7 @@ int main() {
                    result.benchV6CheckSum[0],
                    result.benchV6CheckSum[1],
                    result.totalTime);
-    }
+    }*/
 
     return 0;
 }

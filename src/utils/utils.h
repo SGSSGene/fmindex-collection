@@ -6,14 +6,17 @@
 
 #include <array>
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <divsufsort64.h>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <string_view>
 #include <vector>
+
 
 inline auto construct_bwt_from_sa(std::vector<int64_t> const& sa, std::string_view const& text) -> std::vector<uint8_t> {
     assert(sa.size() == text.size());
@@ -32,6 +35,50 @@ inline auto readFile(std::filesystem::path const& file) -> std::vector<uint8_t> 
     ifs.seekg(0, std::ios::beg);
     ifs.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
     return buffer;
+}
+
+template <size_t Sigma>
+auto generateBWT(size_t len) -> std::tuple<std::vector<uint8_t>, std::vector<uint8_t>> {
+    StopWatch watch;
+    std::string text;
+    text.resize(len, '\0');
+    for (size_t i{0}; i < text.size(); ++i) {
+        text[i] = (xorshf96() % (Sigma-1))+1;
+    }
+    text.back() = '\0';
+
+    auto time_generation = watch.reset();
+    std::cout << "text size: " << text.size()/1024/1024 << " million chars, "<<  text.size()/1024/1024*std::log(Sigma)/std::log(2) << " million bits\n";
+    std::cout << "text generation: "<< time_generation << "s\n";
+
+    auto bwt = [&]() {
+        std::vector<int64_t> sa;
+        sa.resize(text.size());
+        auto error = divsufsort64((uint8_t const*)text.data(), sa.data(), text.size());
+        if (error != 0) {
+            throw std::runtime_error("some error while creating the suffix array");
+        }
+
+        auto time_saconstruction = watch.reset();
+        std::cout << "sa - construction time: "<< time_saconstruction << "s\n";
+
+        return construct_bwt_from_sa(sa, text);
+    }();
+    auto bwtRev = [&]() {
+        std::vector<int64_t> sa;
+        std::reverse(text.begin(), text.end());
+        sa.resize(text.size());
+        auto error = divsufsort64((uint8_t const*)text.data(), sa.data(), text.size());
+        if (error != 0) {
+            throw std::runtime_error("some error while creating the suffix array");
+        }
+
+        auto time_saconstruction = watch.reset();
+        std::cout << "sa - rev construction time: "<< time_saconstruction << "s\n";
+
+        return construct_bwt_from_sa(sa, text);
+    }();
+    return {bwt, bwtRev};
 }
 
 
