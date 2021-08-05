@@ -1,7 +1,7 @@
 #pragma once
 
 #include "StopWatch.h"
-#include "occtable/concepts.h"
+#include "../occtable/concepts.h"
 #include "random.h"
 
 #include <array>

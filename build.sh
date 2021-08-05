@@ -8,7 +8,7 @@ CXXFLAGS="$CXXFLAGS -O3 -mpopcnt -mbmi -DNDEBUG"
 
 mkdir -p build
 g++ -c $CXXFLAGS src/main.cpp -o build/main.o
-g++ -c $CXXFLAGS src/utils.cpp -o build/utils.o
+g++ -c $CXXFLAGS src/utils/utils.cpp -o build/utils.o
 g++ -c $CXXFLAGS src/oss/expand.cpp -o build/expand.o
 g++ -c $CXXFLAGS src/oss/isValid.cpp -o build/isValid.o
 

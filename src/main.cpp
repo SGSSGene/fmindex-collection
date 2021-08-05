@@ -12,20 +12,20 @@
 
 #include "FMIndex.h"
 #include "BiFMIndex.h"
-#include "utils.h"
-
 #include "CSA.h"
 
+#include "utils/utils.h"
+
 #include "search/SearchNg12.h"
-
-#include <divsufsort64.h>
-
-#include <fmt/format.h>
 
 #include "oss/generator/pigeon.h"
 #include "oss/generator/h2.h"
 #include "oss/generator/kucherov.h"
 #include "oss/expand.h"
+
+#include <divsufsort64.h>
+#include <fmt/format.h>
+
 
 int main() {
     StopWatch watch;
