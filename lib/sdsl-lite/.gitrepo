@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:xxsds/sdsl-lite.git
+	branch = master
+	commit = 163d59bb1f3b1b21b028099547f556953d1c626f
+	parent = f643da3e20177ea5d2377c7cad3e9e9ecde3a3bc
+	method = merge
+	cmdver = 0.4.3
