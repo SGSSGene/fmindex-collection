@@ -43,17 +43,11 @@ auto loadIndex(std::string path) {
     return index;
 }
 
-int main() {
-    StopWatch watch;
-    constexpr size_t Sigma = 5;
-
-//    auto [bwt, bwtRev] = generateBWT<Sigma>(1ul<<20);
-    auto index = loadIndex<Sigma, CSA, occtable::compact::OccTable>("/home/gene/hg38/short");
-
+template <size_t Sigma>
+auto loadQueries(std::string path) {
     std::vector<std::vector<uint8_t>> queries;
     {
-        auto b = readFile("/home/gene/hg38/sampled_illumina_reads.txt");
-//        auto b = readFile("/home/gene/hg38/short.queries");
+        auto b = readFile(path);
         auto ptr = b.data();
         std::vector<uint8_t> query;
         while (ptr != (b.data() + b.size())) {
@@ -68,11 +62,26 @@ int main() {
                 else if (*ptr == 'C') query.push_back(2);
                 else if (*ptr == 'G') query.push_back(3);
                 else if (*ptr == 'T') query.push_back(4);
-                else if (*ptr == 'N') query.push_back(5);
+                else if (*ptr == 'N' and Sigma == 6) query.push_back(5);
+                else {
+                    throw std::runtime_error("unknown alphabet");
+                }
             }
             ++ptr;
         }
     }
+    return queries;
+}
+
+int main() {
+    StopWatch watch;
+    constexpr size_t Sigma = 5;
+
+//    auto [bwt, bwtRev] = generateBWT<Sigma>(1ul<<20);
+    auto index = loadIndex<Sigma, CSA, occtable::compact::OccTable>("/home/gene/hg38/short");
+
+    auto queries = loadQueries<Sigma>("/home/gene/hg38/short.queries");
+//    auto queries = loadQueries<Sigma>("/home/gene/hg38/sampled_illumina_reads.txt");
 
     auto cursor = BiFMIndexCursor{index};
     std::cout << "start: " << cursor.lb << ", " << cursor.lbRev << " len: " << cursor.len << "\n";
