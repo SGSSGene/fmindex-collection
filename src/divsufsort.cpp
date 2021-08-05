@@ -16,13 +16,15 @@
 
 #include "CSA.h"
 
-#include "SearchNg12.h"
+#include "search/SearchNg12.h"
 
 #include <divsufsort64.h>
 
 #include <fmt/format.h>
 
 #include "oss/generator/pigeon.h"
+#include "oss/generator/h2.h"
+#include "oss/generator/kucherov.h"
 #include "oss/expand.h"
 
 int main() {
@@ -208,7 +210,7 @@ int main() {
     for (size_t k{0}; k<10; ++k)
     {
 //        auto search_scheme = oss::expand(oss::generator::pigeon_trivial(0, k), queries[0].size());
-//        auto search_scheme = oss::expand(oss::generator::h2(k+2, 0, k), queries[0].size());
+        auto search_scheme = oss::expand(oss::generator::h2(k+2, 0, k), queries[0].size());
 //        auto search_scheme = oss::expand(oss::generator::kucherov(k+2, 0, k), queries[0].size());
         for (size_t i{0}; i < search_scheme.size(); ++i) {
             auto& tree = search_scheme[i];
