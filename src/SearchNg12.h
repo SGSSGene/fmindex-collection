@@ -107,18 +107,18 @@ struct Search {
 
         if (mismatchAllowed) {
             auto cursors = std::array<cursor_t, Sigma>{};
-            /*for (size_t i{1}; i < Sigma; ++i) {
+            for (size_t i{1}; i < Sigma; ++i) {
                 if constexpr (Right) {
                     cursors[i] = cur.extendRight(i);
                 } else {
                     cursors[i] = cur.extendLeft(i);
                 }
-            }*/
-            if constexpr (Right) {
+            }
+            /*if constexpr (Right) {
                 cursors = cur.extendRight();
             } else {
                 cursors = cur.extendLeft();
-            }
+            }*/
 
             /*extend_cb<Right>(cur, [&](auto c, auto newCur) {
                 if (c > Sigma) return;

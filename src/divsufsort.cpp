@@ -14,6 +14,8 @@
 #include "BiFMIndex.h"
 #include "utils.h"
 
+#include "CSA.h"
+
 #include "SearchNg12.h"
 
 #include <divsufsort64.h>
@@ -66,13 +68,26 @@ int main() {
         return construct_bwt_from_sa(sa, text);
     }();*/
 
-    auto bwt = readFile("/home/gene/hg38/text.dna5.bwt");
-    auto bwtRev = readFile("/home/gene/hg38/text.dna5.rev.bwt");
+//    auto bwt = readFile("/home/gene/hg38/text.dna5.bwt");
+//    auto bwtRev = readFile("/home/gene/hg38/text.dna5.rev.bwt");
 
+    auto bwt       = readFile("/home/gene/hg38/short.bwt");
+    auto bwtRev    = readFile("/home/gene/hg38/short.rev.bwt");
+    auto csaBuffer = readFile("/home/gene/hg38/short.csa");
+
+    CSA csa = [&]() {
+        BitStack bitStack;
+        std::vector<uint64_t> ssa;
+        auto readLen = bitStack.read(csaBuffer.data(), csaBuffer.size());
+        ssa.resize(bitStack.ones);
+        memcpy(ssa.data(), csaBuffer.data() + readLen, ssa.size()* sizeof(uint64_t));
+        return CSA(ssa, bitStack);
+    }();
 
     std::vector<std::vector<uint8_t>> queries;
     {
-        auto b = readFile("/home/gene/hg38/sampled_illumina_reads.fastq");
+//        auto b = readFile("/home/gene/hg38/sampled_illumina_reads.fastq");
+        auto b = readFile("/home/gene/hg38/short.queries");
         auto ptr = b.data();
         std::vector<uint8_t> query;
         while (ptr != (b.data() + b.size())) {
@@ -93,18 +108,14 @@ int main() {
         }
     }
 
+    auto index = BiFMIndex<occtable::compact::OccTable<Sigma>>{bwt, bwtRev, csa};
+//    auto index = BiFMIndex<occtable::compactWavelet::OccTable<Sigma>>{bwt, bwtRev, csa};
 
-//    auto bwt = readFile("/home/gene/hg38/text.short.bwt");
-//    bwt.resize(9);
-/*    std::vector<uint8_t> bwt;
-    bwt.resize(6, '\1');
-    bwt[0] = 2;
-    bwt[1] = 1;
-    bwt[2] = 3;
-    bwt[3] = 3;*/
+    for (size_t i{0}; i < bwt.size(); ++i) {
+       fmt::print("found at {} (index: {})\n", index.locate(i), i);
+    }
+    return 0;
 
-//    auto index = BiFMIndex<occtable::compact::OccTable<Sigma>>{bwt, bwtRev};
-    auto index = BiFMIndex<occtable::compactWavelet::OccTable<Sigma>>{bwt, bwtRev};
     auto cursor = BiFMIndexCursor{index};
     std::cout << "start: " << cursor.lb << ", " << cursor.lbRev << " len: " << cursor.len << "\n";
     {
@@ -209,6 +220,10 @@ int main() {
         size_t resultCt{};
         StopWatch sw;
         search_ng12::search(index, queries, 0, search_scheme, [&](size_t idx, auto cursor) {
+            for (size_t i{cursor.lb}; i < cursor.lb + cursor.len; ++i) {
+                fmt::print("found at {} (index: {})\n", index.locate(i), i);
+//                fmt::print("found at {} (index: {})\n", csa.value(i).value_or(99999), i);
+            }
             resultCt += cursor.len;
         });
         auto t = sw.reset();

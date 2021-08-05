@@ -1,15 +1,21 @@
 #include "occtable/concepts.h"
 
+#include "CSA.h"
+
 template <OccTable Table>
 struct BiFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
 
     Table occ;
     Table occRev;
+    CSA   csa;
 
-    BiFMIndex(std::vector<uint8_t> const& bwt, std::vector<uint8_t> const& bwtRev)
+
+
+    BiFMIndex(std::vector<uint8_t> const& bwt, std::vector<uint8_t> const& bwtRev, CSA _csa)
         : occ{bwt}
         , occRev{bwtRev}
+        , csa{std::move(_csa)}
     {
         assert(bwt.size() == bwtRev.size());
         assert(occ.size() == occRev.size());
@@ -28,6 +34,16 @@ struct BiFMIndex {
 
     size_t size() const {
         return occ.size();
+    }
+    size_t locate(size_t idx) const {
+        auto opt = csa.value(idx);
+        uint64_t steps{};
+        while(!opt) {
+            idx = occ.rank(idx, occ.symbol(idx));
+            steps += 1;
+            opt = csa.value(idx);
+        }
+        return opt.value() + steps;
     }
 };
 
