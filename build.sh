@@ -7,7 +7,7 @@ CXXFLAGS="$CXXFLAGS -O3 -mpopcnt -mbmi -DNDEBUG"
 
 
 mkdir -p build
-g++ -c $CXXFLAGS src/divsufsort.cpp -o build/divsufsort.o
+g++ -c $CXXFLAGS src/main.cpp -o build/main.o
 g++ -c $CXXFLAGS src/utils.cpp -o build/utils.o
 g++ -c $CXXFLAGS src/oss/expand.cpp -o build/expand.o
 g++ -c $CXXFLAGS src/oss/isValid.cpp -o build/isValid.o
@@ -18,4 +18,4 @@ g++ -c $CXXFLAGS src/oss/generator/suffixFilter.cpp -o build/suffixFilter.o
 g++ -c $CXXFLAGS src/oss/generator/zeroOnesZero.cpp -o build/zeroOnesZero.o
 
 
-g++ build/divsufsort.o build/utils.o build/expand.o build/isValid.o build/h2.o build/pigeon.o build/suffixFilter.o build/zeroOnesZero.o -ldivsufsort64 -lfmt
+g++ build/main.o build/utils.o build/expand.o build/isValid.o build/h2.o build/pigeon.o build/suffixFilter.o build/zeroOnesZero.o -ldivsufsort64 -lfmt

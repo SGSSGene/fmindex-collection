@@ -29,7 +29,7 @@
 
 int main() {
     StopWatch watch;
-    constexpr size_t Sigma = 6;
+    constexpr size_t Sigma = 5;
 
 /*    std::string text;
     text.resize(1ul<<20, '\0');
@@ -73,9 +73,13 @@ int main() {
 //    auto bwt = readFile("/home/gene/hg38/text.dna5.bwt");
 //    auto bwtRev = readFile("/home/gene/hg38/text.dna5.rev.bwt");
 
-    auto bwt       = readFile("/home/gene/hg38/short.bwt");
+/*    auto bwt       = readFile("/home/gene/hg38/short.bwt");
     auto bwtRev    = readFile("/home/gene/hg38/short.rev.bwt");
-    auto csaBuffer = readFile("/home/gene/hg38/short.csa");
+    auto csaBuffer = readFile("/home/gene/hg38/short.csa");*/
+    auto bwt       = readFile("/home/gene/hg38/text.dna4.bwt");
+    auto bwtRev    = readFile("/home/gene/hg38/text.dna4.rev.bwt");
+    auto csaBuffer = readFile("/home/gene/hg38/text.dna4.csa");
+
 
     CSA csa = [&]() {
         BitStack bitStack;
@@ -88,8 +92,8 @@ int main() {
 
     std::vector<std::vector<uint8_t>> queries;
     {
-//        auto b = readFile("/home/gene/hg38/sampled_illumina_reads.fastq");
-        auto b = readFile("/home/gene/hg38/short.queries");
+        auto b = readFile("/home/gene/hg38/sampled_illumina_reads.txt");
+//        auto b = readFile("/home/gene/hg38/short.queries");
         auto ptr = b.data();
         std::vector<uint8_t> query;
         while (ptr != (b.data() + b.size())) {
@@ -113,10 +117,10 @@ int main() {
     auto index = BiFMIndex<occtable::compact::OccTable<Sigma>>{bwt, bwtRev, csa};
 //    auto index = BiFMIndex<occtable::compactWavelet::OccTable<Sigma>>{bwt, bwtRev, csa};
 
-    for (size_t i{0}; i < bwt.size(); ++i) {
+/*    for (size_t i{0}; i < bwt.size(); ++i) {
        fmt::print("found at {} (index: {})\n", index.locate(i), i);
     }
-    return 0;
+    return 0;*/
 
     auto cursor = BiFMIndexCursor{index};
     std::cout << "start: " << cursor.lb << ", " << cursor.lbRev << " len: " << cursor.len << "\n";
