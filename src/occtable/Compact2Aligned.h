@@ -46,6 +46,13 @@ struct Bitvector {
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
     std::array<uint64_t, TSigma+1> C;
 
+    size_t memoryUsage() const {
+        return blocks.size() * sizeof(blocks.back())
+            + superBlocks.size() * sizeof(superBlocks.back())
+            + sizeof(C);
+    }
+
+
     uint64_t rank(uint64_t idx, uint8_t symb) const {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> 16;
@@ -134,6 +141,10 @@ struct OccTable {
         bitvector = construct_bitvector<Sigma>(_bwt.size(), [&](size_t i) -> uint8_t {
             return _bwt[i];
         });
+    }
+
+    size_t memoryUsage() const {
+        return bitvector.memoryUsage() + sizeof(OccTable);
     }
 
     uint64_t size() const {

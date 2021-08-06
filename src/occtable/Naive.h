@@ -36,6 +36,10 @@ struct OccTable {
         }
     }
 
+    size_t memoryUsage() const {
+        return occ.size() * sizeof(occ.back()) + sizeof(OccTable);
+    }
+
     uint64_t size() const {
         return C.back();
     }

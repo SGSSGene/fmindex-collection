@@ -17,6 +17,7 @@ struct Bitvector {
     struct alignas(64) Block {
         std::array<uint32_t, TSigma> blocks{};
         std::array<uint64_t, TSigma> bits{};
+
         uint64_t rank(uint8_t idx, uint8_t symb) const {
             auto bitset = std::bitset<64>(bits[symb] << (63-idx));
             return blocks[symb] + bitset.count();
@@ -47,6 +48,12 @@ struct Bitvector {
     std::vector<Block> blocks;
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
     std::array<uint64_t, TSigma+1> C;
+
+    size_t memoryUsage() const {
+        return blocks.size() * sizeof(blocks.back())
+            + superBlocks.size() * sizeof(superBlocks.back())
+            + sizeof(C);
+    }
 
     uint64_t rank(uint64_t idx, uint8_t symb) const {
         auto blockId      = idx >>  6;
@@ -136,6 +143,10 @@ struct OccTable {
         bitvector = construct_bitvector<Sigma>(_bwt.size(), [&](size_t i) -> uint8_t {
             return _bwt[i];
         });
+    }
+
+    size_t memoryUsage() const {
+        return bitvector.memoryUsage() + sizeof(OccTable);
     }
 
     uint64_t size() const {

@@ -289,6 +289,11 @@ struct Bitvector {
         }
     };
 
+    size_t memoryUsage() const {
+        return blocks.size() * sizeof(blocks.back())
+            + superBlocks.size() * sizeof(superBlocks.back())
+            + sizeof(C);
+    }
 
     uint64_t rank(uint64_t idx, uint8_t symb) const {
         auto blockId      = idx >>  6;
@@ -356,10 +361,13 @@ struct OccTable {
         , size_{_bwt.size()}
     {}
 
+    size_t memoryUsage() const {
+        return bitvector.memoryUsage() + sizeof(OccTable);
+    }
+
     uint64_t size() const {
         return size_;
     }
-
 
     uint64_t rank(uint64_t idx, uint8_t symb) const {
         return bitvector.rank(idx, symb);

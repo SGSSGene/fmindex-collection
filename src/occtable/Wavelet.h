@@ -74,6 +74,10 @@ struct Bitvector {
         auto bitId        = idx % 384;
         return superblocks[superblockId].value(bitId);
     }
+
+    size_t memoryUsage() const {
+        return superblocks.size() * sizeof(superblocks.back());
+    }
 };
 
 
@@ -195,6 +199,15 @@ struct OccTable {
             return _bwt[i];
         });
     }
+    size_t memoryUsage() const {
+        size_t memory{};
+        for (auto const& bv : bitvector) {
+            memory += bv.memoryUsage();
+        }
+        memory += sizeof(OccTable);
+        return memory;
+    }
+
 
     uint64_t size() const {
         return C.back();

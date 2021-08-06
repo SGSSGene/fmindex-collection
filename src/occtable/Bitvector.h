@@ -59,6 +59,10 @@ struct Bitvector {
         auto bitId        = idx % 384;
         return superblocks[superblockId].value(bitId);
     }
+
+    size_t memoryUsage() const {
+        return superblocks.size() * sizeof(superblocks.back());
+    }
 };
 
 
@@ -126,6 +130,15 @@ struct OccTable {
         std::tie(bitvector, C) = construct_bitvectors<Sigma>(_bwt.size(), [&](size_t i) -> uint8_t {
             return _bwt[i];
         });
+    }
+
+    size_t memoryUsage() const {
+        size_t memory{};
+        for (auto const& bv : bitvector) {
+            memory += bv.memoryUsage();
+        }
+        memory += sizeof(OccTable);
+        return memory;
     }
 
     uint64_t size() const {

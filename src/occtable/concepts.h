@@ -13,6 +13,7 @@ concept OccTable = requires(T t) {
     t.size();
     T::expectedMemoryUsage(0);
     t.symbol(uint64_t{});
+    t.memoryUsage();
 };
 
 template<template <auto> typename T>
