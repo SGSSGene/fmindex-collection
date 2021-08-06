@@ -123,17 +123,7 @@ struct Bitvector {
         template <typename CB>
         void bvAccess(size_t idx, CB cb) const {
             bvAccess(0, 64, idx, cb);
-/*            auto bv = std::bitset<64>(bits[0]);
-            auto d1 = (bv << (64-idx)).count();
-            auto d0 = idx - d1;
-            auto c1 = bv.count();
-            auto c0 = 64 - c1;
-            bvAccess<1, 0>(0,  c0, d0, cb);
-            bvAccess<1, 1>(c0, c1, d1, cb);*/
         }
-
-
-
 
         template <size_t Depth=0, size_t I=0, typename CB>
         void bvAccess(size_t s, size_t l1, size_t idx, CB cb) const {
@@ -384,12 +374,15 @@ struct OccTable {
 
     uint8_t symbol(uint64_t idx) const {
         idx += 1;
-        for (size_t i{0}; i < Sigma-1; ++i) {
-            if (rank(idx, i) > rank(idx-1, i)) {
+        auto [r1, pr1] = all_ranks(idx);
+        auto [r2, pr2] = all_ranks(idx-1);
+
+        for (size_t i{1}; i < Sigma; ++i) {
+            if (r1[i] > r2[i]) {
                 return i;
             }
         }
-        return Sigma-1;
+        return 0;
     }
 
     auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
