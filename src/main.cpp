@@ -17,6 +17,7 @@
 #include "utils/utils.h"
 
 #include "search/SearchNg12.h"
+#include "search/SearchNg14.h"
 #include "search/SearchPseudo.h"
 
 #include "oss/generator/pigeon.h"
