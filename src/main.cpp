@@ -117,113 +117,26 @@ int main() {
         return 0;
     }
 
-//     auto queries = loadQueries<Sigma>("/home/gene/hg38/short.queries");
-     auto queries = loadQueries<Sigma>("/home/gene/hg38/sampled_illumina_reads.txt");
+     auto queries = loadQueries<Sigma>("/home/gene/hg38/short.queries");
+     fmt::print("loaded {} queries (incl reverse complements)\n", queries.size());
+//     auto queries = loadQueries<Sigma>("/home/gene/hg38/sampled_illumina_reads.txt");
 
 //    auto [bwt, bwtRev] = generateBWT<Sigma>(1ul<<20);
     visitAllTables<Sigma>([&]<template <size_t> typename Table>(Table<Sigma>*, std::string name) {
-        fmt::print("using occtable: {}\n", name);
+//        fmt::print("using occtable: {}\n", name);
 
         size_t s = Table<Sigma>::expectedMemoryUsage(3'000'000'000ul);
-        fmt::print("expected memory: {}\n", s);
+//        fmt::print("expected memory: {}\n", s);
         if (s > 1024*1024*1024*56ul) {
-            fmt::print("skipping, to much memory\n");
+            fmt::print("{} skipping, to much memory\n", name);
             return;
         }
 
-        auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/text.dna4");
-        fmt::print("memory usage: {}\n", index.memoryUsage());
+//        auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/text.dna4");
+        auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/short");
 
-
-        auto cursor = BiFMIndexCursor{index};
-        std::cout << "start: " << cursor.lb << ", " << cursor.lbRev << " len: " << cursor.len << "\n";
-        {
-            StopWatch sw;
-            size_t resultCt{};
-            for (size_t i{0}; i < queries.size(); ++i) {
-                auto const& q = queries[i];
-                auto cursor = BiFMIndexCursor{index};
-                for (size_t j{0}; j < q.size(); ++j) {
-                    cursor = cursor.extendRight(q[j]);
-                    if (cursor.empty()) {
-                        break;
-                    }
-                }
-                if (!cursor.empty()) {
-                    resultCt += cursor.len;
-                }
-            }
-            auto t = sw.reset();
-            fmt::print("right: queries {}, took {}s, results: {}\n", queries.size(), t, resultCt);
-        }
-
-        {
-            StopWatch sw;
-            size_t resultCt{};
-            for (size_t i{0}; i < queries.size(); ++i) {
-                auto const& q = queries[i];
-                auto cursor = BiFMIndexCursor{index};
-                for (size_t j{0}; j < q.size(); ++j) {
-                    cursor = cursor.extendLeft(q[q.size() - j - 1]);
-                    if (cursor.empty()) {
-                        break;
-                    }
-                }
-                if (!cursor.empty()) {
-                    resultCt += cursor.len;
-                }
-            }
-            auto t = sw.reset();
-            fmt::print("left: queries {}, took {}s, results: {}\n", queries.size(), t, resultCt);
-        }
-
-
-
-    /*    fmt::print("one expansion\n");
-        for (size_t i{1}; i < Sigma; ++i) {
-            auto c2 = cursor.extendLeft(i);
-            std::cout << i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
-        }
-        std::cout << "same as?\n";
-        for (size_t i{1}; i < Sigma; ++i) {
-            auto c2 = cursor.extendRight(i);
-            std::cout << i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
-        }
-
-        fmt::print("two expansions\n");
-        for (size_t i{1}; i < Sigma; ++i) {
-            for (size_t j{1}; j < Sigma; ++j) {
-                auto c = cursor.extendLeft(j);
-                auto c2 = c.extendLeft(i);
-                std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
-            }
-        }
-        std::cout << "same as?\n";
-        for (size_t i{1}; i < Sigma; ++i) {
-            for (size_t j{1}; j < Sigma; ++j) {
-                auto c = cursor.extendRight(j);
-                auto c2 = c.extendLeft(i);
-                std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
-            }
-        }
-        std::cout << "same as?\n";
-        for (size_t i{1}; i < Sigma; ++i) {
-            for (size_t j{1}; j < Sigma; ++j) {
-                auto c = cursor.extendLeft(i);
-                auto c2 = c.extendRight(j);
-                std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
-            }
-        }
-        std::cout << "same as?\n";
-        for (size_t i{1}; i < Sigma; ++i) {
-            for (size_t j{1}; j < Sigma; ++j) {
-                auto c = cursor.extendRight(i);
-                auto c2 = c.extendRight(j);
-                std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
-            }
-        }*/
-
-
+        auto memory = index.memoryUsage();
+//        fmt::print("memory usage: {}\n", index.memoryUsage());
         for (size_t k{0}; k<4; ++k)
         {
     //        auto search_scheme = oss::expand(oss::generator::pigeon_trivial(0, k), queries[0].size());
@@ -239,16 +152,26 @@ int main() {
             size_t resultCt{};
             StopWatch sw;
             std::vector<size_t> results{};
-            search_ng12::search(index, queries, search_scheme, [&](size_t idx, auto cursor) {
-    //        search_pseudo::search<true>(index, queries, search_scheme, [&](size_t idx, auto cursor) {
+            std::vector<BiFMIndexCursor<decltype(index)>> resultCursors;
 
+//            search_ng12::search(index, queries, search_scheme, [&](size_t idx, auto cursor) {
+            search_ng14::search(index, queries, search_scheme, [&](size_t idx, auto cursor) {
+//            search_pseudo::search<true>(index, queries, search_scheme, [&](size_t idx, auto cursor) {
+
+                resultCursors.push_back(cursor);
+            });
+
+            auto time_search = sw.reset();
+
+            for (auto const& cursor : resultCursors) {
                 for (size_t i{cursor.lb}; i < cursor.lb + cursor.len; ++i) {
                     results.push_back(index.locate(i));
                 }
                 resultCt += cursor.len;
-            });
-            auto t = sw.reset();
-            fmt::print("queries {}, took {}s, results: {}/{}\n", queries.size(), t, resultCt, results.size());
+            }
+            auto time_locate = sw.reset();
+
+            fmt::print("{:15}: {:>10.3}s ({:>10.3}s+{:>10.3}s) {:>10.3}q/s - results: {:>10}/{:>10} - mem: {:>13}\n", name, time_search + time_locate, time_search, time_locate, (time_search+time_locate)/queries.size(), resultCt, results.size(), memory);
         }
     });
     return 0;
