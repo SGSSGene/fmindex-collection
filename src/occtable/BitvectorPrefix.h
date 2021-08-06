@@ -30,6 +30,14 @@ struct alignas(64) Superblock {
         return total;
     }
 
+    bool value(size_t idx) const noexcept {
+        assert(idx < 384);
+
+        auto blockId = idx >> 6;
+        auto bitId = idx & 63;
+        return bits[blockId] & (1ul << bitId);
+    }
+
     void setBlock(size_t blockId, size_t value) {
         blockEntries = blockEntries & ~uint64_t{0b111111111ul << blockId*9};
         blockEntries = blockEntries | uint64_t{value << blockId*9};
@@ -43,6 +51,13 @@ struct Bitvector {
         auto superblockId = idx / 384;
         auto bitId        = idx % 384;
         return superblocks[superblockId].rank(bitId);
+    }
+
+    bool value(size_t idx) const noexcept {
+        idx += 1;
+        auto superblockId = idx / 384;
+        auto bitId        = idx % 384;
+        return superblocks[superblockId].value(bitId);
     }
 };
 
@@ -152,6 +167,16 @@ struct OccTable {
     uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
         return bitvector2[symb].rank(idx);
     }
+
+    uint8_t symbol(uint64_t idx) const {
+        for (size_t i{0}; i < Sigma-1; ++i) {
+            if (bitvector1[i].value(idx)) {
+                return i;
+            }
+        }
+        return Sigma-1;
+    }
+
     auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
         std::array<uint64_t, Sigma> rs{0};
         std::array<uint64_t, Sigma> prs{0};

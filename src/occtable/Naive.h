@@ -44,6 +44,24 @@ struct OccTable {
         return occ[idx][symb] + C[symb];
     }
 
+    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+        uint64_t a{};
+        for (size_t i{0}; i <= symb; ++i) {
+            a += occ[idx][i];
+        }
+        return a;
+    }
+
+    uint8_t symbol(uint64_t idx) const {
+        idx += 1;
+        for (size_t i{0}; i < Sigma-1; ++i) {
+            if (occ[idx][i] > occ[idx-1][i]) {
+                return i;
+            }
+        }
+        return Sigma-1;
+    }
+
     auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
         std::array<uint64_t, Sigma> rs{0};
         std::array<uint64_t, Sigma> prs{0};
@@ -57,13 +75,8 @@ struct OccTable {
         return {rs, prs};
     }
 
-    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
-        uint64_t a{};
-        for (size_t i{0}; i <= symb; ++i) {
-            a += occ[idx][i];
-        }
-        return a;
-    }
+
+
 };
 
 static_assert(checkOccTable<OccTable>);

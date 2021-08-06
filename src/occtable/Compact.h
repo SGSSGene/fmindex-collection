@@ -32,6 +32,7 @@ struct Bitvector {
             auto bitset = std::bitset<64>(b << (63-idx));
             return block + bitset.count();
         }
+
         uint8_t symbol(uint8_t idx) const {
             auto bit = (1ul << idx);
             for (size_t symb{0}; symb < TSigma-1; ++symb) {
@@ -102,13 +103,13 @@ struct Bitvector {
         }
         return blocks[blockId].prefix_rank(bitId, symb) + a;
     }
+
     uint8_t symbol(uint64_t idx) const {
         idx += 1;
         auto blockId      = idx >>  6;
         auto bitId        = idx &  63;
         return blocks[blockId].symbol(bitId);
     }
-
 };
 
 
@@ -128,7 +129,6 @@ struct OccTable {
         return C + blocks + superblocks;
     }
 
-
     OccTable(std::vector<uint8_t> const& _bwt)
         : bitvector(_bwt.size(), [&](size_t i) -> uint8_t {
             return _bwt[i];
@@ -139,7 +139,6 @@ struct OccTable {
         return bitvector.C.back();
     }
 
-
     uint64_t rank(uint64_t idx, uint8_t symb) const {
         return bitvector.rank(idx, symb);
     }
@@ -148,7 +147,7 @@ struct OccTable {
         return bitvector.prefix_rank(idx, symb);
     }
 
-    uint64_t symbol(uint64_t idx) const {
+    uint8_t symbol(uint64_t idx) const {
         return bitvector.symbol(idx);
     }
 
@@ -162,6 +161,7 @@ struct OccTable {
         return {rs, prs};
     }
 };
+
 static_assert(checkOccTable<OccTable>);
 
 }

@@ -17,6 +17,7 @@ struct Bitvector {
     struct Block {
         std::array<uint32_t, TSigma> blocks{};
         std::array<uint64_t, TSigma> bits{};
+
         uint64_t rank(uint8_t idx, uint8_t symb) const {
             auto bitset = std::bitset<64>(bits[symb] << (63-idx));
             return blocks[symb] + bitset.count();
@@ -31,7 +32,16 @@ struct Bitvector {
             }
             auto bitset = std::bitset<64>(b << (63-idx));
             return block + bitset.count();
+        }
 
+        uint8_t symbol(uint8_t idx) const {
+            auto bit = (1ul << idx);
+            for (size_t symb{0}; symb < TSigma-1; ++symb) {
+                if (bits[symb] & bit) {
+                    return symb;
+                }
+            }
+            return TSigma-1;
         }
     };
 
@@ -53,6 +63,12 @@ struct Bitvector {
         return blocks[blockId].rank(bitId, symb) + superBlocks[superBlockId][symb];
     }
 
+    uint8_t symbol(uint64_t idx) const {
+        idx += 1;
+        auto blockId      = idx >>  6;
+        auto bitId        = idx &  63;
+        return blocks[blockId].symbol(bitId);
+    }
 };
 
 template <size_t TSigma, typename CB>
@@ -124,13 +140,16 @@ struct OccTable {
         return bitvector.C.back();
     }
 
-
     uint64_t rank(uint64_t idx, uint8_t symb) const {
         return bitvector.rank(idx, symb);
     }
 
     uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
         return bitvector.prefix_rank(idx, symb);
+    }
+
+    uint8_t symbol(uint64_t idx) const {
+        return bitvector.symbol(idx);
     }
 
     auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {

@@ -369,6 +369,16 @@ struct OccTable {
         return bitvector.prefix_rank(idx, symb);
     }
 
+    uint8_t symbol(uint64_t idx) const {
+        idx += 1;
+        for (size_t i{0}; i < Sigma-1; ++i) {
+            if (rank(idx, i) > rank(idx-1, i)) {
+                return i;
+            }
+        }
+        return Sigma-1;
+    }
+
     auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
         return bitvector.all_ranks(idx);
     }

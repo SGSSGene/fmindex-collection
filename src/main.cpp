@@ -26,6 +26,22 @@
 
 #include <fmt/format.h>
 
+template <size_t Sigma, typename CB>
+void visitAllTables(CB cb) {
+    cb((occtable::naive::OccTable<Sigma>*)nullptr, "naive");
+    cb((occtable::compact::OccTable<Sigma>*)nullptr, "compact");
+    cb((occtable::compactAligned::OccTable<Sigma>*)nullptr, "compactAligned");
+    cb((occtable::compactPrefix::OccTable<Sigma>*)nullptr, "compactPrefix");
+    cb((occtable::compact2::OccTable<Sigma>*)nullptr, "compact2");
+    cb((occtable::compact2Aligned::OccTable<Sigma>*)nullptr, "compact2Aligned");
+    cb((occtable::bitvector::OccTable<Sigma>*)nullptr, "bitvector");
+    cb((occtable::bitvectorPrefix::OccTable<Sigma>*)nullptr, "bitvectorPrefix");
+    cb((occtable::wavelet::OccTable<Sigma>*)nullptr, "wavelet");
+    cb((occtable::compactWavelet::OccTable<Sigma>*)nullptr, "compactWavelet");
+    cb((occtable::sdsl_wt_bldc::OccTable<Sigma>*)nullptr, "sdsl_wt_bldc");
+}
+
+
 template <size_t Sigma, typename CSA, template <size_t> typename Table>
 auto loadIndex(std::string path) {
     auto bwt       = readFile(path + ".bwt");
@@ -83,6 +99,22 @@ auto loadQueries(std::string path) {
 int main() {
     StopWatch watch;
     constexpr size_t Sigma = 5;
+
+    // test locate
+    {
+        visitAllTables<Sigma>([&]<template <size_t> typename Table>(Table<Sigma>*, std::string name) {
+            auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/short");
+            auto cursor = BiFMIndexCursor{index};
+
+            fmt::print("index: {:20} -", name);
+            for (size_t i{cursor.lb}; i < cursor.lb + cursor.len; ++i) {
+                fmt::print(" {}", index.locate(i));
+            }
+            fmt::print("\n");
+        });
+        return 0;
+    }
+
 
 //    auto [bwt, bwtRev] = generateBWT<Sigma>(1ul<<20);
     auto index = loadIndex<Sigma, CSA, occtable::compact::OccTable>("/home/gene/hg38/short");
