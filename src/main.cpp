@@ -55,6 +55,12 @@ auto loadQueries(std::string path) {
             if (*ptr == '\n') {
                 queries.push_back(query);
                 std::reverse(query.begin(), query.end());
+                for (auto& c : query) {
+                    if (c == 1) c = 4;
+                    else if (c == 2) c = 3;
+                    else if (c == 3) c = 2;
+                    else if (c == 4) c = 1;
+                }
                 queries.push_back(query);
                 query.clear();
             } else {
