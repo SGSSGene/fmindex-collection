@@ -167,8 +167,11 @@ struct Bitvector {
             std::array<uint64_t, TSigma> rs{0};
 //            if (idx > 0) {
                 bvAccess(idx, [&]<size_t I>(size_t d0, size_t d1, std::index_sequence<I>) {
-                    if constexpr (I+1 < TSigma) {;
+
+                    if constexpr (I < TSigma) {
                         rs[I]    = d0 + blocks[I];
+                    }
+                    if constexpr (I+1 < TSigma) {
                         rs[I+1]  = d1 + blocks[I+1];
                     }
                 });
@@ -319,11 +322,13 @@ struct Bitvector {
         auto bitId        = idx &  63;
 
         auto rs = blocks[blockId].all_ranks(bitId);
+
         std::array<uint64_t, TSigma> prs{0};
 
         rs[0] += superBlocks[superBlockId][0];
         prs[0] = rs[0];
         for (size_t i{1}; i < TSigma; ++i) {
+
             rs[i] += superBlocks[superBlockId][i];
             prs[i] = prs[i-1] + rs[i];
             rs[i] += C[i];
