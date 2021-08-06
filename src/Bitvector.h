@@ -41,6 +41,11 @@ struct Bitvector {
 
     std::vector<Superblock> superblocks{};
 
+    size_t memoryUsage() const {
+        return sizeof(superblocks) + superblocks.size() * sizeof(superblocks.back());
+    }
+
+
     uint64_t rank(size_t idx) const noexcept {
         auto superblockId = idx / 384;
         auto bitId        = idx % 384;

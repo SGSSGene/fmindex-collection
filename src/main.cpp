@@ -101,6 +101,7 @@ int main() {
     constexpr size_t Sigma = 5;
 
     // test locate
+    if (false)
     {
         visitAllTables<Sigma>([&]<template <size_t> typename Table>(Table<Sigma>*, std::string name) {
             auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/short");
@@ -115,130 +116,142 @@ int main() {
         return 0;
     }
 
+//     auto queries = loadQueries<Sigma>("/home/gene/hg38/short.queries");
+     auto queries = loadQueries<Sigma>("/home/gene/hg38/sampled_illumina_reads.txt");
 
 //    auto [bwt, bwtRev] = generateBWT<Sigma>(1ul<<20);
-    auto index = loadIndex<Sigma, CSA, occtable::compact::OccTable>("/home/gene/hg38/short");
+    visitAllTables<Sigma>([&]<template <size_t> typename Table>(Table<Sigma>*, std::string name) {
+        fmt::print("using occtable: {}\n", name);
 
-    auto queries = loadQueries<Sigma>("/home/gene/hg38/short.queries");
-//    auto queries = loadQueries<Sigma>("/home/gene/hg38/sampled_illumina_reads.txt");
+        size_t s = Table<Sigma>::expectedMemoryUsage(3'000'000'000ul);
+        fmt::print("expected memory: {}\n", s);
+        if (s > 1024*1024*1024*56ul) {
+            fmt::print("skipping, to much memory\n");
+            return;
+        }
 
-    auto cursor = BiFMIndexCursor{index};
-    std::cout << "start: " << cursor.lb << ", " << cursor.lbRev << " len: " << cursor.len << "\n";
-    {
-        StopWatch sw;
-        size_t resultCt{};
-        for (size_t i{0}; i < queries.size(); ++i) {
-            auto const& q = queries[i];
-            auto cursor = BiFMIndexCursor{index};
-            for (size_t j{0}; j < q.size(); ++j) {
-                cursor = cursor.extendRight(q[j]);
-                if (cursor.empty()) {
-                    break;
+        auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/text.dna4");
+        fmt::print("memory usage: {}\n", index.memoryUsage());
+
+
+        auto cursor = BiFMIndexCursor{index};
+        std::cout << "start: " << cursor.lb << ", " << cursor.lbRev << " len: " << cursor.len << "\n";
+        {
+            StopWatch sw;
+            size_t resultCt{};
+            for (size_t i{0}; i < queries.size(); ++i) {
+                auto const& q = queries[i];
+                auto cursor = BiFMIndexCursor{index};
+                for (size_t j{0}; j < q.size(); ++j) {
+                    cursor = cursor.extendRight(q[j]);
+                    if (cursor.empty()) {
+                        break;
+                    }
+                }
+                if (!cursor.empty()) {
+                    resultCt += cursor.len;
                 }
             }
-            if (!cursor.empty()) {
-                resultCt += cursor.len;
-            }
+            auto t = sw.reset();
+            fmt::print("right: queries {}, took {}s, results: {}\n", queries.size(), t, resultCt);
         }
-        auto t = sw.reset();
-        fmt::print("right: queries {}, took {}s, results: {}\n", queries.size(), t, resultCt);
-    }
 
-    {
-        StopWatch sw;
-        size_t resultCt{};
-        for (size_t i{0}; i < queries.size(); ++i) {
-            auto const& q = queries[i];
-            auto cursor = BiFMIndexCursor{index};
-            for (size_t j{0}; j < q.size(); ++j) {
-                cursor = cursor.extendLeft(q[q.size() - j - 1]);
-                if (cursor.empty()) {
-                    break;
+        {
+            StopWatch sw;
+            size_t resultCt{};
+            for (size_t i{0}; i < queries.size(); ++i) {
+                auto const& q = queries[i];
+                auto cursor = BiFMIndexCursor{index};
+                for (size_t j{0}; j < q.size(); ++j) {
+                    cursor = cursor.extendLeft(q[q.size() - j - 1]);
+                    if (cursor.empty()) {
+                        break;
+                    }
+                }
+                if (!cursor.empty()) {
+                    resultCt += cursor.len;
                 }
             }
-            if (!cursor.empty()) {
+            auto t = sw.reset();
+            fmt::print("left: queries {}, took {}s, results: {}\n", queries.size(), t, resultCt);
+        }
+
+
+
+    /*    fmt::print("one expansion\n");
+        for (size_t i{1}; i < Sigma; ++i) {
+            auto c2 = cursor.extendLeft(i);
+            std::cout << i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
+        }
+        std::cout << "same as?\n";
+        for (size_t i{1}; i < Sigma; ++i) {
+            auto c2 = cursor.extendRight(i);
+            std::cout << i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
+        }
+
+        fmt::print("two expansions\n");
+        for (size_t i{1}; i < Sigma; ++i) {
+            for (size_t j{1}; j < Sigma; ++j) {
+                auto c = cursor.extendLeft(j);
+                auto c2 = c.extendLeft(i);
+                std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
+            }
+        }
+        std::cout << "same as?\n";
+        for (size_t i{1}; i < Sigma; ++i) {
+            for (size_t j{1}; j < Sigma; ++j) {
+                auto c = cursor.extendRight(j);
+                auto c2 = c.extendLeft(i);
+                std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
+            }
+        }
+        std::cout << "same as?\n";
+        for (size_t i{1}; i < Sigma; ++i) {
+            for (size_t j{1}; j < Sigma; ++j) {
+                auto c = cursor.extendLeft(i);
+                auto c2 = c.extendRight(j);
+                std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
+            }
+        }
+        std::cout << "same as?\n";
+        for (size_t i{1}; i < Sigma; ++i) {
+            for (size_t j{1}; j < Sigma; ++j) {
+                auto c = cursor.extendRight(i);
+                auto c2 = c.extendRight(j);
+                std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
+            }
+        }*/
+
+
+        for (size_t k{0}; k<4; ++k)
+        {
+    //        auto search_scheme = oss::expand(oss::generator::pigeon_trivial(0, k), queries[0].size());
+            auto search_scheme = oss::expand(oss::generator::h2(k+2, 0, k), queries[0].size());
+    //        auto search_scheme = oss::expand(oss::generator::kucherov(k+2, 0, k), queries[0].size());
+    //
+            for (size_t i{0}; i < search_scheme.size(); ++i) {
+                auto& tree = search_scheme[i];
+                for (size_t j{0}; j < tree.pi.size(); ++j) {
+                    tree.pi[j] -= 1;
+                }
+            }
+            size_t resultCt{};
+            StopWatch sw;
+            std::vector<size_t> results{};
+            search_ng12::search(index, queries, search_scheme, [&](size_t idx, auto cursor) {
+    //        search_pseudo::search<true>(index, queries, search_scheme, [&](size_t idx, auto cursor) {
+
+                for (size_t i{cursor.lb}; i < cursor.lb + cursor.len; ++i) {
+                    results.push_back(index.locate(i));
+                }
                 resultCt += cursor.len;
-            }
+            });
+            auto t = sw.reset();
+            fmt::print("queries {}, took {}s, results: {}/{}\n", queries.size(), t, resultCt, results.size());
         }
-        auto t = sw.reset();
-        fmt::print("left: queries {}, took {}s, results: {}\n", queries.size(), t, resultCt);
-    }
-
-
-
-/*    fmt::print("one expansion\n");
-    for (size_t i{1}; i < Sigma; ++i) {
-        auto c2 = cursor.extendLeft(i);
-        std::cout << i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
-    }
-    std::cout << "same as?\n";
-    for (size_t i{1}; i < Sigma; ++i) {
-        auto c2 = cursor.extendRight(i);
-        std::cout << i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
-    }
-
-    fmt::print("two expansions\n");
-    for (size_t i{1}; i < Sigma; ++i) {
-        for (size_t j{1}; j < Sigma; ++j) {
-            auto c = cursor.extendLeft(j);
-            auto c2 = c.extendLeft(i);
-            std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
-        }
-    }
-    std::cout << "same as?\n";
-    for (size_t i{1}; i < Sigma; ++i) {
-        for (size_t j{1}; j < Sigma; ++j) {
-            auto c = cursor.extendRight(j);
-            auto c2 = c.extendLeft(i);
-            std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
-        }
-    }
-    std::cout << "same as?\n";
-    for (size_t i{1}; i < Sigma; ++i) {
-        for (size_t j{1}; j < Sigma; ++j) {
-            auto c = cursor.extendLeft(i);
-            auto c2 = c.extendRight(j);
-            std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
-        }
-    }
-    std::cout << "same as?\n";
-    for (size_t i{1}; i < Sigma; ++i) {
-        for (size_t j{1}; j < Sigma; ++j) {
-            auto c = cursor.extendRight(i);
-            auto c2 = c.extendRight(j);
-            std::cout << j<<" " <<i << " - start: " << c2.lb << "-" << c2.lb+c2.len << " or " << c2.lbRev << "-" << c2.lbRev+c2.len << " len: " << c2.len << "\n";
-        }
-    }*/
-
-
-    for (size_t k{0}; k<10; ++k)
-    {
-//        auto search_scheme = oss::expand(oss::generator::pigeon_trivial(0, k), queries[0].size());
-        auto search_scheme = oss::expand(oss::generator::h2(k+2, 0, k), queries[0].size());
-//        auto search_scheme = oss::expand(oss::generator::kucherov(k+2, 0, k), queries[0].size());
-//
-        for (size_t i{0}; i < search_scheme.size(); ++i) {
-            auto& tree = search_scheme[i];
-            for (size_t j{0}; j < tree.pi.size(); ++j) {
-                tree.pi[j] -= 1;
-            }
-        }
-        size_t resultCt{};
-        StopWatch sw;
-        std::vector<size_t> results{};
-        search_ng12::search(index, queries, search_scheme, [&](size_t idx, auto cursor) {
-//        search_pseudo::search<true>(index, queries, search_scheme, [&](size_t idx, auto cursor) {
-
-            for (size_t i{cursor.lb}; i < cursor.lb + cursor.len; ++i) {
-                results.push_back(index.locate(i));
-            }
-            resultCt += cursor.len;
-        });
-        auto t = sw.reset();
-        fmt::print("queries {}, took {}s, results: {}/{}\n", queries.size(), t, resultCt, results.size());
-    }
-
+    });
     return 0;
+
 
 
 /*

@@ -32,9 +32,14 @@ struct BiFMIndex {
         }
     }
 
+    size_t memoryUsage() const {
+        return occ.memoryUsage() + occRev.memoryUsage() + csa.memoryUsage();
+    }
+
     size_t size() const {
         return occ.size();
     }
+
     size_t locate(size_t idx) const {
         auto opt = csa.value(idx);
         uint64_t steps{};

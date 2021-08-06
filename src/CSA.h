@@ -16,6 +16,11 @@ struct CSA {
         }}
     {}
 
+    size_t memoryUsage() const {
+        return sizeof(ssa) + ssa.size() * sizeof(ssa.back())
+            + bv.memoryUsage();
+    }
+
     auto value(size_t idx) const -> std::optional<uint64_t> {
         if (!bv.value(idx)) {
             return std::nullopt;
