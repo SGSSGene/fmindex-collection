@@ -14,7 +14,7 @@ inline auto kianfar(int minK, int K) -> Scheme {
     } else if (minK == 0 and K == 1) {
         return {
             {{1, 2}, {0, 0}, {0, 1}},
-            {{2, 1}, {0, 0}, {0, 1}}
+            {{2, 1}, {0, 1}, {0, 1}}
         };
     } else if (minK == 0 and K == 2) {
         return {
