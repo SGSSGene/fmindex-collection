@@ -98,7 +98,7 @@ struct Search {
 
         if (pos == query.size()) {
             if (l[pos-1] <= e and e <= u[pos-1]) {
-                delegate(cur);
+                delegate(cur, e);
             }
             return;
         }
@@ -152,8 +152,8 @@ template <bool EditDistance, typename index_t, typename queries_t, typename sear
 void search(index_t const & index, queries_t && queries, search_schemes_t const & search_scheme, delegate_t && delegate)
 {
     std::size_t qidx;
-    auto internal_delegate = [&qidx, &delegate] (auto const & it) {
-        delegate(qidx, it);
+    auto internal_delegate = [&qidx, &delegate] (auto const & it, size_t e) {
+        delegate(qidx, it, e);
     };
 
     for (qidx = {0}; qidx < queries.size(); ++qidx) {
