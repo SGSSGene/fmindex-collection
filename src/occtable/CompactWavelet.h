@@ -37,6 +37,12 @@ struct Bitvector {
         std::array<uint32_t, TSigma> blocks{};
         std::array<uint64_t, bitct>  bits{};
 
+        auto prefetch() const {
+            __builtin_prefetch((const void*)(&blocks), 0, 0);
+            __builtin_prefetch((const void*)(&bits), 0, 0);
+        }
+
+
         uint64_t rank(uint8_t idx, uint8_t symb) const {
             auto which_bv = [](uint8_t symb, auto cb) {
                 size_t id{0};
@@ -288,6 +294,11 @@ struct Bitvector {
             + sizeof(C);
     }
 
+    auto prefetch(uint64_t idx) const {
+        auto blockId      = idx >>  6;
+        blocks[blockId].prefetch();
+    }
+
     uint64_t rank(uint64_t idx, uint8_t symb) const {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> 32;
@@ -362,6 +373,10 @@ struct OccTable {
 
     uint64_t size() const {
         return size_;
+    }
+
+    auto prefetch(uint64_t idx) const {
+        bitvector.prefetch(idx);
     }
 
     uint64_t rank(uint64_t idx, uint8_t symb) const {

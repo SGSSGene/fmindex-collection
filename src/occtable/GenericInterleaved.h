@@ -17,6 +17,13 @@ struct Bitvector {
     struct alignas(TAlignment) Block {
         std::array<block_t, TSigma> blocks{};
         std::array<uint64_t, TSigma> bits{};
+
+        void prefetch() const {
+            __builtin_prefetch((const void*)(&blocks), 0, 0);
+            __builtin_prefetch((const void*)(&bits), 0, 0);
+
+        }
+
         uint64_t rank(uint8_t idx, uint8_t symb) const {
             auto bitset = std::bitset<64>(bits[symb] << (63-idx));
             return blocks[symb] + bitset.count();
@@ -94,6 +101,11 @@ struct Bitvector {
             + sizeof(C);
     }
 
+    void prefetch(size_t idx) const {
+        auto blockId      = idx >>  6;
+        blocks[blockId].prefetch();
+    }
+
     uint64_t rank(uint64_t idx, uint8_t symb) const {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> block_size;
@@ -149,6 +161,10 @@ struct OccTable {
 
     uint64_t size() const {
         return bitvector.C.back();
+    }
+
+    auto prefetch(uint64_t idx) const {
+        bitvector.prefetch(idx);
     }
 
     uint64_t rank(uint64_t idx, uint8_t symb) const {
