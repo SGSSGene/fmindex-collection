@@ -46,15 +46,6 @@ struct Search {
         }
     }
 
-/*    template <bool Right, typename CB>
-    static auto extend_cb(cursor_t const& cur, CB const& cb) noexcept {
-        if constexpr (Right) {
-            return cur.extendRight_cb(cb);
-        } else {
-            return cur.extendLeft_cb(cb);
-        }
-    }*/
-
     template <char LInfo, char RInfo>
     void search_next(cursor_t const& cur, int e, BlockIter blockIter) const noexcept {
         if (cur.count() == 0) {
@@ -65,11 +56,6 @@ struct Search {
             if constexpr ((LInfo == 'M' or LInfo == 'S') and (RInfo == 'M' or RInfo == 'S')) {
                 delegate(qidx, cur, e);
             }
-            /*if ((blockIter-1)->dir == Dir::Right) {
-                search_next_dir_final<LInfo, RInfo, true>(cur, e, blockIter);
-            } else {
-                search_next_dir_final<LInfo, RInfo, false>(cur, e, blockIter);
-            }*/
             return;
         }
         if (blockIter->dir == Dir::Right) {
@@ -102,13 +88,14 @@ struct Search {
 
 
         if (mismatchAllowed) {
-            auto cursors = [&]() {
+            auto cursors = std::array<cursor_t, Sigma>{};
+            for (size_t i{1}; i < Sigma; ++i) {
                 if constexpr (Right) {
-                    return cur.extendRight();
+                    cursors[i] = cur.extendRight(i);
                 } else {
-                    return cur.extendLeft();
+                    cursors[i] = cur.extendLeft(i);
                 }
-            }();
+            }
 
             if (matchAllowed) {
                 auto newCur = cursors[symb];
@@ -135,7 +122,6 @@ struct Search {
 
 
             if constexpr (Insertion) {
-                //search_next_ins<OnInsertionL, OnInsertionR, Right>(cur, e+1, blockIter+1, cursors); // insertion occurred in query
                 search_next<OnInsertionL, OnInsertionR>(cur, e+1, blockIter+1); // insertion occurred in query
 
             }
@@ -146,110 +132,6 @@ struct Search {
             search_next<OnMatchL, OnMatchR>(newCur, e, blockIter+1);
         }
     }
-
-    template <char LInfo, char RInfo, bool Right>
-    void search_next_dir_final(cursor_t const& cur, int e, BlockIter blockIter) const noexcept {
-        static constexpr char TInfo = Right ? RInfo : LInfo;
-
-        bool mismatchAllowed = (blockIter-1)->l <= e+1 and e+1 <= (blockIter-1)->u;
-        if (mismatchAllowed) {
-            auto cursors = std::array<cursor_t, Sigma>{};
-            extend_cb<Right>(cur, [&](auto c, auto newCur) {
-                cursors[c] = newCur;
-            });
-            for (uint8_t i{1}; i < Sigma; ++i) {
-                auto newCur = cursors[i];
-                search_next<LInfo, RInfo>(newCur, e+1, blockIter); // deletion occurred in query
-            }
-        }
-    }
-
-
-    template <char LInfo, char RInfo, bool lastDir>
-    void search_next_ins(cursor_t const& cur, int e, BlockIter blockIter, std::array<cursor_t, Sigma> const& cursors) const noexcept {
-        if (cur.count() == 0) {
-            return;
-        }
-
-        if (blockIter == end(search)) {
-            if constexpr ((LInfo == 'M' or LInfo == 'I') and (RInfo == 'M' or RInfo == 'I')) {
-                delegate(qidx, cur, e);
-            }
-            /*if ((blockIter-1)->dir == Dir::Right) {
-                search_next_dir_final<LInfo, RInfo, true>(cur, e, blockIter);
-            } else {
-                search_next_dir_final<LInfo, RInfo, false>(cur, e, blockIter);
-            }*/
-            return;
-        }
-        if (lastDir == (blockIter->dir == Dir::Right)) {
-            if (blockIter->dir == Dir::Right) {
-                search_next_dir_ins<LInfo, RInfo, true>(cur, e, blockIter, cursors);
-            } else {
-                search_next_dir_ins<LInfo, RInfo, false>(cur, e, blockIter, cursors);
-            }
-        } else {
-            if (blockIter->dir == Dir::Right) {
-                search_next_dir<LInfo, RInfo, true>(cur, e, blockIter);
-            } else {
-                search_next_dir<LInfo, RInfo, false>(cur, e, blockIter);
-            }
-
-        }
-    }
-
-    template <char LInfo, char RInfo, bool Right>
-    void search_next_dir_ins(cursor_t const& cur, int e, BlockIter blockIter, std::array<cursor_t, Sigma> const& cursors) const noexcept {
-        static constexpr char TInfo = Right ? RInfo : LInfo;
-
-        constexpr bool Deletion     = TInfo == 'M' or TInfo == 'D';
-        constexpr bool Insertion    = TInfo == 'M' or TInfo == 'I';
-
-        constexpr char OnMatchL      = Right ? LInfo : 'M';
-        constexpr char OnMatchR      = Right ? 'M'   : RInfo;
-        constexpr char OnSubstituteL = Right ? LInfo : 'S';
-        constexpr char OnSubstituteR = Right ? 'S'   : RInfo;
-        constexpr char OnDeletionL   = Right ? LInfo : 'D';
-        constexpr char OnDeletionR   = Right ? 'D'   : RInfo;
-        constexpr char OnInsertionL  = Right ? LInfo : 'I';
-        constexpr char OnInsertionR  = Right ? 'I'   : RInfo;
-
-        auto rank = blockIter->rank;
-
-        bool matchAllowed    = blockIter->l <= e and e <= blockIter->u;
-        bool mismatchAllowed = blockIter->l <= e+1 and e+1 <= blockIter->u;
-
-        if (matchAllowed) {
-            auto newCur = cursors[rank];
-            search_next<OnMatchL, OnMatchR>(newCur, e, blockIter+1);
-        }
-
-        if (mismatchAllowed) {
-            for (uint8_t i{1}; i < Sigma; ++i) {
-                auto newCur = cursors[i];
-
-                if constexpr (Deletion) {
-                    search_next<OnDeletionL, OnDeletionR>(newCur, e+1, blockIter); // deletion occurred in query
-                }
-                search_next<OnSubstituteL, OnSubstituteR>(newCur, e+1, blockIter+1); // as substitution
-            }
-
-            for (uint8_t i(rank+1); i < Sigma; ++i) {
-                auto newCur = cursors[i];
-
-                if constexpr (Deletion) {
-                    search_next<OnDeletionL, OnDeletionR>(newCur, e+1, blockIter); // deletion occurred in query
-                }
-                search_next<OnSubstituteL, OnSubstituteR>(newCur, e+1, blockIter+1); // as substitution
-            }
-
-
-            if constexpr (Insertion) {
-                search_next_ins<OnInsertionL, OnInsertionR, Right>(cur, e+1, blockIter+1, cursors); // insertion occurred in query
-            }
-        }
-    }
-
 };
 
 
