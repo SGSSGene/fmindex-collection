@@ -166,7 +166,7 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
             for (size_t k {0}; k < search.size(); ++k) {
                 search[k].rank = query[search_scheme[j].pi[k]];
             }
-            Search<std::decay_t<decltype(index)>, std::decay_t<decltype(search)>, std::decay_t<decltype(internal_delegate)>>{index, search, i, internal_delegate};
+            Search{index, search, i, internal_delegate};
         }
     }
 

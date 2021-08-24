@@ -19,6 +19,7 @@
 #include "search/SearchPseudo.h"
 #include "search/SearchNg12.h"
 #include "search/SearchNg14.h"
+#include "search/SearchNg15.h"
 
 #include "oss/generator/pigeon.h"
 #include "oss/generator/h2.h"
@@ -195,7 +196,8 @@ int main() {
             std::vector<std::tuple<size_t, BiFMIndexCursor<decltype(index)>, size_t>> resultCursors;
 
 //            search_ng12::search(index, queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
-            search_ng14::search(index, queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+//            search_ng14::search(index, queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+            search_ng15::search(index, queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
 //            search_pseudo::search<true>(index, queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
                 resultCursors.emplace_back(queryId, cursor, errors);
             });
