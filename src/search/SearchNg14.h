@@ -45,6 +45,26 @@ struct Search {
             return cur.extendLeft(symb);
         }
     }
+    template <bool Right>
+    static auto extend(cursor_t const& cur) noexcept {
+        if constexpr (Right) {
+            return cur.extendRight();
+        } else {
+            return cur.extendLeft();
+        }
+
+        /*auto cursors = std::array<cursor_t, Sigma>{};
+        for (size_t i{1}; i < Sigma; ++i) {
+            if constexpr (Direction == Dir::Right) {
+                cursors[i] = cur.extendRight(i);
+            } else {
+                cursors[i] = cur.extendLeft(i);
+            }
+        }
+        return cursors;*/
+
+    }
+
 
     template <char LInfo, char RInfo>
     void search_next(cursor_t const& cur, int e, BlockIter blockIter) const noexcept {
@@ -88,14 +108,7 @@ struct Search {
 
 
         if (mismatchAllowed) {
-            auto cursors = std::array<cursor_t, Sigma>{};
-            for (size_t i{1}; i < Sigma; ++i) {
-                if constexpr (Right) {
-                    cursors[i] = cur.extendRight(i);
-                } else {
-                    cursors[i] = cur.extendLeft(i);
-                }
-            }
+            auto cursors = extend<Right>(cur);
 
             if (matchAllowed) {
                 auto newCur = cursors[symb];
@@ -154,7 +167,7 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
                     return s.pi[i-1] < s.pi[i]?Dir::Right:Dir::Left;
                 }
             }();
-            search2.emplace_back(Block<size_t>{{}, s.l[i], s.u[i], dir});
+            search2.emplace_back(Block<size_t>{{}, (size_t)s.l[i], (size_t)s.u[i], dir});
         }
         search_scheme2.emplace_back(move(search2));
     }
