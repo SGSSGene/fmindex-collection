@@ -62,9 +62,9 @@ struct Search {
         }
 
         if (blockIter == end(search)) {
-            //if constexpr ((LInfo == 'M' or LInfo == 'I') and (RInfo == 'M' or RInfo == 'I')) {
-                delegate(qidx, cur);
-            //}
+            if constexpr ((LInfo == 'M' or LInfo == 'S') and (RInfo == 'M' or RInfo == 'S')) {
+                delegate(qidx, cur, e);
+            }
             /*if ((blockIter-1)->dir == Dir::Right) {
                 search_next_dir_final<LInfo, RInfo, true>(cur, e, blockIter);
             } else {
@@ -173,7 +173,7 @@ struct Search {
 
         if (blockIter == end(search)) {
             if constexpr ((LInfo == 'M' or LInfo == 'I') and (RInfo == 'M' or RInfo == 'I')) {
-                delegate(qidx, cur);
+                delegate(qidx, cur, e);
             }
             /*if ((blockIter-1)->dir == Dir::Right) {
                 search_next_dir_final<LInfo, RInfo, true>(cur, e, blockIter);
@@ -257,8 +257,8 @@ template <typename index_t, typename queries_t, typename search_schemes_t, typen
 void search(index_t const & index, queries_t && queries, search_schemes_t const & search_scheme, delegate_t && delegate)
 {
     if (search_scheme.empty()) return;
-    auto internal_delegate = [&delegate] (size_t qidx, auto const & it) {
-        delegate(qidx, it);
+    auto internal_delegate = [&delegate] (size_t qidx, auto const & it, size_t e) {
+        delegate(qidx, it, e);
     };
 
     std::vector<std::vector<Block<size_t>>> search_scheme2;
@@ -290,6 +290,4 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 
 }
 
-//!\}
-
-} // namespace seqan3
+}
