@@ -129,12 +129,12 @@ struct Search {
             auto cursors = extend<Direction>(cur);
 
             if (matchAllowed) {
-                auto newCur = cursors[symb];
+                auto const& newCur = cursors[symb];
                 search_next<'M', Direction>(newCur, e, pos+1);
             }
 
             for (uint8_t i{1}; i < symb; ++i) {
-                auto newCur = cursors[i];
+                auto const& newCur = cursors[i];
 
                 if constexpr (Deletion) {
                     search_next<'D', Direction>(newCur, e+1, pos); // deletion occurred in query
@@ -143,7 +143,7 @@ struct Search {
             }
 
             for (uint8_t i(symb+1); i < Sigma; ++i) {
-                auto newCur = cursors[i];
+                auto const& newCur = cursors[i];
 
                 if constexpr (Deletion) {
                     search_next<'D', Direction>(newCur, e+1, pos); // deletion occurred in query
@@ -157,7 +157,7 @@ struct Search {
             }
 
         } else if (matchAllowed) {
-            auto newCur = extend<Direction>(cur, symb);
+            auto const& newCur = extend<Direction>(cur, symb);
             search_next<'M', Direction>(newCur, e, pos+1);
         }
     }
