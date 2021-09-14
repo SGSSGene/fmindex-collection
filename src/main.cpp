@@ -24,6 +24,7 @@
 #include "oss/generator/pigeon.h"
 #include "oss/generator/h2.h"
 #include "oss/generator/kucherov.h"
+#include "oss/generator/backtracking.h"
 #include "oss/expand.h"
 
 #include <fmt/format.h>
@@ -182,7 +183,9 @@ int main() {
 //            auto search_scheme = oss::expand(oss::generator::pigeon_opt(0, k), queries[0].size());
 //            auto search_scheme = oss::expand(oss::generator::pigeon_trivial(0, k), queries[0].size());
 //            auto search_scheme = oss::expand(oss::generator::h2(k+2, 0, k), queries[0].size());
-            auto search_scheme = oss::expand(oss::generator::kucherov(k+1, 0, k), queries[0].size());
+//            auto search_scheme = oss::expand(oss::generator::kucherov(k+1, 0, k), queries[0].size());
+            auto search_scheme = oss::expand(oss::generator::backtracking(1, 0, k), queries[0].size());
+
     //
             for (size_t i{0}; i < search_scheme.size(); ++i) {
                 auto& tree = search_scheme[i];
