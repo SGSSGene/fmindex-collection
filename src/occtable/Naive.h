@@ -44,6 +44,8 @@ struct OccTable {
         return C.back();
     }
 
+    void prefetch(uint64_t idx) const {}
+
     uint64_t rank(uint64_t idx, uint8_t symb) const {
         return occ[idx][symb] + C[symb];
     }
