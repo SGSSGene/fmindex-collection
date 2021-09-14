@@ -90,6 +90,9 @@ struct OccTable {
         return C.back();
     }
 
+    auto prefetch(uint64_t idx) const {}
+
+
     uint64_t rank(uint64_t idx, uint8_t symb) const {
         return index.rank(idx, symb+1) + C[symb];
     }

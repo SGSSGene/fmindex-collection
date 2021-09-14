@@ -79,8 +79,10 @@ struct Search {
             return;
         }
         if (blockIter->dir == Dir::Right) {
+//            cur.prefetchRight();
             search_next_dir<LInfo, RInfo, true>(cur, e, blockIter);
         } else {
+//            cur.prefetchLeft();
             search_next_dir<LInfo, RInfo, false>(cur, e, blockIter);
         }
     }

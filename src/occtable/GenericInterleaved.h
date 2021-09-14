@@ -20,16 +20,15 @@ struct Bitvector {
 
         void prefetch() const {
             __builtin_prefetch((const void*)(&blocks), 0, 0);
-            __builtin_prefetch((const void*)(&bits), 0, 0);
-
+//            __builtin_prefetch((const void*)(&bits), 0, 0);
         }
 
-        uint64_t rank(uint8_t idx, uint8_t symb) const {
+        uint64_t rank(size_t idx, size_t symb) const {
             auto bitset = std::bitset<64>(bits[symb] << (63-idx));
             return blocks[symb] + bitset.count();
         }
 
-        uint64_t prefix_rank(uint8_t idx, uint8_t symb) const {
+        uint64_t prefix_rank(size_t idx, size_t symb) const {
             uint64_t b = {};
             uint64_t block = 0;
             for (size_t i{0}; i <= symb; ++i) {
@@ -40,7 +39,7 @@ struct Bitvector {
             return block + bitset.count();
         }
 
-        uint8_t symbol(uint8_t idx) const {
+        size_t symbol(size_t idx) const {
             auto bit = (1ul << idx);
             for (size_t symb{0}; symb < TSigma-1; ++symb) {
                 if (bits[symb] & bit) {
@@ -104,16 +103,19 @@ struct Bitvector {
     void prefetch(size_t idx) const {
         auto blockId      = idx >>  6;
         blocks[blockId].prefetch();
+//        auto superBlockId = idx >> block_size;
+//         __builtin_prefetch((const void*)(&superBlocks[superBlockId]), 0, 0);
+
     }
 
-    uint64_t rank(uint64_t idx, uint8_t symb) const {
+    uint64_t rank(uint64_t idx, size_t symb) const {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> block_size;
         auto bitId        = idx &  63;
         return blocks[blockId].rank(bitId, symb) + superBlocks[superBlockId][symb] + C[symb];
     }
 
-    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+    uint64_t prefix_rank(uint64_t idx, size_t symb) const {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> block_size;
         auto bitId        = idx &  63;
@@ -124,7 +126,45 @@ struct Bitvector {
         return blocks[blockId].prefix_rank(bitId, symb) + a;
     }
 
-    uint8_t symbol(uint64_t idx) const {
+
+    auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
+        auto blockId      = idx >>  6;
+        auto superBlockId = idx >> block_size;
+        auto bitId        = idx &  63;
+        auto res = std::array<uint64_t, TSigma>{};
+        for (size_t symb{0}; symb < TSigma; ++symb) {
+            res[symb] = blocks[blockId].rank(bitId, symb) + superBlocks[superBlockId][symb] + C[symb];
+        }
+        return res;
+    }
+
+    auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
+        auto blockId      = idx >>  6;
+        auto superBlockId = idx >> block_size;
+        auto bitId        = idx &  63;
+
+        auto rs  = std::array<uint64_t, TSigma>{};
+        auto prs = std::array<uint64_t, TSigma>{};
+
+        for (size_t symb{0}; symb < TSigma; ++symb) {
+            rs[symb]  = blocks[blockId].rank(bitId, symb);
+        }
+        rs[0] += superBlocks[superBlockId][0];
+        for (size_t symb{1}; symb < TSigma; ++symb) {
+            rs[symb] += superBlocks[superBlockId][symb];
+        }
+        prs[0] = rs[0];
+        for (size_t symb{1}; symb < TSigma; ++symb) {
+            prs[symb]= prs[symb-1] + rs[symb];
+        }
+
+        for (size_t symb{0}; symb < TSigma; ++symb) {
+            rs[symb] += C[symb];
+        }
+        return {rs, prs};
+    }
+
+    size_t symbol(uint64_t idx) const {
         idx += 1;
         auto blockId      = idx >>  6;
         auto bitId        = idx &  63;
@@ -167,25 +207,22 @@ struct OccTable {
         bitvector.prefetch(idx);
     }
 
-    uint64_t rank(uint64_t idx, uint8_t symb) const {
+    uint64_t rank(uint64_t idx, size_t symb) const {
         return bitvector.rank(idx, symb);
     }
 
-    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+    uint64_t prefix_rank(uint64_t idx, size_t symb) const {
         return bitvector.prefix_rank(idx, symb);
     }
 
-    uint8_t symbol(uint64_t idx) const {
+    size_t symbol(uint64_t idx) const {
         return bitvector.symbol(idx);
     }
 
     auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
-        std::array<uint64_t, Sigma> rs{0};
-        std::array<uint64_t, Sigma> prs{0};
-        for (size_t i{0}; i < Sigma; ++i) {
-            rs[i] = rank(idx, i);
-            prs[i] = prefix_rank(idx, i);
-        }
+        auto [rs, prs] = bitvector.all_ranks_and_prefix_ranks(idx);
+//        auto rs  = bitvector.all_ranks(idx);
+//        auto prs = bitvector.all_prefix_ranks(idx);
         return {rs, prs};
     }
 };

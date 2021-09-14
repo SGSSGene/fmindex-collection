@@ -81,6 +81,7 @@ struct BiFMIndexCursor {
     auto extendLeft() const -> std::array<BiFMIndexCursor, Sigma> {
 //        prefetchLeft();
         auto const& occ = index->occ;
+        occ.prefetch(lb+len);
         auto [rs1, prs1] = occ.all_ranks(lb);
         auto [rs2, prs2] = occ.all_ranks(lb+len);
 
@@ -88,14 +89,16 @@ struct BiFMIndexCursor {
         cursors[0] = BiFMIndexCursor{*index, rs1[0], lbRev, rs2[0] - rs1[0]};
         for (size_t i{1}; i < Sigma; ++i) {
             cursors[i] = BiFMIndexCursor{*index, rs1[i], lbRev + prs2[i-1] - prs1[i-1], rs2[i] - rs1[i]};
-            cursors[i].prefetchLeft();
+            //cursors[i].prefetchLeft();
         }
+        cursors[1].prefetchLeft();
         return cursors;
     }
 
     auto extendRight() const -> std::array<BiFMIndexCursor, Sigma> {
 //        prefetchRight();
         auto const& occ = index->occRev;
+        occ.prefetch(lbRev+len);
         auto [rs1, prs1] = occ.all_ranks(lbRev);
         auto [rs2, prs2] = occ.all_ranks(lbRev+len);
 
@@ -103,8 +106,9 @@ struct BiFMIndexCursor {
         cursors[0] = BiFMIndexCursor{*index, lb, rs1[0], rs2[0] - rs1[0]};
         for (size_t i{1}; i < Sigma; ++i) {
             cursors[i] = BiFMIndexCursor{*index, lb + prs2[i-1] - prs1[i-1], rs1[i], rs2[i] - rs1[i]};
-            cursors[i].prefetchRight();
+            //cursors[i].prefetchRight();
         }
+        cursors[1].prefetchRight();
         return cursors;
     }
     void prefetchLeft() const {
@@ -123,6 +127,7 @@ struct BiFMIndexCursor {
         assert(symb > 0);
 //        prefetchLeft();
         auto& occ = index->occ;
+        //occ.prefetch(lb+len);
         size_t newLb    = occ.rank(lb, symb);
         size_t newLbRev = lbRev + occ.prefix_rank(lb+len, symb-1) - occ.prefix_rank(lb, symb-1);
         size_t newLen   = occ.rank(lb+len, symb) - newLb;
@@ -134,6 +139,7 @@ struct BiFMIndexCursor {
         assert(symb > 0);
 //        prefetchRight();
         auto& occ = index->occRev;
+        //occ.prefetch(lbRev+len);
         size_t newLb    = lb + occ.prefix_rank(lbRev+len, symb-1) - occ.prefix_rank(lbRev, symb-1);
         size_t newLbRev = occ.rank(lbRev, symb);
         size_t newLen   = occ.rank(lbRev+len, symb) - newLbRev;

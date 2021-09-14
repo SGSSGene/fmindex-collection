@@ -39,19 +39,19 @@ struct Bitvector {
 
         auto prefetch() const {
             __builtin_prefetch((const void*)(&blocks), 0, 0);
-            __builtin_prefetch((const void*)(&bits), 0, 0);
+//            __builtin_prefetch((const void*)(&bits), 0, 0);
         }
 
 
-        uint64_t rank(uint8_t idx, uint8_t symb) const {
-            auto which_bv = [](uint8_t symb, auto cb) {
+        uint64_t rank(size_t idx, size_t symb) const {
+            auto which_bv = [](size_t symb, auto cb) {
                 size_t id{0};
-                uint8_t mask = 1u << (bitct-1);
+                size_t mask = 1u << (bitct-1);
                 for (size_t b{0}; b < bitct; ++b) {
                     auto bit = (symb & mask) != 0;
                     cb(id, bit);
-                    id = id * 2 +1 + bit;
-                    mask = mask >> 1;
+                    id = id * 2 + 1 + bit;
+                    mask = mask >> 1ul;
                 }
             };
 
@@ -83,15 +83,15 @@ struct Bitvector {
             return l2 + blocks[symb];
         }
 
-        uint64_t prefix_rank(uint8_t idx, uint8_t symb) const {
-            auto which_bv = [](uint8_t symb, auto cb) {
+        uint64_t prefix_rank(size_t idx, size_t symb) const {
+            auto which_bv = [](size_t symb, auto cb) {
                 size_t id{0};
-                uint8_t mask = 1u << (bitct-1);
+                size_t mask = 1u << (bitct-1);
                 for (size_t b{0}; b < bitct; ++b) {
                     auto bit = (symb & mask) != 0;
                     cb(id, bit);
                     id = id * 2 +1 + bit;
-                    mask = mask >> 1;
+                    mask = mask >> 1ul;
                 }
             };
 
@@ -159,7 +159,7 @@ struct Bitvector {
             }
         }
 
-        auto all_ranks(uint8_t idx) const -> std::array<uint64_t, TSigma> {
+        auto all_ranks(size_t idx) const -> std::array<uint64_t, TSigma> {
             std::array<uint64_t, TSigma> rs{0};
 //            if (idx > 0) {
                 bvAccess(idx, [&]<size_t I>(size_t d0, size_t d1, std::index_sequence<I>) {
@@ -198,9 +198,9 @@ struct Bitvector {
         }
 
 
-        auto which_bv = [](uint8_t symb, auto cb) {
+        auto which_bv = [](size_t symb, auto cb) {
             size_t id{0};
-            uint8_t mask = 1u << (bitct-1);
+            size_t mask = 1u << (bitct-1);
             for (size_t b{0}; b < bitct; ++b) {
                 auto bit = (symb & mask) != 0;
                 cb(id, bit);
@@ -261,7 +261,7 @@ struct Bitvector {
             which_bv(symb, [&](size_t id, size_t bit) {
 //               std::cout << "id: " << id << " " << waveletcount.size() << "\n";
 //               std::cout << waveletcount[id].size() << "\n";
-               uint8_t bit2 = bit;
+                auto bit2 = bit;
                 waveletcount[id].push_back(bit2);
             });
 //            std::cout << "done\n";
@@ -299,14 +299,14 @@ struct Bitvector {
         blocks[blockId].prefetch();
     }
 
-    uint64_t rank(uint64_t idx, uint8_t symb) const {
+    uint64_t rank(uint64_t idx, size_t symb) const {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> 32;
         auto bitId        = idx &  63;
         return blocks[blockId].rank(bitId, symb) + superBlocks[superBlockId][symb] + C[symb];
     }
 
-    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+    uint64_t prefix_rank(uint64_t idx, size_t symb) const {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> 32;
         auto bitId        = idx &  63;
@@ -379,15 +379,15 @@ struct OccTable {
         bitvector.prefetch(idx);
     }
 
-    uint64_t rank(uint64_t idx, uint8_t symb) const {
+    uint64_t rank(uint64_t idx, size_t symb) const {
         return bitvector.rank(idx, symb);
     }
 
-    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+    uint64_t prefix_rank(uint64_t idx, size_t symb) const {
         return bitvector.prefix_rank(idx, symb);
     }
 
-    uint8_t symbol(uint64_t idx) const {
+    size_t symbol(uint64_t idx) const {
         idx += 1;
         auto [r1, pr1] = all_ranks(idx);
         auto [r2, pr2] = all_ranks(idx-1);
