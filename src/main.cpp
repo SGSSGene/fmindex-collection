@@ -137,26 +137,7 @@ int main() {
     StopWatch watch;
     constexpr size_t Sigma = 5;
 
-    // test locate
-    if (false)
-    {
-        visitAllTables<Sigma>([&]<template <size_t> typename Table>(Table<Sigma>*, std::string name) {
-//            auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/text.dna4");
-            auto index = loadIndex<Sigma, CSA, Table>("/home/gene/test_hg/test");
-            auto cursor = BiFMIndexCursor{index};
-
-            fmt::print("index: {:20} -", name);
-            for (size_t i{cursor.lb}; i < cursor.lb + cursor.len; ++i) {
-                fmt::print(" {}", index.locate(i));
-            }
-            fmt::print("\n");
-        });
-        return 0;
-    }
-
-//     auto queries = loadQueries<Sigma>("/home/gene/hg38/short.queries");
-     auto [queries, queryInfos] = loadQueries<Sigma>("/home/gene/hg38/sampled_illumina_reads.fasta");
-//     auto [queries, queryInfos] = loadQueries<Sigma>("/home/gene/test_hg/query.fasta");
+     auto const [queries, queryInfos] = loadQueries<Sigma>("/home/gene/hg38/sampled_illumina_reads.fasta");
      fmt::print("loaded {} queries (incl reverse complements)\n", queries.size());
 
     fmt::print("{:15}: {:>10}  ({:>10} +{:>10} ) {:>10}    - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", "name", "time_search + time_locate", "time_search", "time_locate", "(time_search+time_locate)/queries.size()", "resultCt", "results.size()", "uniqueResults.size()", "readIds.size()", "memory");
@@ -164,7 +145,7 @@ int main() {
 
 //    auto [bwt, bwtRev] = generateBWT<Sigma>(1ul<<20);
     visitAllTables<Sigma>([&]<template <size_t> typename Table>(Table<Sigma>*, std::string name) {
-//        fmt::print("using occtable: {}\n", name);
+        auto mut_queries = queries;
 
         size_t s = Table<Sigma>::expectedMemoryUsage(3'000'000'000ul);
 //        fmt::print("expected memory: {}\n", s);
@@ -172,19 +153,20 @@ int main() {
             fmt::print("{} skipping, to much memory\n", name);
             return;
         }
-//        auto index = loadIndex<Sigma, CSA, Table>("/home/gene/test_hg/test");
         auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/text.dna4");
-//        auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/short");
 
         auto memory = index.memoryUsage();
-//        fmt::print("memory usage: {}\n", index.memoryUsage());
-        for (size_t k{0}; k<4; ++k)
+        for (size_t k{0}; k<6; ++k)
         {
-//            auto search_scheme = oss::expand(oss::generator::pigeon_opt(0, k), queries[0].size());
-//            auto search_scheme = oss::expand(oss::generator::pigeon_trivial(0, k), queries[0].size());
-//            auto search_scheme = oss::expand(oss::generator::h2(k+2, 0, k), queries[0].size());
-//            auto search_scheme = oss::expand(oss::generator::kucherov(k+1, 0, k), queries[0].size());
-            auto search_scheme = oss::expand(oss::generator::backtracking(1, 0, k), queries[0].size());
+            if (k == 4 or k == 5) {
+                mut_queries.resize(mut_queries.size() / 10);
+            }
+
+//            auto search_scheme = oss::expand(oss::generator::pigeon_opt(0, k), mut_queries[0].size());
+//            auto search_scheme = oss::expand(oss::generator::pigeon_trivial(0, k), mut_queries[0].size());
+//            auto search_scheme = oss::expand(oss::generator::h2(k+2, 0, k), mut_queries[0].size());
+//            auto search_scheme = oss::expand(oss::generator::kucherov(k+1, 0, k), mut_queries[0].size());
+            auto search_scheme = oss::expand(oss::generator::backtracking(1, 0, k), mut_queries[0].size());
 
     //
             for (size_t i{0}; i < search_scheme.size(); ++i) {
@@ -196,12 +178,19 @@ int main() {
             size_t resultCt{};
             StopWatch sw;
             std::vector<std::tuple<size_t, size_t, size_t>> results{};
-            std::vector<std::tuple<size_t, BiFMIndexCursor<decltype(index)>, size_t>> resultCursors;
+            std::vector<std::tuple<size_t, LeftBiFMIndexCursor<decltype(index)>, size_t>> resultCursors;
 
-//            search_ng12::search(index, queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
-//            search_ng14::search(index, queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
-            search_ng15::search(index, queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
-//            search_pseudo::search<true>(index, queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+//            search_pseudo::search<true>(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+//            search_ng12::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+            search_ng14::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+//            search_ng15::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
+//            search_ng16::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
+//            search_ng17::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
+//            search_ng18::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
+//            search_ng19::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+//            search_ng20::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+//            search_ng21::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+
                 resultCursors.emplace_back(queryId, cursor, errors);
             });
 
@@ -222,14 +211,14 @@ int main() {
             }(results);
             std::unordered_set<size_t> readIds;
             for (auto [queryId, cursor, e] : resultCursors) {
-                if (queryId > queries.size()/2) {
-                    readIds.insert(queryId - queries.size() / 2);
+                if (queryId > mut_queries.size()/2) {
+                    readIds.insert(queryId - mut_queries.size() / 2);
                 } else {
                     readIds.insert(queryId);
                 }
             }
 
-            fmt::print("{:15}: {:>10.3}s ({:>10.3}s+{:>10.3}s) {:>10.3}q/s - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", name, time_search + time_locate, time_search, time_locate, (time_search+time_locate)/queries.size(), resultCt, results.size(), uniqueResults.size(), readIds.size(), memory);
+            fmt::print("{:15}: {:>10.3}s ({:>10.3}s+{:>10.3}s) {:>10.3}q/s - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", name, time_search + time_locate, time_search, time_locate, (time_search+time_locate)/mut_queries.size(), resultCt, results.size(), uniqueResults.size(), readIds.size(), memory);
             {
                 auto filename =fmt::format("out.k{}.ss{}.txt", k, name);
                 /*auto ofs = fopen(filename.c_str(), "w");
