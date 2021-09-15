@@ -2,9 +2,11 @@
 
 #include <array>
 
+/**
+ * As ng14
+ * but direction change is predetermined
+ */
 namespace search_ng15 {
-
-enum class Dir : uint8_t { Left, Right };
 
 struct Block {
     size_t pi;
@@ -12,196 +14,173 @@ struct Block {
     size_t u;
 };
 
-template <typename index_t, typename search_scheme_t, typename delegate_t>
+template <typename cursor_t, typename search_scheme_t, typename query_t, typename delegate_t, bool Right>
 struct Search {
-    constexpr static size_t Sigma = index_t::Sigma;
+    constexpr static size_t Sigma = cursor_t::Sigma;
 
-    using cursor_t = BiFMIndexCursor<index_t>;
     using BlockIter = typename search_scheme_t::const_iterator;
 
-    index_t const& index;
     search_scheme_t const& search;
-    size_t qidx;
-    std::vector<std::uint8_t> const& query;
+    query_t const& query;
     delegate_t const& delegate;
-    size_t changePos;
 
-    Search(index_t const& _index, search_scheme_t const& _search, size_t _qidx, std::vector<std::uint8_t> const& _query, delegate_t const& _delegate, size_t _changePos)
-        : index     {_index}
-        , search    {_search}
+    Search(cursor_t const& _cursor, search_scheme_t const& _search, query_t const& _query, size_t e, delegate_t const& _delegate)
+        : search    {_search}
         , query     {_query}
-        , qidx      {_qidx}
         , delegate  {_delegate}
-        , changePos {_changePos}
     {
-        auto cur       = cursor_t{index};
         auto blockIter = search.begin();
 
-        if (changePos == 0) {
-            search_next_left<'M'>(cur, 0, 0);
-        } else {
-            search_next_right<'M'>(cur, 0, 0);
-        }
+        search_next<'M'>(_cursor, e, blockIter);
     }
 
-    template <Dir Direction>
     static auto extend(cursor_t const& cur, uint8_t symb) noexcept {
-        if constexpr (Direction == Dir::Right) {
+        if constexpr (Right) {
             return cur.extendRight(symb);
         } else {
             return cur.extendLeft(symb);
         }
     }
-    template <Dir Direction>
     static auto extend(cursor_t const& cur) noexcept {
-        if constexpr (Direction == Dir::Right) {
+        if constexpr (Right) {
             return cur.extendRight();
         } else {
             return cur.extendLeft();
         }
-        /*auto cursors = std::array<cursor_t, Sigma>{};
-        for (size_t i{1}; i < Sigma; ++i) {
-            if constexpr (Direction == Dir::Right) {
-                cursors[i] = cur.extendRight(i);
-            } else {
-                cursors[i] = cur.extendLeft(i);
-            }
-        }
-        return cursors;*/
     }
 
-
-
-
     template <char Info>
-    void search_next_right(cursor_t const& cur, size_t e, size_t pos) const noexcept {
+    void search_next(cursor_t const& cur, size_t e, BlockIter blockIter) const noexcept {
+
         if (cur.count() == 0) {
             return;
         }
 
-        if (pos == changePos) {
-            if constexpr ((Info == 'M' or Info == 'S')) {
-                search_next_left<'M'>(cur, e, pos);
-            }
-            return;
-        }
-        search_next_dir<Info, Dir::Right>(cur, e, pos);
-    }
-
-    template <char Info>
-    void search_next_left(cursor_t const& cur, size_t e, size_t pos) const noexcept {
-        if (cur.count() == 0) {
+        if (blockIter == end(search)) {
+//            if constexpr (Info == 'M' or Info == 'S') {
+                delegate(cur, e);
+//            }
             return;
         }
 
-        if (pos == query.size()) {
-            if constexpr ((Info == 'M' or Info == 'S')) {
-                delegate(qidx, cur, e);
-            }
-            return;
-        }
-        search_next_dir<Info, Dir::Left>(cur, e, pos);
-    }
 
-    template <char Info, Dir Direction>
-    void search_next(cursor_t const& cur, size_t e, size_t pos) const noexcept {
-        if constexpr (Direction == Dir::Right) {
-            search_next_right<Info>(cur, e, pos);
-        } else {
-            search_next_left<Info>(cur, e, pos);
-        }
-    }
+        constexpr bool Deletion     = Info == 'M' or Info == 'D';
+        constexpr bool Insertion    = Info == 'M' or Info == 'I';
 
+        bool matchAllowed    = blockIter->l <= e and e <= blockIter->u;
+        bool mismatchAllowed = blockIter->l <= e+1 and e+1 <= blockIter->u;
 
-    template <char LastOp, Dir Direction>
-    void search_next_dir(cursor_t const& cur, size_t e, size_t pos) const noexcept {
-
-        constexpr bool Deletion     = LastOp == 'M' or LastOp == 'D';
-        constexpr bool Insertion    = LastOp == 'M' or LastOp == 'I';
-
-        auto const& block = search[pos];
-        bool matchAllowed    = block.l <= e and e <= block.u;
-        bool mismatchAllowed = block.l <= e+1 and e+1 <= block.u;
-
-        auto symb = query[block.pi];
+        auto symb = query[blockIter->pi];
 
         if (mismatchAllowed) {
-            auto cursors = extend<Direction>(cur);
+            auto cursors = extend(cur);
 
             if (matchAllowed) {
-                auto const& newCur = cursors[symb];
-                search_next<'M', Direction>(newCur, e, pos+1);
+                auto newCur = cursors[symb];
+                search_next<'M'>(newCur, e, blockIter+1);
             }
 
             for (uint8_t i{1}; i < symb; ++i) {
-                auto const& newCur = cursors[i];
+                auto newCur = cursors[i];
 
                 if constexpr (Deletion) {
-                    search_next<'D', Direction>(newCur, e+1, pos); // deletion occurred in query
+                    search_next<'D'>(newCur, e+1, blockIter); // deletion occurred in query
                 }
-                search_next<'S', Direction>(newCur, e+1, pos+1); // as substitution
+                search_next<'S'>(newCur, e+1, blockIter+1); // as substitution
             }
 
             for (uint8_t i(symb+1); i < Sigma; ++i) {
-                auto const& newCur = cursors[i];
+                auto newCur = cursors[i];
 
                 if constexpr (Deletion) {
-                    search_next<'D', Direction>(newCur, e+1, pos); // deletion occurred in query
+                    search_next<'D'>(newCur, e+1, blockIter); // deletion occurred in query
                 }
-                search_next<'S', Direction>(newCur, e+1, pos+1); // as substitution
+                search_next<'S'>(newCur, e+1, blockIter+1); // as substitution
             }
 
-
             if constexpr (Insertion) {
-                search_next<'I', Direction>(cur, e+1, pos+1); // insertion occurred in query
+                search_next<'I'>(cur, e+1, blockIter+1); // insertion occurred in query
+
             }
 
         } else if (matchAllowed) {
-            auto const& newCur = extend<Direction>(cur, symb);
-            search_next<'M', Direction>(newCur, e, pos+1);
+            auto newCur = extend(cur, symb);
+            search_next<'M'>(newCur, e, blockIter+1);
         }
     }
-
-
 };
+
+
 
 template <typename index_t, typename queries_t, typename search_schemes_t, typename delegate_t>
 void search(index_t const & index, queries_t && queries, search_schemes_t const & search_scheme, delegate_t && delegate)
 {
     if (search_scheme.empty()) return;
+    size_t qidx;
+    auto internal_delegate = [&delegate, &qidx] (auto const & it, size_t e) {
+        delegate(qidx, it, e);
+    };
 
-    std::vector<size_t> dirChange;
-    std::vector<std::vector<Block>> search_scheme2;
+
+    int lastDir = 0;
+    std::vector<std::vector<std::vector<Block>>> search_scheme2;
     for (auto s : search_scheme) {
-        std::vector<Block> search2;
+        std::vector<std::vector<Block>> search2;
         for (size_t i{0}; i < s.pi.size(); ++i) {
-            search2.emplace_back(Block{(size_t)s.pi[i], (size_t)s.l[i], (size_t)s.u[i]});
-        }
-
-        bool startDir = s.pi[0] < s.pi[1];
-        size_t change = s.pi.size();
-        for (size_t i{1}; i < s.pi.size(); ++i) {
-            auto dir = s.pi[i-1] < s.pi[i];
-            if (dir != startDir) {
-                change = i;
-                break;
+            auto dir = [&]() {
+                if (i == 0) {
+                    return s.pi[i] < s.pi[i+1]?1:-1;
+                } else {
+                    return s.pi[i-1] < s.pi[i]?1:-1;
+                }
+            }();
+            if (lastDir == 0) {
+                search2.emplace_back();
+                if (dir == -1) {
+                    search2.emplace_back();
+                }
+            } else if (lastDir != dir) {
+                search2.emplace_back();
             }
+            lastDir = dir;
+            search2.back().emplace_back(Block{(size_t)s.pi[i], (size_t)s.l[i], (size_t)s.u[i]});
         }
-        if (s.pi[0] > s.pi[1]) {
-            change = 0;
-        }
-        dirChange.push_back(change);
-
         search_scheme2.emplace_back(move(search2));
     }
 
+    using Cursor = BiFMIndexCursor<index_t>;
+
+
+    using Callback = std::function<void(Cursor const&, size_t e)>;
+    Callback sch;
+
+    using query_t = std::decay_t<decltype(queries[0])>;
+    using search_t = std::decay_t<decltype(search_scheme2[0][0])>;
+
+    query_t const* query;
+    std::vector<search_t> const* search;
+    size_t depth{};
+    sch = [&](Cursor const& cursor, size_t e) {
+        if (depth == search->size()) {
+            internal_delegate(cursor, e);
+            return;
+        }
+        if (depth % 2 == 0) {
+            Search<Cursor, search_t, query_t, Callback, true>{cursor, search->at(depth++), *query, e, sch};
+        } else {
+            Search<Cursor, search_t, query_t, Callback, false>{cursor, search->at(depth++), *query, e, sch};
+        }
+        depth -= 1;
+    };
+
+
     for (size_t i{0}; i < queries.size(); ++i) {
-        auto const& query = queries[i];
+        qidx = i;
+        query = &queries[qidx];
         for (size_t j{0}; j < search_scheme.size(); ++j) {
-            auto& search = search_scheme2[j];
-            Search{index, search, i, query, [&](size_t qidx, auto const& it, size_t e) {
-                delegate(qidx, it, e);
-            }, dirChange[j]};
+            search = &search_scheme2[j];
+            // call sch
+            sch(Cursor{index}, 0);
         }
     }
 
