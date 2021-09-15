@@ -232,13 +232,13 @@ int main() {
             fmt::print("{:15}: {:>10.3}s ({:>10.3}s+{:>10.3}s) {:>10.3}q/s - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", name, time_search + time_locate, time_search, time_locate, (time_search+time_locate)/queries.size(), resultCt, results.size(), uniqueResults.size(), readIds.size(), memory);
             {
                 auto filename =fmt::format("out.k{}.ss{}.txt", k, name);
-                auto ofs = fopen(filename.c_str(), "w");
+                /*auto ofs = fopen(filename.c_str(), "w");
                 fmt::print(ofs, "identifier\tposition\tlength\tED\treverseComlpement\n");
                 for (auto [queryId, pos, e] : results) {
                     auto const& qi = queryInfos[queryId];
                     fmt::print(ofs, "{}\t{}\t{}\t{}\t{}\n", qi.name, pos, 101, e, qi.reverse?1:0);
                 }
-                fclose(ofs);
+                fclose(ofs);*/
             }
         }
     });
