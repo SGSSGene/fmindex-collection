@@ -7,6 +7,9 @@
 
 #include <fmt/format.h>
 
+/*
+ * using banded alignment matrix, but only works for backtracking search schemes
+ */
 namespace search_ng20 {
 
 struct BandMatrix {
