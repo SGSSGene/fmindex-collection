@@ -57,9 +57,9 @@ struct Search {
         }
 
         if (blockIter == end(search)) {
-//            if constexpr (Info == 'M' or Info == 'S') {
+            if constexpr (Info == 'M' or Info == 'S') {
                 delegate(cur, e);
-//            }
+            }
             return;
         }
 
