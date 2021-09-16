@@ -5,6 +5,7 @@ CXXFLAGS="$CXXFLAGS -O3 -march=native -DNDEBUG"
 #CXXFLAGS="$CXXFLAGS -O3 -mpopcnt -mbmi -DNDEBUG"
 #CXXFLAGS="$CXXFLAGS -O0 -ggdb"
 
+
 CXX="ccache g++"
 
 mkdir -p build

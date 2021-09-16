@@ -20,6 +20,9 @@
 #include "search/SearchNg12.h"
 #include "search/SearchNg14.h"
 #include "search/SearchNg15.h"
+#include "search/SearchNg16.h"
+#include "search/SearchNg20.h"
+#include "search/SearchNg21.h"
 
 #include "oss/generator/pigeon.h"
 #include "oss/generator/h2.h"
@@ -164,9 +167,9 @@ int main() {
 
 //            auto search_scheme = oss::expand(oss::generator::pigeon_opt(0, k), mut_queries[0].size());
 //            auto search_scheme = oss::expand(oss::generator::pigeon_trivial(0, k), mut_queries[0].size());
-//            auto search_scheme = oss::expand(oss::generator::h2(k+2, 0, k), mut_queries[0].size());
+            auto search_scheme = oss::expand(oss::generator::h2(k+2, 0, k), mut_queries[0].size());
 //            auto search_scheme = oss::expand(oss::generator::kucherov(k+1, 0, k), mut_queries[0].size());
-            auto search_scheme = oss::expand(oss::generator::backtracking(1, 0, k), mut_queries[0].size());
+//            auto search_scheme = oss::expand(oss::generator::backtracking(1, 0, k), mut_queries[0].size());
 
     //
             for (size_t i{0}; i < search_scheme.size(); ++i) {
@@ -182,12 +185,9 @@ int main() {
 
 //            search_pseudo::search<true>(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
 //            search_ng12::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
-            search_ng14::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+//            search_ng14::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
 //            search_ng15::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
-//            search_ng16::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
-//            search_ng17::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
-//            search_ng18::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
-//            search_ng19::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+            search_ng16::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
 //            search_ng20::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
 //            search_ng21::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
 
