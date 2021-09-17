@@ -122,10 +122,10 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
     };
 
 
-    int lastDir = 0;
     std::vector<std::vector<std::vector<Block>>> search_scheme2;
     for (auto s : search_scheme) {
         std::vector<std::vector<Block>> search2;
+        int lastDir = 0;
         for (size_t i{0}; i < s.pi.size(); ++i) {
             auto dir = [&]() {
                 if (i == 0) {

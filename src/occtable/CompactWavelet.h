@@ -324,17 +324,17 @@ struct Bitvector {
 
         auto rs = blocks[blockId].all_ranks(bitId);
 
-        std::array<uint64_t, TSigma> prs{0};
+        std::array<uint64_t, TSigma> prs;
 
         rs[0] += superBlocks[superBlockId][0];
         prs[0] = rs[0];
+        rs[0] += C[0];
         for (size_t i{1}; i < TSigma; ++i) {
 
             rs[i] += superBlocks[superBlockId][i];
             prs[i] = prs[i-1] + rs[i];
             rs[i] += C[i];
         }
-        rs[0] += C[0];
 
         return {rs, prs};
     }

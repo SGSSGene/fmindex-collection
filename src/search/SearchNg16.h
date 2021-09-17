@@ -194,13 +194,7 @@ template <typename index_t, typename queries_t, typename search_schemes_t, typen
 void search(index_t const & index, queries_t && queries, search_schemes_t const & search_scheme, delegate_t && delegate)
 {
     if (search_scheme.empty()) return;
-    size_t qidx;
-    auto internal_delegate = [&delegate, &qidx] (auto const & it, size_t e) {
-        delegate(qidx, it, e);
-    };
 
-
-    int lastDir = 0;
     std::vector<std::vector<std::vector<Block>>> search_scheme2;
     size_t maxError{0};
     for (auto s : search_scheme) {
@@ -209,6 +203,7 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
         }
 
         std::vector<std::vector<Block>> search2;
+        int lastDir = 0;
         for (size_t i{0}; i < s.pi.size(); ++i) {
 
             auto dir = [&]() {
@@ -241,12 +236,13 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
     using query_t = std::decay_t<decltype(queries[0])>;
     using search_t = std::decay_t<decltype(search_scheme2[0][0])>;
 
+    size_t qidx;
     query_t const* query;
     std::vector<search_t> const* search;
     size_t depth{};
     sch = [&](Cursor const& cursor, size_t e) {
         if (depth == search->size()) {
-            internal_delegate(cursor, e);
+            delegate(qidx, cursor, e);
             return;
         }
         if (depth % 2 == 0) {
