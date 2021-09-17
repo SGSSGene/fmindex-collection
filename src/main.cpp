@@ -21,6 +21,7 @@
 #include "search/SearchNg14.h"
 #include "search/SearchNg15.h"
 #include "search/SearchNg16.h"
+#include "search/SearchNg17.h"
 #include "search/SearchNg20.h"
 #include "search/SearchNg21.h"
 
