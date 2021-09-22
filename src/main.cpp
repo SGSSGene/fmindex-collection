@@ -24,6 +24,7 @@
 #include "search/SearchNg17.h"
 #include "search/SearchNg20.h"
 #include "search/SearchNg21.h"
+#include "search/SearchNg22.h"
 
 #include "oss/generator/pigeon.h"
 #include "oss/generator/h2.h"
@@ -36,16 +37,17 @@
 
 template <size_t Sigma, typename CB>
 void visitAllTables(CB cb) {
-    cb((occtable::naive::OccTable<Sigma>*)nullptr, "naive");
+//    cb((occtable::naive::OccTable<Sigma>*)nullptr, "naive");
+//    cb((occtable::bitvector::OccTable<Sigma>*)nullptr, "bitvector");
+
     cb((occtable::compact2::OccTable<Sigma>*)nullptr, "compact2");
-    cb((occtable::compact2Aligned::OccTable<Sigma>*)nullptr, "compact2Aligned");
     cb((occtable::compactWavelet::OccTable<Sigma>*)nullptr, "compactWavelet");
+    cb((occtable::compact2Aligned::OccTable<Sigma>*)nullptr, "compact2Aligned");
     cb((occtable::sdsl_wt_bldc::OccTable<Sigma>*)nullptr, "sdsl_wt_bldc");
     cb((occtable::wavelet::OccTable<Sigma>*)nullptr, "wavelet");
     cb((occtable::compact::OccTable<Sigma>*)nullptr, "compact");
     cb((occtable::compactAligned::OccTable<Sigma>*)nullptr, "compactAligned");
     cb((occtable::compactPrefix::OccTable<Sigma>*)nullptr, "compactPrefix");
-    cb((occtable::bitvector::OccTable<Sigma>*)nullptr, "bitvector");
     cb((occtable::bitvectorPrefix::OccTable<Sigma>*)nullptr, "bitvectorPrefix");
 }
 
@@ -73,7 +75,7 @@ struct Query {
     bool reverse;
 };
 template <size_t Sigma>
-auto loadQueries(std::string path) {
+auto loadQueries(std::string path, bool reverse) {
     std::vector<std::vector<uint8_t>> queries;
     std::vector<Query> queryInfos;
     enum class Mode { Name, Sequence };
@@ -100,18 +102,22 @@ auto loadQueries(std::string path) {
                 ++ptr;
                 mode = Mode::Sequence;
                 queryInfos.emplace_back(name, false);
-                queryInfos.emplace_back(name, true);
+                if (reverse) {
+                    queryInfos.emplace_back(name, true);
+                }
             } else if (mode == Mode::Sequence) {
                 if (*ptr == '>' || (ptr+1) == (b.data() + b.size())) {
                     queries.push_back(query);
-                    std::reverse(query.begin(), query.end());
-                    for (auto& c : query) {
-                        if (c == 1) c = 4;
-                        else if (c == 2) c = 3;
-                        else if (c == 3) c = 2;
-                        else if (c == 4) c = 1;
+                    if (reverse) {
+                        std::reverse(query.begin(), query.end());
+                        for (auto& c : query) {
+                            if (c == 1) c = 4;
+                            else if (c == 2) c = 3;
+                            else if (c == 3) c = 2;
+                            else if (c == 4) c = 1;
+                        }
+                        queries.push_back(query);
                     }
-                    queries.push_back(query);
                     query.clear();
                     mode = Mode::Name;
                     if ((ptr+1) == (b.data() + b.size())) {
@@ -137,20 +143,63 @@ auto loadQueries(std::string path) {
 }
 
 
-int main() {
+int main(int argc, char const* const* argv) {
     StopWatch watch;
     constexpr size_t Sigma = 5;
 
-     auto const [queries, queryInfos] = loadQueries<Sigma>("/home/gene/hg38/sampled_illumina_reads.fasta");
-     fmt::print("loaded {} queries (incl reverse complements)\n", queries.size());
+
+//    std::string algorithm = "pseudo";
+    std::string generator = "h2";
+    size_t maxQueries{};
+    size_t readLength{};
+    bool saveOutput{false};
+    bool sleepAfterLoad{false};
+    size_t minK{0}, maxK{6};
+    bool reverse{true};
+
+    std::vector<std::string> algorithms;
+
+    for (size_t i{1}; i < argc; ++i) {
+        if (argv[i] == std::string{"--algo"} and i+1 < argc) {
+            ++i;
+            algorithms.emplace_back(argv[i]);
+//            algorithm = argv[i];
+        } else if (argv[i] == std::string{"--gen"} and i+1 < argc) {
+            ++i;
+            generator = argv[i];
+        } else if (argv[i] == std::string{"--queries"} and i+1 < argc) {
+            ++i;
+            maxQueries = std::stod(argv[i]);
+        } else if (argv[i] == std::string{"--read_length"} and i+1 < argc) {
+            ++i;
+            readLength = std::stod(argv[i]);
+        } else if (argv[i] == std::string{"--save_output"}) {
+            saveOutput = true;
+        } else if (argv[i] == std::string{"--sleep_after_load"}) {
+            sleepAfterLoad = true;
+        } else if (argv[i] == std::string{"--min_k"} and i+1 < argc) {
+            ++i;
+            minK = std::stod(argv[i]);
+        } else if (argv[i] == std::string{"--max_k"} and i+1 < argc) {
+            ++i;
+            maxK = std::stod(argv[i]);
+        } else if (argv[i] == std::string{"--no-reverse"}) {
+            reverse = false;
+        } else {
+            throw std::runtime_error("unknown commandline " + std::string{argv[i]});
+        }
+    }
+     auto const [queries, queryInfos] = loadQueries<Sigma>("/home/gene/hg38/sampled_illumina_reads.fasta", reverse);
+//    auto const [queries, queryInfos] = loadQueries<Sigma>("/home/gene/short_test/read.fasta", reverse);
+
+    fmt::print("loaded {} queries (incl reverse complements)\n", queries.size());
 
     fmt::print("{:15}: {:>10}  ({:>10} +{:>10} ) {:>10}    - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", "name", "time_search + time_locate", "time_search", "time_locate", "(time_search+time_locate)/queries.size()", "resultCt", "results.size()", "uniqueResults.size()", "readIds.size()", "memory");
 
 
+
 //    auto [bwt, bwtRev] = generateBWT<Sigma>(1ul<<20);
     visitAllTables<Sigma>([&]<template <size_t> typename Table>(Table<Sigma>*, std::string name) {
-        auto mut_queries = queries;
-
         size_t s = Table<Sigma>::expectedMemoryUsage(3'000'000'000ul);
 //        fmt::print("expected memory: {}\n", s);
         if (s > 1024*1024*1024*56ul) {
@@ -158,77 +207,129 @@ int main() {
             return;
         }
         auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/text.dna4");
+//        auto index = loadIndex<Sigma, CSA, Table>("/home/gene/short_test/text");
+        fmt::print("index loaded\n");
+        if (sleepAfterLoad) {
+            usleep(5000000);
+        }
+        for (auto const& algorithm : algorithms) {
+            fmt::print("using algorithm {}\n", algorithm);
 
-        auto memory = index.memoryUsage();
-        for (size_t k{0}; k<6; ++k)
-        {
-            if (k == 4 or k == 5) {
-                mut_queries.resize(mut_queries.size() / 10);
+            auto mut_queries = queries;
+            if (maxQueries != 0) {
+                mut_queries.resize(std::min(mut_queries.size(), maxQueries));
             }
-
-//            auto search_scheme = oss::expand(oss::generator::pigeon_opt(0, k), mut_queries[0].size());
-//            auto search_scheme = oss::expand(oss::generator::pigeon_trivial(0, k), mut_queries[0].size());
-            auto search_scheme = oss::expand(oss::generator::h2(k+2, 0, k), mut_queries[0].size());
-//            auto search_scheme = oss::expand(oss::generator::kucherov(k+1, 0, k), mut_queries[0].size());
-//            auto search_scheme = oss::expand(oss::generator::backtracking(1, 0, k), mut_queries[0].size());
-
-    //
-            for (size_t i{0}; i < search_scheme.size(); ++i) {
-                auto& tree = search_scheme[i];
-                for (size_t j{0}; j < tree.pi.size(); ++j) {
-                    tree.pi[j] -= 1;
-                }
-            }
-            size_t resultCt{};
-            StopWatch sw;
-            std::vector<std::tuple<size_t, size_t, size_t>> results{};
-            std::vector<std::tuple<size_t, LeftBiFMIndexCursor<decltype(index)>, size_t>> resultCursors;
-
-//            search_pseudo::search<true>(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
-//            search_ng12::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
-//            search_ng14::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
-//            search_ng15::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
-            search_ng16::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
-//            search_ng20::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
-//            search_ng21::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
-
-                resultCursors.emplace_back(queryId, cursor, errors);
-            });
-
-            auto time_search = sw.reset();
-
-            for (auto const& [queryId, cursor, e] : resultCursors) {
-                for (size_t i{cursor.lb}; i < cursor.lb + cursor.len; ++i) {
-                    results.emplace_back(queryId, index.locate(i), e);
-                }
-                resultCt += cursor.len;
-            }
-            auto time_locate = sw.reset();
-
-            auto uniqueResults = [](auto list) {
-                std::sort(begin(list), end(list));
-                list.erase(std::unique(begin(list), end(list)), list.end());
-                return list;
-            }(results);
-            std::unordered_set<size_t> readIds;
-            for (auto [queryId, cursor, e] : resultCursors) {
-                if (queryId > mut_queries.size()/2) {
-                    readIds.insert(queryId - mut_queries.size() / 2);
-                } else {
-                    readIds.insert(queryId);
+            if (readLength != 0) {
+                for (auto& q : mut_queries) {
+                    q.resize(std::min(readLength, q.size()));
                 }
             }
 
-            fmt::print("{:15}: {:>10.3}s ({:>10.3}s+{:>10.3}s) {:>10.3}q/s - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", name, time_search + time_locate, time_search, time_locate, (time_search+time_locate)/mut_queries.size(), resultCt, results.size(), uniqueResults.size(), readIds.size(), memory);
+
+
+            auto memory = index.memoryUsage();
+            for (size_t k{minK}; k<maxK; ++k)
             {
-                auto filename =fmt::format("out.k{}.ss{}.txt", k, name);
-                /*auto ofs = fopen(filename.c_str(), "w");
-                fmt::print(ofs, "identifier\tposition\tlength\tED\treverseComlpement\n");
-                for (auto [queryId, pos, e] : results) {
-                    auto const& qi = queryInfos[queryId];
-                    fmt::print(ofs, "{}\t{}\t{}\t{}\t{}\n", qi.name, pos, 101, e, qi.reverse?1:0);
+//                if (k >= 4 and k != 6) {
+                    mut_queries.resize(mut_queries.size() / 10);
+//                }
+                auto search_scheme = [&]() {
+                    if (generator == "pigeon_opt")   return oss::expand(oss::generator::pigeon_opt(0, k), mut_queries[0].size());
+                    if (generator == "pigeon")       return oss::expand(oss::generator::pigeon_trivial(0, k), mut_queries[0].size());
+                    if (generator == "h2")           return oss::expand(oss::generator::h2(k+2, 0, k), mut_queries[0].size());
+                    if (generator == "kucherov")     return oss::expand(oss::generator::kucherov(k+1, 0, k), mut_queries[0].size());
+                    if (generator == "backtracking") return oss::expand(oss::generator::backtracking(1, 0, k), mut_queries[0].size());
+                    throw std::runtime_error("unknown search scheme");
+                }();
+
+    //            auto search_scheme = oss::expand(oss::generator::pigeon_opt(0, k), mut_queries[0].size());
+    //            auto search_scheme = oss::expand(oss::generator::pigeon_trivial(0, k), mut_queries[0].size());
+    //            auto search_scheme = oss::expand(oss::generator::h2(k+2, 0, k), mut_queries[0].size());
+    //            auto search_scheme = oss::expand(oss::generator::kucherov(k+1, 0, k), mut_queries[0].size());
+    //            auto search_scheme = oss::expand(oss::generator::backtracking(1, 0, k), mut_queries[0].size());
+
+        //
+                for (size_t i{0}; i < search_scheme.size(); ++i) {
+                    auto& tree = search_scheme[i];
+                    for (size_t j{0}; j < tree.pi.size(); ++j) {
+                        tree.pi[j] -= 1;
+                    }
                 }
-                fclose(ofs);*/
+                size_t resultCt{};
+                StopWatch sw;
+                std::vector<std::tuple<size_t, size_t, size_t, std::string>> results{};
+                std::vector<std::tuple<size_t, LeftBiFMIndexCursor<decltype(index)>, size_t, std::string>> resultCursors;
+
+                auto res_cb = [&](size_t queryId, auto cursor, size_t errors) {
+                    resultCursors.emplace_back(queryId, cursor, errors, "");
+                };
+                auto res_cb2 = [&](size_t queryId, auto cursor, size_t errors, auto const& actions) {
+                    std::string s = "";
+                    for (auto a : actions) {
+                        s += a;
+                    }
+                    resultCursors.emplace_back(queryId, cursor, errors, s);
+                };
+
+
+
+                if (algorithm == "pseudo") search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
+                else if (algorithm == "ng12") search_ng12::search(index, mut_queries, search_scheme, res_cb);
+                else if (algorithm == "ng14") search_ng14::search(index, mut_queries, search_scheme, res_cb);
+                else if (algorithm == "ng15") search_ng15::search(index, mut_queries, search_scheme, res_cb);
+                else if (algorithm == "ng16") search_ng16::search(index, mut_queries, search_scheme, res_cb);
+                else if (algorithm == "ng17") search_ng17::search(index, mut_queries, search_scheme, res_cb);
+                else if (algorithm == "ng20") search_ng20::search(index, mut_queries, search_scheme, res_cb);
+                else if (algorithm == "ng21") search_ng21::search(index, mut_queries, search_scheme, res_cb);
+                else if (algorithm == "ng22") search_ng22::search(index, mut_queries, search_scheme, res_cb2);
+
+    //            search_ng14::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+    //            search_ng15::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
+    //            search_ng16::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
+    //            search_ng17::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
+    //            search_ng20::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+    //            search_ng21::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+
+    //                resultCursors.emplace_back(queryId, cursor, errors);
+    //            });
+
+                auto time_search = sw.reset();
+
+                for (auto const& [queryId, cursor, e, action] : resultCursors) {
+                    for (size_t i{cursor.lb}; i < cursor.lb + cursor.len; ++i) {
+                        results.emplace_back(queryId, index.locate(i), e, action);
+                    }
+                    resultCt += cursor.len;
+                }
+                auto time_locate = sw.reset();
+
+                auto uniqueResults = [](auto list) {
+                    std::sort(begin(list), end(list));
+                    list.erase(std::unique(begin(list), end(list)), list.end());
+                    return list;
+                }(results);
+                std::unordered_set<size_t> readIds;
+                for (auto const& [queryId, cursor, e, actions] : resultCursors) {
+                    if (queryId > mut_queries.size()/2) {
+                        readIds.insert(queryId - mut_queries.size() / 2);
+                    } else {
+                        readIds.insert(queryId);
+                    }
+                }
+
+                fmt::print("{:15}: {:>10.3}s ({:>10.3}s+{:>10.3}s) {:>10.3}q/s - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", name, time_search + time_locate, time_search, time_locate, (time_search+time_locate)/mut_queries.size(), resultCt, results.size(), uniqueResults.size(), readIds.size(), memory);
+                {
+                    if (saveOutput) {
+                        auto filename =fmt::format("out.k{}.alg{}.ss{}.txt", k, algorithm, name);
+                        auto ofs = fopen(filename.c_str(), "w");
+                        fmt::print(ofs, "identifier\tposition\tlength\tED\treverseComlpement\talignment\n");
+                        for (auto const& [queryId, pos, e, action] : results) {
+                            auto const& qi = queryInfos[queryId];
+                            fmt::print(ofs, "{}\t{}\t{}\t{}\t{}\t{}\n", qi.name, pos, 101, e, qi.reverse?1:0, action);
+                        }
+                        fclose(ofs);
+                    }
+                }
             }
         }
     });

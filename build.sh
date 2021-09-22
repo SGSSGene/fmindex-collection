@@ -2,6 +2,7 @@
 
 CXXFLAGS="-std=c++20 -isystem lib/sdsl-lite/include"
 CXXFLAGS="$CXXFLAGS -O3 -march=native -DNDEBUG"
+#CXXFLAGS="$CXXFLAGS -O3 -march=native -ggdb"
 #CXXFLAGS="$CXXFLAGS -O3 -mpopcnt -mbmi -DNDEBUG"
 #CXXFLAGS="$CXXFLAGS -O0 -ggdb"
 

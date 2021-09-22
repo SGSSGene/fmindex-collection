@@ -14,12 +14,44 @@ namespace search_ng17 {
 
 struct BandMatrix {
 private:
+public:
     size_t queryLength;
     size_t maxErrors;
 
     size_t rows;
     size_t cols;
     std::vector<size_t> data;
+
+    struct View {
+        size_t* data;
+        size_t size;
+
+        size_t operator[](size_t idx) const {
+            assert(idx < size);
+            return data[idx];
+        }
+        size_t& operator[](size_t idx) {
+            assert(idx < size);
+            return data[idx];
+        }
+        void push(size_t v) {
+            data[size] = v;
+            ++size;
+        }
+        size_t back() const {
+            assert(size > 0);
+            return data[size-1];
+        }
+        size_t front() const {
+            assert(size > 0);
+            return data[0];
+        }
+        void pop_front() {
+            assert(size > 0);
+            data = data+1;
+            --size;
+        }
+    };
 public:
 
     BandMatrix(size_t _query, size_t e, size_t _maxErrors)
@@ -37,6 +69,10 @@ public:
 
     size_t& operator[](size_t idx) {
         return data[idx];
+    }
+
+    auto row(size_t idx, size_t size) {
+        return View{data.data()+idx, size};
     }
 };
 
@@ -68,7 +104,13 @@ struct Search {
         , matrix{_search.size(), e, _maxError}
     {
         matrix[0] = e;
-        search_next(_cursor, 0, 0, 1);
+        size_t newEnd = 1;
+        while(newEnd < search.size() && matrix[newEnd-1]+1 <= search[newEnd].u) {
+            matrix[newEnd] = matrix[newEnd-1] + 1;
+            ++newEnd;
+        }
+
+        search_next2(_cursor, 0, 0, newEnd);
     }
 
     static auto extend(cursor_t const& cur, uint8_t symb) noexcept {
@@ -99,25 +141,40 @@ struct Search {
         search_error_free(newCur, e, pos+1);
     }
 
-    void search_next(cursor_t const& cur, size_t pos, size_t start, size_t end) noexcept {
+
+    void search_next2(cursor_t const& cur, size_t const pos, size_t const start, size_t end) noexcept {
+        auto length = end-start;
+
+        if (length == 0) {
+            return;
+        }
+
+        if (pos + length == search.size()) {
+            delegate(cur, matrix[end-1]);
+            end -= 1;
+            length -= 1;
+            if (length == 0) {
+                return;
+            }
+        }
+
         auto cursors = extend(cur);
+
+        assert(pos + length <= search.size());
 
         for (size_t symb{1}; symb < Sigma; ++symb) {
             auto const& cur = cursors[symb];
             if (cur.empty()) continue;
 
-            auto length = end-start;
 
             auto newPos   = pos;
             auto newStart = end;
-            auto newEnd   = end+length;
+            auto newEnd   = newStart+length;
             // init first cell
             {
-                auto const& s = search[pos];
-                auto rank = query[s.pi];
-
                 matrix[newStart] = matrix[start]+1;
             }
+
             // fill others
             for (size_t i{1}; i < length; ++i) {
                 auto const& s = search[pos+i];
@@ -129,69 +186,190 @@ struct Search {
 
                 matrix[newStart+i] = std::min({gapX, gapY, diag});
             }
-            // fill last match/mismatch
-            if (pos + length < search.size()) {
-                newEnd += 1;
-                auto const& s = search[pos+length];
-                auto rank = query[s.pi];
 
-                auto gapX = matrix[newStart+length-1]+1;
-                auto diag = matrix[start+length-1] + (rank != symb);
-
-                matrix[newStart+length] = std::min({gapX, diag});
-            }
-            // fill extra
-            {
-                auto isValid = [&](size_t pos, size_t i) {
-                    if (pos >= search.size()) return false;
-                    auto const& s = search[pos];
+            if (newPos + length < search.size()) {
+                // fill last match/mismatch
+                {
+                    auto const& s = search[newPos + length];
                     auto rank = query[s.pi];
 
-                    auto e = matrix[i];
-                    return s.l <= e and e <= s.u;
-                };
-                bool valid = isValid(length, newEnd-1);
-                size_t i{1};
-                while (valid) {
-                    matrix[newEnd] = matrix[newEnd-1]+1;
-                    valid = isValid(length+i, newEnd);
+                    auto gapX = matrix[newEnd-1]+1;
+                    auto diag = matrix[start+length-1] + (rank != symb);
+
+                    matrix[newEnd] = std::min({gapX, diag});
                     newEnd += 1;
-                    i += 1;
                 }
             }
 
             // find valid start
-            while (newStart < newEnd) {
-                auto const& s = search[newPos];
+            {
+                while (newStart < newEnd) {
+                    assert(newPos < search.size());
+                    auto const& s = search[newPos];
 
-                auto e = matrix[newStart];
-                if (s.l <= e and e <= s.u) {
+                    auto e = matrix[newStart];
+                    if (s.l <= e and e <= s.u) {
+                        break;
+                    }
+                    newPos += 1;
+                    newStart += 1;
+                };
+            }
+            assert(newPos + newEnd - newStart <= search.size());
+            // fill extra
+            {
+                auto isValid = [&](size_t offset, size_t i) {
+                    if (newPos + offset >= search.size()) return false;
+                    auto const& s = search[newPos + offset];
+
+                    auto e = matrix[i]+1;
+                    return s.l <= e and e <= s.u;
+                };
+
+                size_t i{1};
+                bool valid = isValid(length+i, newEnd-1);
+                while (valid) {
+                    matrix[newEnd] = matrix[newEnd-1]+1;
+                    newEnd += 1;
+                    i += 1;
+                    valid = isValid(length+i, newEnd-1);
+                }
+            }
+
+            // invalidate, invalid entries
+            auto newLength = newEnd - newStart;
+            for (size_t i{0}; i < newLength; ++i) {
+                assert(newPos + newLength - i - 1 < search.size());
+
+                auto const& s = search[newPos+newLength-i-1];
+                auto& e = matrix[newStart+newLength-i-1];
+                if ((s.l <= e and e <= s.u)) {
+                    newEnd = newEnd - i;
                     break;
                 }
-                newPos += 1;
-                newStart += 1;
-            };
-            // find last valid start
-            for (size_t i{0}; i < newEnd - newStart; ++i) {
+
+            }
+            /*for (size_t i{0}; i < newEnd - newStart; ++i) {
+                assert(newPos+i < search.size());
                 auto const& s = search[newPos+i];
 
-                auto e = matrix[newStart+i];
+                auto& e = matrix[newStart+i];
                 if (!(s.l <= e and e <= s.u)) {
-                    newEnd = newStart+i;
-                    break;
+                    e = std::numeric_limits<size_t>::max()/2;
+//                    newEnd = newStart+i;
+//                    break;
                 }
-            };
+            };*/
+
 
             if (newStart < newEnd) {
-                if (newPos + (newEnd-newStart) == search.size()) {
-                    delegate(cur, matrix[newEnd-1]);
-                }
-                if (newPos < search.size()) {
-                    search_next(cur, newPos, newStart, newEnd);
-                }
+                search_next2(cur, newPos, newStart, newEnd);
             }
         }
     }
+
+    void search_next(cursor_t const& cur, size_t const pos, size_t const start, size_t end) noexcept {
+        auto length = end-start;
+
+        if (pos + length == search.size()) {
+            delegate(cur, matrix[end-1]);
+        }
+        end = std::min(end, start + (search.size() - pos));
+        length = end - start;
+        if (pos >= search.size() or length == 0) {
+            return;
+        }
+        auto cursors = extend(cur);
+
+        assert(pos + length <= search.size());
+
+        auto const lastRow = matrix.row(start, end-start);
+
+        for (size_t symb{1}; symb < Sigma; ++symb) {
+            auto const& cur = cursors[symb];
+            if (cur.empty()) continue;
+
+            auto newPos = pos;
+            auto newRow = matrix.row(end, 0);
+
+            // init first cell
+            {
+                newRow.push(lastRow[0]+1);
+            }
+            // fill others
+            for (size_t i{1}; i < length; ++i) {
+                auto const& s = search[pos+i];
+                auto rank = query[s.pi];
+
+                auto gapX = newRow.back()+1;
+                auto gapY = lastRow[i]+1;
+                auto diag = lastRow[i-1] + (rank != symb);
+
+                newRow.push(std::min({gapX, gapY, diag}));
+            }
+
+            if (newPos + newRow.size < search.size()) {
+                // fill last match/mismatch
+                {
+                    auto const& s = search[newPos + newRow.size];
+                    auto rank = query[s.pi];
+
+                    auto gapX = newRow.back()+1;
+                    auto diag = lastRow.back() + (rank != symb);
+
+                    newRow.push(std::min({gapX, diag}));
+                }
+
+                // fill extra
+                {
+                    auto isValid = [&]() {
+                        if (newPos + newRow.size >= search.size()) return false;
+                        auto const& s = search[newPos + newRow.size];
+
+                        auto e = lastRow.back();
+                        return s.l <= e and e <= s.u;
+                    };
+
+                    while (isValid()) {
+                        newRow.push(lastRow.back()+1);
+                    }
+                }
+            }
+            // find valid start
+            {
+                while (newRow.size > 0) {
+                    assert(newPos < search.size());
+                    auto const& s = search[newPos];
+
+                    auto e = newRow.front();
+                    if (s.l <= e and e <= s.u) {
+                        break;
+                    }
+                    newPos += 1;
+                    newRow.pop_front();
+                };
+            }
+            // find last valid start
+            for (size_t i{0}; i < newRow.size; ++i) {
+                assert(newPos+i < search.size());
+                auto const& s = search[newPos+i];
+
+                auto e = newRow[i];
+                if (!(s.l <= e and e <= s.u)) {
+                    newRow.size = i;
+                    break;
+                }
+            };
+
+            if (newRow.size > 0) {
+                auto newStart = newRow.data - matrix.data.data();
+                auto newEnd   = newStart + newRow.size;
+                search_next(cur, newPos, newStart, newEnd);
+            }
+        }
+
+    }
+
 };
 
 
@@ -224,11 +402,20 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
                 if (dir == -1) {
                     search2.emplace_back();
                 }
+                search2.back().emplace_back(Block{std::numeric_limits<size_t>::max(), (size_t)s.l[i], (size_t)s.u[i]});
             } else if (lastDir != dir) {
+                auto lastEntry = search2.back().back();
+                lastEntry.pi = std::numeric_limits<size_t>::max();
                 search2.emplace_back();
+                search2.back().emplace_back(lastEntry);
+
             }
-            lastDir = dir;
+            if (search2.back().back().pi == std::numeric_limits<size_t>::max()) {
+                search2.back().back().u = (size_t)s.u[i];
+            }
             search2.back().emplace_back(Block{(size_t)s.pi[i], (size_t)s.l[i], (size_t)s.u[i]});
+            lastDir = dir;
+
         }
         search_scheme2.emplace_back(move(search2));
     }
