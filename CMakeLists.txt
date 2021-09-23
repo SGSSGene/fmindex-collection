@@ -8,11 +8,9 @@ project (fmindex-collection)
 #add_subdirectory(lib/sdsl-lite)
 
 # fmindex_collection library
-add_library(fmindex_collection
-    src/fmindex-collection/utils/utils.cpp
-)
+add_library(fmindex_collection INTERFACE)
 target_include_directories(fmindex_collection
-    PUBLIC
+    INTERFACE
     src/fmindex-collection
     lib/sdsl-lite/include
 )
@@ -34,6 +32,7 @@ target_include_directories(fmindex_oss
 # example executable
 add_executable(example
     src/example/main.cpp
+    src/example/utils/utils.cpp
 )
 target_link_libraries(example
     PRIVATE

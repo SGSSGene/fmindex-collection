@@ -1,8 +1,9 @@
 #pragma once
 
 #include "StopWatch.h"
-#include "../occtable/concepts.h"
 #include "random.h"
+
+#include <fmindex-collection/occtable/concepts.h>
 
 #include <array>
 #include <cassert>
