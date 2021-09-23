@@ -16,15 +16,15 @@ target_include_directories(fmindex_collection
 )
 
 # search scheme generator library
-add_library(fmindex_oss
-    src/oss/expand.cpp
-    src/oss/generator/pigeon.cpp
-    src/oss/generator/h2.cpp
-    src/oss/generator/suffixFilter.cpp
-    src/oss/generator/zeroOnesZero.cpp
-    src/oss/isValid.cpp
+add_library(search_schemes
+    src/search_schemes/expand.cpp
+    src/search_schemes/generator/pigeon.cpp
+    src/search_schemes/generator/h2.cpp
+    src/search_schemes/generator/suffixFilter.cpp
+    src/search_schemes/generator/zeroOnesZero.cpp
+    src/search_schemes/isValid.cpp
 )
-target_include_directories(fmindex_oss
+target_include_directories(search_schemes
     PUBLIC
     src
 )
@@ -37,5 +37,5 @@ add_executable(example
 target_link_libraries(example
     PRIVATE
     fmindex_collection
-    fmindex_oss
+    search_schemes
     fmt)
