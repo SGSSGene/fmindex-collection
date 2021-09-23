@@ -26,11 +26,11 @@
 #include "search/SearchNg21.h"
 #include "search/SearchNg22.h"
 
-#include "oss/generator/pigeon.h"
-#include "oss/generator/h2.h"
-#include "oss/generator/kucherov.h"
-#include "oss/generator/backtracking.h"
-#include "oss/expand.h"
+#include <oss/generator/pigeon.h>
+#include <oss/generator/h2.h>
+#include <oss/generator/kucherov.h>
+#include <oss/generator/backtracking.h>
+#include <oss/expand.h>
 
 #include <fmt/format.h>
 #include <unordered_set>

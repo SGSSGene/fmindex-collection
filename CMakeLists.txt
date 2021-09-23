@@ -9,12 +9,6 @@ project (fmindex-collection)
 
 # fmindex_collection library
 add_library(fmindex_collection
-    src/fmindex-collection/oss/expand.cpp
-    src/fmindex-collection/oss/generator/pigeon.cpp
-    src/fmindex-collection/oss/generator/h2.cpp
-    src/fmindex-collection/oss/generator/suffixFilter.cpp
-    src/fmindex-collection/oss/generator/zeroOnesZero.cpp
-    src/fmindex-collection/oss/isValid.cpp
     src/fmindex-collection/utils/utils.cpp
 )
 target_include_directories(fmindex_collection
@@ -23,8 +17,26 @@ target_include_directories(fmindex_collection
     lib/sdsl-lite/include
 )
 
+# search scheme generator library
+add_library(fmindex_oss
+    src/oss/expand.cpp
+    src/oss/generator/pigeon.cpp
+    src/oss/generator/h2.cpp
+    src/oss/generator/suffixFilter.cpp
+    src/oss/generator/zeroOnesZero.cpp
+    src/oss/isValid.cpp
+)
+target_include_directories(fmindex_oss
+    PUBLIC
+    src
+)
+
 # example executable
 add_executable(example
     src/example/main.cpp
 )
-target_link_libraries(example PRIVATE fmindex_collection fmt)
+target_link_libraries(example
+    PRIVATE
+    fmindex_collection
+    fmindex_oss
+    fmt)
