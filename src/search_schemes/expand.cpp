@@ -2,7 +2,7 @@
 
 #include "isValid.h"
 
-namespace oss {
+namespace search_schemes {
 namespace {
 
 auto forwards(std::vector<int> const& pi) -> std::vector<int> {

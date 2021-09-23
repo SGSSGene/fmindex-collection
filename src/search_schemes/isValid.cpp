@@ -3,7 +3,7 @@
 #include <cassert>
 #include <algorithm>
 
-namespace oss {
+namespace search_schemes {
 
 namespace {
     // check if pi is contiguous and start with 1

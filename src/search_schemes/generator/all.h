@@ -16,7 +16,7 @@
 #include <vector>
 #include <map>
 
-namespace oss::generator {
+namespace search_schemes::generator {
 
 inline auto all = std::map<std::string, std::function<Scheme(int, int, int, int)>>{
     { "backtracking",   [](int minError, int maxError, int sigma, int dbSize) { return oss::generator::backtracking(1, minError, maxError); }},

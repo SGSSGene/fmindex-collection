@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <numeric>
 
-namespace oss {
+namespace search_schemes {
 
 inline long double nodeCount(SearchTree s, int sigma) {
     auto n_max = s.pi.size();

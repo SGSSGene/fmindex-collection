@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cstddef>
 
-namespace oss::generator {
+namespace search_schemes::generator {
 namespace {
 
 

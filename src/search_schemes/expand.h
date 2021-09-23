@@ -9,7 +9,7 @@
 #include <optional>
 #include <type_traits>
 
-namespace oss {
+namespace search_schemes {
 
 auto expandCount(int oldLen, int newLen) -> std::vector<int>;
 

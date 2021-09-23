@@ -4,7 +4,7 @@
 #include <numeric>
 
 
-namespace oss::generator {
+namespace search_schemes::generator {
 
 inline auto backtracking(int N, int minK, int K) -> Scheme {
     auto s = SearchTree{std::vector<int>(N, 0), std::vector<int>(N, 0), std::vector<int>(N, K)};

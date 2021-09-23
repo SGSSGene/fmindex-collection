@@ -3,7 +3,7 @@
 #include <tuple>
 #include <vector>
 
-namespace oss {
+namespace search_schemes {
 
 struct SearchTree {
     std::vector<int> pi;

@@ -2,7 +2,7 @@
 
 #include "SearchTree.h"
 
-namespace oss {
+namespace search_schemes {
 
 using Scheme = std::vector<SearchTree>;
 

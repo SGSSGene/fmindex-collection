@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-namespace oss::generator {
+namespace search_schemes::generator {
 
 auto suffixFilter(int N, int minK, int K) -> Scheme {
     assert(N > 0);

@@ -5,7 +5,7 @@
 #include <cassert>
 #include <limits>
 
-namespace oss::generator {
+namespace search_schemes::generator {
 
 namespace {
 

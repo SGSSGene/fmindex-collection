@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cassert>
 
-namespace oss {
+namespace search_schemes {
 
 /* checks if Scheme is valid
  *

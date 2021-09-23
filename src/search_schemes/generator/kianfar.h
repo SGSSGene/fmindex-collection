@@ -3,7 +3,7 @@
 #include "backtracking.h"
 #include <cassert>
 
-namespace oss::generator {
+namespace search_schemes::generator {
 
 inline auto kianfar(int minK, int K) -> Scheme {
     assert(minK <= K);

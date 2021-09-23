@@ -2,7 +2,7 @@
 
 #include "../Scheme.h"
 
-namespace oss::generator {
+namespace search_schemes::generator {
 
 auto h2(int N, int minK, int K) -> Scheme;
 

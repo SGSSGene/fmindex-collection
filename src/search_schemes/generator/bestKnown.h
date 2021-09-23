@@ -3,7 +3,7 @@
 #include "backtracking.h"
 #include <cassert>
 
-namespace oss::generator {
+namespace search_schemes::generator {
 
 inline auto bestKnown(int N, int minK, int K) -> Scheme {
     assert(N > minK);

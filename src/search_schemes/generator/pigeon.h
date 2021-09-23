@@ -2,7 +2,7 @@
 
 #include "../Scheme.h"
 
-namespace oss::generator {
+namespace search_schemes::generator {
 
 auto pigeon(int minK, int K, int sigma) -> Scheme;
 auto pigeon_trivial(int minK, int K) -> Scheme;

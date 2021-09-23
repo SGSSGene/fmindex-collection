@@ -2,7 +2,7 @@
 
 #include "../Scheme.h"
 
-namespace oss::generator {
+namespace search_schemes::generator {
 
 auto zeroOnesZero(int minK, int K, int sigma, int DB_SIZE) -> Scheme;
 
