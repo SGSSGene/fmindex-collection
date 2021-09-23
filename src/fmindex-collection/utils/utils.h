@@ -12,6 +12,7 @@
 #include <divsufsort64.h>
 #include <filesystem>
 #include <fstream>
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <string_view>

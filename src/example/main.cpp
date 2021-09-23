@@ -73,6 +73,10 @@ auto loadIndex(std::string path) {
 struct Query {
     std::string name;
     bool reverse;
+    Query(std::string _name, bool _reverse)
+        : name{std::move(_name)}
+        , reverse{_reverse}
+        {}
 };
 template <size_t Sigma>
 auto loadQueries(std::string path, bool reverse) {
