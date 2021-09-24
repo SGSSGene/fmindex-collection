@@ -6,21 +6,26 @@
 namespace search_schemes {
 
 namespace {
-    // check if pi is contiguous and start with 0
-    auto checkPiContiguous(decltype(Search::pi) pi) {
+    /* check if pi is
+     * - contiguous
+     * - holds the connectivity property
+     * - starts with 0
+     */
+    bool checkPiContiguous(decltype(Search::pi) pi) {
         assert(not pi.empty());
-        std::sort(begin(pi), end(pi));
-        auto iter = std::unique(begin(pi), end(pi));
-        if (iter != end(pi)) {
-            return false;
+        auto minV = pi.front();
+        auto maxV = pi.front();
+
+        for (auto iter = ++pi.begin(); iter != pi.end(); ++iter) {
+            if (*iter == maxV+1) {
+                maxV = *iter;
+            } else if (*iter+1 == minV) {
+                minV = *iter;
+            } else {
+                return false;
+            }
         }
-        if (pi.front() != 0) {
-            return false;
-        }
-        if (static_cast<size_t>(pi.back()) != pi.size()-1) {
-            return false;
-        }
-        return true;
+        return minV == 0;
     }
 
     // check that if is monotonically increasing
@@ -38,7 +43,6 @@ namespace {
         }
         return true;
     }
-
 }
 
 auto isValid(Search const& s) -> bool {

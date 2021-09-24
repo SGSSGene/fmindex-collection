@@ -58,11 +58,4 @@ TEST_CASE("check is valid", "[isValid]") {
         {0, 0, 0},
         {0, 0, 0},
     }));
-
-
-
-
-
-
-
 }
