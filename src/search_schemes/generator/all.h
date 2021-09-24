@@ -19,7 +19,7 @@ namespace search_schemes::generator {
 
 inline auto all = std::map<std::string, std::function<Scheme(int, int, int, int)>>{
     { "backtracking",   [](int minError, int maxError, int sigma, int dbSize) { return oss::generator::backtracking(1, minError, maxError); }},
-    { "optimum",        [](int minError, int maxError, int sigma, int dbSize) { return oss::generator::optimum(maxError+1, minError, maxError); }},
+    { "optimum",        [](int minError, int maxError, int sigma, int dbSize) { return oss::generator::optimum(minError, maxError); }},
     { "01*0",           [](int minError, int maxError, int sigma, int dbSize) { return oss::generator::zeroOnesZero_trivial(minError, maxError); }},
     { "01*0_opt",       [](int minError, int maxError, int sigma, int dbSize) { return oss::generator::zeroOnesZero_opt(minError, maxError); }},
     { "pigeon",         [](int minError, int maxError, int sigma, int dbSize) { return oss::generator::pigeon_trivial(minError, maxError); }},
