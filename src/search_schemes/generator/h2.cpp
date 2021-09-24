@@ -125,29 +125,21 @@ auto generateUpperBound(std::vector<std::vector<int>> const& pieces, std::vector
 
 auto h2(int N, int minK, int K) -> Scheme {
     assert(N>0);
-    assert(minK >= 0);
     assert(minK <= K);
-    assert(K>=0);
-    assert(N>K);
+    assert(N >= K);
 
     auto pieces = generatePieces(N, K, 0);
     auto lower  = generateLowerBound(N, K);
     auto upper  = generateUpperBound(pieces, lower);
     auto ss = Scheme{};
     for (size_t i{0}; i < pieces.size(); ++i) {
-        auto s = Search {pieces[i], lower[i], upper[i]};
-        for (auto& pi : s.pi) {
-            pi += 1;
-        }
-        ss.push_back(s);
+        ss.emplace_back(Search{pieces[i], lower[i], upper[i]});
     }
 
     // set minimum value
     for (auto& s : ss) {
         s.l.back() = std::max(s.l.back(), minK);
     }
-
-//    assert(isValid(ss));
 
     return ss;
 }
