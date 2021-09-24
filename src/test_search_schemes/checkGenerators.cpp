@@ -5,6 +5,7 @@
 #include <search_schemes/generator/kianfar.h>
 #include <search_schemes/generator/kucherov.h>
 #include <search_schemes/generator/optimum.h>
+#include <search_schemes/generator/pigeon.h>
 #include <catch2/catch.hpp>
 
 namespace ss = search_schemes;
@@ -68,10 +69,23 @@ TEST_CASE("check search scheme generator kucherov", "[isValid][kucherov]") {
 }
 
 TEST_CASE("check search scheme generator optimum", "[isValid][optimum]") {
-    // Kucherov only exists for certain N and k combinations
     for (size_t minK{0}; minK < 4; ++minK) {
         for (size_t maxK{minK}; maxK < 4; ++maxK) {
             CHECK(ss::isValid(gen::optimum(minK, maxK)));
         }
     }
+}
+
+TEST_CASE("check search scheme generator pigeon", "[isValid][pigeon]") {
+    for (size_t minK{0}; minK < 20; ++minK) {
+        for (size_t maxK{minK}; maxK < 20; ++maxK) {
+            CHECK(ss::isValid(gen::pigeon_trivial(minK, maxK)));
+        }
+    }
+    for (size_t minK{0}; minK < 20; ++minK) {
+        for (size_t maxK{minK}; maxK < 20; ++maxK) {
+            CHECK(ss::isValid(gen::pigeon_opt(minK, maxK)));
+        }
+    }
+
 }

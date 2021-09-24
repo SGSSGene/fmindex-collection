@@ -151,12 +151,12 @@ auto pigeon_trivial(int minK, int K) -> Scheme {
     for (int i{0}; i < N; ++i) {
         auto s = Search{};
         // set order
-        s.pi.push_back(i+1);
+        s.pi.push_back(i);
         for (int j{i-1}; j >= 0; --j) {
-            s.pi.push_back(j+1);
+            s.pi.push_back(j);
         }
         for (int j{i+1}; j < N; ++j) {
-            s.pi.push_back(j+1);
+            s.pi.push_back(j);
         }
 
 
@@ -195,12 +195,12 @@ auto pigeon_opt(int minK, int K) -> Scheme {
     for (int i{0}; i < N; ++i) {
         auto s = Search{};
         // set order
-        s.pi.push_back(i+1);
+        s.pi.push_back(i);
         for (int j{i-1}; j >= 0; --j) {
-            s.pi.push_back(j+1);
+            s.pi.push_back(j);
         }
         for (int j{i+1}; j < N; ++j) {
-            s.pi.push_back(j+1);
+            s.pi.push_back(j);
         }
 
 
