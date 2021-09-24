@@ -5,10 +5,11 @@
 // semantic, because it buffers the output. For most uses however,
 // there is no important difference between having `std::cerr` buffered
 // or unbuffered.
-#include <catch2/catch_test_macros.hpp>
 
-#include <sstream>
-#include <cstdio>
+#define CATCH_CONFIG_NOSTDOUT
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+
 
 class out_buff : public std::stringbuf {
     std::FILE* m_stream;

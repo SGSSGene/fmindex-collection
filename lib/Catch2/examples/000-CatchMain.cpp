@@ -1,10 +1,12 @@
 // 000-CatchMain.cpp
 
-// It is generally recommended to have a single file provide the main
-// of a testing binary, and other test files to link against it.
+// In a Catch project with multiple files, dedicate one file to compile the
+// source code of Catch itself and reuse the resulting object file for linking.
 
 // Let Catch provide main():
-#include <catch2/internal/catch_default_main.hpp>
+#define CATCH_CONFIG_MAIN
+
+#include <catch2/catch.hpp>
 
 // That's it
 

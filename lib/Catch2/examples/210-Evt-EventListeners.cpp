@@ -5,24 +5,20 @@
 // 2. My listener and registration
 // 3. Test cases
 
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/reporters/catch_reporter_event_listener.hpp>
-#include <catch2/catch_reporter_registrars.hpp>
-#include <catch2/catch_test_case_info.hpp>
+// main() provided in 000-CatchMain.cpp
+
+// Let Catch provide the required interfaces:
+#define CATCH_CONFIG_EXTERNAL_INTERFACES
+
+#include <catch2/catch.hpp>
 #include <iostream>
 
 // -----------------------------------------------------------------------
 // 1. Printing of listener data:
 //
 
-
-namespace {
 std::string ws(int const level) {
     return std::string( 2 * level, ' ' );
-}
-
-std::ostream& operator<<(std::ostream& out, Catch::Tag t) {
-    return out << "original: " << t.original << "lower cased: " << t.lowerCased;
 }
 
 template< typename T >
@@ -32,6 +28,7 @@ std::ostream& operator<<( std::ostream& os, std::vector<T> const& v ) {
         os << x << ", ";
     return os << "}";
 }
+
 // struct SourceLineInfo {
 //     char const* file;
 //     std::size_t line;
@@ -122,36 +119,32 @@ void print( std::ostream& os, int const level, std::string const& title, Catch::
     os << ws(level+1) << "- aborting: " << info.aborting << "\n";
 }
 
-//    struct Tag {
-//        StringRef original, lowerCased;
-//    };
+// struct TestCaseInfo {
+//     enum SpecialProperties{
+//         None = 0,
+//         IsHidden = 1 << 1,
+//         ShouldFail = 1 << 2,
+//         MayFail = 1 << 3,
+//         Throws = 1 << 4,
+//         NonPortable = 1 << 5,
+//         Benchmark = 1 << 6
+//     };
 //
+//     bool isHidden() const;
+//     bool throws() const;
+//     bool okToFail() const;
+//     bool expectedToFail() const;
 //
-//    enum class TestCaseProperties : uint8_t {
-//        None = 0,
-//        IsHidden = 1 << 1,
-//        ShouldFail = 1 << 2,
-//        MayFail = 1 << 3,
-//        Throws = 1 << 4,
-//        NonPortable = 1 << 5,
-//        Benchmark = 1 << 6
-//    };
+//     std::string tagsAsString() const;
 //
-//
-//    struct TestCaseInfo : NonCopyable {
-//
-//        bool isHidden() const;
-//        bool throws() const;
-//        bool okToFail() const;
-//        bool expectedToFail() const;
-//
-//
-//        std::string name;
-//        std::string className;
-//        std::vector<Tag> tags;
-//        SourceLineInfo lineInfo;
-//        TestCaseProperties properties = TestCaseProperties::None;
-//    };
+//     std::string name;
+//     std::string className;
+//     std::string description;
+//     std::vector<std::string> tags;
+//     std::vector<std::string> lcaseTags;
+//     SourceLineInfo lineInfo;
+//     SpecialProperties properties;
+// };
 
 void print( std::ostream& os, int const level, std::string const& title, Catch::TestCaseInfo const& info ) {
     os << ws(level  ) << title << ":\n"
@@ -162,9 +155,11 @@ void print( std::ostream& os, int const level, std::string const& title, Catch::
        << ws(level+1) << "- tagsAsString(): '"  << info.tagsAsString() << "'\n"
        << ws(level+1) << "- name: '"            << info.name << "'\n"
        << ws(level+1) << "- className: '"       << info.className << "'\n"
-       << ws(level+1) << "- tags: "             << info.tags << "\n";
+       << ws(level+1) << "- description: '"     << info.description << "'\n"
+       << ws(level+1) << "- tags: "             << info.tags << "\n"
+       << ws(level+1) << "- lcaseTags: "        << info.lcaseTags << "\n";
     print( os, level+1 , "- lineInfo", info.lineInfo );
-    os << ws(level+1) << "- properties (flags): 0x" << std::hex << static_cast<uint32_t>(info.properties) << std::dec << "\n";
+    os << ws(level+1) << "- properties (flags): 0x" << std::hex << info.properties << std::dec << "\n";
 }
 
 // struct TestCaseStats {
@@ -177,7 +172,7 @@ void print( std::ostream& os, int const level, std::string const& title, Catch::
 
 void print( std::ostream& os, int const level, std::string const& title, Catch::TestCaseStats const& info ) {
     os << ws(level  ) << title << ":\n";
-    print( os, level+1 , "- testInfo", *info.testInfo );
+    print( os, level+1 , "- testInfo", info.testInfo );
     print( os, level+1 , "- totals"  , info.totals   );
     os << ws(level+1) << "- stdOut: "   << info.stdOut << "\n"
        << ws(level+1) << "- stdErr: "   << info.stdErr << "\n"
@@ -278,8 +273,8 @@ void print( std::ostream& os, int const level, std::string const& title, Catch::
     print( os, level+1 , "- getSourceInfo(): ", info.getSourceInfo() );
     os << ws(level+1) << "- getTestMacroName(): '"  << info.getTestMacroName() << "'\n";
 
-    print( os, level+1 , "- *** m_info (AssertionInfo)", info.m_info );
-    print( os, level+1 , "- *** m_resultData (AssertionResultData)", info.m_resultData );
+//    print( os, level+1 , "- *** m_info (AssertionInfo)", info.m_info );
+//    print( os, level+1 , "- *** m_resultData (AssertionResultData)", info.m_resultData );
 }
 
 // struct AssertionStats {
@@ -302,10 +297,9 @@ void print( std::ostream& os, int const level, std::string const& title, Catch::
 char const * dashed_line =
     "--------------------------------------------------------------------------";
 
+struct MyListener : Catch::TestEventListenerBase {
 
-struct MyListener : Catch::EventListenerBase {
-
-    using EventListenerBase::EventListenerBase; // inherit constructor
+    using TestEventListenerBase::TestEventListenerBase; // inherit constructor
 
     // Get rid of Wweak-tables
     ~MyListener();
@@ -366,13 +360,12 @@ struct MyListener : Catch::EventListenerBase {
         print( std::cout, 1, "- assertionInfo", assertionInfo );
     }
 
-    void assertionEnded( Catch::AssertionStats const& assertionStats ) override {
+    bool assertionEnded( Catch::AssertionStats const& assertionStats ) override {
         std::cout << "\nEvent: assertionEnded:\n";
         print( std::cout, 1, "- assertionStats", assertionStats );
+        return true;
     }
 };
-
-} // end anonymous namespace
 
 CATCH_REGISTER_LISTENER( MyListener )
 

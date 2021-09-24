@@ -6,8 +6,7 @@
 
 // main() provided in 000-CatchMain.cpp
 
-#include <catch2/catch_test_macros.hpp>
-#include <vector>
+#include <catch2/catch.hpp>
 
 TEST_CASE( "vectors can be sized and resized", "[vector]" ) {
 

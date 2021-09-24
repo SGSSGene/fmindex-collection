@@ -1,7 +1,7 @@
 <a id="top"></a>
 # How to release
 
-When enough changes have accumulated, it is time to release new version of Catch. This document describes the process in doing so, that no steps are forgotten. Note that all referenced scripts can be found in the `tools/scripts/` directory.
+When enough changes have accumulated, it is time to release new version of Catch. This document describes the process in doing so, that no steps are forgotten. Note that all referenced scripts can be found in the `scripts/` directory.
 
 ## Necessary steps
 
@@ -67,6 +67,7 @@ $ gpg2 --armor --output catch.hpp.asc --detach-sig catch.hpp
 $ gpg2 --armor --output catch_reporter_automake.hpp.asc --detach-sig catch_reporter_automake.hpp
 $ gpg2 --armor --output catch_reporter_teamcity.hpp.asc --detach-sig catch_reporter_teamcity.hpp
 $ gpg2 --armor --output catch_reporter_tap.hpp.asc --detach-sig catch_reporter_tap.hpp
+$ gpg2 --armor --output catch_reporter_sonarqube.hpp.asc --detach-sig catch_reporter_sonarqube.hpp
 ```
 
 _GPG does not support signing multiple files in single invocation._

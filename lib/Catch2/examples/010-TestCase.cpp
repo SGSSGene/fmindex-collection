@@ -1,8 +1,11 @@
 // 010-TestCase.cpp
-// And write tests in the same file:
-#include <catch2/catch_test_macros.hpp>
 
-static int Factorial( int number ) {
+// Let Catch provide main():
+#define CATCH_CONFIG_MAIN
+
+#include <catch2/catch.hpp>
+
+int Factorial( int number ) {
    return number <= 1 ? number : Factorial( number - 1 ) * number;  // fail
 // return number <= 1 ? 1      : Factorial( number - 1 ) * number;  // pass
 }

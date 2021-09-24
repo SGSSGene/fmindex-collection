@@ -21,8 +21,8 @@ to the codebase itself.
 
 ## Using Git(Hub)
 
-Ongoing development happens in the `devel` branch for Catch2 v3, and in
-`v2.x` for maintenance updates to the v2 versions.
+Ongoing development happens in the `v2.x` branch for Catch2 v2, and in
+`devel` for the next major version, v3.
 
 Commits should be small and atomic. A commit is atomic when, after it is
 applied, the codebase, tests and all, still works as expected. Small
@@ -30,8 +30,8 @@ commits are also preferred, as they make later operations with git history,
 whether it is bisecting, reverting, or something else, easier.
 
 _When submitting a pull request please do not include changes to the
-amalgamated distribution files. This means do not include them in your
-git commits!_
+single include. This means do not include them in your git commits!_
+
 
 When addressing review comments in a MR, please do not rebase/squash the
 commits immediately. Doing so makes it harder to review the new changes,
@@ -63,13 +63,15 @@ using CTest, either as a direct command invocation + pass/fail regex,
 or by delegating the check to a Python script.
 
 There are also two more kinds of tests, examples and "ExtraTests".
-Examples present a small and self-contained snippets of code that
-use Catch2's facilities for specific purpose. Currently they are assumed
-passing if they compile. ExtraTests then are expensive tests, that we
-do not want to run all the time. This can be either because they take
-a long time to run, or because they take a long time to compile, e.g.
-because they test compile time configuration and require separate
-compilation.
+Examples serve as a compilation test on the single-header distribution,
+and present a small and self-contained snippets of using Catch2 for
+writing tests. ExtraTests then are tests that either take a long time
+to run, or require separate compilation, e.g. because of testing compile
+time configuration options, and take a long time because of that.
+
+Both of these are compiled against the single-header distribution of
+Catch2, and thus might require you to regenerate it manually. This is
+done by calling the `generateSingleHeader.py` script in `scripts`.
 
 Examples and ExtraTests are not compiled by default. To compile them,
 add `-DCATCH_BUILD_EXAMPLES=ON` and `-DCATCH_BUILD_EXTRA_TESTS=ON` to
@@ -78,36 +80,24 @@ the invocation of CMake configuration step.
 Bringing this all together, the steps below should configure, build,
 and run all tests in the `Debug` compilation.
 
-<!-- snippet: catch2-build-and-test -->
-<a id='snippet-catch2-build-and-test'></a>
-```sh
-# 1. Regenerate the amalgamated distribution
-./tools/scripts/generateAmalgamatedFiles.py
-
-# 2. Configure the full test build
-cmake -Bdebug-build -H. -DCMAKE_BUILD_TYPE=Debug -DCATCH_BUILD_EXAMPLES=ON -DCATCH_BUILD_EXTRA_TESTS=ON -DCATCH_DEVELOPMENT_BUILD=ON
-
-# 3. Run the actual build
-cmake --build debug-build
-
-# 4. Run the tests using CTest
-cd debug-build
-ctest -j 4 --output-on-failure -C Debug
+1. Regenerate the single header distribution
 ```
-<sup><a href='/tools/scripts/buildAndTest.sh#L6-L19' title='File snippet `catch2-build-and-test` was extracted from'>snippet source</a> | <a href='#snippet-catch2-build-and-test' title='Navigate to start of snippet `catch2-build-and-test`'>anchor</a></sup>
-<!-- endSnippet -->
-
-For convenience, the above commands are in the script `tools/scripts/buildAndTest.sh`, and can be run like this:
-
-```bash
-cd Catch2
-./tools/scripts/buildAndTest.sh
+$ cd Catch2
+$ ./scripts/generateSingleHeader.py
 ```
-
-If you added new tests, you will likely see `ApprovalTests` failure.
-After you check that the output difference is expected, you should
-run `tools/scripts/approve.py` to confirm them, and include these changes
-in your commit.
+2. Configure the full test build
+```
+$ cmake -Bdebug-build -H. -DCMAKE_BUILD_TYPE=Debug -DCATCH_BUILD_EXAMPLES=ON -DCATCH_BUILD_EXTRA_TESTS=ON
+```
+3. Run the actual build
+```
+$ cmake --build debug-build
+```
+4. Run the tests using CTest
+```
+$ cd debug-build
+$ ctest -j 4 --output-on-failure -C Debug
+```
 
 
 ## Writing documentation
@@ -116,7 +106,6 @@ If you have added new feature to Catch2, it needs documentation, so that
 other people can use it as well. This section collects some technical
 information that you will need for updating Catch2's documentation, and
 possibly some generic advise as well.
-
 
 ### Technicalities 
 
@@ -147,9 +136,9 @@ be replaced with the actual version upon release. There are 2 styles
 of placeholders used through the documentation, you should pick one that
 fits your text better (if in doubt, take a look at the existing version
 tags for other features).
-  * `> [Introduced](link-to-issue-or-PR) in Catch2 X.Y.Z` - this
+  * `> [Introduced](link-to-issue-or-PR) in Catch X.Y.Z` - this
   placeholder is usually used after a section heading
-  * `> X (Y and Z) was [introduced](link-to-issue-or-PR) in Catch2 X.Y.Z`
+  * `> X (Y and Z) was [introduced](link-to-issue-or-PR) in Catch X.Y.Z`
   - this placeholder is used when you need to tag a subpart of something,
   e.g. a list
 
@@ -190,24 +179,6 @@ If want to contribute code, this section contains some simple rules
 and tips on things like code formatting, code constructions to avoid,
 and so on.
 
-### C++ standard version
-
-Catch2 currently targets C++14 as the minimum supported C++ version.
-Features from higher language versions should be used only sparingly,
-when the benefits from using them outweight the maintenance overhead.
-
-Example of good use of polyfilling features is our use of `conjunction`,
-where if available we use `std::conjunction` and otherwise provide our
-own implementation. The reason it is good is that the surface area for
-maintenance is quite small, and `std::conjunction` can directly use
-compiler built-ins, thus providing significant compilation benefits.
-
-Example of bad use of polyfilling features would be to keep around two
-sets of metaprogramming in the stringification implementation, once
-using C++14 compliant TMP and once using C++17's `if constexpr`. While
-the C++17 would provide significant compilation speedups, the maintenance
-cost would be too high.
-
 
 ### Formatting
 
@@ -228,7 +199,7 @@ are problematic and are not always caught by our CI infrastructure.
 #### Naked exceptions and exceptions-related function
 
 If you are throwing an exception, it should be done via `CATCH_ERROR`
-or `CATCH_RUNTIME_ERROR` in `internal/catch_enforce.hpp`. These macros will handle
+or `CATCH_RUNTIME_ERROR` in `catch_enforce.h`. These macros will handle
 the differences between compilation with or without exceptions for you.
 However, some platforms (IAR) also have problems with exceptions-related
 functions, such as `std::current_exceptions`. We do not have IAR in our
@@ -237,61 +208,12 @@ However, if you do, they should be kept behind a
 `CATCH_CONFIG_DISABLE_EXCEPTIONS` macro.
 
 
-#### Avoid `std::move` and `std::forward`
-
-`std::move` and `std::forward` provide nice semantic name for a specific
-`static_cast`. However, being function templates they have surprisingly
-high cost during compilation, and can also have a negative performance
-impact for low-optimization builds.
-
-You should be using `CATCH_MOVE` and `CATCH_FORWARD` macros from
-`internal/catch_move_and_forward.hpp` instead. They expand into the proper
-`static_cast`, and avoid the overhead of `std::move` and `std::forward`.
-
-
 #### Unqualified usage of functions from C's stdlib
 
 If you are using a function from C's stdlib, please include the header
 as `<cfoo>` and call the function qualified. The common knowledge that
 there is no difference is wrong, QNX and VxWorks won't compile if you
 include the header as `<cfoo>` and call the function unqualified.
-
-
-#### User-Defined Literals (UDL) for Catch2' types
-
-Due to messy standardese and ... not great ... implementation of
-`-Wreserved-identifier` in Clang, avoid declaring UDLs as
-```cpp
-Approx operator "" _a(long double);
-```
-and instead declare them as
-```cpp
-Approx operator ""_a(long double);
-```
-
-Notice that the second version does not have a space between the `""` and
-the literal suffix.
-
-
-
-### New source file template
-
-If you are adding new source file, there is a template you should use.
-Specifically, every source file should start with the licence header:
-```cpp
-
-    //              Copyright Catch2 Authors
-    // Distributed under the Boost Software License, Version 1.0.
-    //   (See accompanying file LICENSE_1_0.txt or copy at
-    //        https://www.boost.org/LICENSE_1_0.txt)
-
-    // SPDX-License-Identifier: BSL-1.0
-```
-
-The include guards for header files should follow the pattern `{FILENAME}_INCLUDED`.
-This means that for file `catch_matchers_foo`, the include guard should
-be `CATCH_MATCHERS_FOO_INCLUDED`, for `catch_generators_bar`, the include
-guard should be `CATCH_GENERATORS_BAR_INCLUDED`, and so on.
 
 
 ## CoC
