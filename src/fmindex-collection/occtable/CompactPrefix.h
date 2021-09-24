@@ -100,7 +100,6 @@ Bitvector<TSigma> construct_bitvector(size_t length, CB cb) {
             bv.blocks.back().blocks = block_acc;
         }
         auto blockId      = size >>  6;
-        auto superBlockId = size >> 32;
         auto bitId        = size &  63;
 
         auto start = cb(size-1);

@@ -105,7 +105,6 @@ auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvect
         }
 
         auto blockId      = (size >>  6) % 6;
-        auto superBlockId = size / 384;
         auto bitId        = size &  63;
 
         { // update rank

@@ -77,7 +77,6 @@ struct Bitvector {
                 blocks.back().blocks = block_acc;
             }
             auto blockId      = size >>  6;
-            auto superBlockId = size >> block_size;
             auto bitId        = size &  63;
 
             auto symb = cb(size-1);

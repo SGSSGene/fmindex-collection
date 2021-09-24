@@ -163,7 +163,7 @@ int main(int argc, char const* const* argv) {
 
     std::vector<std::string> algorithms;
 
-    for (size_t i{1}; i < argc; ++i) {
+    for (int i{1}; i < argc; ++i) {
         if (argv[i] == std::string{"--algo"} and i+1 < argc) {
             ++i;
             algorithms.emplace_back(argv[i]);

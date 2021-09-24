@@ -96,7 +96,7 @@ struct Search {
 
 
     template <char LInfo, char RInfo>
-    void search_next(cursor_t const& cur, int e, BlockIter blockIter, size_t lastRank) noexcept {
+    void search_next(cursor_t const& cur, size_t e, BlockIter blockIter, size_t lastRank) noexcept {
         if (cur.count() == 0) {
             return;
         }
@@ -117,7 +117,7 @@ struct Search {
     }
 
     template <char LInfo, char RInfo, bool Right>
-    void search_next_dir(cursor_t const& cur, int e, BlockIter blockIter, size_t lastRank) noexcept {
+    void search_next_dir(cursor_t const& cur, size_t e, BlockIter blockIter, size_t lastRank) noexcept {
         static constexpr char TInfo = Right ? RInfo : LInfo;
 
         constexpr bool Deletion     = TInfo == 'M' or TInfo == 'D';

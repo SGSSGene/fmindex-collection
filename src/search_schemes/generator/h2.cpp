@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <limits>
 
 namespace search_schemes::generator {
 namespace {
@@ -74,14 +75,14 @@ auto generateOptimizedDiffMatrix(size_t N, size_t K) {
             if (i == j or mat[j][i] == 0) continue;
             if (not isValid(j, i, mat[j][i])) {
                 // check for switch
-                size_t index=-1;
+                size_t index = std::numeric_limits<size_t>::max();
                 for (size_t k{j+1}; k<K+1; ++k) {
                     if (isValid(j, i, mat[k][i]) and isValid(k, i, mat[j][i])) {
                         index = k;
                         break;
                     }
                 }
-                assert(index != -1);
+                assert(index != std::numeric_limits<size_t>::max());
                 std::swap(mat[index][i], mat[j][i]);
             }
         }

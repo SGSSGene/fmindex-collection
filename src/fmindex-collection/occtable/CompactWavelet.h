@@ -251,8 +251,6 @@ struct Bitvector {
                insertCount();
             }
 
-            auto blockId      = size >>  6;
-            auto superBlockId = size >> 32;
 //            auto bitId        = size &  63;
 
             auto symb = cb(size);

@@ -11,7 +11,6 @@ struct Search {
     using cursor_t = BiFMIndexCursor<index_t>;
 
     index_t const& index;
-    delegate_t const& delegate;
 
     decltype(search_scheme_t::pi) const& pi;
     decltype(search_scheme_t::l) const& l;
@@ -20,6 +19,7 @@ struct Search {
     using query_t = std::vector<uint8_t>;
 
     query_t const& query;
+    delegate_t const& delegate;
 
     Search(index_t const& _index, search_scheme_t const& _search, query_t const& _query, delegate_t const& _delegate) noexcept
         : index {_index}
@@ -46,7 +46,7 @@ struct Search {
         }
     }
 
-    void search_hm(cursor_t const& cur, int e, std::size_t pos) const noexcept {
+    void search_hm(cursor_t const& cur, size_t e, std::size_t pos) const noexcept {
         if (cur.count() == 0) {
             return;
         }
@@ -69,7 +69,7 @@ struct Search {
         // cursors extended by one character
         auto cursors = std::array<cursor_t, Sigma>{};
         if (e+1 <= u[pos]) {
-            for (auto i{1}; i < Sigma; ++i) {
+            for (auto i{1ul}; i < Sigma; ++i) {
                 cursors[i] = extend(cur, i, pos);
             }
         } else {
@@ -90,7 +90,7 @@ struct Search {
         }
     }
 
-    void search_distance(cursor_t const& cur, int e, std::size_t pos) const noexcept {
+    void search_distance(cursor_t const& cur, size_t e, std::size_t pos) const noexcept {
 
         if (cur.count() == 0) {
             return;
@@ -113,7 +113,7 @@ struct Search {
         // cursors extended by one character
         auto cursors = std::array<cursor_t, Sigma>{};
         if (e+1 <= u[pos]) {
-            for (auto i{1}; i < Sigma; ++i) {
+            for (auto i{1ul}; i < Sigma; ++i) {
                 cursors[i] = extend(cur, i, pos);
             }
         } else {

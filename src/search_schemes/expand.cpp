@@ -51,8 +51,6 @@ auto expandPI(std::vector<size_t> const& pi, size_t _newLen) -> std::vector<size
     for (size_t i{1}; i < pi.size(); ++i) {
         starts[i] = starts[i-1] + counts[i-1];
     }
-    size_t newLen = std::accumulate(begin(counts), end(counts), 0);
-
     auto nums = std::vector<size_t>{};
     auto expandForwards = [&](size_t l, size_t u) {
         for (size_t j = l; j <= u; ++j) {

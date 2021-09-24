@@ -76,7 +76,6 @@ struct Bitvector {
             }
 
             auto blockId      = (size >>  6) % 6;
-            auto superBlockId = size / 384;
             auto bitId        = size &  63;
 
             if (cb(size-1)) {
