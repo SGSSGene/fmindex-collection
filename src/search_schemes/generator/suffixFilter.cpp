@@ -17,14 +17,14 @@ auto suffixFilter(int N, int minK, int K) -> Scheme {
 
         // generate suffix filter seeds
         for (int j{n}; j < N; ++j) {
-            s.pi.push_back(j+1);
+            s.pi.push_back(j);
             s.l.push_back(0);
             s.u.push_back(std::min(j-n, K));
 
         }
         // fill rest of pattern
         for (int j{n-1}; j >= 0; --j) {
-            s.pi.push_back(j+1);
+            s.pi.push_back(j);
             s.l.push_back(std::min(K, 1));
             s.u.push_back(K);
         }

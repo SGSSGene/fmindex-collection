@@ -6,17 +6,18 @@
 #include <search_schemes/generator/kucherov.h>
 #include <search_schemes/generator/optimum.h>
 #include <search_schemes/generator/pigeon.h>
+#include <search_schemes/generator/suffixFilter.h>
 #include <catch2/catch.hpp>
 
 namespace ss = search_schemes;
 namespace gen = ss::generator;
 
 TEST_CASE("check search scheme generator backtracking", "[isValid][backtracking]") {
-    for (size_t N{1}; N < 10; ++N) { // Number of pieces
+    for (size_t N{1}; N < 20; ++N) { // Number of pieces
         INFO("N " << N);
-        for (size_t minK{0}; minK < 6; ++minK) {
+        for (size_t minK{0}; minK < 10ul; ++minK) {
             INFO("minK " << minK);
-            for (size_t maxK{minK}; maxK < 6; ++maxK) {
+            for (size_t maxK{minK}; maxK < 10ul; ++maxK) {
                 INFO("maxK " << maxK);
                 CHECK(ss::isValid(gen::backtracking(N, minK, maxK)));
             }
@@ -25,11 +26,11 @@ TEST_CASE("check search scheme generator backtracking", "[isValid][backtracking]
 }
 
 TEST_CASE("check search scheme generator bestKnown", "[isValid][bestKnown]") {
-    for (size_t N{1}; N < 10; ++N) { // Number of pieces
+    for (size_t N{1}; N < 20; ++N) { // Number of pieces
         INFO("N " << N);
-        for (size_t minK{0}; minK < 6; ++minK) {
+        for (size_t minK{0}; minK < 10ul; ++minK) {
             INFO("minK " << minK);
-            for (size_t maxK{minK}; maxK < 6; ++maxK) {
+            for (size_t maxK{minK}; maxK < 10ul; ++maxK) {
                 INFO("maxK " << maxK);
                 CHECK(ss::isValid(gen::bestKnown(N, minK, maxK)));
             }
@@ -39,11 +40,11 @@ TEST_CASE("check search scheme generator bestKnown", "[isValid][bestKnown]") {
 
 TEST_CASE("check search scheme generator h2", "[isValid][h2]") {
     // Note N must be larger than maxK
-    for (size_t N{1}; N < 10; ++N) { // Number of pieces
+    for (size_t N{1}; N < 20; ++N) { // Number of pieces
         INFO("N " << N);
-        for (size_t minK{0}; minK < std::min(N, 6ul); ++minK) {
+        for (size_t minK{0}; minK < std::min(N, 10ul); ++minK) {
             INFO("minK " << minK);
-            for (size_t maxK{minK}; maxK < std::min(N, 6ul); ++maxK) {
+            for (size_t maxK{minK}; maxK < std::min(N, 10ul); ++maxK) {
                 INFO("maxK " << maxK);
                 CHECK(ss::isValid(gen::h2(N, minK, maxK)));
             }
@@ -87,5 +88,18 @@ TEST_CASE("check search scheme generator pigeon", "[isValid][pigeon]") {
             CHECK(ss::isValid(gen::pigeon_opt(minK, maxK)));
         }
     }
+}
 
+TEST_CASE("check search scheme generator suffixFilter", "[isValid][suffixFilter]") {
+    // Note N must be larger than maxK
+    for (size_t N{1}; N < 20; ++N) { // Number of pieces
+        INFO("N " << N);
+        for (size_t minK{0}; minK < std::min(N, 10ul); ++minK) {
+            INFO("minK " << minK);
+            for (size_t maxK{minK}; maxK < std::min(N, 10ul); ++maxK) {
+                INFO("maxK " << maxK);
+                CHECK(ss::isValid(gen::suffixFilter(N, minK, maxK)));
+            }
+        }
+    }
 }
