@@ -6,7 +6,7 @@
 namespace search_schemes {
 
 namespace {
-    // check if pi is contiguous and start with 1
+    // check if pi is contiguous and start with 0
     auto checkPiContiguous(decltype(Search::pi) pi) {
         assert(not pi.empty());
         std::sort(begin(pi), end(pi));
@@ -14,10 +14,10 @@ namespace {
         if (iter != end(pi)) {
             return false;
         }
-        if (pi.front() != 1) {
+        if (pi.front() != 0) {
             return false;
         }
-        if (static_cast<size_t>(pi.back()) != pi.size()) {
+        if (static_cast<size_t>(pi.back()) != pi.size()-1) {
             return false;
         }
         return true;
@@ -52,7 +52,7 @@ auto isValid(Search const& s) -> bool {
         return false;
     }
 
-    // check if pi is contiguous and start with 1
+    // check if pi is contiguous and start with 0
     if (not checkPiContiguous(s.pi)) {
         return false;
     }
