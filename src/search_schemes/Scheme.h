@@ -1,9 +1,12 @@
 #pragma once
 
-#include "SearchTree.h"
+#include "Search.h"
 
 namespace search_schemes {
 
-using Scheme = std::vector<SearchTree>;
+/*
+ * A Scheme is a list of Searches
+ */
+using Scheme = std::vector<Search>;
 
 }

@@ -9,7 +9,7 @@ namespace search_schemes::generator {
 
 namespace {
 
-auto orderAndAccumulateByProjection(SearchTree s, int K) {
+auto orderAndAccumulateByProjection(Search s, int K) {
     auto l = s.l;
     auto u = s.u;
     s.l.clear();
@@ -35,7 +35,7 @@ auto orderAndAccumulateByProjection(SearchTree s, int K) {
 }
 
 
-auto findCost(SearchTree s, int K, int startPos, int sigma) {
+auto findCost(Search s, int K, int startPos, int sigma) {
     s.pi.clear();
     auto s1{s};
     auto s2{s};
@@ -83,8 +83,8 @@ auto findCost(SearchTree s, int K, int startPos, int sigma) {
 }
 
 
-auto findMinimalCost(SearchTree const& s, int K, int sigma) {
-    auto res = SearchTree{};
+auto findMinimalCost(Search const& s, int K, int sigma) {
+    auto res = Search{};
     int min_c = std::numeric_limits<int>::max();
     for (int i{0}; i < s.l.size(); ++i) {
         auto [c, order] = findCost(s, K, i, sigma);
@@ -109,7 +109,7 @@ auto pigeon(int minK, int K, int sigma) -> Scheme {
     auto res = Scheme{};
 
     for (int i{0}; i < N; ++i) {
-        auto s = SearchTree{};
+        auto s = Search{};
 
         // set lower bound
         for (int j{0}; j < i; ++j) {
@@ -149,7 +149,7 @@ auto pigeon_trivial(int minK, int K) -> Scheme {
     auto res = Scheme{};
 
     for (int i{0}; i < N; ++i) {
-        auto s = SearchTree{};
+        auto s = Search{};
         // set order
         s.pi.push_back(i+1);
         for (int j{i-1}; j >= 0; --j) {
@@ -193,7 +193,7 @@ auto pigeon_opt(int minK, int K) -> Scheme {
     auto res = Scheme{};
 
     for (int i{0}; i < N; ++i) {
-        auto s = SearchTree{};
+        auto s = Search{};
         // set order
         s.pi.push_back(i+1);
         for (int j{i-1}; j >= 0; --j) {

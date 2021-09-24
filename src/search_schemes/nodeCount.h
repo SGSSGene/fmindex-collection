@@ -7,7 +7,7 @@
 
 namespace search_schemes {
 
-inline long double nodeCount(SearchTree s, int sigma) {
+inline long double nodeCount(Search s, int sigma) {
     auto n_max = s.pi.size();
     auto e     = *std::max_element(begin(s.u), end(s.u));
 
@@ -40,7 +40,7 @@ inline long double nodeCount(Scheme const& ss, int sigma) {
     });
 }
 
-inline long double nodeCountEdit(SearchTree s, int sigma) {
+inline long double nodeCountEdit(Search s, int sigma) {
     auto n_max = s.pi.size();
     auto e     = *std::max_element(begin(s.u), end(s.u));
 

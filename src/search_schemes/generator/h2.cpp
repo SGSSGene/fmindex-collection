@@ -135,7 +135,7 @@ auto h2(int N, int minK, int K) -> Scheme {
     auto upper  = generateUpperBound(pieces, lower);
     auto ss = Scheme{};
     for (size_t i{0}; i < pieces.size(); ++i) {
-        auto s = SearchTree {pieces[i], lower[i], upper[i]};
+        auto s = Search {pieces[i], lower[i], upper[i]};
         for (auto& pi : s.pi) {
             pi += 1;
         }

@@ -8,7 +8,7 @@
 namespace search_schemes::generator {
 
 namespace {
-auto orderAndAccumulateByProjection(SearchTree s, int K) {
+auto orderAndAccumulateByProjection(Search s, int K) {
     auto l = s.l;
     auto u = s.u;
     s.l.clear();
@@ -34,7 +34,7 @@ auto orderAndAccumulateByProjection(SearchTree s, int K) {
 }
 
 
-auto findCost(SearchTree s, int K, int startPos, int sigma, int N) {
+auto findCost(Search s, int K, int startPos, int sigma, int N) {
     s.pi.clear();
     auto s1{s};
     auto s2{s};
@@ -85,8 +85,8 @@ auto findCost(SearchTree s, int K, int startPos, int sigma, int N) {
 }
 
 
-auto findMinimalCost(SearchTree const& s, int K, int sigma, int N) {
-    auto res = SearchTree{};
+auto findMinimalCost(Search const& s, int K, int sigma, int N) {
+    auto res = Search{};
     double min_c = std::numeric_limits<double>::max();
     for (int i{0}; i < s.l.size(); ++i) {
         auto [c, order] = findCost(s, K, i, sigma, N);
@@ -130,7 +130,7 @@ auto zeroOnesZero(int minK, int K, int sigma, int DB_SIZE) -> Scheme {
             for (int k{j+1}; k < N; ++k) {
                 u[k] += K - includedErrors;
             }
-            auto s = SearchTree{};
+            auto s = Search{};
             s.l = l;
             s.u = u;
             s = findMinimalCost(s, K, sigma, DB_SIZE);
@@ -160,7 +160,7 @@ auto zeroOnesZero_trivial(int minK, int K) -> Scheme {
 
     for (int i{0}; i < N; ++i) {
         for (int j{0}; j < N-i-1; ++j) {
-            auto s = SearchTree{};
+            auto s = Search{};
             // set order
             s.pi.push_back(i+1);
             for (int k{i+1}; k < N; ++k) {
@@ -214,7 +214,7 @@ auto zeroOnesZero_opt(int minK, int K) -> Scheme {
 
     for (int i{0}; i < N-1; ++i) {
         for (int j{0}; j < N-i-1; ++j) {
-            auto s = SearchTree{};
+            auto s = Search{};
             // set order
             s.pi.push_back(i+1);
             for (int k{i+1}; k < N; ++k) {

@@ -7,7 +7,7 @@ namespace search_schemes {
 
 namespace {
     // check if pi is contiguous and start with 1
-    auto checkPiContiguous(decltype(SearchTree::pi) pi) {
+    auto checkPiContiguous(decltype(Search::pi) pi) {
         assert(not pi.empty());
         std::sort(begin(pi), end(pi));
         auto iter = std::unique(begin(pi), end(pi));
@@ -41,7 +41,7 @@ namespace {
 
 }
 
-auto isValid(SearchTree const& s) -> bool {
+auto isValid(Search const& s) -> bool {
     // check if has valid size
     if (s.pi.empty()) {
         return false;

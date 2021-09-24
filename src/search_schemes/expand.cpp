@@ -29,7 +29,7 @@ auto expandCount(int oldLen, int newLen) -> std::vector<int> {
     return counts;
 }
 
-bool isExpandable(SearchTree s, int newLen) {
+bool isExpandable(Search s, int newLen) {
     assert(isValid(s));
     auto counts = expandCount(s.pi.size(), newLen);
     // check that all parts are still satisfiable
@@ -166,8 +166,8 @@ auto expandUpperBound(std::vector<int> const& pi, std::vector<int> bound, int _n
 }
 
 
-auto expand(SearchTree s, int newLen) -> std::optional<SearchTree> {
-    auto r = SearchTree{};
+auto expand(Search s, int newLen) -> std::optional<Search> {
+    auto r = Search{};
     r.pi = expandPI(s.pi, newLen);
     r.l  = expandLowerBound(s.pi, s.l, newLen);
     r.u  = expandUpperBound(s.pi, s.u, newLen);

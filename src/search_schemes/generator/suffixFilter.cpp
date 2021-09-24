@@ -13,7 +13,7 @@ auto suffixFilter(int N, int minK, int K) -> Scheme {
 
     auto res = Scheme{};
     for (int n{0}; n < N; ++n) {
-        auto s = SearchTree{};
+        auto s = Search{};
 
         // generate suffix filter seeds
         for (int j{n}; j < N; ++j) {
