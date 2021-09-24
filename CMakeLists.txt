@@ -6,14 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project (fmindex-collection)
 
 #add_subdirectory(lib/sdsl-lite)
-
-# fmindex_collection library
-add_library(fmindex_collection INTERFACE)
-target_include_directories(fmindex_collection
-    INTERFACE
-    src/fmindex-collection
-    lib/sdsl-lite/include
-)
+add_subdirectory(lib/Catch2)
 
 # search scheme generator library
 add_library(search_schemes
@@ -27,6 +20,24 @@ add_library(search_schemes
 target_include_directories(search_schemes
     PUBLIC
     src
+)
+
+# search scheme generator unittests
+add_executable(test_search_schemes
+    src/test_search_schemes/main.cpp
+    src/test_search_schemes/isValid.cpp
+)
+target_link_libraries(test_search_schemes
+    Catch2::Catch2
+    search_schemes
+)
+
+# fmindex_collection library
+add_library(fmindex_collection INTERFACE)
+target_include_directories(fmindex_collection
+    INTERFACE
+    src/fmindex-collection
+    lib/sdsl-lite/include
 )
 
 # example executable
