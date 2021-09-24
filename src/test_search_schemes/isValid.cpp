@@ -10,50 +10,50 @@ TEST_CASE("check is valid", "[isValid]") {
         {0},
         {0}
     };
-    REQUIRE(ss::isValid(search));
+    CHECK(ss::isValid(search));
 
-    REQUIRE(ss::isValid(ss::Search {
+    CHECK(ss::isValid(ss::Search {
         {0, 1},
         {0, 0},
         {0, 0},
     }));
 
-    REQUIRE(ss::isValid(ss::Search {
+    CHECK(ss::isValid(ss::Search {
         {1, 0},
         {0, 0},
         {0, 0},
     }));
-    REQUIRE(ss::isValid(ss::Search {
+    CHECK(ss::isValid(ss::Search {
         {0, 1, 2},
         {0, 0, 0},
         {0, 0, 0},
     }));
-    REQUIRE(ss::isValid(ss::Search {
+    CHECK(ss::isValid(ss::Search {
         {1, 0, 2},
         {0, 0, 0},
         {0, 0, 0},
     }));
-    REQUIRE(ss::isValid(ss::Search {
+    CHECK(ss::isValid(ss::Search {
         {1, 2, 0},
         {0, 0, 0},
         {0, 0, 0},
     }));
-    REQUIRE(ss::isValid(ss::Search {
+    CHECK(ss::isValid(ss::Search {
         {2, 1, 0},
         {0, 0, 0},
         {0, 0, 0},
     }));
-    REQUIRE(not ss::isValid(ss::Search {
+    CHECK(not ss::isValid(ss::Search {
         {0, 2, 1},
         {0, 0, 0},
         {0, 0, 0},
     }));
-    REQUIRE(not ss::isValid(ss::Search {
+    CHECK(not ss::isValid(ss::Search {
         {2, 0, 1},
         {0, 0, 0},
         {0, 0, 0},
     }));
-    REQUIRE(not ss::isValid(ss::Search {
+    CHECK(not ss::isValid(ss::Search {
         {0, 0, 2},
         {0, 0, 0},
         {0, 0, 0},
