@@ -162,12 +162,12 @@ auto zeroOnesZero_trivial(int minK, int K) -> Scheme {
         for (int j{0}; j < N-i-1; ++j) {
             auto s = Search{};
             // set order
-            s.pi.push_back(i+1);
+            s.pi.push_back(i);
             for (int k{i+1}; k < N; ++k) {
-                s.pi.push_back(k+1);
+                s.pi.push_back(k);
             }
             for (int k{i}; k > 0; --k) {
-                s.pi.push_back(k);
+                s.pi.push_back(k-1);
             }
 
             // set lower bound
@@ -216,12 +216,12 @@ auto zeroOnesZero_opt(int minK, int K) -> Scheme {
         for (int j{0}; j < N-i-1; ++j) {
             auto s = Search{};
             // set order
-            s.pi.push_back(i+1);
+            s.pi.push_back(i);
             for (int k{i+1}; k < N; ++k) {
-                s.pi.push_back(k+1);
+                s.pi.push_back(k);
             }
             for (int k{i}; k > 0; --k) {
-                s.pi.push_back(k);
+                s.pi.push_back(k-1);
             }
 
             // set lower bound

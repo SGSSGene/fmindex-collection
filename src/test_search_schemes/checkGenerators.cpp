@@ -7,6 +7,7 @@
 #include <search_schemes/generator/optimum.h>
 #include <search_schemes/generator/pigeon.h>
 #include <search_schemes/generator/suffixFilter.h>
+#include <search_schemes/generator/zeroOnesZero.h>
 #include <catch2/catch.hpp>
 
 namespace ss = search_schemes;
@@ -100,6 +101,19 @@ TEST_CASE("check search scheme generator suffixFilter", "[isValid][suffixFilter]
                 INFO("maxK " << maxK);
                 CHECK(ss::isValid(gen::suffixFilter(N, minK, maxK)));
             }
+        }
+    }
+}
+
+TEST_CASE("check search scheme generator 01*0 (zeroOnesZero)", "[isValid][zeroOnesZero]") {
+    for (size_t minK{0}; minK < 20; ++minK) {
+        for (size_t maxK{minK}; maxK < 20; ++maxK) {
+            CHECK(ss::isValid(gen::zeroOnesZero_trivial(minK, maxK)));
+        }
+    }
+    for (size_t minK{0}; minK < 20; ++minK) {
+        for (size_t maxK{minK}; maxK < 20; ++maxK) {
+            CHECK(ss::isValid(gen::zeroOnesZero_opt(minK, maxK)));
         }
     }
 }
