@@ -3,6 +3,7 @@
 #include <search_schemes/generator/bestKnown.h>
 #include <search_schemes/generator/h2.h>
 #include <search_schemes/generator/kianfar.h>
+#include <search_schemes/generator/kucherov.h>
 #include <catch2/catch.hpp>
 
 namespace ss = search_schemes;
@@ -49,8 +50,18 @@ TEST_CASE("check search scheme generator h2", "[isValid][h2]") {
 }
 
 TEST_CASE("check search scheme generator kianfar", "[isValid][kianfar]") {
-    // Kianfar only exists for minK=0 and certain maxKs
+    // Kianfar only exists for certain k's
     for (size_t k{0}; k < 4; ++k) {
         CHECK(ss::isValid(gen::kianfar(k)));
+    }
+}
+
+TEST_CASE("check search scheme generator kucherov", "[isValid][kucherov]") {
+    // Kucherov only exists for certain n and k combinations
+    for (size_t k{0}; k < 5; ++k) {
+        CHECK(ss::isValid(gen::kucherov(k+1, k)));
+    }
+    for (size_t k{0}; k < 5; ++k) {
+        CHECK(ss::isValid(gen::kucherov(k+2, k)));
     }
 }

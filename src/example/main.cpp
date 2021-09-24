@@ -241,7 +241,7 @@ int main(int argc, char const* const* argv) {
                     if (generator == "pigeon_opt")   return search_schemes::expand(search_schemes::generator::pigeon_opt(0, k), mut_queries[0].size());
                     if (generator == "pigeon")       return search_schemes::expand(search_schemes::generator::pigeon_trivial(0, k), mut_queries[0].size());
                     if (generator == "h2")           return search_schemes::expand(search_schemes::generator::h2(k+2, 0, k), mut_queries[0].size());
-                    if (generator == "kucherov")     return search_schemes::expand(search_schemes::generator::kucherov(k+1, 0, k), mut_queries[0].size());
+                    if (generator == "kucherov")     return search_schemes::expand(search_schemes::generator::kucherov(k+1, k), mut_queries[0].size());
                     if (generator == "backtracking") return search_schemes::expand(search_schemes::generator::backtracking(1, 0, k), mut_queries[0].size());
                     throw std::runtime_error("unknown search scheme");
                 }();
