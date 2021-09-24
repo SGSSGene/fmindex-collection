@@ -4,6 +4,6 @@
 
 namespace search_schemes::generator {
 
-auto suffixFilter(int N, int minK, int K) -> Scheme;
+auto suffixFilter(size_t N, size_t minK, size_t K) -> Scheme;
 
 }

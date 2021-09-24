@@ -11,17 +11,17 @@
 
 namespace search_schemes {
 
-auto expandCount(int oldLen, int newLen) -> std::vector<int>;
+auto expandCount(size_t oldLen, size_t newLen) -> std::vector<size_t>;
 
-bool isExpandable(Search s, int newLen);
+bool isExpandable(Search s, size_t newLen);
 
-auto expandPI(std::vector<int> const& pi, int _newLen) -> std::vector<int>;
+auto expandPI(std::vector<size_t> const& pi, size_t _newLen) -> std::vector<size_t>;
 
-auto expandLowerBound(std::vector<int> const& pi, std::vector<int> bound, int _newLen) -> std::vector<int>;
+auto expandLowerBound(std::vector<size_t> const& pi, std::vector<size_t> bound, size_t _newLen) -> std::vector<size_t>;
 
-auto expandUpperBound(std::vector<int> const& pi, std::vector<int> bound, int _newLen) -> std::vector<int>;
+auto expandUpperBound(std::vector<size_t> const& pi, std::vector<size_t> bound, size_t _newLen) -> std::vector<size_t>;
 
-auto expand(Search s, int newLen) -> std::optional<Search>;
-auto expand(Scheme ss, int newLen) -> Scheme;
+auto expand(Search s, size_t newLen) -> std::optional<Search>;
+auto expand(Scheme ss, size_t newLen) -> Scheme;
 
 }

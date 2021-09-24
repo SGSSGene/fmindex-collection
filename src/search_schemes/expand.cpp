@@ -5,8 +5,8 @@
 namespace search_schemes {
 namespace {
 
-auto forwards(std::vector<int> const& pi) -> std::vector<int> {
-    auto rets = std::vector<int>{};
+auto forwards(std::vector<size_t> const& pi) -> std::vector<size_t> {
+    auto rets = std::vector<size_t>{};
     rets.push_back(pi.size() == 1 or pi[1] > pi[0]?1:0);
     for (size_t i{1}; i < pi.size(); ++i) {
         rets.push_back(pi[i] > pi[i-1]?1:0);
@@ -16,20 +16,20 @@ auto forwards(std::vector<int> const& pi) -> std::vector<int> {
 
 }
 
-auto expandCount(int oldLen, int newLen) -> std::vector<int> {
+auto expandCount(size_t oldLen, size_t newLen) -> std::vector<size_t> {
     assert(oldLen > 0);
     assert(newLen > 0);
 
     auto const block_size = newLen / oldLen;
     auto const rest       = newLen % oldLen;
-    auto counts = std::vector<int>(oldLen, block_size);
-    for (int i{0}; i < rest; ++i) {
+    auto counts = std::vector<size_t>(oldLen, block_size);
+    for (size_t i{0}; i < rest; ++i) {
         counts[i] += 1;
     }
     return counts;
 }
 
-bool isExpandable(Search s, int newLen) {
+bool isExpandable(Search s, size_t newLen) {
     assert(isValid(s));
     auto counts = expandCount(s.pi.size(), newLen);
     // check that all parts are still satisfiable
@@ -45,26 +45,26 @@ bool isExpandable(Search s, int newLen) {
     return true;
 }
 
-auto expandPI(std::vector<int> const& pi, int _newLen) -> std::vector<int> {
+auto expandPI(std::vector<size_t> const& pi, size_t _newLen) -> std::vector<size_t> {
     auto counts = expandCount(pi.size(), _newLen);
-    auto starts = std::vector<int>(pi.size(), 1);
+    auto starts = std::vector<size_t>(pi.size(), 1);
     for (size_t i{1}; i < pi.size(); ++i) {
         starts[i] = starts[i-1] + counts[i-1];
     }
-    int newLen = std::accumulate(begin(counts), end(counts), 0);
+    size_t newLen = std::accumulate(begin(counts), end(counts), 0);
 
-    auto nums = std::vector<int>{};
-    auto expandForwards = [&](int l, int u) {
-        for (int j = l; j <= u; ++j) {
+    auto nums = std::vector<size_t>{};
+    auto expandForwards = [&](size_t l, size_t u) {
+        for (size_t j = l; j <= u; ++j) {
             nums.push_back(j);
         }
     };
-    auto expandBackwards = [&](int l, int u) {
-        for (int j = u; j >= l; --j) {
-            nums.push_back(j);
+    auto expandBackwards = [&](size_t l, size_t u) {
+        for (size_t j{u+1}; j > l; --j) {
+            nums.push_back(j-1);
         }
     };
-    auto expand = [&](int i, bool forward) {
+    auto expand = [&](size_t i, bool forward) {
         auto l = starts[pi[i]-1];
         auto u = l + counts[pi[i]-1]-1;
         if (forward) expandForwards(l, u);
@@ -133,8 +133,8 @@ auto expandUpperBound(std::vector<int> const& pi, std::vector<int> bound, int _n
     return expandedBound;
 }*/
 
-auto expandLowerBound(std::vector<int> const& pi, std::vector<int> bound, int _newLen) -> std::vector<int> {
-    auto expandedBound = std::vector<int>{};
+auto expandLowerBound(std::vector<size_t> const& pi, std::vector<size_t> bound, size_t _newLen) -> std::vector<size_t> {
+    auto expandedBound = std::vector<size_t>{};
 
     auto counts = expandCount(pi.size(), _newLen);
     for (size_t i{0}; i < pi.size(); ++i) {
@@ -152,8 +152,8 @@ auto expandLowerBound(std::vector<int> const& pi, std::vector<int> bound, int _n
     return expandedBound;
 }
 
-auto expandUpperBound(std::vector<int> const& pi, std::vector<int> bound, int _newLen) -> std::vector<int> {
-    auto expandedBound = std::vector<int>{};
+auto expandUpperBound(std::vector<size_t> const& pi, std::vector<size_t> bound, size_t _newLen) -> std::vector<size_t> {
+    auto expandedBound = std::vector<size_t>{};
 
     auto counts = expandCount(pi.size(), _newLen);
     for (size_t i{0}; i < pi.size(); ++i) {
@@ -166,7 +166,7 @@ auto expandUpperBound(std::vector<int> const& pi, std::vector<int> bound, int _n
 }
 
 
-auto expand(Search s, int newLen) -> std::optional<Search> {
+auto expand(Search s, size_t newLen) -> std::optional<Search> {
     auto r = Search{};
     r.pi = expandPI(s.pi, newLen);
     r.l  = expandLowerBound(s.pi, s.l, newLen);
@@ -176,7 +176,7 @@ auto expand(Search s, int newLen) -> std::optional<Search> {
     }
     return {r};
 }
-auto expand(Scheme ss, int newLen) -> Scheme {
+auto expand(Scheme ss, size_t newLen) -> Scheme {
     auto r = Scheme{};
     for (auto const& s : ss) {
         auto o = expand(s, newLen);

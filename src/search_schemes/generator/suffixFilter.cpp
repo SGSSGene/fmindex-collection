@@ -4,28 +4,26 @@
 
 namespace search_schemes::generator {
 
-auto suffixFilter(int N, int minK, int K) -> Scheme {
+auto suffixFilter(size_t N, size_t minK, size_t K) -> Scheme {
     assert(N > 0);
-    assert(minK >= 0);
     assert(minK <= K);
-    assert(K >= 0);
     assert(K < N);
 
     auto res = Scheme{};
-    for (int n{0}; n < N; ++n) {
+    for (size_t n{0}; n < N; ++n) {
         auto s = Search{};
 
         // generate suffix filter seeds
-        for (int j{n}; j < N; ++j) {
+        for (size_t j{n}; j < N; ++j) {
             s.pi.push_back(j);
             s.l.push_back(0);
             s.u.push_back(std::min(j-n, K));
 
         }
         // fill rest of pattern
-        for (int j{n-1}; j >= 0; --j) {
-            s.pi.push_back(j);
-            s.l.push_back(std::min(K, 1));
+        for (size_t j{n}; j > 0; --j) {
+            s.pi.push_back(j-1);
+            s.l.push_back(std::min(K, 1ul));
             s.u.push_back(K);
         }
         res.push_back(s);

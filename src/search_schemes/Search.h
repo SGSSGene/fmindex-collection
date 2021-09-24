@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <tuple>
 #include <vector>
 
@@ -13,9 +14,9 @@ namespace search_schemes {
  * Note: pi.size() == l.size() == u.size()
  */
 struct Search {
-    std::vector<int> pi;
-    std::vector<int> l;
-    std::vector<int> u;
+    std::vector<size_t> pi;
+    std::vector<size_t> l;
+    std::vector<size_t> u;
 
     bool operator==(Search const& _other) const {
         return std::tie(pi, l, u) == std::tie(_other.pi, _other.l, _other.u);

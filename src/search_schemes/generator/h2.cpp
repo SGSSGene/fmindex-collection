@@ -7,10 +7,10 @@ namespace search_schemes::generator {
 namespace {
 
 
-auto pi(int row, int n, int N, int K, int Mod) {
+auto pi(size_t row, size_t n, size_t N, size_t K, size_t Mod) {
     row = K - row;
 
-    int shiftRight = Mod * row;
+    size_t shiftRight = Mod * row;
     n = n + shiftRight;
 
     if (n < N-row) {
@@ -19,25 +19,25 @@ auto pi(int row, int n, int N, int K, int Mod) {
     return N+shiftRight - n-1;
 };
 
-auto generatePieces(int N, int K, int Mod=0) {
-    auto pieces = std::vector<std::vector<int>>(K+1, std::vector<int>(N, 0));
-    for (int row{0}; row < K+1; ++row) {
-        for (int i{0}; i < N; ++i) {
+auto generatePieces(size_t N, size_t K, size_t Mod=0) {
+    auto pieces = std::vector<std::vector<size_t>>(K+1, std::vector<size_t>(N, 0));
+    for (size_t row{0}; row < K+1; ++row) {
+        for (size_t i{0}; i < N; ++i) {
             pieces[row][i] = pi(row, i, N, K, Mod);
         }
     }
     return pieces;
 }
 
-auto generateDiffMatrix(int N, int K) {
-    auto diffs = std::vector<std::vector<int>>(K+1, std::vector<int>(N, 0));
-    for (int i{K}; i<N; ++i) {
-        for (int row{0}; row < K+1; ++row) {
+auto generateDiffMatrix(size_t N, size_t K) {
+    auto diffs = std::vector<std::vector<size_t>>(K+1, std::vector<size_t>(N, 0));
+    for (size_t i{K}; i<N; ++i) {
+        for (size_t row{0}; row < K+1; ++row) {
             diffs[row][i] = K-row;
         }
     }
-    for (int i{0}; i<K; ++i) {
-        for (int row{0}; row < K; ++row) {
+    for (size_t i{0}; i<K; ++i) {
+        for (size_t row{0}; row < K; ++row) {
             diffs[row][i] = (row-i + K) % K;
         }
         diffs[K][i] = K;
@@ -46,21 +46,21 @@ auto generateDiffMatrix(int N, int K) {
     return diffs;
 }
 
-auto generateOptimizedDiffMatrix(int N, int K) {
+auto generateOptimizedDiffMatrix(size_t N, size_t K) {
     auto mat = generateDiffMatrix(N, K);
 
-    auto isValid = [&](int row, int n, int v) {
+    auto isValid = [&](size_t row, size_t n, size_t v) {
         if (row == n) {
             return false;
         }
         if (row > n) {
-            for (int i{0}; i<n; ++i) {
+            for (size_t i{0}; i<n; ++i) {
                 if (mat[row][i] < v) {
                     return false;
                 }
             }
         } else {
-            for (int i{row+1}; i<n; ++i) {
+            for (size_t i{row+1}; i<n; ++i) {
                 if (mat[row][i] > v) {
                     return false;
                 }
@@ -69,13 +69,13 @@ auto generateOptimizedDiffMatrix(int N, int K) {
         return true;
     };
 
-    for (int i{0}; i<N; ++i) {
-        for (int j{0}; j<K+1; ++j) {
+    for (size_t i{0}; i<N; ++i) {
+        for (size_t j{0}; j<K+1; ++j) {
             if (i == j or mat[j][i] == 0) continue;
             if (not isValid(j, i, mat[j][i])) {
                 // check for switch
-                int index=-1;
-                for (int k{j+1}; k<K+1; ++k) {
+                size_t index=-1;
+                for (size_t k{j+1}; k<K+1; ++k) {
                     if (isValid(j, i, mat[k][i]) and isValid(k, i, mat[j][i])) {
                         index = k;
                         break;
@@ -91,30 +91,31 @@ auto generateOptimizedDiffMatrix(int N, int K) {
 }
 
 
-auto generateLowerBound(int N, int K) {
-    auto bound = std::vector<std::vector<int>>(K+1, std::vector<int>(N, 0));
-    for (int i{0}; i <= K; ++i) {
-        for (int j{0}; j<K-i+1; ++j) {
+auto generateLowerBound(size_t N, size_t K) {
+    auto bound = std::vector<std::vector<size_t>>(K+1, std::vector<size_t>(N, 0));
+    for (size_t i{0}; i <= K; ++i) {
+        for (size_t j{0}; j<K-i+1; ++j) {
             bound[i][N-j-1] = i;
         }
     }
     return bound;
 }
 
-auto generateUpperBound(std::vector<std::vector<int>> const& pieces, std::vector<std::vector<int>> const& lower) {
+auto generateUpperBound(std::vector<std::vector<size_t>> const& pieces, std::vector<std::vector<size_t>> const& lower) {
     assert(pieces.size() >= 1);
-    int const K = pieces.size() - 1;
-    int const N = pieces[0].size();
+    size_t const K = pieces.size() - 1;
+    size_t const N = pieces[0].size();
     assert(N >= K);
 
     auto diffs = generateOptimizedDiffMatrix(N, K);
 
-    auto bound = std::vector<std::vector<int>>(K+1, std::vector<int>(N, 0));
+    auto bound = std::vector<std::vector<size_t>>(K+1, std::vector<size_t>(N, 0));
 
-    for (int i{1}; i<N; ++i) {
-        for (int row{K}; row >= 0; --row) {
+    for (size_t i{1}; i<N; ++i) {
+        for (size_t _row{K+1}; _row > 0; --_row) {
+            size_t row = _row - 1;
             assert(pieces[row].size() == N);
-            int j = pieces[row][i];
+            size_t j = pieces[row][i];
             bound[row][i] = std::max(bound[row][i-1], lower[row][i-1] + diffs[K-row][j]);
         }
     }
@@ -123,7 +124,7 @@ auto generateUpperBound(std::vector<std::vector<int>> const& pieces, std::vector
 
 }
 
-auto h2(int N, int minK, int K) -> Scheme {
+auto h2(size_t N, size_t minK, size_t K) -> Scheme {
     assert(N>0);
     assert(minK <= K);
     assert(N >= K);
