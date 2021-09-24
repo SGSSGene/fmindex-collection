@@ -253,12 +253,6 @@ int main(int argc, char const* const* argv) {
     //            auto search_scheme = search_schemes::expand(search_schemes::generator::backtracking(1, 0, k), mut_queries[0].size());
 
         //
-                for (size_t i{0}; i < search_scheme.size(); ++i) {
-                    auto& tree = search_scheme[i];
-                    for (size_t j{0}; j < tree.pi.size(); ++j) {
-                        tree.pi[j] -= 1;
-                    }
-                }
                 size_t resultCt{};
                 StopWatch sw;
                 std::vector<std::tuple<size_t, size_t, size_t, std::string>> results{};
