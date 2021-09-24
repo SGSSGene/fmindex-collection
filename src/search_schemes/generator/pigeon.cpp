@@ -1,9 +1,6 @@
 #include "pigeon.h"
 
-#include "../nodeCount.h"
-
 #include <cassert>
-#include <limits>
 
 namespace search_schemes::generator {
 
