@@ -220,8 +220,6 @@ struct OccTable {
 
     auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
         auto [rs, prs] = bitvector.all_ranks_and_prefix_ranks(idx);
-//        auto rs  = bitvector.all_ranks(idx);
-//        auto prs = bitvector.all_prefix_ranks(idx);
         return {rs, prs};
     }
 };

@@ -240,39 +240,20 @@ struct Bitvector {
             }
         };
 
-/*        which_bv(bvct-1, [&](size_t id, size_t bit) {
-            waveletcount[id].push_back(bit);
-        });
-        sblock_acc[bvct-1] += 1;
-        block_acc[bvct-1]  += 1;*/
-
         for (size_t size{0}; size < length; ++size) {
             if (size % 64 == 0) { // new block
                insertCount();
             }
 
-//            auto bitId        = size &  63;
-
             auto symb = cb(size);
-//            std::cout << "symb: " << int(symb) << " " << size << "\n";
-
             which_bv(symb, [&](size_t id, size_t bit) {
-//               std::cout << "id: " << id << " " << waveletcount.size() << "\n";
-//               std::cout << waveletcount[id].size() << "\n";
-                auto bit2 = bit;
-                waveletcount[id].push_back(bit2);
+                waveletcount[id].push_back(bit);
             });
-//            std::cout << "done\n";
-
-
-//            auto& bits = blocks[blockId].bits[symb];
-//            bits = bits | (1ul << bitId);
             block_acc[symb] += 1;
             sblock_acc[symb] += 1;
         }
         while (waveletcount[0].size() < 64) {
             which_bv(bvct-1, [&](size_t id, size_t bit) {
-//                     std::cout << "id2: " << id << "\n";
                 waveletcount[id].push_back(bit);
             });
             block_acc[bvct-1] += 1;

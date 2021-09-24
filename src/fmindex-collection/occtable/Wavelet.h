@@ -149,21 +149,9 @@ auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvect
 
     for (size_t size{1}; size <= length; ++size) {
         auto symb = cb(size-1);
-//        std::cout << "symb: " << int(symb) << " - ";
         which_bv(symb, [&](size_t id, size_t bit) {
-//                 std::cout << "(" << id << "," << bit << ")";
             add_bv_bit(id, bit);
         });
-/*        std::cout << "\n";
-        std::cout << size << " - ";
-        for (auto s : sblock_acc) {
-            std::cout << s << " ";
-        } std::cout << "\n";
-        std::cout << "  - ";
-        for (auto s : bv_size) {
-            std::cout << s << " ";
-        } std::cout << "\n";*/
-
     }
 
     std::array<uint64_t, TSigma+1> C;

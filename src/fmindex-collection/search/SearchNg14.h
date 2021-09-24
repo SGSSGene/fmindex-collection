@@ -52,17 +52,6 @@ struct Search {
         } else {
             return cur.extendLeft();
         }
-
-        /*auto cursors = std::array<cursor_t, Sigma>{};
-        for (size_t i{1}; i < Sigma; ++i) {
-            if constexpr (Direction == Dir::Right) {
-                cursors[i] = cur.extendRight(i);
-            } else {
-                cursors[i] = cur.extendLeft(i);
-            }
-        }
-        return cursors;*/
-
     }
 
 
