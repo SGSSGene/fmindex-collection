@@ -12,4 +12,57 @@ TEST_CASE("check is valid", "[isValid]") {
     };
     REQUIRE(ss::isValid(search));
 
+    REQUIRE(ss::isValid(ss::Search {
+        {0, 1},
+        {0, 0},
+        {0, 0},
+    }));
+
+    REQUIRE(ss::isValid(ss::Search {
+        {1, 0},
+        {0, 0},
+        {0, 0},
+    }));
+    REQUIRE(ss::isValid(ss::Search {
+        {0, 1, 2},
+        {0, 0, 0},
+        {0, 0, 0},
+    }));
+    REQUIRE(ss::isValid(ss::Search {
+        {1, 0, 2},
+        {0, 0, 0},
+        {0, 0, 0},
+    }));
+    REQUIRE(ss::isValid(ss::Search {
+        {1, 2, 0},
+        {0, 0, 0},
+        {0, 0, 0},
+    }));
+    REQUIRE(ss::isValid(ss::Search {
+        {2, 1, 0},
+        {0, 0, 0},
+        {0, 0, 0},
+    }));
+    REQUIRE(not ss::isValid(ss::Search {
+        {0, 2, 1},
+        {0, 0, 0},
+        {0, 0, 0},
+    }));
+    REQUIRE(not ss::isValid(ss::Search {
+        {2, 0, 1},
+        {0, 0, 0},
+        {0, 0, 0},
+    }));
+    REQUIRE(not ss::isValid(ss::Search {
+        {0, 0, 2},
+        {0, 0, 0},
+        {0, 0, 0},
+    }));
+
+
+
+
+
+
+
 }
