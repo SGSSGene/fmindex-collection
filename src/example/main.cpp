@@ -235,7 +235,7 @@ int main(int argc, char const* const* argv) {
             for (size_t k{minK}; k<maxK; ++k)
             {
 //                if (k >= 4 and k != 6) {
-                    mut_queries.resize(mut_queries.size() / 10);
+//                    mut_queries.resize(mut_queries.size() / 10);
 //                }
                 auto search_scheme = [&]() {
                     if (generator == "pigeon_opt")   return search_schemes::expand(search_schemes::generator::pigeon_opt(0, k), mut_queries[0].size());
