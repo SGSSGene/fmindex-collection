@@ -28,6 +28,7 @@ add_executable(test_search_schemes
     src/test_search_schemes/isValid.cpp
     src/test_search_schemes/expand.cpp
     src/test_search_schemes/checkGenerators.cpp
+    src/test_search_schemes/nodeCount.cpp
 )
 target_link_libraries(test_search_schemes
     Catch2::Catch2

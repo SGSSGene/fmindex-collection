@@ -3,11 +3,12 @@
 #include "Scheme.h"
 
 #include <algorithm>
+#include <cassert>
 #include <numeric>
 
 namespace search_schemes {
 
-inline long double nodeCount(Search s, int sigma) {
+inline long double nodeCount(Search s, size_t sigma) {
     auto n_max = s.pi.size();
     auto e     = *std::max_element(begin(s.u), end(s.u));
 
@@ -17,8 +18,8 @@ inline long double nodeCount(Search s, int sigma) {
     long double acc = 0;
 
     auto newArray = std::vector<long double>(e+1, 0);
-    for (int n {1}; n <= n_max; ++n) {
-        for (int i{0}; i < e+1; ++i) {
+    for (size_t n {1}; n <= n_max; ++n) {
+        for (size_t i{0}; i < e+1; ++i) {
             if (s.l[n-1] <= i and i <= s.u[n-1]) {
                 newArray[i] = lastArray[i];
                 if (i > 0) {
@@ -34,13 +35,13 @@ inline long double nodeCount(Search s, int sigma) {
     return acc;
 }
 
-inline long double nodeCount(Scheme const& ss, int sigma) {
+inline long double nodeCount(Scheme const& ss, size_t sigma) {
     return std::accumulate(begin(ss), end(ss), (long double){0.}, [&](long double v, auto const& s) {
         return v + nodeCount(s, sigma);
     });
 }
 
-inline long double nodeCountEdit(Search s, int sigma) {
+inline long double nodeCountEdit(Search s, size_t sigma) {
     auto n_max = s.pi.size();
     auto e     = *std::max_element(begin(s.u), end(s.u));
 
@@ -50,8 +51,8 @@ inline long double nodeCountEdit(Search s, int sigma) {
     long double acc = 0;
 
     auto newArray = std::vector<long double>(e+1, 0);
-    for (int n {1}; n <= n_max; ++n) {
-        for (int i{0}; i < e+1; ++i) {
+    for (size_t n {1}; n <= n_max; ++n) {
+        for (size_t i{0}; i < e+1; ++i) {
             if (s.l[n-1] <= i and i <= s.u[n-1]) {
                 newArray[i] = lastArray[i];
                 if (i > 0) {
