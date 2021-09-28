@@ -26,6 +26,7 @@ target_include_directories(search_schemes
 add_executable(test_search_schemes
     src/test_search_schemes/main.cpp
     src/test_search_schemes/isValid.cpp
+    src/test_search_schemes/expand.cpp
     src/test_search_schemes/checkGenerators.cpp
 )
 target_link_libraries(test_search_schemes
