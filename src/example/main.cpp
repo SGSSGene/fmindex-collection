@@ -12,6 +12,7 @@
 
 #include "FMIndex.h"
 #include "BiFMIndex.h"
+#include "BiFMIndexCursor.h"
 #include "CSA.h"
 
 #include "utils/utils.h"
