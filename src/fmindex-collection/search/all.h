@@ -9,3 +9,4 @@
 #include "SearchNg21.h"
 #include "SearchNg22.h"
 #include "SearchPseudo.h"
+#include "SearchNoErrors.h"

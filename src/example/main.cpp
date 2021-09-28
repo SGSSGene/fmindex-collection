@@ -3,16 +3,7 @@
 
 #include <fmindex-collection/fmindex-collection.h>
 #include <fmindex-collection/occtable/all.h>
-#include <fmindex-collection/search/SearchNg12.h>
-#include <fmindex-collection/search/SearchNg14.h>
-#include <fmindex-collection/search/SearchNg15.h>
-#include <fmindex-collection/search/SearchNg16.h>
-#include <fmindex-collection/search/SearchNg17.h>
-#include <fmindex-collection/search/SearchNg20.h>
-#include <fmindex-collection/search/SearchNg21.h>
-#include <fmindex-collection/search/SearchNg22.h>
-#include <fmindex-collection/search/SearchPseudo.h>
-
+#include <fmindex-collection/search/all.h>
 #include <search_schemes/generator/all.h>
 #include <search_schemes/expand.h>
 
@@ -272,6 +263,7 @@ int main(int argc, char const* const* argv) {
                 else if (algorithm == "ng20") search_ng20::search(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "ng21") search_ng21::search(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "ng22") search_ng22::search(index, mut_queries, search_scheme, res_cb2);
+                else if (algorithm == "noerror") search_no_errors::search(index, mut_queries, res_cb);
 
     //            search_ng14::search(index, mut_queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
     //            search_ng15::search(index, mut_queries, search_scheme, [&](size_t queryId, auto const& cursor, size_t errors) {
