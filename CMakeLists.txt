@@ -26,6 +26,7 @@ target_include_directories(search_schemes
 # search scheme generator unittests
 add_executable(test_search_schemes
     src/test_search_schemes/checkGenerators.cpp
+    src/test_search_schemes/checkGeneratorsIsComplete.cpp
     src/test_search_schemes/expand.cpp
     src/test_search_schemes/isComplete.cpp
     src/test_search_schemes/isValid.cpp

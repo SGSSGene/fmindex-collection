@@ -1,4 +1,5 @@
 #include <search_schemes/isValid.h>
+#include <search_schemes/isComplete.h>
 #include <search_schemes/generator/backtracking.h>
 #include <search_schemes/generator/bestKnown.h>
 #include <search_schemes/generator/h2.h>
