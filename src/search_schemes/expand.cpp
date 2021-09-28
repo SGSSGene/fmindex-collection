@@ -47,7 +47,7 @@ bool isExpandable(Search s, size_t newLen) {
 
 auto expandPI(std::vector<size_t> const& pi, size_t _newLen) -> std::vector<size_t> {
     auto counts = expandCount(pi.size(), _newLen);
-    auto starts = std::vector<size_t>(pi.size(), 1);
+    auto starts = std::vector<size_t>(pi.size(), 0);
     for (size_t i{1}; i < pi.size(); ++i) {
         starts[i] = starts[i-1] + counts[i-1];
     }
@@ -63,8 +63,8 @@ auto expandPI(std::vector<size_t> const& pi, size_t _newLen) -> std::vector<size
         }
     };
     auto expand = [&](size_t i, bool forward) {
-        auto l = starts[pi[i]-1];
-        auto u = l + counts[pi[i]-1]-1;
+        auto l = starts[pi[i]];
+        auto u = l + counts[pi[i]]-1;
         if (forward) expandForwards(l, u);
         else expandBackwards(l, u);
     };
@@ -136,7 +136,7 @@ auto expandLowerBound(std::vector<size_t> const& pi, std::vector<size_t> bound, 
 
     auto counts = expandCount(pi.size(), _newLen);
     for (size_t i{0}; i < pi.size(); ++i) {
-        auto count = counts[pi[i]-1];
+        auto count = counts[pi[i]];
         while(count > 1) {
             --count;
             expandedBound.push_back((i>0)?bound[i-1]:0);
@@ -155,7 +155,7 @@ auto expandUpperBound(std::vector<size_t> const& pi, std::vector<size_t> bound, 
 
     auto counts = expandCount(pi.size(), _newLen);
     for (size_t i{0}; i < pi.size(); ++i) {
-        auto count = counts[pi[i]-1];
+        auto count = counts[pi[i]];
         while (count --> 0) {
             expandedBound.push_back(bound[i]);
         }
