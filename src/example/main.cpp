@@ -1,36 +1,19 @@
-#include "occtable/Bitvector.h"
-#include "occtable/BitvectorPrefix.h"
-#include "occtable/Compact.h"
-#include "occtable/Compact2.h"
-#include "occtable/Compact2Aligned.h"
-#include "occtable/CompactAligned.h"
-#include "occtable/CompactPrefix.h"
-#include "occtable/CompactWavelet.h"
-#include "occtable/Naive.h"
-#include "occtable/Sdsl_wt_bldc.h"
-#include "occtable/Wavelet.h"
-
-#include "FMIndex.h"
-#include "BiFMIndex.h"
-#include "BiFMIndexCursor.h"
-#include "CSA.h"
-
 #include "utils/utils.h"
 
-#include "search/SearchPseudo.h"
-#include "search/SearchNg12.h"
-#include "search/SearchNg14.h"
-#include "search/SearchNg15.h"
-#include "search/SearchNg16.h"
-#include "search/SearchNg17.h"
-#include "search/SearchNg20.h"
-#include "search/SearchNg21.h"
-#include "search/SearchNg22.h"
 
-#include <search_schemes/generator/pigeon.h>
-#include <search_schemes/generator/h2.h>
-#include <search_schemes/generator/kucherov.h>
-#include <search_schemes/generator/backtracking.h>
+#include <fmindex-collection/fmindex-collection.h>
+#include <fmindex-collection/occtable/all.h>
+#include <fmindex-collection/search/SearchNg12.h>
+#include <fmindex-collection/search/SearchNg14.h>
+#include <fmindex-collection/search/SearchNg15.h>
+#include <fmindex-collection/search/SearchNg16.h>
+#include <fmindex-collection/search/SearchNg17.h>
+#include <fmindex-collection/search/SearchNg20.h>
+#include <fmindex-collection/search/SearchNg21.h>
+#include <fmindex-collection/search/SearchNg22.h>
+#include <fmindex-collection/search/SearchPseudo.h>
+
+#include <search_schemes/generator/all.h>
 #include <search_schemes/expand.h>
 
 #include <fmt/format.h>
