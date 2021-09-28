@@ -10,7 +10,7 @@
 #include <iostream>
 
 namespace occtable {
-namespace compactWavelet {
+namespace compactWavelet_detail {
 
 constexpr inline size_t bits_count(size_t y) {
     if (y == 0) return 1;
@@ -27,12 +27,12 @@ constexpr inline size_t pow(size_t b, size_t y) {
 }
 
 
-template <size_t TSigma>
+template <size_t TSigma, size_t TAlignment>
 struct Bitvector {
     static constexpr auto bitct = bits_count(TSigma);
     static constexpr auto bvct = pow(2, bitct);
 
-    struct Block {
+    struct alignas(TAlignment) Block {
 
         std::array<uint32_t, TSigma> blocks{};
         std::array<uint64_t, bitct>  bits{};
@@ -321,15 +321,15 @@ struct Bitvector {
 };
 
 
-template <size_t TSigma>
+template <size_t TSigma, size_t TAlignment>
 struct OccTable {
     static constexpr size_t Sigma = TSigma;
 
-    Bitvector<Sigma> bitvector;
+    Bitvector<Sigma, TAlignment> bitvector;
     size_t size_{};
 
     static size_t expectedMemoryUsage(size_t length) {
-        using Block = typename Bitvector<TSigma>::Block;
+        using Block = typename Bitvector<TSigma, TAlignment>::Block;
         auto blockSize = std::max(alignof(Block), sizeof(Block));
 
         size_t C           = sizeof(uint64_t) * (Sigma+1);
@@ -384,7 +384,18 @@ struct OccTable {
     }
 
 };
-static_assert(checkOccTable<OccTable>);
-
 }
+
+namespace compactWavelet {
+template <size_t Sigma>
+struct OccTable : compactWavelet_detail::OccTable<Sigma, 1> {};
+static_assert(checkOccTable<OccTable>);
+}
+
+namespace compactWaveletAligned {
+template <size_t Sigma>
+struct OccTable : compactWavelet_detail::OccTable<Sigma, 64> {};
+static_assert(checkOccTable<OccTable>);
+}
+
 }
