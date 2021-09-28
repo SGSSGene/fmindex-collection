@@ -11,10 +11,11 @@ add_subdirectory(lib/Catch2)
 # search scheme generator library
 add_library(search_schemes
     src/search_schemes/expand.cpp
-    src/search_schemes/generator/pigeon.cpp
     src/search_schemes/generator/h2.cpp
+    src/search_schemes/generator/pigeon.cpp
     src/search_schemes/generator/suffixFilter.cpp
     src/search_schemes/generator/zeroOnesZero.cpp
+    src/search_schemes/isComplete.cpp
     src/search_schemes/isValid.cpp
 )
 target_include_directories(search_schemes
@@ -24,10 +25,11 @@ target_include_directories(search_schemes
 
 # search scheme generator unittests
 add_executable(test_search_schemes
-    src/test_search_schemes/main.cpp
-    src/test_search_schemes/isValid.cpp
-    src/test_search_schemes/expand.cpp
     src/test_search_schemes/checkGenerators.cpp
+    src/test_search_schemes/expand.cpp
+    src/test_search_schemes/isComplete.cpp
+    src/test_search_schemes/isValid.cpp
+    src/test_search_schemes/main.cpp
     src/test_search_schemes/nodeCount.cpp
 )
 target_link_libraries(test_search_schemes
