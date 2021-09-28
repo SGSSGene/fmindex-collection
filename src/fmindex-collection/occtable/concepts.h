@@ -52,9 +52,7 @@ concept OccTable = requires(T t) {
      */
     { t.size() } -> size_t;
 
-    T::expectedMemoryUsage(0);
     t.symbol(uint64_t{});
-    t.memoryUsage();
 };
 
 template<template <auto> typename T>
@@ -77,4 +75,23 @@ concept OccTablePrefetch = OccTable<T> and requires(T t) {
      * t.all_ranks(...)
      */
     t.prefetch(uint64_t{});
+};
+
+
+/** Additional methods to estimate memory usage
+ */
+template <typename T>
+concept OccTableMemoryUsage = OccTable<T> and requires(T t) {
+    /* Estimates the memory usage of a referce certain length
+     *
+     * \param first - length of the text to be indexed
+     * \return number of bytes expected to be needed
+     */
+    { T::expectedMemoryUsage(size_t{}) } -> size_t;
+
+    /* Computes the actual memory usage of this data structure
+     *
+     * \return number of bytes that are being used
+     */
+    { t.memoryUsage() } -> size_t;
 };

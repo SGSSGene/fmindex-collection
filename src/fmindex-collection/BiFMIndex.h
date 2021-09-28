@@ -34,7 +34,7 @@ struct BiFMIndex {
         }
     }
 
-    size_t memoryUsage() const {
+    size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
         return occ.memoryUsage() + occRev.memoryUsage() + csa.memoryUsage();
     }
 

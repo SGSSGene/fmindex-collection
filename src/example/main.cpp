@@ -205,11 +205,13 @@ int main(int argc, char const* const* argv) {
 
 //    auto [bwt, bwtRev] = generateBWT<Sigma>(1ul<<20);
     visitAllTables<Sigma>([&]<template <size_t> typename Table>(Table<Sigma>*, std::string name) {
-        size_t s = Table<Sigma>::expectedMemoryUsage(3'000'000'000ul);
-//        fmt::print("expected memory: {}\n", s);
-        if (s > 1024*1024*1024*56ul) {
-            fmt::print("{} skipping, to much memory\n", name);
-            return;
+        if constexpr (OccTableMemoryUsage<Table<Sigma>>) {
+            size_t s = Table<Sigma>::expectedMemoryUsage(3'000'000'000ul);
+    //        fmt::print("expected memory: {}\n", s);
+            if (s > 1024*1024*1024*56ul) {
+                fmt::print("{} skipping, to much memory\n", name);
+                return;
+            }
         }
         auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/text.dna4");
 //        auto index = loadIndex<Sigma, CSA, Table>("/home/gene/short_test/text");
@@ -232,9 +234,14 @@ int main(int argc, char const* const* argv) {
 
 
 
-            auto memory = index.memoryUsage();
-            for (size_t k{minK}; k<maxK; ++k)
-            {
+            auto memory = [&] () -> size_t {
+                if constexpr (OccTableMemoryUsage<Table<Sigma>>) {
+                    return index.memoryUsage();
+                } else {
+                    return 0ul;
+                }
+            }();
+            for (size_t k{minK}; k<maxK; ++k) {
 //                if (k >= 4 and k != 6) {
 //                    mut_queries.resize(mut_queries.size() / 10);
 //                }

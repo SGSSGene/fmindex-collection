@@ -51,14 +51,6 @@ struct OccTable {
 
     std::array<uint64_t, Sigma+1> C{};
 
-    static size_t expectedMemoryUsage(size_t length) {
-        size_t C       = sizeof(uint64_t) * (Sigma+1);
-        size_t bits    = bits_count(Sigma+1);
-        size_t entries = bits * (length+1) / 8;
-
-        return C + entries;
-    }
-
     OccTable(std::vector<uint8_t> _bwt) {
         for (auto& c : _bwt) {
             c += 1;
@@ -80,10 +72,6 @@ struct OccTable {
             auto r = index.rank(_bwt.size(), i+1);
             C[i+1] = r + C[i];
         }
-    }
-
-    size_t memoryUsage() const {
-        return 0;
     }
 
     uint64_t size() const {
