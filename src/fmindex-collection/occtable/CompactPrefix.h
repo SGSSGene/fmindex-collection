@@ -153,6 +153,13 @@ struct OccTable {
 
     OccTable(cereal_tag) {}
 
+    static auto name() -> std::string {
+        return "Interleaved Prefixed";
+    }
+
+    static auto extension() -> std::string {
+        return "ipre";
+    }
     size_t memoryUsage() const {
         return bitvector.memoryUsage() + sizeof(OccTable);
     }

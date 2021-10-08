@@ -16,22 +16,23 @@ void visitAllTables(CB cb) {
 //    cb((occtable::naive::OccTable<Sigma>*)nullptr, "naive");
     cb((occtable::bitvector::OccTable<Sigma>*)nullptr, "bitvector");
 
-//    cb((occtable::compact2::OccTable<Sigma>*)nullptr, "compact2");
-//    cb((occtable::compactWavelet::OccTable<Sigma>*)nullptr, "compactWavelet");
-//    cb((occtable::compactWaveletAligned::OccTable<Sigma>*)nullptr, "compactWaveletAligned");
-//    cb((occtable::compact2Aligned::OccTable<Sigma>*)nullptr, "compact2Aligned");
-//    cb((occtable::sdsl_wt_bldc::OccTable<Sigma>*)nullptr, "sdsl_wt_bldc");
-//    cb((occtable::wavelet::OccTable<Sigma>*)nullptr, "wavelet");
-//    cb((occtable::compact::OccTable<Sigma>*)nullptr, "compact");
-//    cb((occtable::compactAligned::OccTable<Sigma>*)nullptr, "compactAligned");
-//    cb((occtable::compactPrefix::OccTable<Sigma>*)nullptr, "compactPrefix");
-//    cb((occtable::bitvectorPrefix::OccTable<Sigma>*)nullptr, "bitvectorPrefix");
+    cb((occtable::compact2::OccTable<Sigma>*)nullptr, "compact2");
+    cb((occtable::compactWavelet::OccTable<Sigma>*)nullptr, "compactWavelet");
+    cb((occtable::compactWaveletAligned::OccTable<Sigma>*)nullptr, "compactWaveletAligned");
+    cb((occtable::compact2Aligned::OccTable<Sigma>*)nullptr, "compact2Aligned");
+    cb((occtable::sdsl_wt_bldc::OccTable<Sigma>*)nullptr, "sdsl_wt_bldc");
+    cb((occtable::wavelet::OccTable<Sigma>*)nullptr, "wavelet");
+    cb((occtable::compact::OccTable<Sigma>*)nullptr, "compact");
+    cb((occtable::compactAligned::OccTable<Sigma>*)nullptr, "compactAligned");
+    cb((occtable::compactPrefix::OccTable<Sigma>*)nullptr, "compactPrefix");
+    cb((occtable::bitvectorPrefix::OccTable<Sigma>*)nullptr, "bitvectorPrefix");
 }
 
 
 template <size_t Sigma, typename CSA, template <size_t> typename Table>
 auto loadIndex(std::string path) {
-    if (!std::filesystem::exists(path + ".index")) {
+    auto indexPath = path + "." + Table<Sigma>::extension() + ".index";
+    if (!std::filesystem::exists(indexPath)) {
         auto bwt       = readFile(path + ".bwt");
         auto bwtRev    = readFile(path + ".rev.bwt");
         auto csaBuffer = readFile(path + ".csa");
@@ -46,12 +47,12 @@ auto loadIndex(std::string path) {
         }();
         auto index = BiFMIndex<Table<Sigma>>{bwt, bwtRev, csa};
         // save index here
-        auto ofs     = std::ofstream{path + ".index", std::ios::binary};
+        auto ofs     = std::ofstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryOutputArchive{ofs};
         archive(index);
         return index;
     } else {
-        auto ifs     = std::ifstream{path + ".index", std::ios::binary};
+        auto ifs     = std::ifstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryInputArchive{ifs};
         auto index = BiFMIndex<Table<Sigma>>{cereal_tag{}};
         archive(index);

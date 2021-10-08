@@ -5,6 +5,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -22,6 +23,14 @@ concept OccTable = requires(T t, std::vector<uint8_t> const& bwt) {
      * This constructor is used during deserialization
      */
     { T{cereal_tag{}} } -> T;
+
+    /** Returns the name of this Occtable
+     */
+    { T::name() } -> std::string;
+
+    /** Returns the extension for this occtable
+     */
+    { T::extension() } -> std::string;
 
     /* Return the numbers of symbols at a certain row + all symbols smaller over all rows
      *

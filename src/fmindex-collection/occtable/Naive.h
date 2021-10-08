@@ -40,6 +40,14 @@ struct OccTable {
 
     OccTable(cereal_tag) {}
 
+    static auto name() -> std::string {
+        return "Naive";
+    }
+
+    static auto extension() -> std::string {
+        return "n";
+    }
+
     size_t memoryUsage() const {
         return occ.size() * sizeof(occ.back()) + sizeof(OccTable);
     }

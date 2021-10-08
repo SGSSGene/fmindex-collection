@@ -363,6 +363,14 @@ struct OccTable {
         : bitvector{cereal_tag{}}
     {}
 
+    static auto name() -> std::string {
+        return "Interleaved Wavelet";
+    }
+
+    static auto extension() -> std::string {
+        return "iw";
+    }
+
     size_t memoryUsage() const {
         return bitvector.memoryUsage() + sizeof(OccTable);
     }

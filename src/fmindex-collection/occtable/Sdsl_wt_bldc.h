@@ -60,6 +60,14 @@ struct OccTable {
 
     OccTable(cereal_tag) {}
 
+    static auto name() -> std::string {
+        return "SDSL Wavelet";
+    }
+
+    static auto extension() -> std::string {
+        return "sdslwt";
+    }
+
     uint64_t size() const {
         return C.back();
     }

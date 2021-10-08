@@ -197,6 +197,14 @@ struct OccTable {
 
     OccTable(cereal_tag) {}
 
+    static auto name() -> std::string {
+        return "Wavelettrees";
+    }
+
+    static auto extension() -> std::string {
+        return "wt";
+    }
+
     size_t memoryUsage() const {
         size_t memory{};
         for (auto const& bv : bitvector) {
