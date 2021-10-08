@@ -230,7 +230,7 @@ int main(int argc, char const* const* argv) {
                     return 0ul;
                 }
             }();
-            for (size_t k{minK}; k<maxK; ++k) {
+            for (size_t k{minK}; k<=maxK; ++k) {
                 if (k >= 4 and k != 6) {
                     mut_queries.resize(mut_queries.size() / 10);
                 }
