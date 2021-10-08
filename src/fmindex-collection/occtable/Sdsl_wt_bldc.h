@@ -2,39 +2,24 @@
 
 #include "concepts.h"
 
+
+
 #include <array>
+#include <cereal/types/array.hpp>
 #include <cstdint>
-#include <vector>
 #include <filesystem>
-
-#include <sdsl/suffix_trees.hpp>
-#include <sdsl/construct.hpp>
-
 #include <iostream>
+#include <sdsl/construct.hpp>
+#include <sdsl/suffix_trees.hpp>
+#include <vector>
 
 namespace occtable {
 namespace sdsl_wt_bldc {
-
-constexpr inline size_t bits_count(size_t y) {
-    if (y == 0) return 1;
-    size_t i{0};
-    while (y != 0) {
-        y = y >> 1;
-        ++i;
-    }
-    return i;
-}
-constexpr inline size_t pow(size_t b, size_t y) {
-    if (y == 0) return 1;
-    return pow(b, (y-1)) * b;
-}
-
 
 inline void writeFile(std::filesystem::path const& file, std::vector<uint8_t> const& buffer) {
     auto ofs = std::ofstream{file, std::ios::binary};
     ofs.write(reinterpret_cast<char const*>(buffer.data()), buffer.size());
 }
-
 
 using sdsl_wt_index_type =
     sdsl::wt_blcd<sdsl::bit_vector, // Wavelet tree type
@@ -44,7 +29,6 @@ using sdsl_wt_index_type =
 
 template <size_t TSigma>
 struct OccTable {
-
 
     sdsl_wt_index_type index;
     static constexpr size_t Sigma = TSigma;
@@ -73,6 +57,8 @@ struct OccTable {
             C[i+1] = r + C[i];
         }
     }
+
+    OccTable(cereal_tag) {}
 
     uint64_t size() const {
         return C.back();
@@ -110,8 +96,11 @@ struct OccTable {
         return {rs, prs};
     }
 
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(index, C);
+    }
 };
-
 static_assert(checkOccTable<OccTable>);
 
 }

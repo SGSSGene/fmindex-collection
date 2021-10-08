@@ -2,9 +2,12 @@
 
 #include "concepts.h"
 
+
 #include <array>
 #include <bitset>
 #include <cassert>
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
 #include <cstdint>
 #include <tuple>
 #include <vector>
@@ -42,6 +45,11 @@ struct alignas(64) Superblock {
         blockEntries = blockEntries & ~uint64_t{0b111111111ul << blockId*9};
         blockEntries = blockEntries | uint64_t{value << blockId*9};
     }
+
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(superBlockEntry, blockEntries, bits);
+    }
 };
 
 struct Bitvector {
@@ -62,6 +70,11 @@ struct Bitvector {
 
     size_t memoryUsage() const {
         return superblocks.size() * sizeof(superblocks.back());
+    }
+
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(superblocks);
     }
 };
 
@@ -92,7 +105,6 @@ auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvect
         }
 
         auto blockId      = (size >>  6) % 6;
-        auto superBlockId = size / 384;
         auto bitId        = size &  63;
 
         auto symb = cb(size-1);
@@ -131,6 +143,8 @@ struct OccTable {
             return _bwt[i];
         });
     }
+
+    OccTable(cereal_tag) {}
 
     size_t memoryUsage() const {
         size_t memory{};
@@ -175,8 +189,12 @@ struct OccTable {
         }
         return {rs, prs};
     }
-};
 
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(bitvector, C);
+    }
+};
 static_assert(checkOccTable<OccTable>);
 
 }

@@ -3,6 +3,8 @@
 #include "concepts.h"
 
 #include <array>
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
 #include <cstdint>
 #include <vector>
 
@@ -35,6 +37,8 @@ struct OccTable {
             C[i+1] = occ.back()[i] + C[i];
         }
     }
+
+    OccTable(cereal_tag) {}
 
     size_t memoryUsage() const {
         return occ.size() * sizeof(occ.back()) + sizeof(OccTable);
@@ -79,10 +83,11 @@ struct OccTable {
         return {rs, prs};
     }
 
-
-
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(occ, C);
+    }
 };
-
 static_assert(checkOccTable<OccTable>);
 
 }

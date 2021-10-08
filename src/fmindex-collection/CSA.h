@@ -2,6 +2,7 @@
 
 #include "BitStack.h"
 #include "Bitvector.h"
+#include "cereal_tag.h"
 
 #include <optional>
 
@@ -14,6 +15,9 @@ struct CSA {
         , bv{bitstack.size, [&](size_t idx) {
             return bitstack.value(idx);
         }}
+    {}
+    CSA(cereal_tag)
+        : bv {cereal_tag{}}
     {}
 
     size_t memoryUsage() const {

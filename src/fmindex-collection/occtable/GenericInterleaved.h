@@ -4,10 +4,11 @@
 
 #include <array>
 #include <bitset>
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
 #include <cstdint>
-#include <vector>
-
 #include <iostream>
+#include <vector>
 
 namespace occtable {
 namespace genericInterleaved {
@@ -48,10 +49,14 @@ struct Bitvector {
             }
             return TSigma-1;
         }
+
+        template <typename Archive>
+        void serialize(Archive& ar) {
+            ar(blocks, bits);
+        }
     };
 
     static constexpr size_t block_size = sizeof(block_t) * 8;
-
 
     std::vector<Block> blocks;
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
@@ -92,6 +97,9 @@ struct Bitvector {
             C[i+1] = sblock_acc[i] + C[i];
         }
     };
+
+    Bitvector(cereal_tag) {}
+
 
     size_t memoryUsage() const {
         return blocks.size() * sizeof(blocks.back())
@@ -169,6 +177,11 @@ struct Bitvector {
         auto bitId        = idx &  63;
         return blocks[blockId].symbol(bitId);
     }
+
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(blocks, superBlocks, C);
+    }
 };
 
 
@@ -192,6 +205,10 @@ struct OccTable {
         : bitvector(_bwt.size(), [&](size_t i) -> uint8_t {
             return _bwt[i];
         })
+    {}
+
+    OccTable(cereal_tag)
+        : bitvector(cereal_tag{})
     {}
 
     size_t memoryUsage() const {
@@ -221,6 +238,11 @@ struct OccTable {
     auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
         auto [rs, prs] = bitvector.all_ranks_and_prefix_ranks(idx);
         return {rs, prs};
+    }
+
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(bitvector);
     }
 };
 

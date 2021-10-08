@@ -4,6 +4,7 @@
 
 #include "CSA.h"
 
+
 template <OccTable Table>
 struct BiFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
@@ -11,8 +12,6 @@ struct BiFMIndex {
     Table occ;
     Table occRev;
     CSA   csa;
-
-
 
     BiFMIndex(std::vector<uint8_t> const& bwt, std::vector<uint8_t> const& bwtRev, CSA _csa)
         : occ{bwt}
@@ -29,10 +28,15 @@ struct BiFMIndex {
         }
         for (size_t sym{0}; sym < Sigma; ++sym) {
             if (occ.rank(occ.size(), sym) != occRev.rank(occ.size(), sym)) {
-                throw std::runtime_error("wrong rank");
+                throw std::runtime_error("wrong rank for the last entry");
             }
         }
     }
+    BiFMIndex(cereal_tag)
+        : occ{cereal_tag{}}
+        , occRev{cereal_tag{}}
+        , csa{cereal_tag{}}
+    {}
 
     size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
         return occ.memoryUsage() + occRev.memoryUsage() + csa.memoryUsage();
@@ -51,5 +55,10 @@ struct BiFMIndex {
             opt = csa.value(idx);
         }
         return opt.value() + steps;
+    }
+
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(occ, occRev);
     }
 };

@@ -5,6 +5,8 @@
 #include <array>
 #include <bitset>
 #include <cassert>
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
 #include <cstdint>
 #include <tuple>
 #include <vector>
@@ -42,6 +44,11 @@ struct alignas(64) Superblock {
         blockEntries = blockEntries & ~uint64_t{0b111111111ul << blockId*9};
         blockEntries = blockEntries | uint64_t{value << blockId*9};
     }
+
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(superBlockEntry, blockEntries, bits);
+    }
 };
 
 struct Bitvector {
@@ -62,6 +69,11 @@ struct Bitvector {
 
     size_t memoryUsage() const {
         return superblocks.size() * sizeof(superblocks.back());
+    }
+
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(superblocks);
     }
 };
 
@@ -159,6 +171,8 @@ struct OccTable {
         });
     }
 
+    OccTable(cereal_tag) {}
+
     size_t memoryUsage() const {
         size_t memory{};
         for (auto const& bv : bitvector1) {
@@ -202,6 +216,10 @@ struct OccTable {
         return {rs, prs};
     }
 
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(bitvector1, bitvector2, C);
+    }
 };
 static_assert(checkOccTable<OccTable>);
 

@@ -4,10 +4,11 @@
 
 #include <array>
 #include <bitset>
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
 #include <cstdint>
-#include <vector>
-
 #include <iostream>
+#include <vector>
 
 namespace occtable {
 namespace compactWavelet_detail {
@@ -179,6 +180,11 @@ struct Bitvector {
 
             return rs;
         }
+
+        template <typename Archive>
+        void serialize(Archive& ar) {
+            ar(blocks, bits);
+        }
     };
 
 
@@ -267,6 +273,9 @@ struct Bitvector {
         }
     };
 
+    Bitvector(cereal_tag) {}
+
+
     size_t memoryUsage() const {
         return blocks.size() * sizeof(blocks.back())
             + superBlocks.size() * sizeof(superBlocks.back())
@@ -318,6 +327,10 @@ struct Bitvector {
         return {rs, prs};
     }
 
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(blocks, superBlocks, C);
+    }
 };
 
 
@@ -344,6 +357,10 @@ struct OccTable {
             return _bwt[i];
         })
         , size_{_bwt.size()}
+    {}
+
+    OccTable(cereal_tag)
+        : bitvector{cereal_tag{}}
     {}
 
     size_t memoryUsage() const {
@@ -383,6 +400,10 @@ struct OccTable {
         return bitvector.all_ranks(idx);
     }
 
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(bitvector, size_);
+    }
 };
 }
 

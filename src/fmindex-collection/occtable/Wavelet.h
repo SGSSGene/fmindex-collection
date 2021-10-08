@@ -5,6 +5,8 @@
 #include <array>
 #include <bitset>
 #include <cassert>
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
 #include <cstdint>
 #include <tuple>
 #include <vector>
@@ -25,7 +27,6 @@ constexpr inline size_t pow(size_t b, size_t y) {
     if (y == 0) return 1;
     return pow(b, (y-1)) * b;
 }
-
 
 struct alignas(64) Superblock {
     uint64_t superBlockEntry{};
@@ -57,6 +58,11 @@ struct alignas(64) Superblock {
         blockEntries = blockEntries & ~uint64_t{0b111111111ul << blockId*9};
         blockEntries = blockEntries | uint64_t{value << blockId*9};
     }
+
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(superBlockEntry, blockEntries, bits);
+    }
 };
 
 struct Bitvector {
@@ -78,8 +84,12 @@ struct Bitvector {
     size_t memoryUsage() const {
         return superblocks.size() * sizeof(superblocks.back());
     }
-};
 
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(superblocks);
+    }
+};
 
 template <size_t TSigma, typename CB>
 auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvector, pow(2, bits_count(TSigma))>, std::array<uint64_t, TSigma+1>> {
@@ -112,7 +122,6 @@ auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvect
             count[id] += symb_count[i];
         });
     }
-
 
     for (size_t j{0}; j < bvct; ++j) {
         bv[j].superblocks.reserve(count[j]/384+1);
@@ -169,7 +178,6 @@ struct OccTable {
     static constexpr auto bits = bits_count(TSigma);
     static constexpr auto bvct = pow(2, bits);
 
-
     std::array<Bitvector, bvct> bitvector;
     std::array<uint64_t, Sigma+1> C;
 
@@ -186,6 +194,9 @@ struct OccTable {
             return _bwt[i];
         });
     }
+
+    OccTable(cereal_tag) {}
+
     size_t memoryUsage() const {
         size_t memory{};
         for (auto const& bv : bitvector) {
@@ -194,7 +205,6 @@ struct OccTable {
         memory += sizeof(OccTable);
         return memory;
     }
-
 
     uint64_t size() const {
         return C.back();
@@ -273,8 +283,11 @@ struct OccTable {
         return {rs, prs};
     }
 
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(bitvector, C);
+    }
 };
-
 static_assert(checkOccTable<OccTable>);
 
 }

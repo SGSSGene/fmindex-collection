@@ -1,16 +1,28 @@
 #pragma once
 
+#include "cereal_tag.h"
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 /*
  * Minimum requirements to function as an Occurrence Table (OccTable)
  */
 template<typename T>
-concept OccTable = requires(T t) {
+concept OccTable = requires(T t, std::vector<uint8_t> const& bwt) {
+    /** Every occtable has to be creatable by providing a bwt
+     */
+    { T{bwt} } -> T;
+
+    /** Every occtable has to have a C'Tor that accept cereal_tag{}.
+     * This constructor is used during deserialization
+     */
+    { T{cereal_tag{}} } -> T;
+
     /* Return the numbers of symbols at a certain row + all symbols smaller over all rows
      *
      * \param first - row index

@@ -4,10 +4,11 @@
 
 #include <array>
 #include <bitset>
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
 #include <cstdint>
-#include <vector>
-
 #include <iostream>
+#include <vector>
 
 namespace occtable {
 namespace compactPrefix {
@@ -43,6 +44,11 @@ struct Bitvector {
             }
             return TSigma-1;
         }
+
+        template <typename Archive>
+        void serialize(Archive& ar) {
+            ar(blocks, bits);
+        }
     };
 
     std::vector<Block> blocks;
@@ -74,6 +80,11 @@ struct Bitvector {
         auto blockId      = idx >>  6;
         auto bitId        = idx &  63;
         return blocks[blockId].symbol(bitId);
+    }
+
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(blocks, superBlocks, C);
     }
 };
 
@@ -134,12 +145,13 @@ struct OccTable {
         return C + blocks + superblocks;
     }
 
-
     OccTable(std::vector<uint8_t> const& _bwt) {
         bitvector = construct_bitvector<Sigma>(_bwt.size(), [&](size_t i) -> uint8_t {
             return _bwt[i];
         });
     }
+
+    OccTable(cereal_tag) {}
 
     size_t memoryUsage() const {
         return bitvector.memoryUsage() + sizeof(OccTable);
@@ -171,6 +183,10 @@ struct OccTable {
         return {rs, prs};
     }
 
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(bitvector);
+    }
 };
 static_assert(checkOccTable<OccTable>);
 

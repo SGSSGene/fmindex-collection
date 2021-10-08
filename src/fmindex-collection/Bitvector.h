@@ -1,5 +1,7 @@
 #pragma once
 
+#include "cereal_tag.h"
+
 #include <array>
 #include <bitset>
 #include <cassert>
@@ -87,5 +89,7 @@ struct Bitvector {
             }
         }
     }
+
+    Bitvector(cereal_tag) {}
 };
 
