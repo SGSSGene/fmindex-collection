@@ -59,6 +59,6 @@ struct BiFMIndex {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(occ, occRev);
+        ar(occ, occRev, csa);
     }
 };

@@ -16,6 +16,7 @@ struct CSA {
             return bitstack.value(idx);
         }}
     {}
+
     CSA(cereal_tag)
         : bv {cereal_tag{}}
     {}
@@ -32,4 +33,8 @@ struct CSA {
         return {ssa[bv.rank(idx)]};
     }
 
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(ssa, bv);
+    }
 };

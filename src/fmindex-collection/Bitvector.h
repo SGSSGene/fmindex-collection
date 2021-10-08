@@ -5,6 +5,8 @@
 #include <array>
 #include <bitset>
 #include <cassert>
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -37,6 +39,11 @@ struct Bitvector {
         void setBlock(size_t blockId, size_t value) {
             blockEntries = blockEntries & ~uint64_t{0b111111111ul << blockId*9};
             blockEntries = blockEntries | uint64_t{value << blockId*9};
+        }
+
+        template <typename Archive>
+        void serialize(Archive& ar) {
+            ar(superBlockEntry, blockEntries, bits);
         }
     };
 
@@ -91,5 +98,9 @@ struct Bitvector {
     }
 
     Bitvector(cereal_tag) {}
-};
 
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(superblocks);
+    }
+};
