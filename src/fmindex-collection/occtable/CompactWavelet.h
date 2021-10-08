@@ -363,14 +363,6 @@ struct OccTable {
         : bitvector{cereal_tag{}}
     {}
 
-    static auto name() -> std::string {
-        return "Interleaved Wavelet";
-    }
-
-    static auto extension() -> std::string {
-        return "iw";
-    }
-
     size_t memoryUsage() const {
         return bitvector.memoryUsage() + sizeof(OccTable);
     }
@@ -417,13 +409,29 @@ struct OccTable {
 
 namespace compactWavelet {
 template <size_t Sigma>
-struct OccTable : compactWavelet_detail::OccTable<Sigma, 1> {};
+struct OccTable : compactWavelet_detail::OccTable<Sigma, 1> {
+    static auto name() -> std::string {
+        return "Interleaved Wavelet";
+    }
+
+    static auto extension() -> std::string {
+        return "iw";
+    }
+};
 static_assert(checkOccTable<OccTable>);
 }
 
 namespace compactWaveletAligned {
 template <size_t Sigma>
-struct OccTable : compactWavelet_detail::OccTable<Sigma, 64> {};
+struct OccTable : compactWavelet_detail::OccTable<Sigma, 64> {
+    static auto name() -> std::string {
+        return "Interleaved Wavelet Aligned";
+    }
+
+    static auto extension() -> std::string {
+        return "iwa";
+    }
+};
 static_assert(checkOccTable<OccTable>);
 }
 
