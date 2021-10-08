@@ -7,6 +7,7 @@ project (fmindex-collection)
 
 #add_subdirectory(lib/sdsl-lite)
 add_subdirectory(lib/Catch2)
+add_subdirectory(lib/cereal)
 
 # search scheme generator library
 add_library(search_schemes
@@ -44,6 +45,7 @@ target_include_directories(fmindex_collection
     INTERFACE
     src/fmindex-collection
     lib/sdsl-lite/include
+    lib/cereal/include/
 )
 
 # example executable
