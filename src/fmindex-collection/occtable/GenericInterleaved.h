@@ -7,7 +7,6 @@
 #include <cereal/types/array.hpp>
 #include <cereal/types/vector.hpp>
 #include <cstdint>
-#include <iostream>
 #include <vector>
 
 namespace occtable {
@@ -110,9 +109,6 @@ struct Bitvector {
     void prefetch(size_t idx) const {
         auto blockId      = idx >>  6;
         blocks[blockId].prefetch();
-//        auto superBlockId = idx >> block_size;
-//         __builtin_prefetch((const void*)(&superBlocks[superBlockId]), 0, 0);
-
     }
 
     uint64_t rank(uint64_t idx, size_t symb) const {

@@ -7,7 +7,6 @@
 #include <cereal/types/array.hpp>
 #include <cereal/types/vector.hpp>
 #include <cstdint>
-#include <iostream>
 #include <vector>
 
 namespace occtable {

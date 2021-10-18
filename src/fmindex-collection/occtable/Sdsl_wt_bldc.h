@@ -2,13 +2,10 @@
 
 #include "concepts.h"
 
-
-
 #include <array>
 #include <cereal/types/array.hpp>
 #include <cstdint>
 #include <filesystem>
-#include <iostream>
 #include <sdsl/construct.hpp>
 #include <sdsl/suffix_trees.hpp>
 #include <vector>
@@ -41,15 +38,6 @@ struct OccTable {
         }
         writeFile("tmp.sdsl.tmp", _bwt);
         sdsl::construct(index, "tmp.sdsl.tmp", 1);
-
-/*        for (size_t i{0}; i < index.size(); ++i) {
-            std::cout << i << ": " << int (_bwt[i]) << "   ";
-            for (size_t j{0}; j <= Sigma; ++j) {
-                std::cout << index.rank(i, j) << " ";
-            }
-            std::cout << "\n";
-        }*/
-
 
         C[0] = 0;
         for (size_t i{0}; i < Sigma; ++i) {

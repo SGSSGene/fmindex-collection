@@ -2,7 +2,6 @@
 
 #include "concepts.h"
 
-
 #include <array>
 #include <bitset>
 #include <cassert>
@@ -77,7 +76,6 @@ struct Bitvector {
         ar(superblocks);
     }
 };
-
 
 template <size_t TSigma, typename CB>
 auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvector, TSigma>, std::array<uint64_t, TSigma+1>> {
