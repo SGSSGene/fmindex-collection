@@ -7,12 +7,12 @@
 #include <cereal/types/array.hpp>
 #include <cereal/types/vector.hpp>
 #include <cstdint>
-#include <iostream>
 #include <vector>
 
 namespace occtable {
 namespace compactWavelet_detail {
 
+// counts how many bits are needed to represent the number y
 constexpr inline size_t bits_count(size_t y) {
     if (y == 0) return 1;
     size_t i{0};
@@ -22,19 +22,40 @@ constexpr inline size_t bits_count(size_t y) {
     }
     return i;
 }
+
+// computes b to the power of y
 constexpr inline size_t pow(size_t b, size_t y) {
     if (y == 0) return 1;
     return pow(b, (y-1)) * b;
 }
 
-
+/* Implements the concept `OccTable`
+ *
+ * \param TSigma size of the alphabet
+ * \param TAlignment byte alignment request
+ */
 template <size_t TSigma, size_t TAlignment>
 struct Bitvector {
+    /** traversers the bits of symb
+     */
+    template <typename CB>
+    static void traverse_symb_bits (size_t symb, CB cb) {
+        size_t id{0};
+        size_t mask = 1u << (bitct-1);
+        for (size_t b{0}; b < bitct; ++b) {
+            auto bit = (symb & mask) != 0;
+            cb(id, bit);
+            id = id * 2 + 1 + bit;
+            mask = mask >> 1ul;
+        }
+    }
+
+    // number of full length bitvectors needed `2^bitct ≥ TSigma`
     static constexpr auto bitct = bits_count(TSigma);
-    static constexpr auto bvct = pow(2, bitct);
+    // next full power of 2
+    static constexpr auto bvct  = pow(2, bitct);
 
     struct alignas(TAlignment) Block {
-
         std::array<uint32_t, TSigma> blocks{};
         std::array<uint64_t, bitct>  bits{};
 
@@ -43,32 +64,16 @@ struct Bitvector {
 //            __builtin_prefetch((const void*)(&bits), 0, 0);
         }
 
-
         uint64_t rank(size_t idx, size_t symb) const {
-            auto which_bv = [](size_t symb, auto cb) {
-                size_t id{0};
-                size_t mask = 1u << (bitct-1);
-                for (size_t b{0}; b < bitct; ++b) {
-                    auto bit = (symb & mask) != 0;
-                    cb(id, bit);
-                    id = id * 2 + 1 + bit;
-                    mask = mask >> 1ul;
-                }
-            };
-
             size_t s = 0;
             size_t l1 = 64;
             size_t l2 = idx;
             auto const& bbits = bits;
             size_t depth = 0;
-            which_bv(symb, [&](size_t id, size_t bit) {
-/*                if ((idx == 1 or idx == 2) and symb == 0) {
-                    std::cout << "accessing " << id << " " << bit << "\n";
-                }*/
+            traverse_symb_bits(symb, [&](size_t id, size_t bit) {
                 auto bits = std::bitset<64>(bbits[depth]) >> s;
                 auto c1 = (bits << (64-l1)).count();
                 auto d1 = (bits << (64-l2)).count();
-
 
                 if (bit == 0) {
                     s = s;
@@ -85,24 +90,13 @@ struct Bitvector {
         }
 
         uint64_t prefix_rank(size_t idx, size_t symb) const {
-            auto which_bv = [](size_t symb, auto cb) {
-                size_t id{0};
-                size_t mask = 1u << (bitct-1);
-                for (size_t b{0}; b < bitct; ++b) {
-                    auto bit = (symb & mask) != 0;
-                    cb(id, bit);
-                    id = id * 2 +1 + bit;
-                    mask = mask >> 1ul;
-                }
-            };
-
             size_t s = 0;
             size_t l1 = 64;
             size_t l2 = idx;
             size_t a{};
             size_t depth = 0;
             auto const& bbits = bits;
-            which_bv(symb+1, [&](size_t id, size_t bit) {
+            traverse_symb_bits(symb+1, [&](size_t id, size_t bit) {
                 auto bits = std::bitset<64>(bbits[depth]) >> s;
                 auto c1 = (bits << (64-l1)).count();
                 auto d1 = (bits << (64-l2)).count();
@@ -134,10 +128,6 @@ struct Bitvector {
 
         template <size_t Depth=0, size_t I=0, typename CB>
         void bvAccess(size_t s, size_t l1, size_t idx, CB cb) const {
-/*            if (s == 64 or l1 == 0 or idx == 0) {
-                bvAccess0<Depth, I>(cb);
-                return;
-            }*/
             auto bv = std::bitset<64>(bits[Depth]) >> s;
             auto d1 = (bv << (64-idx)).count();
             auto d0 = idx - d1;
@@ -162,22 +152,14 @@ struct Bitvector {
 
         auto all_ranks(size_t idx) const -> std::array<uint64_t, TSigma> {
             std::array<uint64_t, TSigma> rs{0};
-//            if (idx > 0) {
-                bvAccess(idx, [&]<size_t I>(size_t d0, size_t d1, std::index_sequence<I>) {
-
-                    if constexpr (I < TSigma) {
-                        rs[I]    = d0 + blocks[I];
-                    }
-                    if constexpr (I+1 < TSigma) {
-                        rs[I+1]  = d1 + blocks[I+1];
-                    }
-                });
-  /*          } else {
-                for (size_t i{0}; i < TSigma; ++i) {
-                    rs[i] = blocks[i];
+            bvAccess(idx, [&]<size_t I>(size_t d0, size_t d1, std::index_sequence<I>) {
+                if constexpr (I < TSigma) {
+                    rs[I]    = d0 + blocks[I];
                 }
-            }*/
-
+                if constexpr (I+1 < TSigma) {
+                    rs[I+1]  = d1 + blocks[I+1];
+                }
+            });
             return rs;
         }
 
@@ -203,25 +185,12 @@ struct Bitvector {
             c = 0;
         }
 
-
-        auto which_bv = [](size_t symb, auto cb) {
-            size_t id{0};
-            size_t mask = 1u << (bitct-1);
-            for (size_t b{0}; b < bitct; ++b) {
-                auto bit = (symb & mask) != 0;
-                cb(id, bit);
-                id = id * 2 +1 + bit;
-                mask = mask >> 1;
-            }
-        };
-
         std::array<std::vector<uint8_t>, bvct> waveletcount{};
         auto insertCount = [&]() {
             if (!blocks.empty()) {
                 auto& bits = blocks.back().bits;
                 size_t idx{0};
                 for (size_t i{0}; i < waveletcount.size(); ++i) {
-    //                std::cout << "id3: " << i << " " << waveletcount.size() << "\n";
                     auto t = waveletcount.at(i);
                     for (uint64_t bit : t) {
                         bits[idx / 64] = bits[idx / 64] | (bit << (idx % 64));
@@ -252,14 +221,14 @@ struct Bitvector {
             }
 
             auto symb = cb(size);
-            which_bv(symb, [&](size_t id, size_t bit) {
+            traverse_symb_bits(symb, [&](size_t id, size_t bit) {
                 waveletcount[id].push_back(bit);
             });
             block_acc[symb] += 1;
             sblock_acc[symb] += 1;
         }
         while (waveletcount[0].size() < 64) {
-            which_bv(bvct-1, [&](size_t id, size_t bit) {
+            traverse_symb_bits(bvct-1, [&](size_t id, size_t bit) {
                 waveletcount[id].push_back(bit);
             });
             block_acc[bvct-1] += 1;

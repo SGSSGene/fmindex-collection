@@ -15,7 +15,6 @@ template <size_t Sigma, typename CB>
 void visitAllTables(CB cb) {
 //    cb((occtable::naive::OccTable<Sigma>*)nullptr, "naive");
     cb((occtable::bitvector::OccTable<Sigma>*)nullptr, "bitvector");
-
     cb((occtable::compact2::OccTable<Sigma>*)nullptr, "compact2");
     cb((occtable::compactWavelet::OccTable<Sigma>*)nullptr, "compactWavelet");
     cb((occtable::compactWaveletAligned::OccTable<Sigma>*)nullptr, "compactWaveletAligned");
