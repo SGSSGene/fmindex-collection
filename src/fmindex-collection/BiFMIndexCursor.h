@@ -151,19 +151,18 @@ struct LeftBiFMIndexCursor {
         return cursors;
     }
 
-    void prefetchLeft() const {
-        auto& occ = index->occ;
-        occ.prefetch(lb);
-        occ.prefetch(lb+len);
-    }
-
     auto extendLeft(uint8_t symb) const -> LeftBiFMIndexCursor {
         assert(symb > 0);
         auto& occ = index->occ;
+
         size_t newLb    = occ.rank(lb, symb);
         size_t newLen   = occ.rank(lb+len, symb) - newLb;
+        if constexpr (OccTablePrefetch<Index>) {
+            occ.prefetch(newLb);
+            occ.prefetch(newLb + newLen);
+        }
+
         auto newCursor = LeftBiFMIndexCursor{*index, newLb, newLen};
-        newCursor.prefetchLeft();
         return newCursor;
     }
 };
