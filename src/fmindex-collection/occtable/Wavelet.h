@@ -98,10 +98,10 @@ auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvect
     constexpr auto bvct = pow(2, bits);
     std::array<Bitvector, bvct> bv;
 
-    auto which_bv = [](uint8_t symb, auto cb) {
+    auto which_bv = [](size_t symb, auto cb) {
         size_t id{0};
         size_t factor{1};
-        uint8_t mask = 1u << (bits-1);
+        size_t mask = 1u << (bits-1);
         for (size_t b{0}; b < bits; ++b) {
             auto bit = (symb & mask) != 0;
             cb(id, bit);
@@ -219,11 +219,11 @@ struct OccTable {
         return C.back();
     }
 
-    uint64_t rank(uint64_t idx, uint8_t symb) const {
-        auto which_bv = [](uint8_t symb, auto cb) {
+    uint64_t rank(uint64_t idx, uint64_t symb) const {
+        auto which_bv = [](uint64_t symb, auto cb) {
             size_t id{0};
             size_t factor{1};
-            uint8_t mask = 1u << (bits-1);
+            uint64_t mask = 1u << (bits-1);
             for (size_t b{0}; b < bits; ++b) {
                 auto bit = (symb & mask) != 0;
                 cb(id, bit);
@@ -244,11 +244,11 @@ struct OccTable {
         return a + C[symb];
     }
 
-    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
-        auto which_bv = [](uint8_t symb, auto cb) {
+    uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
+        auto which_bv = [](uint64_t symb, auto cb) {
             size_t id{0};
             size_t factor{1};
-            uint8_t mask = 1u << (bits-1);
+            uint64_t mask = 1u << (bits-1);
             for (size_t b{0}; b < bits; ++b) {
                 auto bit = (symb & mask) != 0;
                 cb(id, bit);
@@ -272,7 +272,7 @@ struct OccTable {
         return a;
     }
 
-    uint8_t symbol(uint64_t idx) const {
+    uint64_t symbol(uint64_t idx) const {
         idx += 1;
         for (size_t i{0}; i < Sigma-1; ++i) {
             if (rank(idx, i) > rank(idx-1, i)) {
