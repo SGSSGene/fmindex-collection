@@ -10,6 +10,7 @@
 /**
  * As ng15 and 20 combined
  */
+namespace fmindex_collection {
 namespace search_ng16 {
 
 struct BandMatrix {
@@ -266,4 +267,5 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 
 }
 
+}
 }

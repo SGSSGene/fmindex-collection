@@ -10,6 +10,7 @@
 #include <sdsl/suffix_trees.hpp>
 #include <vector>
 
+namespace fmindex_collection {
 namespace occtable {
 namespace sdsl_wt_bldc {
 
@@ -99,5 +100,6 @@ struct OccTable {
 };
 static_assert(checkOccTable<OccTable>);
 
+}
 }
 }

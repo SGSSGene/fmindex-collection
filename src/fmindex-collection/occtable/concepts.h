@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+
+namespace fmindex_collection {
 /*
  * Minimum requirements to function as an Occurrence Table (OccTable)
  */
@@ -116,3 +118,5 @@ concept OccTableMemoryUsage = OccTable<T> and requires(T t) {
      */
     { t.memoryUsage() } -> size_t;
 };
+
+}

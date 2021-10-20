@@ -2,6 +2,8 @@
 
 #include "FMIndex.h"
 
+namespace fmindex_collection {
+
 template <typename Index>
 struct FMIndexCursor {
     Index const* index;
@@ -24,3 +26,5 @@ struct FMIndexCursor {
         return {*index, newLb, newLen};
     }
 };
+
+}

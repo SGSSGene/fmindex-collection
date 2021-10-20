@@ -9,6 +9,8 @@
 #include <cstdint>
 #include <vector>
 
+
+namespace fmindex_collection {
 namespace occtable {
 namespace genericInterleaved {
 
@@ -242,5 +244,6 @@ struct OccTable {
     }
 };
 
+}
 }
 }

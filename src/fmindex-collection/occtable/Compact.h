@@ -2,6 +2,7 @@
 
 #include "GenericInterleaved.h"
 
+namespace fmindex_collection {
 namespace occtable {
 namespace compact {
 
@@ -16,5 +17,6 @@ struct OccTable : genericInterleaved::OccTable<TSigma, 8, uint32_t> {
     }
 };
 
+}
 }
 }

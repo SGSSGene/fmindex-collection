@@ -11,6 +11,7 @@
 #include <tuple>
 #include <vector>
 
+namespace fmindex_collection {
 namespace occtable {
 namespace bitvector {
 
@@ -203,5 +204,6 @@ struct OccTable {
 };
 static_assert(checkOccTable<OccTable>);
 
+}
 }
 }

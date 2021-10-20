@@ -2,6 +2,8 @@
 
 #include "occtable/concepts.h"
 
+namespace fmindex_collection {
+
 template <OccTable Table>
 struct FMIndex {
     static size_t constexpr Sigma = Table::Sigma;
@@ -22,3 +24,5 @@ struct FMIndex {
         return occTable.prefix_rank(idx, symb);
     }
 };
+
+}

@@ -1,5 +1,6 @@
 #pragma once
 
+namespace fmindex_collection {
 namespace search_no_errors {
 
 template <typename index_t, typename queries_t, typename delegate_t>
@@ -22,4 +23,5 @@ void search(index_t const & index, queries_t && queries, delegate_t && delegate)
     }
 }
 
+}
 }

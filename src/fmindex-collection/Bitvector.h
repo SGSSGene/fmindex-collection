@@ -11,6 +11,8 @@
 #include <cstdint>
 #include <vector>
 
+namespace fmindex_collection {
+
 struct Bitvector {
     struct Superblock {
         uint64_t superBlockEntry{};
@@ -104,3 +106,5 @@ struct Bitvector {
         ar(superblocks);
     }
 };
+
+}

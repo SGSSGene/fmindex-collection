@@ -11,6 +11,7 @@
 #include <tuple>
 #include <vector>
 
+namespace fmindex_collection {
 namespace occtable {
 namespace wavelet {
 
@@ -298,5 +299,6 @@ struct OccTable {
 };
 static_assert(checkOccTable<OccTable>);
 
+}
 }
 }

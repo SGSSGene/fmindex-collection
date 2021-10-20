@@ -10,6 +10,7 @@
 /*
  * using banded alignment matrix, but only works for backtracking search schemes
  */
+namespace fmindex_collection {
 namespace search_ng20 {
 
 struct BandMatrix {
@@ -268,4 +269,5 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
     }
 }
 
+}
 }

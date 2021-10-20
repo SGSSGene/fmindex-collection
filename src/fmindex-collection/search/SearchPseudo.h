@@ -1,7 +1,7 @@
 #pragma once
 
 
-
+namespace fmindex_collection {
 namespace search_pseudo {
 
 template <bool EditDistance, typename index_t, typename search_scheme_t, typename delegate_t>
@@ -163,4 +163,5 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
     }
 }
 
+}
 }

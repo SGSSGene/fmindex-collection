@@ -2,6 +2,7 @@
 
 #include <array>
 
+namespace fmindex_collection {
 namespace search_ng14 {
 
 enum class Dir : uint8_t { Left, Right };
@@ -176,4 +177,5 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 
 }
 
+}
 }

@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <vector>
 
+namespace fmindex_collection {
 namespace occtable {
 namespace compactWavelet_detail {
 
@@ -404,4 +405,5 @@ struct OccTable : compactWavelet_detail::OccTable<Sigma, 64> {
 static_assert(checkOccTable<OccTable>);
 }
 
+}
 }

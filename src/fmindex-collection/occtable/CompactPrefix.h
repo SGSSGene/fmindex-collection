@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <vector>
 
+namespace fmindex_collection {
 namespace occtable {
 namespace compactPrefix {
 
@@ -196,5 +197,6 @@ struct OccTable {
 };
 static_assert(checkOccTable<OccTable>);
 
+}
 }
 }

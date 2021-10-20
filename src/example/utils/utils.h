@@ -84,7 +84,7 @@ auto generateBWT(size_t len) -> std::tuple<std::vector<uint8_t>, std::vector<uin
 }
 
 
-template <OccTable Table, typename T>
+template <fmindex_collection::OccTable Table, typename T>
 void printOccTable(Table const& table, T const& bwt) {
     if (bwt.size() > 128) return;
     for (size_t i{0}; i < bwt.size(); ++i) {
@@ -125,7 +125,7 @@ struct Result {
     std::array<size_t, 2> benchV6CheckSum  = {0, 0};
     double totalTime                       = std::numeric_limits<double>::quiet_NaN();
 };
-template <OccTable Table, typename T>
+template <fmindex_collection::OccTable Table, typename T>
 auto benchmarkTable(std::string name, T const& bwt) -> Result {
     StopWatch allTime;
 

@@ -4,6 +4,7 @@
 
 #include "CSA.h"
 
+namespace fmindex_collection {
 
 template <OccTable Table>
 struct BiFMIndex {
@@ -62,3 +63,5 @@ struct BiFMIndex {
         ar(occ, occRev, csa);
     }
 };
+
+}

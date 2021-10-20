@@ -6,6 +6,8 @@
 #include <vector>
 
 
+namespace fmindex_collection {
+
 struct BitStack {
     uint64_t size{0};
     uint64_t ones{0};
@@ -64,3 +66,4 @@ struct BitStack {
     }
 };
 
+}

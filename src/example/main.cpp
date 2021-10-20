@@ -11,6 +11,8 @@
 #include <fmt/format.h>
 #include <unordered_set>
 
+using namespace fmindex_collection;
+
 template <size_t Sigma, typename CB>
 void visitAllTables(CB cb) {
 //    cb((occtable::naive::OccTable<Sigma>*)nullptr, "naive");

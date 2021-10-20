@@ -6,6 +6,8 @@
 
 #include <optional>
 
+namespace fmindex_collection {
+
 struct CSA {
     std::vector<uint64_t> ssa;
     Bitvector bv;
@@ -38,3 +40,5 @@ struct CSA {
         ar(ssa, bv);
     }
 };
+
+}

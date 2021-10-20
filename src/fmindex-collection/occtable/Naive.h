@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <vector>
 
+namespace fmindex_collection {
 namespace occtable {
 namespace naive {
 
@@ -98,5 +99,6 @@ struct OccTable {
 };
 static_assert(checkOccTable<OccTable>);
 
+}
 }
 }
