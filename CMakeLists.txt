@@ -43,10 +43,22 @@ target_link_libraries(test_search_schemes
 add_library(fmindex_collection INTERFACE)
 target_include_directories(fmindex_collection
     INTERFACE
+    src
     src/fmindex-collection
     lib/sdsl-lite/include
     lib/cereal/include/
 )
+
+# fmindex-collectionunittests
+add_executable(test_fmindex-collection
+    src/test_fmindex-collection/checkOccTables.cpp
+    src/test_fmindex-collection/main.cpp
+)
+target_link_libraries(test_fmindex-collection
+    Catch2::Catch2
+    fmindex_collection
+)
+
 
 # example executable
 add_executable(example
