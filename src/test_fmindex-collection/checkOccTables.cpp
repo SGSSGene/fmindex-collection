@@ -21,12 +21,16 @@ TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]",
     auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
     auto table = OccTable{text};
 
+    REQUIRE(table.size() == text.size());
+
     SECTION("check that symbol() call works") {
-        REQUIRE(table.size() == text.size());
         for (size_t i{0}; i < text.size(); ++i) {
             CHECK(table.symbol(i) == text.at(i));
         }
     }
+    CHECK(!OccTable::name().empty());
+    CHECK(!OccTable::extension().empty());
+    CHECK(OccTable::Sigma == 256);
     SECTION("test complete table 'H' for rank()") {
         CHECK(table.rank( 0, ' ') == 0);
         CHECK(table.rank( 1, ' ') == 0);
@@ -221,7 +225,17 @@ TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]",
         CHECK(table.prefix_rank( 8, 't') ==  8);
         CHECK(table.prefix_rank( 9, 't') ==  9);
         CHECK(table.prefix_rank(10, 't') == 10);
-
     }
+
+    SECTION("check all_ranks() is equal to prefix_rank() and rank()") {
+        for (size_t idx{0}; idx < table.size(); ++idx) {
+            auto [rank, prefix] = table.all_ranks(idx);
+            for (size_t symb{1}; symb < 256; ++symb) {
+                CHECK(rank[symb] == table.rank(idx, symb));
+                CHECK(prefix[symb] == table.prefix_rank(idx, symb));
+            }
+        }
+    }
+
 
 }
