@@ -16,7 +16,7 @@ namespace fmindex_collection {
  * Minimum requirements to function as an Occurrence Table (OccTable)
  */
 template<typename T>
-concept OccTable = requires(T t, std::vector<uint8_t> const& bwt) {
+concept OccTable = requires(T t, std::vector<uint8_t> const& bwt, size_t idx, uint64_t symb) {
     /** Every occtable has to be creatable by providing a bwt
      */
     { T{bwt} } -> T;
@@ -40,7 +40,7 @@ concept OccTable = requires(T t, std::vector<uint8_t> const& bwt) {
      * \param second - symbol, a value in the range of [1, Sigma)
      * \return number of occurrences
      */
-    { t.rank(uint64_t{}, uint64_t{}) } -> uint64_t;
+    { t.rank(idx, symb) } -> uint64_t;
 
     /* Return the numbers of symbols at a certain row that are equal or smaller.
      *
@@ -48,7 +48,7 @@ concept OccTable = requires(T t, std::vector<uint8_t> const& bwt) {
      * \param second - symbol, a vale in the range of [1, Sigma)
      * \return number of occurrences
      */
-    { t.prefix_rank(uint64_t{}, uint64_t{}) } -> uint64_t;
+    { t.prefix_rank(idx, symb) } -> uint64_t;
 
     /* Combined rank and prefix_rank over all symbols
      *
@@ -65,7 +65,7 @@ concept OccTable = requires(T t, std::vector<uint8_t> const& bwt) {
      * assert(prefixes[1] == index.prefix_rank(10, 2);
      * \\ ...
      */
-    { t.all_ranks(uint64_t{}) } -> std::tuple<std::array<uint64_t, T::Sigma>, std::array<uint64_t, T::Sigma>>;
+    { t.all_ranks(idx) } -> std::tuple<std::array<uint64_t, T::Sigma>, std::array<uint64_t, T::Sigma>>;
 
     /* Compile time variable indicating the number of symbols (including the delimiter)
      */
@@ -75,7 +75,11 @@ concept OccTable = requires(T t, std::vector<uint8_t> const& bwt) {
      */
     { t.size() } -> size_t;
 
-    t.symbol(uint64_t{});
+    /* Returns the symbol of the bwt at a certain position
+     *
+     * \param idx must be in range of [0, Sigma)
+     */
+    { t.symbol(idx) } -> uint64_t;
 };
 
 template<template <auto> typename T>
@@ -83,7 +87,8 @@ concept checkOccTable = OccTable<T<1>>
                      && OccTable<T<2>>
                      && OccTable<T<4>>
                      && OccTable<T<5>>
-                     && OccTable<T<254>>;
+                     && OccTable<T<254>>
+                     && OccTable<T<256>>;
 
 
 
