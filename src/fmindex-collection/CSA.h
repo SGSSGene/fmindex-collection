@@ -16,8 +16,7 @@ struct CSA {
         : ssa{std::move(_ssa)}
         , bv{bitstack.size, [&](size_t idx) {
             return bitstack.value(idx);
-        }}
-    {}
+        }} {}
 
     CSA(cereal_tag)
         : bv {cereal_tag{}}

@@ -52,6 +52,7 @@ target_include_directories(fmindex_collection
 # fmindex-collectionunittests
 add_executable(test_fmindex-collection
     src/test_fmindex-collection/checkOccTables.cpp
+    src/test_fmindex-collection/checkBiFMIndex.cpp
     src/test_fmindex-collection/main.cpp
 )
 target_link_libraries(test_fmindex-collection

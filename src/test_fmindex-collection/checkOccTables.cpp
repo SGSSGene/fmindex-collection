@@ -1,4 +1,3 @@
-
 #include <fmindex-collection/occtable/all.h>
 #include <catch2/catch.hpp>
 

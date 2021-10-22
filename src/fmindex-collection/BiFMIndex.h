@@ -33,6 +33,7 @@ struct BiFMIndex {
             }
         }
     }
+
     BiFMIndex(cereal_tag)
         : occ{cereal_tag{}}
         , occRev{cereal_tag{}}
@@ -54,6 +55,9 @@ struct BiFMIndex {
             idx = occ.rank(idx, occ.symbol(idx));
             steps += 1;
             opt = csa.value(idx);
+        }
+        if (opt.value() + steps >= size()) {
+            return opt.value() + steps - size();
         }
         return opt.value() + steps;
     }
