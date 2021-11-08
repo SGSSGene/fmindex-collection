@@ -4,13 +4,10 @@ project(search_schemes)
 
 # search scheme generator library
 add_library(${PROJECT_NAME}
-    generator/h2.cpp
-    generator/pigeon.cpp
-    generator/suffixFilter.cpp
-    generator/zeroOnesZero.cpp
+    INTERFACE
 )
 target_include_directories(${PROJECT_NAME}
-    PUBLIC
+    INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
