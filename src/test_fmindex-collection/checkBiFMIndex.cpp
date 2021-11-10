@@ -4,7 +4,7 @@
 
 
 TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
-    fmindex_collection::occtable::bitvector::OccTable<256>/*,
+    fmindex_collection::occtable::bitvector::OccTable<256>,
     fmindex_collection::occtable::bitvectorPrefix::OccTable<256>,
     fmindex_collection::occtable::compact::OccTable<256>,
     fmindex_collection::occtable::compactAligned::OccTable<256>,
@@ -14,7 +14,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
     fmindex_collection::occtable::wavelet::OccTable<256>,
     fmindex_collection::occtable::compactWavelet::OccTable<256>,
     fmindex_collection::occtable::naive::OccTable<256>,
-    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>*/
+    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
 ) {
     using OccTable = TestType;
 
