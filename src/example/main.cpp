@@ -314,7 +314,7 @@ int main(int argc, char const* const* argv) {
                     }
                 }
 
-                fmt::print("{:15}: {:>10.3}s ({:>10.3}s+{:>10.3}s) {:>10.3}q/s - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", name, time_search + time_locate, time_search, time_locate, (time_search+time_locate)/mut_queries.size(), resultCt, results.size(), uniqueResults.size(), readIds.size(), memory);
+                fmt::print("{:15}: {:>10.3}s ({:>10.3}s+{:>10.3}s) {:>10.3}q/s - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", name, time_search + time_locate, time_search, time_locate, mut_queries.size() / (time_search+time_locate), resultCt, results.size(), uniqueResults.size(), readIds.size(), memory);
                 {
                     if (saveOutput) {
                         auto filename =fmt::format("out.k{}.alg{}.ss{}.txt", k, algorithm, name);
