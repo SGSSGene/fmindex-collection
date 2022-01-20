@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <cstring> // for memcpy
 #include <ctime>   // for rand initialization
+#include <initializer_list>
 #include <ios>
 #include <iosfwd>   // forward declaration of ostream
 #include <iostream> // for cerr
@@ -22,6 +23,7 @@
 #include <ostream>
 #include <stdexcept> // for exceptions
 #include <string>
+#include <type_traits>
 #include <typeinfo>
 #include <vector>
 
@@ -34,9 +36,6 @@
 #include <sdsl/structure_tree.hpp>
 #include <sdsl/uintx_t.hpp>
 #include <sdsl/util.hpp>
-
-#include <initializer_list>
-#include <type_traits>
 
 //! Namespace for the succinct data structure library.
 namespace sdsl
@@ -1301,6 +1300,8 @@ class int_vector_const_iterator : public int_vector_iterator_base<t_int_vector>
         m_offset = it.m_offset;
         m_len = it.m_len;
     }
+
+    int_vector_const_iterator & operator=(const int_vector_const_iterator &) = default;
 
     const_reference operator*() const
     {

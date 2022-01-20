@@ -1,11 +1,11 @@
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include <sdsl/coder.hpp>
 #include <sdsl/suffix_arrays.hpp>
 
 #include "common.hpp"
-#include <type_traits>
 
 #include <gtest/gtest.h>
 
@@ -297,13 +297,13 @@ void do_serialisation(TypeParam const & l)
         oarchive(l);
     }
 
+    TypeParam in_l{};
     {
-        TypeParam in_l{};
         std::ifstream is{ temp_file, std::ios::binary };
         in_archive_t iarchive{ is };
         iarchive(in_l);
-        EXPECT_EQ(l, in_l);
     }
+    EXPECT_EQ(l, in_l);
 }
 
 TYPED_TEST(csa_byte_test, cereal)

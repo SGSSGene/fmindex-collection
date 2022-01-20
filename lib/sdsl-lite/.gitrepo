@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:xxsds/sdsl-lite.git
 	branch = master
-	commit = 163d59bb1f3b1b21b028099547f556953d1c626f
-	parent = f643da3e20177ea5d2377c7cad3e9e9ecde3a3bc
+	commit = 9930944f14965c4180e40f7acd5f368fd82a3329
+	parent = ad2c650af719e2becf8e1debba7a7f19d8ee7422
 	method = merge
 	cmdver = 0.4.3

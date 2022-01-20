@@ -1,4 +1,4 @@
-name: sdsl Linting
+name: Linting
 
 on:
   push:
@@ -17,17 +17,17 @@ jobs:
   lint:
     name: Linting
     runs-on: ubuntu-20.04
-    timeout-minutes: 240
+    timeout-minutes: 30
     if: github.repository_owner == 'xxsds'
     steps:
       - uses: actions/checkout@v2
       - name: Run clang-format
-        uses: DoozyX/clang-format-lint-action@v0.11
+        uses: DoozyX/clang-format-lint-action@v0.13
         with:
           source: '.'
           exclude: './external'
           extensions: 'h,hpp,hpp.cmake,cpp'
-          clangFormatVersion: 11
+          clangFormatVersion: 12
           inplace: True
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
