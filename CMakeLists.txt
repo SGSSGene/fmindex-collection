@@ -29,10 +29,25 @@ add_executable(example
     src/example/main.cpp
     src/example/utils/utils.cpp
 )
+
 target_link_libraries(example
     PRIVATE
     fmindex-collection
     search_schemes
     fmt
     procps
-    )
+)
+
+# easyExample executable
+add_executable(easyExample
+    src/easyExample/main.cpp
+)
+target_link_libraries(easyExample
+    PRIVATE
+    fmindex-collection
+    search_schemes
+    fmt
+    procps
+    divsufsort64
+)
+
