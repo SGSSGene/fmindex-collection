@@ -15,6 +15,22 @@ constexpr size_t Sigma = 5;
 template <size_t Sigma>
 using Table = occtable::compact2::OccTable<Sigma>;
 
+template <typename Index>
+void saveIndex(Index const& _index, std::filesystem::path _fileName) {
+    auto ofs     = std::ofstream{_fileName, std::ios::binary};
+    auto archive = cereal::BinaryOutputArchive{ofs};
+    archive(_index);
+}
+
+template <typename Index>
+auto loadIndex(std::filesystem::path _fileName) {
+    auto ifs     = std::ifstream{_fileName, std::ios::binary};
+    auto archive = cereal::BinaryInputArchive{ifs};
+    auto index = BiFMIndex<Table<Sigma>>{cereal_tag{}};
+    archive(index);
+    return index;
+}
+
 
 int main(int argc, char const* const* argv) {
     auto reference = std::vector<uint8_t>{};
