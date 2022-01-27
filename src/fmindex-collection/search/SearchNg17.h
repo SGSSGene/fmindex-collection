@@ -403,7 +403,7 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
                 if (dir == -1) {
                     search2.emplace_back();
                 }
-                search2.back().emplace_back(Block{std::numeric_limits<size_t>::max(), (size_t)s.l[i], (size_t)s.u[i]});
+                search2.back().emplace_back(Block{std::numeric_limits<size_t>::max(), size_t{s.l[i]}, size_t{s.u[i]}});
             } else if (lastDir != dir) {
                 auto lastEntry = search2.back().back();
                 lastEntry.pi = std::numeric_limits<size_t>::max();
@@ -412,9 +412,9 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 
             }
             if (search2.back().back().pi == std::numeric_limits<size_t>::max()) {
-                search2.back().back().u = (size_t)s.u[i];
+                search2.back().back().u = size_t{s.u[i]};
             }
-            search2.back().emplace_back(Block{(size_t)s.pi[i], (size_t)s.l[i], (size_t)s.u[i]});
+            search2.back().emplace_back(Block{size_t{s.pi[i]}, size_t{s.l[i]}, size_t{s.u[i]}});
             lastDir = dir;
 
         }

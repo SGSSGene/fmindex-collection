@@ -172,7 +172,7 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
                     return s.pi[i-1] < s.pi[i]?Dir::Right:Dir::Left;
                 }
             }();
-            search2.emplace_back(Block<size_t>{{}, (size_t)s.l[i], (size_t)s.u[i], dir});
+            search2.emplace_back(Block<size_t>{{}, size_t{s.l[i]}, size_t{s.u[i]}, dir});
         }
         search_scheme2.emplace_back(move(search2));
     }
