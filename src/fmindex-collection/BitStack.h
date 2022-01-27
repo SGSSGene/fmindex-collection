@@ -1,10 +1,10 @@
 #pragma once
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <vector>
-
 
 namespace fmindex_collection {
 
