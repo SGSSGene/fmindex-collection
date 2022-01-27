@@ -22,10 +22,10 @@ struct BiFMIndex {
         assert(bwt.size() == bwtRev.size());
         assert(occ.size() == occRev.size());
         if (bwt.size() != bwtRev.size()) {
-            throw std::runtime_error("bwt don't have the same size");
+            throw std::runtime_error("bwt don't have the same size: " + std::to_string(bwt.size()) + " " + std::to_string(bwtRev.size()));
         }
         if (occ.size() != occRev.size()) {
-            throw std::runtime_error("occ don't have the same size");
+            throw std::runtime_error("occ don't have the same size: " + std::to_string(occ.size()) + " " + std::to_string(occRev.size()));
         }
         for (size_t sym{0}; sym < Sigma; ++sym) {
             if (occ.rank(occ.size(), sym) != occRev.rank(occ.size(), sym)) {

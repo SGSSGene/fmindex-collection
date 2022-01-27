@@ -83,12 +83,12 @@ concept OccTable = requires(T t, std::vector<uint8_t> const& bwt, size_t idx, ui
 };
 
 template<template <auto> typename T>
-concept checkOccTable = OccTable<T<1>>
+concept checkOccTable = /*OccTable<T<1>>
                      && OccTable<T<2>>
-                     && OccTable<T<4>>
+                     &&*/ OccTable<T<4>>
                      && OccTable<T<5>>
-                     && OccTable<T<254>>
-                     && OccTable<T<256>>;
+                     && OccTable<T<254>>;
+//                     && OccTable<T<256>>;
 
 
 

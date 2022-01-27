@@ -16,17 +16,18 @@ using namespace fmindex_collection;
 template <size_t Sigma, typename CB>
 void visitAllTables(CB cb) {
 //    cb((occtable::naive::OccTable<Sigma>*)nullptr, "naive");
-    cb((occtable::bitvector::OccTable<Sigma>*)nullptr, "bitvector");
+//    cb((occtable::bitvector::OccTable<Sigma>*)nullptr, "bitvector");
     cb((occtable::compact2::OccTable<Sigma>*)nullptr, "compact2");
     cb((occtable::compactWavelet::OccTable<Sigma>*)nullptr, "compactWavelet");
-    cb((occtable::compactWaveletAligned::OccTable<Sigma>*)nullptr, "compactWaveletAligned");
-    cb((occtable::compact2Aligned::OccTable<Sigma>*)nullptr, "compact2Aligned");
-    cb((occtable::sdsl_wt_bldc::OccTable<Sigma>*)nullptr, "sdsl_wt_bldc");
+//    cb((occtable::compactWaveletAligned::OccTable<Sigma>*)nullptr, "compactWaveletAligned");
+//    cb((occtable::compact2Aligned::OccTable<Sigma>*)nullptr, "compact2Aligned");
     cb((occtable::wavelet::OccTable<Sigma>*)nullptr, "wavelet");
-    cb((occtable::compact::OccTable<Sigma>*)nullptr, "compact");
-    cb((occtable::compactAligned::OccTable<Sigma>*)nullptr, "compactAligned");
-    cb((occtable::compactPrefix::OccTable<Sigma>*)nullptr, "compactPrefix");
-    cb((occtable::bitvectorPrefix::OccTable<Sigma>*)nullptr, "bitvectorPrefix");
+    cb((occtable::sdsl_wt_bldc::OccTable<Sigma>*)nullptr, "sdsl_wt_bldc");
+    cb((occtable::sdsl_wt_epr::OccTable<Sigma>*)nullptr, "sdsl_wt_epr");
+//    cb((occtable::compact::OccTable<Sigma>*)nullptr, "compact");
+//    cb((occtable::compactAligned::OccTable<Sigma>*)nullptr, "compactAligned");
+//    cb((occtable::compactPrefix::OccTable<Sigma>*)nullptr, "compactPrefix");
+//    cb((occtable::bitvectorPrefix::OccTable<Sigma>*)nullptr, "bitvectorPrefix");
 }
 
 
