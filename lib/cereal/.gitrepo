@@ -5,8 +5,8 @@
 ;
 [subrepo]
 	remote = git@github.com:USCiLab/cereal.git
-	branch = v1.3.0
-	commit = 02eace19a99ce3cd564ca4e379753d69af08c2c8
+	branch = v1.3.1
+	commit = 1de8fe89471d69ea392ea260ce74e079d5f4b415
 	parent = 29b481074dde01c6923b81993a97e12a2f87bea7
 	method = merge
 	cmdver = 0.4.3
