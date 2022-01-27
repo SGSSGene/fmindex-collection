@@ -5,12 +5,14 @@
 
 #include <cassert>
 #include <divsufsort64.h>
+#include <numeric>
 
 namespace fmindex_collection {
 
 template <OccTable Table>
 struct BiFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
+    static size_t constexpr BitsForPosition = 48;
 
     Table occ;
     Table occRev;
@@ -57,32 +59,80 @@ struct BiFMIndex {
         return bwt;
     }
 
-    static auto createCSA(std::vector<int64_t> sa, size_t samplingRate) -> CSA {
+    static auto createCSA(std::vector<int64_t> sa, size_t samplingRate, std::vector<size_t> const& _inputSizes) -> CSA {
         auto bitStack = fmindex_collection::BitStack{};
         auto ssa      = std::vector<uint64_t>{};
         if (samplingRate > 0) {
             ssa.reserve(sa.size() / samplingRate + 1);
         }
         for (size_t i{0}; i < sa.size(); ++i) {
-            bool sample = samplingRate == 0 || i % samplingRate == 0;
+            bool sample = (samplingRate == 0) || (sa[i] % samplingRate == 0);
+            if (!sample) {
+                size_t acc{};
+                for (auto l : _inputSizes) {
+                    if (static_cast<size_t>(sa[i]) == acc) {
+                        sample = true;
+                        break;
+                    }
+                    if (static_cast<size_t>(sa[i]) < acc) {
+                        break;
+                    }
+                    acc += l;
+                }
+            }
             bitStack.push(sample);
             if (sample) {
                 ssa.push_back(sa[i]);
             }
         }
+        for (auto& s : ssa) {
+            // find which reference id this is
+            for (size_t i{0}; i < _inputSizes.size(); ++i) {
+                if (s < _inputSizes[i]) {
+                    s = s | (i << BitsForPosition);
+                    break;
+                }
+                s -= _inputSizes[i];
+            }
+        }
         return CSA{std::move(ssa), bitStack};
     }
 
-    BiFMIndex(std::vector<uint8_t> input, size_t samplingRate)
+    BiFMIndex(std::vector<uint8_t> _input, size_t samplingRate)
         : occ{cereal_tag{}}
         , occRev{cereal_tag{}}
         , csa{cereal_tag{}}
     {
+        auto input = std::vector<std::vector<uint8_t>>{std::move(_input)};
+        *this = BiFMIndex{std::move(input), samplingRate};
+    }
 
-        auto [bwt, csa] = [&input, &samplingRate] () {
+    BiFMIndex(std::vector<std::vector<uint8_t>> _input, size_t samplingRate)
+        : occ{cereal_tag{}}
+        , occRev{cereal_tag{}}
+        , csa{cereal_tag{}}
+    {
+        assert(_input.size() < (1ul << (64-BitsForPosition)));
+        size_t totalSize = std::accumulate(begin(_input), end(_input), size_t{0}, [](auto s, auto const& l) { return s + l.size() + 1; });
+
+        auto input = std::vector<uint8_t>{};
+        input.reserve(totalSize);
+
+        auto inputSizes = std::vector<size_t>{};
+        inputSizes.reserve(_input.size());
+
+        for (auto const& l : _input) {
+            input.insert(end(input), begin(l), end(l));
+            input.emplace_back(0);
+            inputSizes.emplace_back(l.size()+1);
+        }
+        decltype(_input){}.swap(_input); // input memory can be deleted
+
+
+        auto [bwt, csa] = [&input, &samplingRate, &inputSizes] () {
             auto sa  = createSA(input);
             auto bwt = createBWT(input, sa);
-            auto csa = createCSA(std::move(sa), samplingRate);
+            auto csa = createCSA(std::move(sa), samplingRate, inputSizes);
 
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();
@@ -99,6 +149,7 @@ struct BiFMIndex {
         *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
     }
 
+
     BiFMIndex(cereal_tag)
         : occ{cereal_tag{}}
         , occRev{cereal_tag{}}
@@ -113,7 +164,7 @@ struct BiFMIndex {
         return occ.size();
     }
 
-    size_t locate(size_t idx) const {
+    auto locate(size_t idx) const -> std::tuple<size_t, size_t> {
         auto opt = csa.value(idx);
         uint64_t steps{};
         while(!opt) {
@@ -121,10 +172,11 @@ struct BiFMIndex {
             steps += 1;
             opt = csa.value(idx);
         }
-        if (opt.value() + steps >= size()) {
-            return opt.value() + steps - size();
-        }
-        return opt.value() + steps;
+        constexpr size_t posMask = (1ul<<BitsForPosition)-1;
+        auto chr = opt.value() >> BitsForPosition;
+        auto pos = (opt.value() & posMask) + steps;
+
+        return {chr, pos};
     }
 
     template <typename Archive>

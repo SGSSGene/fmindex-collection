@@ -32,7 +32,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == sa[i]);
+            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
         }
     }
 
@@ -52,7 +52,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == sa[i]);
+            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
         }
     }
 
@@ -72,7 +72,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == sa[i]);
+            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
         }
     }
 
@@ -93,7 +93,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == sa[i]);
+            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
         }
 
     }

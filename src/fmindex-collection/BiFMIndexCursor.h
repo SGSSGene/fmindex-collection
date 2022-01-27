@@ -109,6 +109,15 @@ struct BiFMIndexCursor {
 };
 
 template <typename Index>
+auto begin(BiFMIndexCursor<Index> const& _cursor) {
+    return _cursor.lb;
+}
+template <typename Index>
+auto end(BiFMIndexCursor<Index> const& _cursor) {
+    return _cursor.lb + _cursor.len;
+}
+
+template <typename Index>
 struct LeftBiFMIndexCursor {
     static size_t constexpr Sigma = Index::Sigma;
 

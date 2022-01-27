@@ -307,7 +307,7 @@ int main(int argc, char const* const* argv) {
 
                 for (auto const& [queryId, cursor, e, action] : resultCursors) {
                     for (size_t i{cursor.lb}; i < cursor.lb + cursor.len; ++i) {
-                        results.emplace_back(queryId, index.locate(i), e, action);
+                        results.emplace_back(queryId, std::get<1>(index.locate(i)), e, action);
                     }
                     resultCt += cursor.len;
                 }
