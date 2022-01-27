@@ -1,8 +1,10 @@
 #pragma once
 
+#include "CSA.h"
 #include "occtable/concepts.h"
 
-#include "CSA.h"
+#include <cassert>
+#include <divsufsort64.h>
 
 namespace fmindex_collection {
 
@@ -32,6 +34,70 @@ struct BiFMIndex {
                 throw std::runtime_error("wrong rank for the last entry");
             }
         }
+    }
+//    BiFMIndex(BiFMIndex&&) noexcept = default;
+
+    static auto createSA(std::vector<uint8_t> const& input) -> std::vector<int64_t> {
+        auto sa = std::vector<int64_t>{};
+        sa.resize(input.size());
+        auto error = divsufsort64(static_cast<uint8_t const*>(input.data()), sa.data(), input.size());
+        if (error != 0) {
+            throw std::runtime_error("some error while creating the suffix array");
+        }
+        return sa;
+    }
+
+    static auto createBWT(std::vector<uint8_t> const& input, std::vector<int64_t> const& sa) -> std::vector<uint8_t> {
+        assert(input.size() == sa.size());
+        std::vector<uint8_t> bwt;
+        bwt.resize(input.size());
+        for (size_t i{0}; i < sa.size(); ++i) {
+            bwt[i] = input[(sa[i] + input.size()- 1) % input.size()];
+        }
+        return bwt;
+    }
+
+    static auto createCSA(std::vector<int64_t> sa, size_t samplingRate) -> CSA {
+        auto bitStack = fmindex_collection::BitStack{};
+        auto ssa      = std::vector<uint64_t>{};
+        if (samplingRate > 0) {
+            ssa.reserve(sa.size() / samplingRate + 1);
+        }
+        for (size_t i{0}; i < sa.size(); ++i) {
+            bool sample = samplingRate == 0 || i % samplingRate == 0;
+            bitStack.push(sample);
+            if (sample) {
+                ssa.push_back(sa[i]);
+            }
+        }
+        return CSA{std::move(ssa), bitStack};
+    }
+
+
+    BiFMIndex(std::vector<uint8_t> input, size_t samplingRate)
+        : occ{cereal_tag{}}
+        , occRev{cereal_tag{}}
+        , csa{cereal_tag{}}
+    {
+
+        auto [bwt, csa] = [&] () {
+            auto sa  = createSA(input);
+            auto bwt = createBWT(input, sa);
+            auto csa = createCSA(std::move(sa), samplingRate);
+
+            return std::make_tuple(std::move(bwt), std::move(csa));
+        }();
+
+        auto bwtRev = [&]() {
+            std::reverse(begin(input), end(input));
+            auto saRev  = createSA(input);
+            auto bwtRev = createBWT(input, saRev);
+            return bwtRev;
+        }();
+
+        decltype(input){}.swap(input); // input memory can be deleted
+
+        *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
     }
 
     BiFMIndex(cereal_tag)

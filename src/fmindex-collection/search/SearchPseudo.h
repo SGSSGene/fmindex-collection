@@ -1,5 +1,8 @@
 #pragma once
 
+#include <search_schemes/Scheme.h>
+
+#include "BiFMIndexCursor.h"
 
 namespace fmindex_collection {
 namespace search_pseudo {

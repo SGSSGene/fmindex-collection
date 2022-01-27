@@ -7,11 +7,18 @@
 #include <search_schemes/generator/all.h>
 #include <search_schemes/expand.h>
 
+#include <proc/readproc.h>
 #include <cereal/archives/binary.hpp>
 #include <fmt/format.h>
 #include <unordered_set>
 
 using namespace fmindex_collection;
+
+ssize_t memoryUsage() {
+    proc_t usage{};
+    look_up_our_self(&usage);
+    return usage.vsize;
+}
 
 template <size_t Sigma, typename CB>
 void visitAllTables(CB cb) {
@@ -47,7 +54,7 @@ auto loadIndex(std::string path) {
             memcpy(ssa.data(), csaBuffer.data() + readLen, ssa.size()* sizeof(uint64_t));
             return CSA(ssa, bitStack);
         }();
-        auto index = BiFMIndex<Table<Sigma>>{bwt, bwtRev, csa};
+        auto index = BiFMIndex<Table<Sigma>>{bwt, bwtRev, std::move(csa)};
         // save index here
         auto ofs     = std::ofstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryOutputArchive{ofs};
@@ -186,6 +193,7 @@ int main(int argc, char const* const* argv) {
         }
     }
      auto const [queries, queryInfos] = loadQueries<Sigma>("/home/gene/hg38/sampled_illumina_reads.fasta", reverse);
+
 //    auto const [queries, queryInfos] = loadQueries<Sigma>("/home/gene/short_test/read.fasta", reverse);
 
     fmt::print("loaded {} queries (incl reverse complements)\n", queries.size());
@@ -204,9 +212,13 @@ int main(int argc, char const* const* argv) {
                 return;
             }
         }
+
+        auto startMemory = memoryUsage();
         auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/text.dna4");
+        auto memory = memoryUsage() - startMemory;
+
 //        auto index = loadIndex<Sigma, CSA, Table>("/home/gene/short_test/text");
-        fmt::print("index loaded\n");
+        fmt::print("index loaded {}\n", memory / 1000./1000.);
         if (sleepAfterLoad) {
             usleep(5000000);
         }

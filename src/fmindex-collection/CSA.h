@@ -17,10 +17,24 @@ struct CSA {
         , bv{bitstack.size, [&](size_t idx) {
             return bitstack.value(idx);
         }} {}
+    CSA(CSA const&) = delete;
+    CSA(CSA&& _other) noexcept
+        : ssa {std::move(_other.ssa)}
+        , bv  {std::move(_other.bv)}
+    {}
+
 
     CSA(cereal_tag)
         : bv {cereal_tag{}}
     {}
+
+    auto operator=(CSA const&) -> CSA& = delete;
+    auto operator=(CSA&& _other) noexcept -> CSA& {
+        ssa = std::move(_other.ssa);
+        bv  = std::move(_other.bv);
+        return *this;
+    }
+
 
     size_t memoryUsage() const {
         return sizeof(ssa) + ssa.size() * sizeof(ssa.back())

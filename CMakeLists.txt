@@ -6,9 +6,14 @@ if (NOT DEFINED PROJECT_NAME)
     set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set(CMAKE_CXX_EXTENSIONS OFF)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts -Wall -Werror")
 endif ()
 
 project(fmindex-collection)
+
+find_package(PkgConfig)
+
+pkg_check_modules(DIVSUFSORT64 REQUIRED libdivsufsort64)
 
 #add_subdirectory(lib/sdsl-lite)
 add_subdirectory(lib/Catch2)
@@ -28,4 +33,6 @@ target_link_libraries(example
     PRIVATE
     fmindex-collection
     search_schemes
-    fmt)
+    fmt
+    procps
+    )
