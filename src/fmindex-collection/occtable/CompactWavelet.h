@@ -61,7 +61,7 @@ struct Bitvector {
         std::array<uint64_t, bitct>  bits{};
 
         auto prefetch() const {
-            __builtin_prefetch((const void*)(&blocks), 0, 0);
+            __builtin_prefetch(reinterpret_cast<void const*>(&blocks), 0, 0);
 //            __builtin_prefetch((const void*)(&bits), 0, 0);
         }
 
@@ -71,7 +71,7 @@ struct Bitvector {
             size_t l2 = idx;
             auto const& bbits = bits;
             size_t depth = 0;
-            traverse_symb_bits(symb, [&](size_t id, size_t bit) {
+            traverse_symb_bits(symb, [&]([[maybe_unused]] size_t id, size_t bit) {
                 auto bits = std::bitset<64>(bbits[depth]) >> s;
                 auto c1 = (bits << (64-l1)).count();
                 auto d1 = (bits << (64-l2)).count();
@@ -97,7 +97,7 @@ struct Bitvector {
             size_t a{};
             size_t depth = 0;
             auto const& bbits = bits;
-            traverse_symb_bits(symb+1, [&](size_t id, size_t bit) {
+            traverse_symb_bits(symb+1, [&]([[maybe_unused]] size_t id, size_t bit) {
                 auto bits = std::bitset<64>(bbits[depth]) >> s;
                 auto c1 = (bits << (64-l1)).count();
                 auto d1 = (bits << (64-l2)).count();
@@ -241,7 +241,7 @@ struct Bitvector {
         for (size_t i{0}; i < TSigma; ++i) {
             C[i+1] = sblock_acc[i] + C[i];
         }
-    };
+    }
 
     Bitvector(cereal_tag) {}
 

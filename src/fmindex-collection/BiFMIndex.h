@@ -73,14 +73,13 @@ struct BiFMIndex {
         return CSA{std::move(ssa), bitStack};
     }
 
-
     BiFMIndex(std::vector<uint8_t> input, size_t samplingRate)
         : occ{cereal_tag{}}
         , occRev{cereal_tag{}}
         , csa{cereal_tag{}}
     {
 
-        auto [bwt, csa] = [&] () {
+        auto [bwt, csa] = [&input, &samplingRate] () {
             auto sa  = createSA(input);
             auto bwt = createBWT(input, sa);
             auto csa = createCSA(std::move(sa), samplingRate);

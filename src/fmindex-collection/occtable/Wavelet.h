@@ -119,7 +119,7 @@ auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvect
 
     std::array<size_t, bvct> count{};
     for (size_t i{0}; i < TSigma; ++i) {
-        which_bv(i, [&](size_t id, size_t bit) {
+        which_bv(i, [&](size_t id, [[maybe_unused]] size_t bit) {
             count[id] += symb_count[i];
         });
     }

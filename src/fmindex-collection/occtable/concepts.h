@@ -19,20 +19,20 @@ template<typename T>
 concept OccTable = requires(T t, std::vector<uint8_t> const& bwt, size_t idx, uint64_t symb) {
     /** Every occtable has to be creatable by providing a bwt
      */
-    { T{bwt} } -> T;
+    { T{bwt} } -> std::same_as<T>;
 
     /** Every occtable has to have a C'Tor that accept cereal_tag{}.
      * This constructor is used during deserialization
      */
-    { T{cereal_tag{}} } -> T;
+    { T{cereal_tag{}} } -> std::same_as<T>;
 
     /** Returns the name of this Occtable
      */
-    { T::name() } -> std::string;
+    { T::name() } -> std::same_as<std::string>;
 
     /** Returns the extension for this occtable
      */
-    { T::extension() } -> std::string;
+    { T::extension() } -> std::same_as<std::string>;
 
     /* Return the numbers of symbols at a certain row + all symbols smaller over all rows
      *
@@ -40,7 +40,7 @@ concept OccTable = requires(T t, std::vector<uint8_t> const& bwt, size_t idx, ui
      * \param second - symbol, a value in the range of [1, Sigma)
      * \return number of occurrences
      */
-    { t.rank(idx, symb) } -> uint64_t;
+    { t.rank(idx, symb) } -> std::same_as<uint64_t>;
 
     /* Return the numbers of symbols at a certain row that are equal or smaller.
      *
@@ -48,7 +48,7 @@ concept OccTable = requires(T t, std::vector<uint8_t> const& bwt, size_t idx, ui
      * \param second - symbol, a vale in the range of [1, Sigma)
      * \return number of occurrences
      */
-    { t.prefix_rank(idx, symb) } -> uint64_t;
+    { t.prefix_rank(idx, symb) } -> std::same_as<uint64_t>;
 
     /* Combined rank and prefix_rank over all symbols
      *
@@ -65,21 +65,21 @@ concept OccTable = requires(T t, std::vector<uint8_t> const& bwt, size_t idx, ui
      * assert(prefixes[1] == index.prefix_rank(10, 2);
      * \\ ...
      */
-    { t.all_ranks(idx) } -> std::tuple<std::array<uint64_t, T::Sigma>, std::array<uint64_t, T::Sigma>>;
+    { t.all_ranks(idx) } -> std::same_as<std::tuple<std::array<uint64_t, T::Sigma>, std::array<uint64_t, T::Sigma>>>;
 
     /* Compile time variable indicating the number of symbols (including the delimiter)
      */
-    { T::Sigma } -> uint64_t;
+    { T::Sigma } -> std::same_as<size_t>;
 
     /* Run time variable indicating the number of rows inside this occurrence table
      */
-    { t.size() } -> size_t;
+    { t.size() } -> std::same_as<size_t>;
 
     /* Returns the symbol of the bwt at a certain position
      *
      * \param idx must be in range of [0, Sigma)
      */
-    { t.symbol(idx) } -> uint64_t;
+    { t.symbol(idx) } -> std::same_as<uint64_t>;
 };
 
 template<template <auto> typename T>
@@ -115,13 +115,13 @@ concept OccTableMemoryUsage = OccTable<T> and requires(T t) {
      * \param first - length of the text to be indexed
      * \return number of bytes expected to be needed
      */
-    { T::expectedMemoryUsage(size_t{}) } -> size_t;
+    { T::expectedMemoryUsage(size_t{}) } -> std::same_as<size_t>;
 
     /* Computes the actual memory usage of this data structure
      *
      * \return number of bytes that are being used
      */
-    { t.memoryUsage() } -> size_t;
+    { t.memoryUsage() } -> std::same_as<size_t>;
 };
 
 }

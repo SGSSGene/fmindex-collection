@@ -56,7 +56,7 @@ auto generateBWT(size_t len) -> std::tuple<std::vector<uint8_t>, std::vector<uin
     auto bwt = [&]() {
         std::vector<int64_t> sa;
         sa.resize(text.size());
-        auto error = divsufsort64((uint8_t const*)text.data(), sa.data(), text.size());
+        auto error = divsufsort64(reinterpret_cast<uint8_t const*>(text.data()), sa.data(), text.size());
         if (error != 0) {
             throw std::runtime_error("some error while creating the suffix array");
         }
@@ -70,7 +70,7 @@ auto generateBWT(size_t len) -> std::tuple<std::vector<uint8_t>, std::vector<uin
         std::vector<int64_t> sa;
         std::reverse(text.begin(), text.end());
         sa.resize(text.size());
-        auto error = divsufsort64((uint8_t const*)text.data(), sa.data(), text.size());
+        auto error = divsufsort64(reinterpret_cast<uint8_t const*>(text.data()), sa.data(), text.size());
         if (error != 0) {
             throw std::runtime_error("some error while creating the suffix array");
         }

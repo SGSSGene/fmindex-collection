@@ -21,7 +21,7 @@ struct Bitvector {
         std::array<uint64_t, TSigma> bits{};
 
         void prefetch() const {
-            __builtin_prefetch((const void*)(&blocks), 0, 0);
+            __builtin_prefetch(reinterpret_cast<void const*>(&blocks), 0, 0);
 //            __builtin_prefetch((const void*)(&bits), 0, 0);
         }
 
@@ -97,7 +97,7 @@ struct Bitvector {
         for (size_t i{0}; i < TSigma; ++i) {
             C[i+1] = sblock_acc[i] + C[i];
         }
-    };
+    }
 
     Bitvector(cereal_tag) {}
 

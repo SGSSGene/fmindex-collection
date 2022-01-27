@@ -22,19 +22,19 @@ ssize_t memoryUsage() {
 
 template <size_t Sigma, typename CB>
 void visitAllTables(CB cb) {
-//    cb((occtable::naive::OccTable<Sigma>*)nullptr, "naive");
-//    cb((occtable::bitvector::OccTable<Sigma>*)nullptr, "bitvector");
-    cb((occtable::compact2::OccTable<Sigma>*)nullptr, "compact2");
-    cb((occtable::compactWavelet::OccTable<Sigma>*)nullptr, "compactWavelet");
-//    cb((occtable::compactWaveletAligned::OccTable<Sigma>*)nullptr, "compactWaveletAligned");
-//    cb((occtable::compact2Aligned::OccTable<Sigma>*)nullptr, "compact2Aligned");
-    cb((occtable::wavelet::OccTable<Sigma>*)nullptr, "wavelet");
-    cb((occtable::sdsl_wt_bldc::OccTable<Sigma>*)nullptr, "sdsl_wt_bldc");
-    cb((occtable::sdsl_wt_epr::OccTable<Sigma>*)nullptr, "sdsl_wt_epr");
-//    cb((occtable::compact::OccTable<Sigma>*)nullptr, "compact");
-//    cb((occtable::compactAligned::OccTable<Sigma>*)nullptr, "compactAligned");
-//    cb((occtable::compactPrefix::OccTable<Sigma>*)nullptr, "compactPrefix");
-//    cb((occtable::bitvectorPrefix::OccTable<Sigma>*)nullptr, "bitvectorPrefix");
+//    cb(std::type_identity<occtable::naive::OccTable<Sigma>>{}, "naive");
+//    cb(std::type_identity<occtable::bitvector::OccTable<Sigma>>{}, "bitvector");
+    cb(std::type_identity<occtable::compact2::OccTable<Sigma>>{}, "compact2");
+    cb(std::type_identity<occtable::compactWavelet::OccTable<Sigma>>{}, "compactWavelet");
+//    cb(std::type_identity<occtable::compactWaveletAligned::OccTable<Sigma>>{}, "compactWaveletAligned");
+//    cb(std::type_identity<occtable::compact2Aligned::OccTable<Sigma>>{}, "compact2Aligned");
+    cb(std::type_identity<occtable::wavelet::OccTable<Sigma>>{}, "wavelet");
+    cb(std::type_identity<occtable::sdsl_wt_bldc::OccTable<Sigma>>{}, "sdsl_wt_bldc");
+    cb(std::type_identity<occtable::sdsl_wt_epr::OccTable<Sigma>>{}, "sdsl_wt_epr");
+//    cb(std::type_identity<occtable::compact::OccTable<Sigma>>{}, "compact");
+//    cb(std::type_identity<occtable::compactAligned::OccTable<Sigma>>{}, "compactAligned");
+//    cb(std::type_identity<occtable::compactPrefix::OccTable<Sigma>>{}, "compactPrefix");
+//    cb(std::type_identity<occtable::bitvectorPrefix::OccTable<Sigma>>{}, "bitvectorPrefix");
 }
 
 
@@ -203,7 +203,7 @@ int main(int argc, char const* const* argv) {
 
 
 //    auto [bwt, bwtRev] = generateBWT<Sigma>(1ul<<20);
-    visitAllTables<Sigma>([&]<template <size_t> typename Table>(Table<Sigma>*, std::string name) {
+    visitAllTables<Sigma>([&]<template <size_t> typename Table>(std::type_identity_t<Table<Sigma>>, std::string name) {
         if constexpr (OccTableMemoryUsage<Table<Sigma>>) {
             size_t s = Table<Sigma>::expectedMemoryUsage(3'000'000'000ul);
     //        fmt::print("expected memory: {}\n", s);
