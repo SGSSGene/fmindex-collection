@@ -176,7 +176,7 @@ struct OccTable {
         return bitvector.prefix_rank(idx, symb);
     }
 
-    uint8_t symbol(uint64_t idx) const {
+    size_t symbol(uint64_t idx) const {
         return bitvector.symbol(idx);
     }
 

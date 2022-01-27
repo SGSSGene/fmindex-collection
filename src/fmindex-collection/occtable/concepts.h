@@ -69,7 +69,7 @@ concept OccTable = requires(T t, std::vector<uint8_t> const& bwt, size_t idx, ui
 
     /* Compile time variable indicating the number of symbols (including the delimiter)
      */
-    { T::Sigma } -> std::same_as<size_t>;
+    { decltype(T::Sigma){} } -> std::same_as<size_t>;
 
     /* Run time variable indicating the number of rows inside this occurrence table
      */

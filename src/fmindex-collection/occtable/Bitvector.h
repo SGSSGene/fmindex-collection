@@ -178,7 +178,7 @@ struct OccTable {
         return a;
     }
 
-    uint8_t symbol(uint64_t idx) const {
+    size_t symbol(uint64_t idx) const {
         for (size_t i{0}; i < Sigma-1; ++i) {
             if (bitvector[i].value(idx)) {
                 return i;

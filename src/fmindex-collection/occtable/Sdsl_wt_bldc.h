@@ -73,7 +73,7 @@ struct OccTable {
         return a;
     }
 
-    uint8_t symbol(uint64_t idx) const {
+    size_t symbol(uint64_t idx) const {
         idx += 1;
         for (size_t i{0}; i < Sigma-1; ++i) {
             if (rank(idx, i) > rank(idx-1, i)) {

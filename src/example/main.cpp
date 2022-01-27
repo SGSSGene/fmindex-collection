@@ -203,7 +203,7 @@ int main(int argc, char const* const* argv) {
 
 
 //    auto [bwt, bwtRev] = generateBWT<Sigma>(1ul<<20);
-    visitAllTables<Sigma>([&]<template <size_t> typename Table>(std::type_identity_t<Table<Sigma>>, std::string name) {
+    visitAllTables<Sigma>([&]<template <size_t> typename Table>(std::type_identity<Table<Sigma>>, std::string name) {
         if constexpr (OccTableMemoryUsage<Table<Sigma>>) {
             size_t s = Table<Sigma>::expectedMemoryUsage(3'000'000'000ul);
     //        fmt::print("expected memory: {}\n", s);
