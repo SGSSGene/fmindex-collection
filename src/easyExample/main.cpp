@@ -42,7 +42,7 @@ int main(int argc, char const* const* argv) {
 
     auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 0), queries[0].size());
 
-    search_pseudo::search<true>(index, queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+    search_pseudo::search<false>(index, queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
         fmt::print("found something {} {}\n", queryId, cursor.count());
         for (auto i{begin(cursor)}; i < end(cursor); ++i) {
             auto [chr, pos] = index.locate(i);
