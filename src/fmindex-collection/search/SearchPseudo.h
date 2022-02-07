@@ -56,7 +56,7 @@ struct Search {
 
         if (pos == query.size()) {
             if (l[pos-1] <= e and e <= u[pos-1]) {
-                delegate(cur);
+                delegate(cur, e);
             }
             return;
         }
@@ -67,7 +67,7 @@ struct Search {
 
 
         // expected next character
-        auto rank = index.convert(query[pi[pos]]);
+        auto rank = query[pi[pos]];
 
         // cursors extended by one character
         auto cursors = std::array<cursor_t, Sigma>{};
