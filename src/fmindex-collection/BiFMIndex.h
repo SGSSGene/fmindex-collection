@@ -149,7 +149,6 @@ struct BiFMIndex {
         *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
     }
 
-
     BiFMIndex(cereal_tag)
         : occ{cereal_tag{}}
         , occRev{cereal_tag{}}

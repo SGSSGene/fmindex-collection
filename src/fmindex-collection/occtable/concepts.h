@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cereal_tag.h"
+#include "../cereal_tag.h"
 
 #include <array>
 #include <cstddef>
