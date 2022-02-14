@@ -120,7 +120,7 @@ auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvect
         C[i+1] = sblock_acc[i] + C[i];
     }
     return {std::move(bv), C};
-};
+}
 
 template <size_t TSigma>
 struct OccTable {

@@ -20,7 +20,7 @@ inline auto pi(size_t row, size_t n, size_t N, size_t K, size_t Mod) {
         return n + row;
     }
     return N+shiftRight - n-1;
-};
+}
 
 inline auto generatePieces(size_t N, size_t K, size_t Mod=0) {
     auto pieces = std::vector<std::vector<size_t>>(K+1, std::vector<size_t>(N, 0));

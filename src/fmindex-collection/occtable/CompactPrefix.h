@@ -127,7 +127,7 @@ Bitvector<TSigma> construct_bitvector(size_t length, CB cb) {
         bv.C[i+1] = sblock_acc[i];
     }
     return bv;
-};
+}
 
 template <size_t TSigma>
 struct OccTable {

@@ -171,7 +171,7 @@ auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvect
     }
 
     return {std::move(bv), C};
-};
+}
 
 template <size_t TSigma>
 struct OccTable {
