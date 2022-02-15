@@ -26,18 +26,19 @@ TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]",
     auto index = fmindex_collection::BiFMIndex<OccTable>{input, 1};
 
     SECTION("check symbol call to occurence table") {
-        REQUIRE(input.size() == index.size());
+        REQUIRE(input.size()+1 == index.size());
         CHECK(index.occ.symbol( 0) == 'A');
         CHECK(index.occ.symbol( 1) == 'A');
-        CHECK(index.occ.symbol( 2) == 'C');
+        CHECK(index.occ.symbol( 2) == 'A');
         CHECK(index.occ.symbol( 3) == 'C');
-        CHECK(index.occ.symbol( 4) == 'A');
-        CHECK(index.occ.symbol( 5) == 'A');
+        CHECK(index.occ.symbol( 4) == 'C');
+        CHECK(index.occ.symbol( 5) == '\0');
         CHECK(index.occ.symbol( 6) == 'A');
         CHECK(index.occ.symbol( 7) == 'A');
         CHECK(index.occ.symbol( 8) == 'A');
         CHECK(index.occ.symbol( 9) == 'A');
         CHECK(index.occ.symbol(10) == 'A');
+        CHECK(index.occ.symbol(11) == 'A');
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
@@ -45,7 +46,7 @@ TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]",
     fmindex_collection::search_pseudo::search<true>(index, query, search_scheme, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);
-        CHECK(result.lb == 0);
+        CHECK(result.lb == 1);
         CHECK(result.count() == 9);
     });
 

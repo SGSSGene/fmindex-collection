@@ -18,9 +18,9 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
 ) {
     using OccTable = TestType;
 
-    auto bwt    = std::vector<uint8_t>{'t', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
-    auto bwtRev = std::vector<uint8_t>{'H', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
-    auto sa     = std::vector<size_t>{ 10, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };
+    auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
+    auto bwtRev = std::vector<uint8_t>{'H', '\0', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
+    auto sa     = std::vector<size_t>{ 10, 11, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };
 
     SECTION("full sa") {
         auto bitStack = fmindex_collection::BitStack{};
@@ -40,7 +40,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
         auto bitStack = fmindex_collection::BitStack{};
         auto sa2 = std::vector<size_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto add = bool{i % 2 == 0};
+            auto add = bool{i % 2 == 0} || (sa[i] == 0);
             bitStack.push(add);
             if (add) {
                 sa2.push_back(sa[i]);
