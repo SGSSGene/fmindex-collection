@@ -4,9 +4,6 @@
 #include <cstddef>
 #include <cstdint>
 
-#include <fmt/format.h>
-
-
 /**
  * Ng16 with replaced bandedmatrix
  */

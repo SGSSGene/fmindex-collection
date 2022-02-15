@@ -4,9 +4,6 @@
 #include <cstddef>
 #include <cstdint>
 
-#include <fmt/format.h>
-
-
 /**
  * As ng15 and 20 combined
  */
@@ -43,17 +40,6 @@ public:
         auto [begin, end] = rangeCol(row);
         return data[row * (maxErrors+3) + col - begin+1];
 //        return data[row * cols + col];
-    }
-
-    void print(size_t maxDepth) const {
-        for (size_t r{0}; r < maxDepth; ++r) {
-            auto [begin, end] = rangeCol(r);
-            for (size_t i{begin}; i < end; ++i) {
-                auto v = at(r, i);
-                fmt::print("{}", v);
-            }
-            fmt::print("\n");
-        }
     }
 
     size_t updateCell(size_t row, size_t col, bool match) {
