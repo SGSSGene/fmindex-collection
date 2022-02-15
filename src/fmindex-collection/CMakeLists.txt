@@ -9,8 +9,10 @@ target_include_directories(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../lib/sdsl-lite/include
+    ${CMAKE_BINARY_DIR}/submodules/libdivsufsort/include
 )
 target_link_libraries(${PROJECT_NAME}
     INTERFACE
+    divsufsort64
     cereal
 )

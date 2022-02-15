@@ -13,7 +13,7 @@ project(fmindex-collection)
 
 find_package(PkgConfig)
 
-pkg_check_modules(DIVSUFSORT64 REQUIRED libdivsufsort64)
+pkg_check_modules(DIVSUFSORT64 libdivsufsort64)
 
 #add_subdirectory(lib/sdsl-lite)
 add_subdirectory(lib/Catch2)
