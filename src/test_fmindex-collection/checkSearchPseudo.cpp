@@ -50,30 +50,78 @@ TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]",
         CHECK(result.count() == 9);
     });
 
+}
+TEMPLATE_TEST_CASE("searching with collection and PseudoSearch", "[collection]",
+    fmindex_collection::occtable::bitvector::OccTable<256>/*,
+    fmindex_collection::occtable::bitvectorPrefix::OccTable<256>,
+    fmindex_collection::occtable::compact::OccTable<256>,
+    fmindex_collection::occtable::compactAligned::OccTable<256>,
+    fmindex_collection::occtable::compact2::OccTable<256>,
+    fmindex_collection::occtable::compact2Aligned::OccTable<256>,
+    fmindex_collection::occtable::compactPrefix::OccTable<256>,
+    fmindex_collection::occtable::wavelet::OccTable<256>,
+    fmindex_collection::occtable::compactWavelet::OccTable<256>,
+    fmindex_collection::occtable::naive::OccTable<256>,
+    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>*/
+) {
+    using OccTable = TestType;
 
-/*    auto sa = std::vector<int64_t>{};
-    sa.resize(input.size());
-    auto error = divsufsort64(static_cast<uint8_t const*>(input.data()), sa.data(), input.size());
-    if (error != 0) {
-        throw std::runtime_error("some error while creating the suffix array");
+    auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
+                                                    {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
+
+    auto index = fmindex_collection::BiFMIndex<OccTable>{input, 1};
+
+    SECTION("check symbol call to occurence table") {
+        auto expected = std::vector<uint8_t>{'A', 'A', 'A', 'A', 'A', 'A', 'B', 'C', 'B', '\0', 'C', '\0',
+                                             'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A'};
+        REQUIRE(index.size() == expected.size());
+        for (size_t i{0}; i < expected.size(); ++i) {
+            INFO(i);
+            CHECK(index.occ.symbol(i) == expected[i]);
+        }
     }
 
-    CHECK(sa[ 0] == 10);
-    CHECK(sa[ 1] ==  9);
-    CHECK(sa[ 2] ==  8);
-    CHECK(sa[ 3] ==  4);
-    CHECK(sa[ 4] ==  0);
-    CHECK(sa[ 5] ==  5);
-    CHECK(sa[ 6] ==  1);
-    CHECK(sa[ 7] ==  6);
-    CHECK(sa[ 8] ==  2);
-    CHECK(sa[ 9] ==  7);
-    CHECK(sa[10] ==  3);
+    auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
+    auto search_scheme = search_schemes::generator::backtracking(1, 0, 0);
+    fmindex_collection::search_pseudo::search<true>(index, query, search_scheme, [](auto qidx, auto result, auto errors) {
+        CHECK(qidx == 0);
+        CHECK(errors == 0);
+        CHECK(result.lb == 2);
+        CHECK(result.count() == 18);
+    });
 
+    auto expected = std::vector<std::tuple<size_t, size_t>> {
+        std::make_tuple(1ul, 11ul),
+        std::make_tuple(0ul, 11ul),
+        std::make_tuple(1ul, 10ul),
+        std::make_tuple(0ul, 10ul),
+        std::make_tuple(1ul, 9ul),
+        std::make_tuple(0ul, 9ul),
+        std::make_tuple(1ul, 8ul),
+        std::make_tuple(0ul, 8ul),
+        std::make_tuple(1ul, 4ul),
+        std::make_tuple(1ul, 0ul),
+        std::make_tuple(0ul, 4ul),
+        std::make_tuple(0ul, 0ul),
+        std::make_tuple(1ul, 5ul),
+        std::make_tuple(1ul, 1ul),
+        std::make_tuple(0ul, 5ul),
+        std::make_tuple(0ul, 1ul),
+        std::make_tuple(1ul, 6ul),
+        std::make_tuple(1ul, 2ul),
+        std::make_tuple(0ul, 6ul),
+        std::make_tuple(0ul, 2ul),
+        std::make_tuple(1ul, 7ul),
+        std::make_tuple(1ul, 3ul),
+        std::make_tuple(0ul, 7ul),
+        std::make_tuple(0ul, 3ul)
+    };
 
-
-    auto bwt    = std::vector<uint8_t>{'t', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
-    auto bwtRev = std::vector<uint8_t>{'H', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
-    auto sa     = std::vector<size_t>{ 10, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };*/
-
+    for (size_t i{0}; i < expected.size(); ++i) {
+        INFO(i);
+        auto [il, pl] = index.locate(i);
+        auto [ir, pr] = expected[i];
+        CHECK(il == ir);
+        CHECK(pl == pr);
+    }
 }
