@@ -51,7 +51,7 @@ struct BitStack {
     }
 
 
-    size_t read(uint8_t const* buffer, size_t len) {
+    size_t read(uint8_t const* buffer, [[maybe_unused]]size_t len) {
         assert(len >= 16);
 
         memcpy(&size, buffer, 8); buffer += 8;

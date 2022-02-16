@@ -52,7 +52,7 @@ public:
     };
 public:
 
-    BandMatrix(size_t _query, size_t e, size_t _maxErrors)
+    BandMatrix(size_t _query, size_t _maxErrors)
         : queryLength{_query}
         , maxErrors{_maxErrors}
         , rows{queryLength+maxErrors+1}
@@ -99,7 +99,7 @@ struct Search {
         , query     {_query}
         , delegate  {_delegate}
         , maxError{_maxError}
-        , matrix{_search.size(), e, _maxError}
+        , matrix{_search.size(), _maxError}
     {
         matrix[0] = e;
         size_t newEnd = 1;
