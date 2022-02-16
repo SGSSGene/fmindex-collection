@@ -63,36 +63,32 @@ struct BiFMIndex {
         auto bitStack = fmindex_collection::BitStack{};
         auto ssa      = std::vector<uint64_t>{};
         if (samplingRate > 0) {
-            ssa.reserve(sa.size() / samplingRate + 1);
+            ssa.reserve(sa.size() / samplingRate + 1 + _inputSizes.size());
         }
-        for (size_t i{0}; i < sa.size(); ++i) {
-            bool sample = (samplingRate == 0) || (sa[i] % samplingRate == 0);
-            if (!sample) {
-                size_t acc{};
-                for (auto l : _inputSizes) {
-                    if (static_cast<size_t>(sa[i]) == acc) {
-                        sample = true;
-                        break;
-                    }
-                    if (static_cast<size_t>(sa[i]) < acc) {
-                        break;
-                    }
-                    acc += l;
-                }
+
+        auto newLabels = std::vector<uint64_t>{};
+        newLabels.resize(sa.size(), std::numeric_limits<uint64_t>::max());
+
+        auto accIter = _inputSizes.begin();
+        size_t subjId{};
+        size_t subjPos{};
+        for (size_t i{0}; i < newLabels.size(); ++i, ++subjPos) {
+            while (subjPos >= *accIter) {
+                subjPos -= *accIter;
+                ++subjId;
+                ++accIter;
             }
+            bool sample = (samplingRate == 0) || (i % samplingRate == 0) || (subjPos == 0);
+            if (sample) {
+                newLabels[i] = (subjPos) | (subjId << BitsForPosition);
+            }
+        }
+
+        for (size_t i{0}; i < sa.size(); ++i) {
+            bool sample = newLabels[sa[i]] != std::numeric_limits<uint64_t>::max();
             bitStack.push(sample);
             if (sample) {
-                ssa.push_back(sa[i]);
-            }
-        }
-        for (auto& s : ssa) {
-            // find which reference id this is
-            for (size_t i{0}; i < _inputSizes.size(); ++i) {
-                if (s < _inputSizes[i]) {
-                    s = s | (i << BitsForPosition);
-                    break;
-                }
-                s -= _inputSizes[i];
+                ssa.push_back(newLabels[sa[i]]);
             }
         }
         return CSA{std::move(ssa), bitStack};
