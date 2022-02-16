@@ -12,7 +12,7 @@ namespace fmindex_collection {
 template <OccTable Table>
 struct BiFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
-    static size_t constexpr BitsForPosition = 48;
+    static size_t constexpr BitsForPosition = 40;
 
     Table occ;
     Table occRev;
