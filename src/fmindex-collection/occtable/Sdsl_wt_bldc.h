@@ -3,7 +3,6 @@
 #include "concepts.h"
 
 #include <array>
-#include <cereal/types/array.hpp>
 #include <cstdint>
 #include <filesystem>
 #include <sdsl/construct.hpp>

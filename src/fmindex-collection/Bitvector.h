@@ -5,8 +5,6 @@
 #include <array>
 #include <bitset>
 #include <cassert>
-#include <cereal/types/array.hpp>
-#include <cereal/types/vector.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <vector>

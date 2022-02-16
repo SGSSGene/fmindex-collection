@@ -33,6 +33,7 @@ if (DEFINED ROOT_PROJECT)
         PRIVATE
         fmindex-collection
         search_schemes
+        cereal
         fmt
         procps
     )
@@ -45,6 +46,7 @@ if (DEFINED ROOT_PROJECT)
         PRIVATE
         fmindex-collection
         search_schemes
+        cereal
         fmt
         procps
     )

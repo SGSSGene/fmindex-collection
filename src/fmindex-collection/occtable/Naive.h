@@ -3,8 +3,6 @@
 #include "concepts.h"
 
 #include <array>
-#include <cereal/types/array.hpp>
-#include <cereal/types/vector.hpp>
 #include <cstdint>
 #include <vector>
 
