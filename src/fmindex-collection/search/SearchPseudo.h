@@ -130,7 +130,7 @@ struct Search {
 
         // search substitution
         if (l[pos] <= e+1 and e+1 <= u[pos]) {
-            for (uint8_t i{1}; i < Sigma; ++i) {
+            for (size_t i{1}; i < Sigma; ++i) {
                 if (i == rank) continue;
                 search_distance(cursors[i], e+1, pos+1);
             }
@@ -138,7 +138,7 @@ struct Search {
 
         //search deletions
         if (e+1 <= u[pos]) {
-            for (uint8_t i{1}; i < Sigma; ++i) {
+            for (size_t i{1}; i < Sigma; ++i) {
                 search_distance(cursors[i], e+1, pos);
             }
         }
