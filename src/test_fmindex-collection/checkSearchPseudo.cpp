@@ -4,7 +4,6 @@
 #include <search_schemes/generator/all.h>
 
 #include <catch2/catch.hpp>
-#include <divsufsort64.h>
 
 TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]",
     fmindex_collection::occtable::bitvector::OccTable<256>,

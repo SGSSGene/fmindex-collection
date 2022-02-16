@@ -4,7 +4,7 @@
 #include "occtable/concepts.h"
 
 #include <cassert>
-#include <divsufsort64.h>
+#include <sdsl/divsufsort.hpp>
 #include <numeric>
 
 namespace fmindex_collection {
@@ -42,7 +42,7 @@ struct BiFMIndex {
     static auto createSA(std::vector<uint8_t> const& input) -> std::vector<int64_t> {
         auto sa = std::vector<int64_t>{};
         sa.resize(input.size());
-        auto error = divsufsort64(static_cast<uint8_t const*>(input.data()), sa.data(), input.size());
+        auto error = sdsl::divsufsort<int64_t>(static_cast<uint8_t const*>(input.data()), sa.data(), input.size());
         if (error != 0) {
             throw std::runtime_error("some error while creating the suffix array");
         }

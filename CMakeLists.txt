@@ -11,10 +11,6 @@ endif ()
 
 project(fmindex-collection)
 
-find_package(PkgConfig)
-
-pkg_check_modules(DIVSUFSORT64 REQUIRED libdivsufsort64)
-
 #add_subdirectory(lib/sdsl-lite)
 add_subdirectory(lib/Catch2)
 add_subdirectory(lib/cereal)
@@ -48,6 +44,5 @@ target_link_libraries(easyExample
     search_schemes
     fmt
     procps
-    divsufsort64
 )
 
