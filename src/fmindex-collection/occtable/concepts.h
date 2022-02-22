@@ -15,7 +15,7 @@ namespace fmindex_collection {
 /*
  * Minimum requirements to function as an Occurrence Table (OccTable)
  */
-template<typename T, typename TLengthType = T::TLengthType>
+template<typename T, typename TLengthType = typename T::TLengthType>
 concept OccTable = requires(T t, std::vector<uint8_t> const& bwt, TLengthType idx, TLengthType symb) {
     /** Every occtable has to be creatable by providing a bwt
      */
