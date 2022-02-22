@@ -63,7 +63,7 @@ struct Search {
         }
 
         if (blockIter == end(search)) {
-            if constexpr ((LInfo == 'M' or LInfo == 'S') and (RInfo == 'M' or RInfo == 'S')) {
+            if constexpr ((LInfo == 'M' or LInfo == 'I') and (RInfo == 'M' or RInfo == 'I')) {
                 delegate(qidx, cur, e);
             }
             return;
