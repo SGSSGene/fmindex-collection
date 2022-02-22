@@ -183,6 +183,7 @@ struct Bitvector {
 
 template <size_t TSigma, size_t TAlignment, typename block_t>
 struct OccTable {
+    using TLengthType = uint64_t;
     static constexpr size_t Sigma = TSigma;
 
     Bitvector<Sigma, TAlignment, block_t> bitvector;

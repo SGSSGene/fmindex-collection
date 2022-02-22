@@ -24,9 +24,10 @@ using sdsl_wt_index_type =
 
 template <size_t TSigma>
 struct OccTable {
+    using TLengthType = uint64_t;
+    static constexpr size_t Sigma = TSigma;
 
     sdsl_wt_index_type<TSigma> index;
-    static constexpr size_t Sigma = TSigma;
 
     std::array<uint64_t, Sigma+1> C{};
 

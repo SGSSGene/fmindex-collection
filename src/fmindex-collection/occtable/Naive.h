@@ -12,6 +12,7 @@ namespace naive {
 
 template <size_t TSigma>
 struct OccTable {
+    using TLengthType = uint64_t;
     static constexpr size_t Sigma = TSigma;
 
     std::vector<std::array<uint64_t, Sigma>> occ{};

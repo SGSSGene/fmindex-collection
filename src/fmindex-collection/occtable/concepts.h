@@ -15,8 +15,8 @@ namespace fmindex_collection {
 /*
  * Minimum requirements to function as an Occurrence Table (OccTable)
  */
-template<typename T>
-concept OccTable = requires(T t, std::vector<uint8_t> const& bwt, size_t idx, uint64_t symb) {
+template<typename T, typename TLengthType = T::TLengthType>
+concept OccTable = requires(T t, std::vector<uint8_t> const& bwt, TLengthType idx, TLengthType symb) {
     /** Every occtable has to be creatable by providing a bwt
      */
     { T{bwt} } -> std::same_as<T>;
@@ -40,7 +40,7 @@ concept OccTable = requires(T t, std::vector<uint8_t> const& bwt, size_t idx, ui
      * \param second - symbol, a value in the range of [1, Sigma)
      * \return number of occurrences
      */
-    { t.rank(idx, symb) } -> std::same_as<uint64_t>;
+    { t.rank(idx, symb) } -> std::same_as<TLengthType>;
 
     /* Return the numbers of symbols at a certain row that are equal or smaller.
      *
@@ -48,7 +48,7 @@ concept OccTable = requires(T t, std::vector<uint8_t> const& bwt, size_t idx, ui
      * \param second - symbol, a vale in the range of [1, Sigma)
      * \return number of occurrences
      */
-    { t.prefix_rank(idx, symb) } -> std::same_as<uint64_t>;
+    { t.prefix_rank(idx, symb) } -> std::same_as<TLengthType>;
 
     /* Combined rank and prefix_rank over all symbols
      *
@@ -65,21 +65,21 @@ concept OccTable = requires(T t, std::vector<uint8_t> const& bwt, size_t idx, ui
      * assert(prefixes[1] == index.prefix_rank(10, 2);
      * \\ ...
      */
-    { t.all_ranks(idx) } -> std::same_as<std::tuple<std::array<uint64_t, T::Sigma>, std::array<uint64_t, T::Sigma>>>;
+    { t.all_ranks(idx) } -> std::same_as<std::tuple<std::array<TLengthType, T::Sigma>, std::array<TLengthType, T::Sigma>>>;
 
     /* Compile time variable indicating the number of symbols (including the delimiter)
      */
-    { decltype(T::Sigma){} } -> std::same_as<size_t>;
+    { decltype(T::Sigma){} } -> std::same_as<TLengthType>;
 
     /* Run time variable indicating the number of rows inside this occurrence table
      */
-    { t.size() } -> std::same_as<size_t>;
+    { t.size() } -> std::same_as<TLengthType>;
 
     /* Returns the symbol of the bwt at a certain position
      *
      * \param idx must be in range of [0, Sigma)
      */
-    { t.symbol(idx) } -> std::same_as<uint64_t>;
+    { t.symbol(idx) } -> std::same_as<TLengthType>;
 };
 
 template<template <auto> typename T>

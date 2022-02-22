@@ -13,6 +13,7 @@ template <OccTable Table>
 struct BiFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
     static size_t constexpr BitsForPosition = 40;
+    using TTable = Table;
 
     Table occ;
     Table occRev;
@@ -59,7 +60,7 @@ struct BiFMIndex {
         return bwt;
     }
 
-    static auto createCSA(std::vector<int64_t> sa, size_t samplingRate, std::vector<size_t> const& _inputSizes) -> CSA {
+    static auto createCSA(std::vector<int64_t> sa, size_t samplingRate, std::vector<size_t> const& _inputSizes, std::function<size_t(size_t)> _label) -> CSA {
         auto bitStack = fmindex_collection::BitStack{};
         auto ssa      = std::vector<uint64_t>{};
         if (samplingRate > 0) {
@@ -80,7 +81,7 @@ struct BiFMIndex {
             }
             bool sample = (samplingRate == 0) || (i % samplingRate == 0) || (subjPos == 0);
             if (sample) {
-                newLabels[i] = (subjPos) | (subjId << BitsForPosition);
+                newLabels[i] = (subjPos) | (_label(subjId) << BitsForPosition);
             }
         }
 
@@ -103,7 +104,7 @@ struct BiFMIndex {
         *this = BiFMIndex{std::move(input), samplingRate};
     }
 
-    BiFMIndex(std::vector<std::vector<uint8_t>> _input, size_t samplingRate)
+    BiFMIndex(std::vector<std::vector<uint8_t>> _input, size_t samplingRate, std::vector<size_t> _labels = {})
         : occ{cereal_tag{}}
         , occRev{cereal_tag{}}
         , csa{cereal_tag{}}
@@ -125,10 +126,18 @@ struct BiFMIndex {
         decltype(_input){}.swap(_input); // input memory can be deleted
 
 
-        auto [bwt, csa] = [&input, &samplingRate, &inputSizes] () {
+        auto [bwt, csa] = [&input, &samplingRate, &inputSizes, &_labels] () {
             auto sa  = createSA(input);
             auto bwt = createBWT(input, sa);
-            auto csa = createCSA(std::move(sa), samplingRate, inputSizes);
+            auto csa = [&]() {
+                if (_labels.empty()) {
+                    return createCSA(std::move(sa), samplingRate, inputSizes, [](size_t i) { return i; });
+                } else {
+                    return createCSA(std::move(sa), samplingRate, inputSizes, [&](size_t i) {
+                        return _labels[i];
+                    });
+                }
+            }();
 
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();
@@ -144,6 +153,7 @@ struct BiFMIndex {
 
         *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
     }
+
 
     BiFMIndex(cereal_tag)
         : occ{cereal_tag{}}

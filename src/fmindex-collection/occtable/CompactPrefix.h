@@ -129,6 +129,7 @@ Bitvector<TSigma> construct_bitvector(size_t length, CB cb) {
 
 template <size_t TSigma>
 struct OccTable {
+    using TLengthType = uint64_t;
     static constexpr size_t Sigma = TSigma;
 
     Bitvector<Sigma> bitvector;

@@ -173,6 +173,7 @@ auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvect
 
 template <size_t TSigma>
 struct OccTable {
+    using TLengthType = uint64_t;
     static constexpr size_t Sigma = TSigma;
     static constexpr auto bits = bits_count(TSigma);
     static constexpr auto bvct = pow(2, bits);
