@@ -8,28 +8,32 @@
 
 namespace fmindex_collection {
 
-struct CSA {
-    std::vector<uint64_t> ssa;
+struct CSA32 {
+    std::vector<uint32_t> ssa;
     Bitvector bv;
 
-    CSA(std::vector<uint64_t> _ssa, BitStack const& bitstack)
-        : ssa{std::move(_ssa)}
-        , bv{bitstack.size, [&](size_t idx) {
+    CSA32(std::vector<uint64_t> const& _ssa, BitStack const& bitstack)
+        : bv{bitstack.size, [&](size_t idx) {
             return bitstack.value(idx);
-        }} {}
-    CSA(CSA const&) = delete;
-    CSA(CSA&& _other) noexcept
+        }} {
+            ssa.resize(_ssa.size());
+            for (size_t i{0}; i < _ssa.size(); ++i) {
+                ssa[i] = _ssa[i];
+            }
+        }
+    CSA32(CSA32 const&) = delete;
+    CSA32(CSA32&& _other) noexcept
         : ssa {std::move(_other.ssa)}
         , bv  {std::move(_other.bv)}
     {}
 
 
-    CSA(cereal_tag)
+    CSA32(cereal_tag)
         : bv {cereal_tag{}}
     {}
 
-    auto operator=(CSA const&) -> CSA& = delete;
-    auto operator=(CSA&& _other) noexcept -> CSA& {
+    auto operator=(CSA32 const&) -> CSA32& = delete;
+    auto operator=(CSA32&& _other) noexcept -> CSA32& {
         ssa = std::move(_other.ssa);
         bv  = std::move(_other.bv);
         return *this;
@@ -55,4 +59,3 @@ struct CSA {
 };
 
 }
-#include "CSA32.h"

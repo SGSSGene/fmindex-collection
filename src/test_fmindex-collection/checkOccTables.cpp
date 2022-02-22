@@ -12,6 +12,9 @@ TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]",
     fmindex_collection::occtable::compactPrefix::OccTable<256>,
     fmindex_collection::occtable::wavelet::OccTable<256>,
     fmindex_collection::occtable::compactWavelet::OccTable<256>,
+    fmindex_collection::occtable::compactWaveletAligned::OccTable<256>,
+    fmindex_collection::occtable::compactWavelet32::OccTable<256>,
+    fmindex_collection::occtable::compactWavelet32Aligned::OccTable<256>,
     fmindex_collection::occtable::naive::OccTable<256>,
     fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
 ) {
