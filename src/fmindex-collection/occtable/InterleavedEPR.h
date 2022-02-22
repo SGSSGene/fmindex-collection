@@ -10,7 +10,7 @@
 
 namespace fmindex_collection {
 namespace occtable {
-namespace interleavedEPR {
+namespace interleavedEPR_impl {
 
 // counts how many bits are needed to represent the number y
 constexpr inline size_t bits_count(size_t y) {
@@ -239,10 +239,8 @@ struct Bitvector {
 };
 
 
-template <size_t TSigma>
+template <size_t TSigma, typename block_t, size_t TAlignment>
 struct OccTable {
-    static constexpr size_t TAlignment = 1;
-    using block_t = uint8_t;
     using TLengthType = uint64_t;
     static constexpr size_t Sigma = TSigma;
 
@@ -301,20 +299,52 @@ struct OccTable {
     void serialize(Archive& ar) {
         ar(bitvector);
     }
-
-    static auto name() -> std::string {
-        return "Interleaved EPR";
-    }
-
-    static auto extension() -> std::string {
-        return "iepr";
-    }
 };
-
-static_assert(checkOccTable<OccTable>);
-
 
 
 }
+namespace interleavedEPR8 {
+template <size_t TSigma>
+struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 1> {
+    static auto name() -> std::string {
+        return "Interleaved EPR (8bit)";
+    }
+
+    static auto extension() -> std::string {
+        return "iepr8";
+    }
+};
+static_assert(checkOccTable<OccTable>);
+}
+namespace interleavedEPR16 {
+template <size_t TSigma>
+struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 1> {
+    static auto name() -> std::string {
+        return "Interleaved EPR (16bit)";
+    }
+
+    static auto extension() -> std::string {
+        return "iepr16";
+    }
+};
+static_assert(checkOccTable<OccTable>);
+}
+namespace interleavedEPR32 {
+template <size_t TSigma>
+struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint32_t, 1> {
+    static auto name() -> std::string {
+        return "Interleaved EPR (32bit)";
+    }
+
+    static auto extension() -> std::string {
+        return "iepr32";
+    }
+};
+static_assert(checkOccTable<OccTable>);
+
+}
+
+
+
 }
 }
