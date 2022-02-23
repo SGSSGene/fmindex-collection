@@ -9,7 +9,7 @@
 
 namespace fmindex_collection {
 namespace occtable {
-namespace compactPrefix {
+namespace interleavedPrefix {
 
 template <size_t TSigma>
 struct Bitvector {

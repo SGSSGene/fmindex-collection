@@ -9,7 +9,7 @@
 
 namespace fmindex_collection {
 namespace occtable {
-namespace compactWaveletV2_detail {
+namespace interleavedWavelet_detail {
 
 // counts how many bits are needed to represent the number y
 constexpr inline size_t bits_count(size_t y) {
@@ -55,8 +55,8 @@ struct Bitvector {
     static constexpr auto bvct  = pow(2, bitct);
 
     struct alignas(TAlignment) Block {
-        std::array<uint32_t, bitct> blocks{};
-        std::array<uint64_t, bitct> bits{};
+        std::array<uint32_t, TSigma> blocks{};
+        std::array<uint64_t, bitct>  bits{};
 
         auto prefetch() const {
             __builtin_prefetch(reinterpret_cast<void const*>(&blocks), 0, 0);
@@ -69,7 +69,6 @@ struct Bitvector {
             size_t l2 = idx;
             auto const& bbits = bits;
             size_t depth = 0;
-            size_t blockAcc{};
             traverse_symb_bits(symb, [&]([[maybe_unused]] size_t id, size_t bit) {
                 auto bits = std::bitset<64>(bbits[depth]) >> s;
                 auto c1 = (bits << (64-l1)).count();
@@ -80,14 +79,13 @@ struct Bitvector {
                     l2 = l2 - d1;
                     l1 = l1 - c1;
                 } else {
-                    blockAcc += blocks[id];
                     s = s + l1 - c1;
                     l2 = d1;
                     l1 = c1;
                 }
                 depth += 1;
             });
-            return l2 + blocksAcc;
+            return l2 + blocks[symb];
         }
 
         uint64_t prefix_rank(size_t idx, size_t symb) const {
@@ -97,7 +95,6 @@ struct Bitvector {
             size_t a{};
             size_t depth = 0;
             auto const& bbits = bits;
-            size_t blockAcc{};
             traverse_symb_bits(symb+1, [&]([[maybe_unused]] size_t id, size_t bit) {
                 auto bits = std::bitset<64>(bbits[depth]) >> s;
                 auto c1 = (bits << (64-l1)).count();
@@ -114,14 +111,13 @@ struct Bitvector {
                     s = s + c0;
                     l2 = d1;
                     l1 = c1;
-                    for (size_t i{0}; i <= symb; ++i) {
-                        blbockAcc += blocks[i];
-                    }
-
                 }
                 depth += 1;
             });
-            return a + blockAcc;
+            for (size_t i{0}; i <= symb; ++i) {
+                a += blocks[i];
+            }
+            return a;
         }
 
         template <typename CB>
@@ -308,6 +304,7 @@ struct Bitvector {
 
 template <size_t TSigma, size_t TAlignment>
 struct OccTable {
+    using TLengthType = uint64_t;
     static constexpr size_t Sigma = TSigma;
 
     Bitvector<Sigma, TAlignment> bitvector;
@@ -379,9 +376,9 @@ struct OccTable {
 };
 }
 
-namespace compactWaveletV2 {
+namespace interleavedWavelet {
 template <size_t Sigma>
-struct OccTable : compactWaveletV2_detail::OccTable<Sigma, 1> {
+struct OccTable : interleavedWavelet_detail::OccTable<Sigma, 8> {
     static auto name() -> std::string {
         return "Interleaved Wavelet";
     }
@@ -393,9 +390,9 @@ struct OccTable : compactWaveletV2_detail::OccTable<Sigma, 1> {
 static_assert(checkOccTable<OccTable>);
 }
 
-namespace compactWaveletV2Aligned {
+namespace interleavedWaveletAligned {
 template <size_t Sigma>
-struct OccTable : compactWaveletV2_detail::OccTable<Sigma, 64> {
+struct OccTable : interleavedWavelet_detail::OccTable<Sigma, 64> {
     static auto name() -> std::string {
         return "Interleaved Wavelet Aligned";
     }

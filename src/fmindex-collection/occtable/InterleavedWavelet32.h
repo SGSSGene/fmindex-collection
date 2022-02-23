@@ -9,7 +9,7 @@
 
 namespace fmindex_collection {
 namespace occtable {
-namespace compactWavelet32_detail {
+namespace interleavedWavelet32_detail {
 
 // counts how many bits are needed to represent the number y
 constexpr inline size_t bits_count(uint32_t y) {
@@ -361,29 +361,29 @@ struct OccTable {
 };
 }
 
-namespace compactWavelet32 {
+namespace interleavedWavelet32 {
 template <size_t Sigma>
-struct OccTable : compactWavelet32_detail::OccTable<Sigma, 1> {
+struct OccTable : interleavedWavelet32_detail::OccTable<Sigma, 8> {
     static auto name() -> std::string {
-        return "Interleaved Wavelet";
+        return "Interleaved Wavelet (size: 32bit)";
     }
 
     static auto extension() -> std::string {
-        return "iw";
+        return "iw32";
     }
 };
 static_assert(checkOccTable<OccTable>);
 }
 
-namespace compactWavelet32Aligned {
+namespace interleavedWavelet32Aligned {
 template <size_t Sigma>
-struct OccTable : compactWavelet32_detail::OccTable<Sigma, 64> {
+struct OccTable : interleavedWavelet32_detail::OccTable<Sigma, 64> {
     static auto name() -> std::string {
-        return "Interleaved Wavelet Aligned";
+        return "Interleaved Wavelet Aligned (size: 32bit)";
     }
 
     static auto extension() -> std::string {
-        return "iwa";
+        return "iw32a";
     }
 };
 static_assert(checkOccTable<OccTable>);

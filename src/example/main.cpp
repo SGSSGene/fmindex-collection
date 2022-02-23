@@ -25,7 +25,7 @@ void visitAllTables(CB cb) {
 //    cb(std::type_identity<occtable::naive::OccTable<Sigma>>{}, "naive");
 //    cb(std::type_identity<occtable::bitvector::OccTable<Sigma>>{}, "bitvector");
     cb(std::type_identity<occtable::interleaved16::OccTable<Sigma>>{}, "compact2");
-    cb(std::type_identity<occtable::compactWavelet::OccTable<Sigma>>{}, "compactWavelet");
+    cb(std::type_identity<occtable::interleavedWavelet::OccTable<Sigma>>{}, "compactWavelet");
 //    cb(std::type_identity<occtable::compactWaveletAligned::OccTable<Sigma>>{}, "compactWaveletAligned");
 //    cb(std::type_identity<occtable::compact2Aligned::OccTable<Sigma>>{}, "compact2Aligned");
     cb(std::type_identity<occtable::wavelet::OccTable<Sigma>>{}, "wavelet");
