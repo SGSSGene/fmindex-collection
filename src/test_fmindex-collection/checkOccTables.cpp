@@ -3,58 +3,30 @@
 
 
 TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]",
-/*    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::bitvectorPrefix::OccTable<256>,*/
-//    fmindex_collection::occtable::compact::OccTable<256>,
-/*    fmindex_collection::occtable::compactAligned::OccTable<256>,
+    fmindex_collection::occtable::bitvector::OccTable<256>,
+    fmindex_collection::occtable::bitvectorPrefix::OccTable<256>,
+    fmindex_collection::occtable::compact::OccTable<256>,
+    fmindex_collection::occtable::compactAligned::OccTable<256>,
     fmindex_collection::occtable::compact2::OccTable<256>,
     fmindex_collection::occtable::compact2Aligned::OccTable<256>,
     fmindex_collection::occtable::compactPrefix::OccTable<256>,
-    fmindex_collection::occtable::wavelet::OccTable<256>,*/
-//    fmindex_collection::occtable::compactWavelet::OccTable<256>,
-/*    fmindex_collection::occtable::compactWaveletAligned::OccTable<256>,
+    fmindex_collection::occtable::wavelet::OccTable<256>,
+    fmindex_collection::occtable::compactWavelet::OccTable<256>,
+    fmindex_collection::occtable::compactWaveletAligned::OccTable<256>,
     fmindex_collection::occtable::compactWavelet32::OccTable<256>,
-    fmindex_collection::occtable::compactWavelet32Aligned::OccTable<256>,*/
+    fmindex_collection::occtable::compactWavelet32Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR8::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR16::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32::OccTable<256>/*,
+    fmindex_collection::occtable::interleavedEPR32::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR8Aligned::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR16Aligned::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR32Aligned::OccTable<256>,
     fmindex_collection::occtable::naive::OccTable<256>,
-    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>*/
+    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
 ) {
     using OccTable = TestType;
 
- //   auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
-   auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-};
+    auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
 
     auto table = OccTable{text};
 
@@ -264,6 +236,90 @@ TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]",
         CHECK(table.prefix_rank( 9, 't') ==  9);
         CHECK(table.prefix_rank(10, 't') == 10);
     }
+
+    SECTION("check all_ranks() is equal to prefix_rank() and rank()") {
+        for (size_t idx{0}; idx < table.size(); ++idx) {
+            auto [rank, prefix] = table.all_ranks(idx);
+            for (size_t symb{1}; symb < 256; ++symb) {
+                INFO(idx);
+                INFO(symb);
+                CHECK(rank[symb] == table.rank(idx, symb));
+                CHECK(prefix[symb] == table.prefix_rank(idx, symb));
+            }
+        }
+    }
+}
+
+
+TEMPLATE_TEST_CASE("check occ table construction on text longer than 256 characters", "[OccTable]",
+    fmindex_collection::occtable::bitvector::OccTable<256>,
+    fmindex_collection::occtable::bitvectorPrefix::OccTable<256>,
+    fmindex_collection::occtable::compact::OccTable<256>,
+    fmindex_collection::occtable::compactAligned::OccTable<256>,
+    fmindex_collection::occtable::compact2::OccTable<256>,
+    fmindex_collection::occtable::compact2Aligned::OccTable<256>,
+    fmindex_collection::occtable::compactPrefix::OccTable<256>,
+    fmindex_collection::occtable::wavelet::OccTable<256>,
+    fmindex_collection::occtable::compactWavelet::OccTable<256>,
+    fmindex_collection::occtable::compactWaveletAligned::OccTable<256>,
+    fmindex_collection::occtable::compactWavelet32::OccTable<256>,
+    fmindex_collection::occtable::compactWavelet32Aligned::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR8::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR16::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR32::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR8Aligned::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR16Aligned::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR32Aligned::OccTable<256>,
+    fmindex_collection::occtable::naive::OccTable<256>,
+    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
+) {
+    using OccTable = TestType;
+
+   auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                    };
+
+    auto table = OccTable{text};
+
+    REQUIRE(table.size() == text.size());
+
+    SECTION("check that symbol() call works") {
+        for (size_t i{0}; i < text.size(); ++i) {
+            INFO(i);
+            CHECK(table.symbol(i) == text.at(i));
+        }
+    }
+    CHECK(!OccTable::name().empty());
+    CHECK(!OccTable::extension().empty());
+    CHECK(OccTable::Sigma == 256);
 
     SECTION("check all_ranks() is equal to prefix_rank() and rank()") {
         for (size_t idx{0}; idx < table.size(); ++idx) {

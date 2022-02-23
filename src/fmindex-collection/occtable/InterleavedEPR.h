@@ -342,7 +342,7 @@ struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint32_t, 1> {
 };
 static_assert(checkOccTable<OccTable>);
 }
-namespace interleavedEPR8Align {
+namespace interleavedEPR8Aligned {
 template <size_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 64> {
     static auto name() -> std::string {
@@ -355,7 +355,7 @@ struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 64> {
 };
 static_assert(checkOccTable<OccTable>);
 }
-namespace interleavedEPR16Align {
+namespace interleavedEPR16Aligned {
 template <size_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 64> {
     static auto name() -> std::string {
@@ -368,7 +368,7 @@ struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 64> {
 };
 static_assert(checkOccTable<OccTable>);
 }
-namespace interleavedEPR32Align {
+namespace interleavedEPR32Aligned {
 template <size_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint32_t, 64> {
     static auto name() -> std::string {
