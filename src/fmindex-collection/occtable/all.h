@@ -2,10 +2,7 @@
 
 #include "Bitvector.h"
 #include "BitvectorPrefix.h"
-#include "Compact.h"
-#include "Compact2.h"
-#include "Compact2Aligned.h"
-#include "CompactAligned.h"
+#include "InterleavedBitvector.h"
 #include "CompactPrefix.h"
 #include "CompactWavelet.h"
 #include "CompactWavelet32.h"

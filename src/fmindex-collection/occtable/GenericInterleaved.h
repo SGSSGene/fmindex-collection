@@ -7,7 +7,17 @@
 #include <cstdint>
 #include <vector>
 
-
+/**
+ * A generic Interleaved OccTable
+ *
+ * This interleaves blocks and bits. Blocks size is determined by `block_t`.
+ *
+ * Example dna5+sentinel with block_t=uint32_t
+ * superblocks: 64bit
+ * interleaved blocks+bits: (32bit * 6) + (64bit * 6)
+ *
+ *
+ */
 namespace fmindex_collection {
 namespace occtable {
 namespace genericInterleaved {
