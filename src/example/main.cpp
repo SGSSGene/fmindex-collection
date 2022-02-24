@@ -93,11 +93,13 @@ auto loadQueries(std::string path, bool reverse) {
         while (ptr != (b.data() + b.size())) {
             if (mode == Mode::Name) {
                 std::string name;
-                if (ptr[0] != '>' or (ptr[1] != ' ')) {
-                    throw std::runtime_error("expected '> '");
+                if (*ptr != '>') {
+                    throw std::runtime_error("expected '>'");
                 }
                 ++ptr;
-                ++ptr;
+                if (*ptr == ' ') {
+                    ++ptr;
+                }
                 while (ptr != (b.data() + b.size()) and *ptr != '\n') {
                     name += *ptr;
                     ++ptr;
@@ -128,11 +130,11 @@ auto loadQueries(std::string path, bool reverse) {
                     }
                 } else {
                     if (*ptr == '$') query.push_back(0);
-                    else if (*ptr == 'A') query.push_back(1);
-                    else if (*ptr == 'C') query.push_back(2);
-                    else if (*ptr == 'G') query.push_back(3);
-                    else if (*ptr == 'T') query.push_back(4);
-                    else if (*ptr == 'N' and Sigma == 6) query.push_back(5);
+                    else if (*ptr == 'A' || *ptr == 'a') query.push_back(1);
+                    else if (*ptr == 'C' || *ptr == 'c') query.push_back(2);
+                    else if (*ptr == 'G' || *ptr == 'g') query.push_back(3);
+                    else if (*ptr == 'T' || *ptr == 't') query.push_back(4);
+                    else if ((*ptr == 'N' || *ptr == 'n') and Sigma == 6) query.push_back(5);
                     else if (*ptr == '\n') {}
                     else {
                         throw std::runtime_error("unknown alphabet");
@@ -157,7 +159,7 @@ int main(int argc, char const* const* argv) {
     size_t readLength{};
     bool saveOutput{false};
     bool sleepAfterLoad{false};
-    size_t minK{0}, maxK{6};
+    size_t minK{0}, maxK{6}, k_stepSize{1};
     bool reverse{true};
 
     std::vector<std::string> algorithms;
@@ -186,6 +188,9 @@ int main(int argc, char const* const* argv) {
         } else if (argv[i] == std::string{"--max_k"} and i+1 < argc) {
             ++i;
             maxK = std::stod(argv[i]);
+        } else if (argv[i] == std::string{"--stepSize_k"} and i+1 < argc) {
+            ++i;
+            k_stepSize = std::stod(argv[i]);
         } else if (argv[i] == std::string{"--no-reverse"}) {
             reverse = false;
         } else {
@@ -244,7 +249,7 @@ int main(int argc, char const* const* argv) {
                     return 0ul;
                 }
             }();
-            for (size_t k{minK}; k<=maxK; ++k) {
+            for (size_t k{minK}; k<=maxK; k = k + k_stepSize) {
                 if (k >= 4 and k != 6) {
                     mut_queries.resize(mut_queries.size() / 10);
                 }
@@ -273,7 +278,7 @@ int main(int argc, char const* const* argv) {
                     resultCursors.emplace_back(queryId, cursor, errors, "");
                 };
                 auto res_cb2 = [&](size_t queryId, auto cursor, size_t errors, auto const& actions) {
-                    std::string s = "";
+                    std::string s;
                     for (auto a : actions) {
                         s += a;
                     }
@@ -327,7 +332,7 @@ int main(int argc, char const* const* argv) {
                     }
                 }
 
-                fmt::print("{:15}: {:>10.3}s ({:>10.3}s+{:>10.3}s) {:>10.3}q/s - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", name, time_search + time_locate, time_search, time_locate, mut_queries.size() / (time_search+time_locate), resultCt, results.size(), uniqueResults.size(), readIds.size(), memory);
+                fmt::print("{:15} {:3}: {:>10.3}s ({:>10.3}s+{:>10.3}s) {:>10.3}q/s - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", name, k, time_search + time_locate, time_search, time_locate, mut_queries.size() / (time_search+time_locate), resultCt, results.size(), uniqueResults.size(), readIds.size(), memory);
                 {
                     if (saveOutput) {
                         auto filename =fmt::format("out.k{}.alg{}.ss{}.txt", k, algorithm, name);
