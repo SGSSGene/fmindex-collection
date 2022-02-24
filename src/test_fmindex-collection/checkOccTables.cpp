@@ -23,8 +23,8 @@ TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]",
     fmindex_collection::occtable::interleavedEPR8Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR16Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR32Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>,
+    fmindex_collection::occtable::naive::OccTable<256>,
+    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
 //    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
 ) {
     using OccTable = TestType;
