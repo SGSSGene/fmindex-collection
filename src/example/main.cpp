@@ -7,9 +7,9 @@
 #include <search_schemes/generator/all.h>
 #include <search_schemes/expand.h>
 
-#include <proc/readproc.h>
 #include <cereal/archives/binary.hpp>
 #include <fmt/format.h>
+#include <proc/readproc.h>
 #include <unordered_set>
 
 using namespace fmindex_collection;
@@ -54,7 +54,7 @@ auto loadIndex(std::string path) {
             memcpy(ssa.data(), csaBuffer.data() + readLen, ssa.size()* sizeof(uint64_t));
             return CSA(ssa, bitStack);
         }();
-        auto index = BiFMIndex<Table<Sigma>>{bwt, bwtRev, std::move(csa)};
+        auto index = BiFMIndex<Table<Sigma>>{bwt, bwtRev, std::move(csa), 63};
         // save index here
         auto ofs     = std::ofstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryOutputArchive{ofs};

@@ -4,26 +4,34 @@
 #include "occtable/concepts.h"
 
 #include <cassert>
-#include <sdsl/divsufsort.hpp>
+#include <cmath>
 #include <numeric>
+#include <sdsl/divsufsort.hpp>
 
 namespace fmindex_collection {
 
 template <OccTable Table>
 struct BiFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
-    static size_t constexpr BitsForPosition = 40;
+
     using TTable = Table;
 
-    Table occ;
-    Table occRev;
-    CSA   csa;
+    Table  occ;
+    Table  occRev;
+    CSA    csa;
+    size_t bitsForPosition;
+    size_t bitPositionMask;
 
-    BiFMIndex(std::vector<uint8_t> const& bwt, std::vector<uint8_t> const& bwtRev, CSA _csa)
+
+    BiFMIndex(std::vector<uint8_t> const& bwt, std::vector<uint8_t> const& bwtRev, CSA _csa, size_t _bitsForPosition)
         : occ{bwt}
         , occRev{bwtRev}
         , csa{std::move(_csa)}
+        , bitsForPosition{_bitsForPosition}
     {
+        assert(_bitsForPosition < 64);
+        bitPositionMask = (1ul<<bitsForPosition)-1;
+
         assert(bwt.size() == bwtRev.size());
         assert(occ.size() == occRev.size());
         if (bwt.size() != bwtRev.size()) {
@@ -60,7 +68,7 @@ struct BiFMIndex {
         return bwt;
     }
 
-    static auto createCSA(std::vector<int64_t> sa, size_t samplingRate, std::vector<size_t> const& _inputSizes, std::function<size_t(size_t)> _label) -> CSA {
+    auto createCSA(std::vector<int64_t> sa, size_t samplingRate, std::vector<size_t> const& _inputSizes, std::function<size_t(size_t)> _label) -> CSA {
         auto bitStack = fmindex_collection::BitStack{};
         auto ssa      = std::vector<uint64_t>{};
         if (samplingRate > 0) {
@@ -81,7 +89,7 @@ struct BiFMIndex {
             }
             bool sample = (samplingRate == 0) || (i % samplingRate == 0) || (subjPos == 0);
             if (sample) {
-                newLabels[i] = (subjPos) | (_label(subjId) << BitsForPosition);
+                newLabels[i] = (subjPos) | (_label(subjId) << bitsForPosition);
             }
         }
 
@@ -109,7 +117,12 @@ struct BiFMIndex {
         , occRev{cereal_tag{}}
         , csa{cereal_tag{}}
     {
-        assert(_input.size() < (1ul << (64-BitsForPosition)));
+        size_t bitsForSeqId = std::max(1ul, size_t(std::ceil(std::log2(_input.size()))));
+        assert(bitsForSeqId < 64);
+
+        bitsForPosition = 64 - bitsForSeqId;
+        bitPositionMask = (1ul<<bitsForPosition)-1;
+
         size_t totalSize = std::accumulate(begin(_input), end(_input), size_t{0}, [](auto s, auto const& l) { return s + l.size() + 1; });
 
         auto input = std::vector<uint8_t>{};
@@ -119,6 +132,9 @@ struct BiFMIndex {
         inputSizes.reserve(_input.size());
 
         for (auto const& l : _input) {
+            if (l.size() >= std::pow(2, bitsForPosition)) {
+                throw std::runtime_error("sequence are to long and to many. Of 64bit available " + std::to_string(bitsForPosition) + "bits are required for positions and " + std::to_string(bitsForSeqId) + "bits are required for the sequence id");
+            }
             input.insert(end(input), begin(l), end(l));
             input.emplace_back(0);
             inputSizes.emplace_back(l.size()+1);
@@ -126,7 +142,7 @@ struct BiFMIndex {
         decltype(_input){}.swap(_input); // input memory can be deleted
 
 
-        auto [bwt, csa] = [&input, &samplingRate, &inputSizes, &_labels] () {
+        auto [bwt, csa] = [&input, &samplingRate, &inputSizes, &_labels, this] () {
             auto sa  = createSA(input);
             auto bwt = createBWT(input, sa);
             auto csa = [&]() {
@@ -151,7 +167,7 @@ struct BiFMIndex {
 
         decltype(input){}.swap(input); // input memory can be deleted
 
-        *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
+        *this = BiFMIndex{bwt, bwtRev, std::move(csa), bitsForPosition};
     }
 
 
@@ -177,9 +193,8 @@ struct BiFMIndex {
             steps += 1;
             opt = csa.value(idx);
         }
-        constexpr size_t posMask = (1ul<<BitsForPosition)-1;
-        auto chr = opt.value() >> BitsForPosition;
-        auto pos = (opt.value() & posMask) + steps;
+        auto chr = opt.value() >> bitsForPosition;
+        auto pos = (opt.value() & bitPositionMask) + steps;
 
         return {chr, pos};
     }
@@ -187,6 +202,7 @@ struct BiFMIndex {
     template <typename Archive>
     void serialize(Archive& ar) {
         ar(occ, occRev, csa);
+        ar(bitsForPosition, bitPositionMask);
     }
 };
 
