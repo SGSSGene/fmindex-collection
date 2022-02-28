@@ -38,9 +38,6 @@ struct Bitvector {
     // next full power of 2
     static constexpr auto bvct  = pow(2, bitct);
 
-//    static constexpr size_t inBlockSize = 64;
-//    using InBlock = uint64_t;
-
 
     // To select a char at the even/uneven position
     static constexpr uint64_t maskEven = []() {
@@ -87,14 +84,6 @@ struct Bitvector {
 //            __builtin_prefetch((const void*)(&bits), 0, 0);
         }
 
-/*        uint64_t rank(size_t idx, size_t symb) const {
-            assert(idx >= 0 && idx < 64 / bitct);
-
-            auto te = (rb[symb] - (inBlock & maskEven)) & bitMask
-            auto to = (rb[symb] - ((inBlock>>bitct) & maskEven)) & bitMask
-            auto epr = (te | to<<1);
-            return blocks[symb] + epr.count();
-        }*/
 
         uint64_t prefix_rank(size_t idx, size_t symb) const {
             assert(idx >= 0 && idx < 64 / bitct);
@@ -112,17 +101,6 @@ struct Bitvector {
             }
             return ct;
         }
-
-/*        auto all_ranks(size_t idx) const -> std::array<uint64_t, TSigma> {
-            std::array<uint64_t, TSigma> rs{0};
-
-            rs[0] = blocks[0] + rank(idx, 0);
-
-            for (size_t i{1}; i < TSigma; ++i) {
-                rs[i] = blocks[i] + rank(idx, i);
-            }
-            return rs;
-        }*/
 
 
         size_t symbol(size_t idx) const {
@@ -367,24 +345,24 @@ struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 1> {
 };
 static_assert(checkOccTable<OccTable>);
 }
-/*namespace interleavedEPR32V2 {
+namespace interleavedEPR32 {
 template <size_t TSigma>
-struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint32_t, 1> {
+struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint32_t, 1> {
     static auto name() -> std::string {
-        return "Interleaved EPRV2 (32bit)";
+        return "Interleaved EPR (32bit)";
     }
 
     static auto extension() -> std::string {
-        return "iepr32v2";
+        return "iepr32";
     }
 };
 static_assert(checkOccTable<OccTable>);
 }
-namespace interleavedEPR8V2Aligned {
+namespace interleavedEPR8Aligned {
 template <size_t TSigma>
-struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint8_t, 64> {
+struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 64> {
     static auto name() -> std::string {
-        return "Interleaved EPRV2 (8bit, aligned)";
+        return "Interleaved EPR (8bit, aligned)";
     }
 
     static auto extension() -> std::string {
@@ -393,33 +371,33 @@ struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint8_t, 64> {
 };
 static_assert(checkOccTable<OccTable>);
 }
-namespace interleavedEPR16V2Aligned {
+namespace interleavedEPR16Aligned {
 template <size_t TSigma>
-struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint16_t, 64> {
+struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 64> {
     static auto name() -> std::string {
-        return "Interleaved EPRV2 (16bit, aligned)";
+        return "Interleaved EPR (16bit, aligned)";
     }
 
     static auto extension() -> std::string {
-        return "iepr16v2a";
+        return "iepr16a";
     }
 };
 static_assert(checkOccTable<OccTable>);
 }
-namespace interleavedEPR32V2Aligned {
+namespace interleavedEPR32Aligned {
 template <size_t TSigma>
-struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint32_t, 64> {
+struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint32_t, 64> {
     static auto name() -> std::string {
-        return "Interleaved EPRV2 (32bit, aligned)";
+        return "Interleaved EPR (32bit, aligned)";
     }
 
     static auto extension() -> std::string {
-        return "iepr32v2a";
+        return "iepr32a";
     }
 };
 static_assert(checkOccTable<OccTable>);
 
-}*/
+}
 
 }
 }
