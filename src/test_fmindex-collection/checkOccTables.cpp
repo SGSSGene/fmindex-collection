@@ -17,6 +17,7 @@ TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]",
     fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
     fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
     fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR16::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
@@ -269,14 +270,15 @@ TEMPLATE_TEST_CASE("check occ table construction on text longer than 256 charact
     fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
     fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
     fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR16::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>,
+    fmindex_collection::occtable::naive::OccTable<256>,
+    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
 //    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
 ) {
     using OccTable = TestType;
@@ -338,6 +340,4 @@ TEMPLATE_TEST_CASE("check occ table construction on text longer than 256 charact
             }
         }
     }
-
-
 }

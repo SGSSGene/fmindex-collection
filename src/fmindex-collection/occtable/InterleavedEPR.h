@@ -209,7 +209,7 @@ struct Bitvector {
         auto superBlockId = idx >> block_size;
         auto bitId        = idx % letterFit;
         return blocks[blockId].prefix_rank(bitId, symb)
-               - blocks[blockId].prefix_rank(bitId, symb-1)
+               - ((symb>0)?(blocks[blockId].prefix_rank(bitId, symb-1)):0)
                + superBlocks[superBlockId][symb]
                + C[symb];
     }
