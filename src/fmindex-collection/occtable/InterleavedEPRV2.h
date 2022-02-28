@@ -130,11 +130,11 @@ struct Bitvector {
         std::array<block_t, TSigma> block_acc{0};
 
         for (size_t size{0}; size < length; ++size) {
-            if ((size) % (1ul<<block_size) == 0) { // new super block + new block
+            if (size % (1ul<<block_size) == 0) { // new super block + new block
                 superBlocks.emplace_back(sblock_acc);
                 blocks.emplace_back();
                 block_acc = {};
-            } else if ((size) % 64 == 0) { // new block
+            } else if (size % 64 == 0) { // new block
                 blocks.emplace_back();
                 blocks.back().blocks = block_acc;
             }
@@ -350,7 +350,7 @@ struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint8_t, 64> {
     }
 
     static auto extension() -> std::string {
-        return "iepr8a";
+        return "iepr8v2a";
     }
 };
 static_assert(checkOccTable<OccTable>);
