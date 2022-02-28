@@ -10,7 +10,7 @@
 
 namespace fmindex_collection {
 namespace occtable {
-namespace interleavedEPR_impl {
+namespace interleavedEPRV2_impl {
 
 // counts how many bits are needed to represent the number y
 constexpr inline size_t bits_count(size_t y) {
@@ -303,50 +303,50 @@ struct OccTable {
 
 
 }
-namespace interleavedEPR8 {
+namespace interleavedEPR8V2 {
 template <size_t TSigma>
-struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 1> {
+struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint8_t, 1> {
     static auto name() -> std::string {
-        return "Interleaved EPR (8bit)";
+        return "Interleaved EPRV2 (8bit)";
     }
 
     static auto extension() -> std::string {
-        return "iepr8";
+        return "iepr8v2";
     }
 };
 static_assert(checkOccTable<OccTable>);
 }
-namespace interleavedEPR16 {
+namespace interleavedEPR16V2 {
 template <size_t TSigma>
-struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 1> {
+struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint16_t, 1> {
     static auto name() -> std::string {
-        return "Interleaved EPR (16bit)";
+        return "Interleaved EPRV2 (16bit)";
     }
 
     static auto extension() -> std::string {
-        return "iepr16";
+        return "iepr16v2";
     }
 };
 static_assert(checkOccTable<OccTable>);
 }
-namespace interleavedEPR32 {
+namespace interleavedEPR32V2 {
 template <size_t TSigma>
-struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint32_t, 1> {
+struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint32_t, 1> {
     static auto name() -> std::string {
-        return "Interleaved EPR (32bit)";
+        return "Interleaved EPRV2 (32bit)";
     }
 
     static auto extension() -> std::string {
-        return "iepr32";
+        return "iepr32v2";
     }
 };
 static_assert(checkOccTable<OccTable>);
 }
-namespace interleavedEPR8Aligned {
+namespace interleavedEPR8V2Aligned {
 template <size_t TSigma>
-struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 64> {
+struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint8_t, 64> {
     static auto name() -> std::string {
-        return "Interleaved EPR (8bit, aligned)";
+        return "Interleaved EPRV2 (8bit, aligned)";
     }
 
     static auto extension() -> std::string {
@@ -355,28 +355,28 @@ struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 64> {
 };
 static_assert(checkOccTable<OccTable>);
 }
-namespace interleavedEPR16Aligned {
+namespace interleavedEPR16V2Aligned {
 template <size_t TSigma>
-struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 64> {
+struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint16_t, 64> {
     static auto name() -> std::string {
-        return "Interleaved EPR (16bit, aligned)";
+        return "Interleaved EPRV2 (16bit, aligned)";
     }
 
     static auto extension() -> std::string {
-        return "iepr16a";
+        return "iepr16v2a";
     }
 };
 static_assert(checkOccTable<OccTable>);
 }
-namespace interleavedEPR32Aligned {
+namespace interleavedEPR32V2Aligned {
 template <size_t TSigma>
-struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint32_t, 64> {
+struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint32_t, 64> {
     static auto name() -> std::string {
-        return "Interleaved EPR (32bit, aligned)";
+        return "Interleaved EPRV2 (32bit, aligned)";
     }
 
     static auto extension() -> std::string {
-        return "iepr32a";
+        return "iepr32v2a";
     }
 };
 static_assert(checkOccTable<OccTable>);
