@@ -100,14 +100,6 @@ struct Bitvector {
             assert(idx >= 0 && idx < 64 / bitct);
 
             auto _inblock = inBlock;// & ((1ul<<(idx*bitct)) -1);
-            auto _maskEven = maskEven;
-            auto _bitMask  = bitMask;
-            auto _bitct    = bitct;
-            auto _rb       = rb;
-            (void)_maskEven;
-            (void)_bitMask;
-            (void)_bitct;
-            (void)_rb;
 
             auto te = ((rb[symb] - (_inblock & maskEven)) & bitMask) >> bitct;
             auto to = (rb[symb] - ((_inblock>>bitct) & maskEven)) & bitMask;
@@ -147,26 +139,23 @@ struct Bitvector {
         }
     };
 
-    static constexpr size_t block_size = sizeof(block_t) * 8;
+    constexpr static size_t letterFit = 64 / bitct;
+    static constexpr size_t block_size = ((1ul<<(sizeof(block_t)*8)) / letterFit)*letterFit;
 
     std::vector<Block> blocks;
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
     std::array<uint64_t, TSigma+1> C;
 
-    constexpr static size_t letterFit = 64 / bitct;
 
     template <typename CB>
     Bitvector(size_t length, CB cb) {
         blocks.reserve(length/64+2);
 
-//        blocks.emplace_back();
-//        superBlocks.emplace_back();
-
         std::array<uint64_t, TSigma> sblock_acc{0};
         std::array<block_t, TSigma> block_acc{0};
 
         for (size_t size{0}; size < length; ++size) {
-            if (size % (1ul<<block_size) == 0) { // new super block + new block
+            if (size % block_size == 0) { // new super block + new block
                 superBlocks.emplace_back(sblock_acc);
                 blocks.emplace_back();
                 block_acc = {};
@@ -206,7 +195,7 @@ struct Bitvector {
 
     uint64_t rank(uint64_t idx, size_t symb) const {
         auto blockId      = idx / letterFit;
-        auto superBlockId = idx >> block_size;
+        auto superBlockId = idx / block_size;
         auto bitId        = idx % letterFit;
         return blocks[blockId].prefix_rank(bitId, symb)
                - ((symb>0)?(blocks[blockId].prefix_rank(bitId, symb-1)):0)
@@ -216,7 +205,7 @@ struct Bitvector {
 
     uint64_t prefix_rank(uint64_t idx, size_t symb) const {
         auto blockId      = idx / letterFit;
-        auto superBlockId = idx >> block_size;
+        auto superBlockId = idx / block_size;
         auto bitId        = idx % letterFit;
         uint64_t a={};
         for (size_t i{0}; i<= symb; ++i) {
@@ -228,7 +217,7 @@ struct Bitvector {
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
         auto blockId      = idx / letterFit;
-        auto superBlockId = idx >> block_size;
+        auto superBlockId = idx / block_size;
         auto bitId        = idx % letterFit;
         auto res = std::array<uint64_t, TSigma>{};
 
@@ -247,7 +236,7 @@ struct Bitvector {
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
         auto blockId      = idx / letterFit;
-        auto superBlockId = idx >> block_size;
+        auto superBlockId = idx / block_size;
         auto bitId        = idx % letterFit;
 
         auto rs  = std::array<uint64_t, TSigma>{};
