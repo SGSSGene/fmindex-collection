@@ -48,6 +48,13 @@ struct Search {
             return cur.extendLeft(symb);
         }
     }
+    auto extend(cursor_t const& cur, std::size_t pos) const noexcept {
+        if (pos == 0 or pi[pos-1] < pi[pos]) {
+            return cur.extendRight();
+        } else {
+            return cur.extendLeft();
+        }
+    }
 
     void search_hm(cursor_t const& cur, size_t e, std::size_t pos) const noexcept {
         if (cur.count() == 0) {
@@ -117,7 +124,7 @@ struct Search {
         auto cursors = std::array<cursor_t, Sigma>{};
         if (e+1 <= u[pos]) {
             for (auto i{1ul}; i < Sigma; ++i) {
-                cursors[i] = extend(cur, i, pos);
+                cursors = extend(cur, pos);
             }
         } else {
             cursors[rank] = extend(cur, rank, pos);
