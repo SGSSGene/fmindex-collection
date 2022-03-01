@@ -4,6 +4,7 @@
 #include <fmindex-collection/fmindex-collection.h>
 #include <fmindex-collection/occtable/all.h>
 #include <fmindex-collection/search/all.h>
+#include <fmindex-collection/locate.h>
 #include <search_schemes/generator/all.h>
 #include <search_schemes/expand.h>
 
@@ -52,7 +53,7 @@ auto loadIndex(std::string path) {
             auto readLen = bitStack.read(csaBuffer.data(), csaBuffer.size());
             ssa.resize(bitStack.ones);
             memcpy(ssa.data(), csaBuffer.data() + readLen, ssa.size()* sizeof(uint64_t));
-            return CSA(ssa, bitStack);
+            return CSA(ssa, bitStack, 16);
         }();
         auto index = BiFMIndex<Table<Sigma>>{bwt, bwtRev, std::move(csa), 63};
         // save index here
@@ -288,6 +289,7 @@ int main(int argc, char const* const* argv) {
 
 
                 if (algorithm == "pseudo") search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
+                else if (algorithm == "pseudo_fmtree") search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "ng12") search_ng12::search(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "ng14") search_ng14::search(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "ng15") search_ng15::search(index, mut_queries, search_scheme, res_cb);
@@ -310,11 +312,21 @@ int main(int argc, char const* const* argv) {
 
                 auto time_search = sw.reset();
 
-                for (auto const& [queryId, cursor, e, action] : resultCursors) {
-                    for (size_t i{cursor.lb}; i < cursor.lb + cursor.len; ++i) {
-                        results.emplace_back(queryId, std::get<1>(index.locate(i)), e, action);
+                if (algorithm == "pseudo_fmtree") {
+                    for (auto const& [queryId, cursor, e, action] : resultCursors) {
+                        for (auto [seqId, pos] : LocateFMTree{index, cursor, 16}) {
+                            results.emplace_back(queryId, pos, e, action);
+                        }
+                        resultCt += cursor.len;
                     }
-                    resultCt += cursor.len;
+
+                } else {
+                    for (auto const& [queryId, cursor, e, action] : resultCursors) {
+                        for (auto [seqId, pos] : LocateLinear{index, cursor}) {
+                            results.emplace_back(queryId, pos, e, action);
+                        }
+                        resultCt += cursor.len;
+                    }
                 }
                 auto time_locate = sw.reset();
 

@@ -102,7 +102,7 @@ struct BiFMIndex {
                 ssa.push_back(newLabels[sa[i]]);
             }
         }
-        return CSA{std::move(ssa), bitStack};
+        return CSA{std::move(ssa), bitStack, samplingRate};
     }
 
     BiFMIndex(std::vector<uint8_t> _input, size_t samplingRate)
@@ -200,6 +200,34 @@ struct BiFMIndex {
 
         return {chr, pos};
     }
+
+    auto locate(size_t idx, size_t maxSteps) const -> std::optional<std::tuple<size_t, size_t>> {
+        auto opt = csa.value(idx);
+        uint64_t steps{};
+        for (;!opt and maxSteps > 0; --maxSteps) {
+            idx = occ.rank(idx, occ.symbol(idx));
+            steps += 1;
+            opt = csa.value(idx);
+        }
+        if (!opt) {
+            return std::nullopt;
+        }
+        auto chr = opt.value() >> bitsForPosition;
+        auto pos = (opt.value() & bitPositionMask) + steps;
+
+        return std::make_tuple(chr, pos);
+    }
+
+
+    auto single_locate_step(size_t idx) const -> std::optional<std::tuple<size_t, size_t>> {
+        auto opt = csa.value(idx);
+        if (!opt) return std::nullopt;
+        auto chr = opt.value() >> bitsForPosition;
+        auto pos = (opt.value() & bitPositionMask);
+
+        return std::make_tuple(chr, pos);
+    }
+
 
     template <typename Archive>
     void serialize(Archive& ar) {

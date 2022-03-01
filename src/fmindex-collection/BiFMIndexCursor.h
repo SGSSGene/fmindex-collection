@@ -155,7 +155,7 @@ struct LeftBiFMIndexCursor {
         cursors[0] = LeftBiFMIndexCursor{*index, rs1[0], rs2[0] - rs1[0]};
         for (size_t i{1}; i < Sigma; ++i) {
             cursors[i] = LeftBiFMIndexCursor{*index, rs1[i], rs2[i] - rs1[i]};
-            cursors[i].prefetchLeft();
+//            cursors[i].prefetchLeft();
         }
         return cursors;
     }

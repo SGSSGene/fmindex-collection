@@ -11,17 +11,17 @@ namespace fmindex_collection {
 struct CSA {
     std::vector<uint64_t> ssa;
     Bitvector bv;
+    size_t samplingRate; // distance between two samples (inside one sequence)
 
-    CSA(std::vector<uint64_t> _ssa, BitStack const& bitstack)
+    CSA(std::vector<uint64_t> _ssa, BitStack const& bitstack, size_t _samplingRate)
         : ssa{std::move(_ssa)}
         , bv{bitstack.size, [&](size_t idx) {
             return bitstack.value(idx);
-        }} {}
+        }}
+        , samplingRate{_samplingRate}
+        {}
     CSA(CSA const&) = delete;
-    CSA(CSA&& _other) noexcept
-        : ssa {std::move(_other.ssa)}
-        , bv  {std::move(_other.bv)}
-    {}
+    CSA(CSA&& _other) noexcept = default;
 
 
     CSA(cereal_tag)
@@ -29,12 +29,7 @@ struct CSA {
     {}
 
     auto operator=(CSA const&) -> CSA& = delete;
-    auto operator=(CSA&& _other) noexcept -> CSA& {
-        ssa = std::move(_other.ssa);
-        bv  = std::move(_other.bv);
-        return *this;
-    }
-
+    auto operator=(CSA&& _other) noexcept -> CSA& = default;
 
     size_t memoryUsage() const {
         return sizeof(ssa) + ssa.size() * sizeof(ssa.back())
@@ -50,7 +45,7 @@ struct CSA {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(ssa, bv);
+        ar(ssa, bv, samplingRate);
     }
 };
 
