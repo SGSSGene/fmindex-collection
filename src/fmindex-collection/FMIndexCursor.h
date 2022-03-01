@@ -6,12 +6,20 @@ namespace fmindex_collection {
 
 template <typename Index>
 struct FMIndexCursor {
+    static size_t constexpr Sigma = Index::Sigma;
+
     Index const* index;
     size_t lb;
     size_t len;
+
+    FMIndexCursor()
+        : index{nullptr}
+    {}
+
     FMIndexCursor(Index const& index)
         : FMIndexCursor{index, 0, index.size()}
     {}
+
     FMIndexCursor(Index const& index, size_t lb, size_t len)
         : index{&index}
         , lb{lb}
@@ -21,10 +29,30 @@ struct FMIndexCursor {
     auto operator=(FMIndexCursor const&) -> FMIndexCursor& = default;
 
     auto extendLeft(uint8_t symb) const -> FMIndexCursor {
-        size_t newLb  = index->rank(lb, symb);
-        size_t newLen = index->rank(lb+len, symb) - newLb;
+        size_t newLb  = index->occ.rank(lb, symb);
+        size_t newLen = index->occ.rank(lb+len, symb) - newLb;
         return {*index, newLb, newLen};
     }
+    auto extendLeft() const -> std::array<FMIndexCursor, Sigma> {
+        auto [rs1, prs1] = index->occ.all_ranks(lb);
+        auto [rs2, prs2] = index->occ.all_ranks(lb+len);
+
+        auto cursors = std::array<FMIndexCursor, Sigma>{};
+        cursors[0] = FMIndexCursor{*index, rs1[0], rs2[0] - rs1[0]};
+        for (size_t i{1}; i < Sigma; ++i) {
+            cursors[i] = FMIndexCursor{*index, rs1[i], rs2[i] - rs1[i]};
+        }
+        return cursors;
+    }
+
+    bool empty() const {
+        return len == 0;
+    }
+
+    size_t count() const {
+        return len;
+    }
+
 };
 
 }

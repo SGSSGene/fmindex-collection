@@ -45,7 +45,7 @@ struct Search {
         }
     }
 
-    void search_with_error(size_t e, size_t qidx, query_t const query, cursor_t cur, size_t i) {
+    void search_with_errors(size_t e, size_t qidx, query_t const query, cursor_t cur, size_t i) {
         if (cur.empty()) {
             return;
         }
@@ -58,7 +58,7 @@ struct Search {
             auto nextCur = cur.extendLeft();
             for (size_t s{1}; s < Sigma; ++s) {
                 if (r != s) {
-                    search_with_error(e+1, qidx, query, nextCur[s], i+1);
+                    search_with_errors(e+1, qidx, query, nextCur[s], i+1);
                 }
             }
             cur = nextCur[r];

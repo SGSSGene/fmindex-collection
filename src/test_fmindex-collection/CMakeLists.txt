@@ -7,6 +7,7 @@ add_executable(${PROJECT_NAME}
     checkBiFMIndex.cpp
     checkOccTables.cpp
     checkSearchPseudo.cpp
+    checkSearchBacktracking.cpp
     main.cpp
 )
 target_link_libraries(${PROJECT_NAME}
