@@ -79,24 +79,25 @@ struct Bitvector {
                 ct += blocks[i];
             }
             return ct;
-/*            size_t ct{};
-            for (size_t i{0}; i <= symb; ++i) {
-                ct += rank(idx, i);
-            }
-            return ct;*/
         }
 
-/*        auto all_ranks(size_t idx) const -> std::array<uint64_t, TSigma> {
+        auto all_ranks(size_t idx) const -> std::array<uint64_t, TSigma> {
+            assert(idx >= 0 && idx < 64);
+
             std::array<uint64_t, TSigma> rs{0};
 
-            rs[0] = blocks[0] + rank(idx, 0);
+            auto f = [&]<size_t I>(uint64_t symb, std::index_sequence<I>) {
+                return bits[I] ^ -((~symb>>I)&1);
+            };
 
-            for (size_t i{1}; i < TSigma; ++i) {
-                rs[i] = blocks[i] + rank(idx, i);
+            for (size_t i{0}; i < TSigma; ++i) {
+                auto mask = [&]<size_t ...Is>(std::index_sequence<Is...>) {
+                    return (f(i, std::index_sequence<Is>{})&...);
+                }(std::make_index_sequence<bitct>{});
+                rs[i] = (std::bitset<64>(mask) << (64 - idx)).count() + blocks[i];
             }
             return rs;
-        }*/
-
+        }
 
         size_t symbol(size_t idx) const {
             uint64_t symb{};
@@ -122,9 +123,6 @@ struct Bitvector {
     template <typename CB>
     Bitvector(size_t length, CB cb) {
         blocks.reserve(length/64+2);
-
-//        blocks.emplace_back();
-//        superBlocks.emplace_back();
 
         std::array<uint64_t, TSigma> sblock_acc{0};
         std::array<block_t, TSigma> block_acc{0};
@@ -206,22 +204,14 @@ struct Bitvector {
         auto superBlockId = idx >> block_size;
         auto bitId        = idx &  63;
 
-        auto rs  = std::array<uint64_t, TSigma>{};
-        auto prs = std::array<uint64_t, TSigma>{};
+        std::array<uint64_t, TSigma> prs;
+        auto rs = blocks[blockId].all_ranks(bitId);
 
-        for (size_t symb{0}; symb < TSigma; ++symb) {
-            rs[symb]  = blocks[blockId].rank(bitId, symb);
-        }
-        for (size_t symb{0}; symb < TSigma; ++symb) {
-            rs[symb] += superBlocks[superBlockId][symb];
-        }
+        rs[0] += superBlocks[superBlockId][0] + C[0];
         prs[0] = rs[0];
         for (size_t symb{1}; symb < TSigma; ++symb) {
-            prs[symb]= prs[symb-1] + rs[symb];
-        }
-
-        for (size_t symb{0}; symb < TSigma; ++symb) {
-            rs[symb] += C[symb];
+            prs[symb] = prs[symb-1] + superBlocks[superBlockId][symb] + rs[symb];
+            rs[symb] += C[symb] + superBlocks[superBlockId][symb];
         }
         return {rs, prs};
     }
