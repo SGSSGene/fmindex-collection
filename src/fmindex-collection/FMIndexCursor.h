@@ -55,4 +55,14 @@ struct FMIndexCursor {
 
 };
 
+template <typename Index>
+auto begin(FMIndexCursor<Index> const& _cursor) {
+    return _cursor.lb;
+}
+template <typename Index>
+auto end(FMIndexCursor<Index> const& _cursor) {
+    return _cursor.lb + _cursor.len;
+}
+
+
 }
