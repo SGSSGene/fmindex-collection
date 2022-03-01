@@ -1,15 +1,33 @@
 #pragma once
 
 #include "../BiFMIndexCursor.h"
+#include "../FMIndexCursor.h"
 
 namespace fmindex_collection {
 namespace search_backtracking {
+
+
+template <typename Index>
+struct SelectIndexCursor;
+
+template <typename OccTable>
+struct SelectIndexCursor<BiFMIndex<OccTable>> {
+    using cursor_t = BiFMIndexCursor<BiFMIndex<OccTable>>;
+};
+
+template <typename OccTable>
+struct SelectIndexCursor<FMIndex<OccTable>> {
+    using cursor_t = FMIndexCursor<FMIndex<OccTable>>;
+};
+
+template <typename Index>
+using select_cursor_t = typename SelectIndexCursor<Index>::cursor_t;
 
 /* Search algorithm with explicit programmed search scheme
  */
 template <typename index_t, typename queries_t, typename delegate_t>
 struct Search {
-    using cursor_t = BiFMIndexCursor<index_t>;
+    using cursor_t = select_cursor_t<index_t>;
     constexpr static size_t Sigma = index_t::Sigma;
     using query_t = std::vector<uint8_t>;
 
