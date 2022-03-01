@@ -39,37 +39,6 @@ void visitAllTables(CB cb) {
 }
 
 
-template <size_t Sigma, typename CSA, template <size_t> typename Table>
-auto loadIndex(std::string path) {
-    auto indexPath = path + "." + Table<Sigma>::extension() + ".index";
-    if (!std::filesystem::exists(indexPath)) {
-        auto bwt       = readFile(path + ".bwt");
-        auto bwtRev    = readFile(path + ".rev.bwt");
-        auto csaBuffer = readFile(path + ".csa");
-
-        CSA csa = [&]() {
-            BitStack bitStack;
-            std::vector<uint64_t> ssa;
-            auto readLen = bitStack.read(csaBuffer.data(), csaBuffer.size());
-            ssa.resize(bitStack.ones);
-            memcpy(ssa.data(), csaBuffer.data() + readLen, ssa.size()* sizeof(uint64_t));
-            return CSA(ssa, bitStack, 16);
-        }();
-        auto index = BiFMIndex<Table<Sigma>>{bwt, bwtRev, std::move(csa), 63};
-        // save index here
-        auto ofs     = std::ofstream{indexPath, std::ios::binary};
-        auto archive = cereal::BinaryOutputArchive{ofs};
-        archive(index);
-        return index;
-    } else {
-        auto ifs     = std::ifstream{indexPath, std::ios::binary};
-        auto archive = cereal::BinaryInputArchive{ifs};
-        auto index = BiFMIndex<Table<Sigma>>{cereal_tag{}};
-        archive(index);
-        return index;
-    }
-}
-
 struct Query {
     std::string name;
     bool reverse;
@@ -147,6 +116,28 @@ auto loadQueries(std::string path, bool reverse) {
     }
     return std::make_tuple(queries, queryInfos);
 }
+
+template <size_t Sigma, typename CSA, template <size_t> typename Table>
+auto loadIndex(std::string path) {
+    auto indexPath = path + "." + Table<Sigma>::extension() + ".index";
+    if (!std::filesystem::exists(indexPath)) {
+        auto [ref, refInfo] = loadQueries<Sigma>(path + ".fasta", false);
+        auto index = BiFMIndex<Table<Sigma>>{ref, 16};
+        // save index here
+        auto ofs     = std::ofstream{indexPath, std::ios::binary};
+        auto archive = cereal::BinaryOutputArchive{ofs};
+        archive(index);
+        return index;
+    } else {
+        auto ifs     = std::ifstream{indexPath, std::ios::binary};
+        auto archive = cereal::BinaryInputArchive{ifs};
+        auto index = BiFMIndex<Table<Sigma>>{cereal_tag{}};
+        archive(index);
+        return index;
+    }
+}
+
+
 
 
 int main(int argc, char const* const* argv) {
