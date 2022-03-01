@@ -35,7 +35,7 @@ struct Search {
     queries_t const& queries;
     delegate_t const& delegate;
 
-    size_t maxErrors;
+    size_t maxErrors{};
 
     void search(size_t _maxErrors) {
         maxErrors = _maxErrors;
