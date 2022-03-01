@@ -46,7 +46,6 @@ struct BiFMIndex {
             }
         }
     }
-//    BiFMIndex(BiFMIndex&&) noexcept = default;
 
     static auto createSA(std::vector<uint8_t> const& input) -> std::vector<int64_t> {
         auto sa = std::vector<int64_t>{};
@@ -81,14 +80,17 @@ struct BiFMIndex {
         auto accIter = _inputSizes.begin();
         size_t subjId{};
         size_t subjPos{};
+
+        size_t lastSamplingPos{};
         for (size_t i{0}; i < newLabels.size(); ++i, ++subjPos) {
             while (subjPos >= *accIter) {
                 subjPos -= *accIter;
                 ++subjId;
                 ++accIter;
             }
-            bool sample = (samplingRate == 0) || (i % samplingRate == 0) || (subjPos == 0);
+            bool sample = (samplingRate == 0) || ((i-lastSamplingPos) % samplingRate == 0) || (subjPos == 0);
             if (sample) {
+                lastSamplingPos = i;
                 newLabels[i] = (subjPos) | (_label(subjId) << bitsForPosition);
             }
         }
