@@ -1,11 +1,11 @@
 #include <fmindex-collection/occtable/all.h>
 #include <fmindex-collection/BiFMIndex.h>
-#include <fmindex-collection/search/SearchPseudo.h>
+#include <fmindex-collection/search/Backtracking.h>
 #include <search_schemes/generator/all.h>
 
 #include <catch2/catch.hpp>
 
-TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]",
+TEMPLATE_TEST_CASE("searching with backtracking", "[search]",
     fmindex_collection::occtable::bitvector::OccTable<256>,
     fmindex_collection::occtable::bitvectorPrefix::OccTable<256>,
     fmindex_collection::occtable::interleaved8::OccTable<256>,
@@ -53,8 +53,7 @@ TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]",
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
-    auto search_scheme = search_schemes::generator::backtracking(1, 0, 0);
-    fmindex_collection::search_pseudo::search<true>(index, query, search_scheme, [](auto qidx, auto result, auto errors) {
+    fmindex_collection::search_backtracking::search(index, query, 0, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);
         CHECK(result.lb == 1);
@@ -62,7 +61,7 @@ TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]",
     });
 
 }
-TEMPLATE_TEST_CASE("searching with collection and PseudoSearch", "[collection]",
+TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]",
     fmindex_collection::occtable::bitvector::OccTable<256>,
     fmindex_collection::occtable::bitvectorPrefix::OccTable<256>,
     fmindex_collection::occtable::interleaved8::OccTable<256>,
@@ -105,8 +104,7 @@ TEMPLATE_TEST_CASE("searching with collection and PseudoSearch", "[collection]",
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
-    auto search_scheme = search_schemes::generator::backtracking(1, 0, 0);
-    fmindex_collection::search_pseudo::search<true>(index, query, search_scheme, [](auto qidx, auto result, auto errors) {
+    fmindex_collection::search_backtracking::search(index, query, 0, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);
         CHECK(result.lb == 2);
