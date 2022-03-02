@@ -25,7 +25,12 @@ template <size_t Sigma, typename CB>
 void visitAllTables(CB cb) {
 //    cb(std::type_identity<occtable::naive::OccTable<Sigma>>{}, "naive");
 //    cb(std::type_identity<occtable::bitvector::OccTable<Sigma>>{}, "bitvector");
-    cb(std::type_identity<occtable::interleaved16::OccTable<Sigma>>{}, "compact2");
+    cb(std::type_identity<occtable::interleaved16::OccTable<Sigma>>{}, "interleaved16");
+    cb(std::type_identity<occtable::interleaved32::OccTable<Sigma>>{}, "interleaved32");
+    cb(std::type_identity<occtable::interleavedEPR16::OccTable<Sigma>>{}, "interleavedEPR16");
+    cb(std::type_identity<occtable::interleavedEPR32::OccTable<Sigma>>{}, "interleavedEPR32");
+    cb(std::type_identity<occtable::interleavedEPR16V2::OccTable<Sigma>>{}, "interleavedEPR16V2");
+    cb(std::type_identity<occtable::interleavedEPR32V2::OccTable<Sigma>>{}, "interleavedEPR32V2");
     cb(std::type_identity<occtable::interleavedWavelet::OccTable<Sigma>>{}, "compactWavelet");
 //    cb(std::type_identity<occtable::compactWaveletAligned::OccTable<Sigma>>{}, "compactWaveletAligned");
 //    cb(std::type_identity<occtable::compact2Aligned::OccTable<Sigma>>{}, "compact2Aligned");
@@ -280,7 +285,7 @@ int main(int argc, char const* const* argv) {
 
 
                 if (algorithm == "pseudo") search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
-                else if (algorithm == "pseudo_fmtree") search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
+                else if (algorithm.size() == 15 && algorithm.substr(0, 13) == "pseudo_fmtree")  search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "ng12") search_ng12::search(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "ng14") search_ng14::search(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "ng15") search_ng15::search(index, mut_queries, search_scheme, res_cb);
@@ -303,14 +308,14 @@ int main(int argc, char const* const* argv) {
 
                 auto time_search = sw.reset();
 
-                if (algorithm == "pseudo_fmtree") {
+                if (algorithm.size() == 15 && algorithm.substr(0, 13)  == "pseudo_fmtree") {
+                    size_t maxDepth = std::stod(algorithm.substr(13, 2));
                     for (auto const& [queryId, cursor, e, action] : resultCursors) {
-                        for (auto [seqId, pos] : LocateFMTree{index, cursor, 16}) {
+                        for (auto [seqId, pos] : LocateFMTree{index, cursor, index.csa.samplingRate, maxDepth}) {
                             results.emplace_back(queryId, pos, e, action);
                         }
                         resultCt += cursor.len;
                     }
-
                 } else {
                     for (auto const& [queryId, cursor, e, action] : resultCursors) {
                         for (auto [seqId, pos] : LocateLinear{index, cursor}) {
