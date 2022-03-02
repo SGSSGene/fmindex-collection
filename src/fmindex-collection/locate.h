@@ -38,10 +38,11 @@ template <typename index_t, typename cursor_t>
 struct LocateFMTree {
     std::vector<std::tuple<size_t, size_t>> positions;
 
-    LocateFMTree(index_t const& index, cursor_t cursor, size_t samplingRate, size_t maxDepth) {
+    LocateFMTree(index_t const& index, cursor_t cursor, size_t maxDepth) {
         positions.reserve(cursor.count());
         auto stack = std::vector<std::tuple<cursor_t, size_t>>{};
         stack.emplace_back(cursor, 0);
+        size_t samplingRate = index.csa.samplingRate;
         while(!stack.empty()) {
             auto [cursor, depth] = stack.back();
             stack.pop_back();
