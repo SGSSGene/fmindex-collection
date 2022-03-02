@@ -38,14 +38,15 @@ template <typename index_t, typename cursor_t>
 struct LocateFMTree {
     std::vector<std::tuple<size_t, size_t>> positions;
 
-    LocateFMTree(index_t const& index, cursor_t cursor, size_t samplingRate) {
+    LocateFMTree(index_t const& index, cursor_t cursor, size_t samplingRate, size_t maxDepth) {
         positions.reserve(cursor.count());
         auto stack = std::vector<std::tuple<cursor_t, size_t>>{};
         stack.emplace_back(cursor, 0);
         while(!stack.empty()) {
             auto [cursor, depth] = stack.back();
             stack.pop_back();
-            if (depth > 4 or cursor.count() < index_t::Sigma*2*2) {
+            //!TODO what should the termination criteria be?
+            if (depth >= maxDepth or cursor.count() < index_t::Sigma*2) {
                 for (size_t pos{cursor.lb}; pos < cursor.lb + cursor.len; ++pos) {
                     auto v = index.locate(pos, samplingRate - depth - 1);
                     if (v) {
@@ -54,6 +55,14 @@ struct LocateFMTree {
                     }
                 }
             } else {
+                for (size_t pos{cursor.lb}; pos < cursor.lb + cursor.len; ++pos) {
+                    auto v = index.single_locate_step(pos);
+                    if (v) {
+                        auto [seqid, seqpos] = *v;
+                        positions.emplace_back(seqid, seqpos+depth);
+                    }
+                }
+
                 auto cursors = cursor.extendLeft();
                 for (size_t sym{1}; sym < cursors.size(); ++sym) {
                     stack.emplace_back(cursors[sym], depth+1);
