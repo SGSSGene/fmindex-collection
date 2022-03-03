@@ -2,6 +2,7 @@
 
 #include "../BiFMIndexCursor.h"
 #include "../FMIndexCursor.h"
+#include "../ReverseFMIndexCursor.h"
 
 namespace fmindex_collection {
 namespace search_backtracking {
@@ -19,6 +20,12 @@ template <typename OccTable>
 struct SelectIndexCursor<FMIndex<OccTable>> {
     using cursor_t = FMIndexCursor<FMIndex<OccTable>>;
 };
+
+template <typename OccTable>
+struct SelectIndexCursor<ReverseFMIndex<OccTable>> {
+    using cursor_t = ReverseFMIndexCursor<ReverseFMIndex<OccTable>>;
+};
+
 
 template <typename Index>
 using select_cursor_t = typename SelectIndexCursor<Index>::cursor_t;

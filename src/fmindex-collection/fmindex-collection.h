@@ -4,4 +4,6 @@
 #include "FMIndexCursor.h"
 #include "BiFMIndex.h"
 #include "BiFMIndexCursor.h"
+#include "ReverseFMIndex.h"
+#include "ReverseFMIndexCursor.h"
 #include "CSA.h"

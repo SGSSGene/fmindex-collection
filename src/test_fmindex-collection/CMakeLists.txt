@@ -5,6 +5,8 @@ project(test_fmindex-collection)
 # fmindex-collectionunittests
 add_executable(${PROJECT_NAME}
     checkBiFMIndex.cpp
+    checkFMIndex.cpp
+    checkReverseFMIndex.cpp
     checkOccTables.cpp
     checkSearchPseudo.cpp
     checkSearchBacktracking.cpp
