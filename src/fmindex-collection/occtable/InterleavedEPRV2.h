@@ -108,6 +108,57 @@ struct Bitvector {
             return symb;
         }
 
+/*        auto rank_symbol(size_t idx) const -> std::tuple<size_t, size_t> {
+            assert(idx >= 0 && idx < 64);
+
+            uint64_t symb{};
+            uint64_t mask{};
+            auto f = [&]<size_t I>(std::index_sequence<I>) {
+                auto b = (bits[I] >> idx) & 1;
+                mask |= bits[I] ^ -b;
+                symb |= b << I;
+            };
+            [&]<size_t ...Is>(std::index_sequence<Is...>) {
+                (f(std::index_sequence<Is>{}) ,...);
+            }(std::make_index_sequence<bitct>{});
+
+            auto bitset = std::bitset<64>{~mask} << (64-idx);
+
+            return {blocks[symb] + bitset.count(), symb};
+        }*/
+
+        auto rank_symbol(size_t idx) const -> std::tuple<size_t, size_t> {
+            assert(idx >= 0 && idx < 64);
+
+            auto [rank, symb] = [&]() -> std::tuple<size_t, size_t> {
+                if (idx == 0) {
+                    uint64_t symb{};
+                    auto f = [&]<size_t I>(std::index_sequence<I>) {
+                        auto b = (bits[I] >> idx) & 1;
+                        symb |= b << I;
+                    };
+                    [&]<size_t ...Is>(std::index_sequence<Is...>) {
+                        (f(std::index_sequence<Is>{}) ,...);
+                    }(std::make_index_sequence<bitct>{});
+                    return {0, symb};
+                }
+
+                    uint64_t symb{};
+                    uint64_t mask{};
+                    auto f = [&]<size_t I>(std::index_sequence<I>) {
+                        auto b = (bits[I] >> idx) & 1;
+                        mask |= bits[I] ^ -b;
+                        symb |= b << I;
+                    };
+                    [&]<size_t ...Is>(std::index_sequence<Is...>) {
+                        (f(std::index_sequence<Is>{}) ,...);
+                    }(std::make_index_sequence<bitct>{});
+                    return {std::bitset<64>{~mask << (64-idx)}.count(), symb};
+            }();
+            return {blocks[symb] + rank, symb};
+        }
+
+
         template <typename Archive>
         void serialize(Archive& ar) {
             ar(blocks, bits);
@@ -222,6 +273,14 @@ struct Bitvector {
         return blocks[blockId].symbol(bitId);
     }
 
+    size_t rank_symbol(uint64_t idx) const {
+        auto blockId = idx >> 6;
+        auto bitId = idx & 63;
+        auto superBlockId = idx >> block_size;
+        auto [rank, symb] = blocks[blockId].rank_symbol(bitId);
+        return rank + superBlocks[superBlockId][symb] + C[symb];
+    }
+
     template <typename Archive>
     void serialize(Archive& ar) {
         ar(blocks, superBlocks, C);
@@ -279,6 +338,11 @@ struct OccTable {
     size_t symbol(uint64_t idx) const {
         return bitvector.symbol(idx);
     }
+
+    size_t rank_symbol(size_t idx) const {
+        return bitvector.rank_symbol(idx);
+    }
+
 
     auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
         auto [rs, prs] = bitvector.all_ranks_and_prefix_ranks(idx);

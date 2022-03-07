@@ -191,7 +191,15 @@ struct BiFMIndex {
         auto opt = csa.value(idx);
         uint64_t steps{};
         while(!opt) {
-            idx = occ.rank(idx, occ.symbol(idx));
+            idx = [&]() {
+                if constexpr (requires(Table t) { { t.rank_symbol(size_t{}) }; }) {
+                    return occ.rank_symbol(idx);
+                } else {
+                    return occ.rank(idx, occ.symbol(idx));
+                }
+            }();
+
+//            idx = occ.rank(idx, occ.symbol(idx));
             steps += 1;
             opt = csa.value(idx);
         }
