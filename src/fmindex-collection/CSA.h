@@ -2,6 +2,7 @@
 
 #include "BitStack.h"
 #include "Bitvector.h"
+#include "BitvectorCompact.h"
 #include "cereal_tag.h"
 
 #include <optional>
@@ -10,7 +11,7 @@ namespace fmindex_collection {
 
 struct CSA {
     std::vector<uint64_t> ssa;
-    Bitvector bv;
+    BitvectorCompact bv;
     size_t samplingRate; // distance between two samples (inside one sequence)
 
     CSA(std::vector<uint64_t> _ssa, BitStack const& bitstack, size_t _samplingRate)
