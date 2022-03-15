@@ -108,7 +108,7 @@ struct Bitvector {
             return symb;
         }
 
-/*        auto rank_symbol(size_t idx) const -> std::tuple<size_t, size_t> {
+        auto rank_symbol(size_t idx) const -> std::tuple<size_t, size_t> {
             assert(idx >= 0 && idx < 64);
 
             uint64_t symb{};
@@ -125,39 +125,7 @@ struct Bitvector {
             auto bitset = std::bitset<64>{~mask} << (64-idx);
 
             return {blocks[symb] + bitset.count(), symb};
-        }*/
-
-        auto rank_symbol(size_t idx) const -> std::tuple<size_t, size_t> {
-            assert(idx >= 0 && idx < 64);
-
-            auto [rank, symb] = [&]() -> std::tuple<size_t, size_t> {
-                if (idx == 0) {
-                    uint64_t symb{};
-                    auto f = [&]<size_t I>(std::index_sequence<I>) {
-                        auto b = (bits[I] >> idx) & 1;
-                        symb |= b << I;
-                    };
-                    [&]<size_t ...Is>(std::index_sequence<Is...>) {
-                        (f(std::index_sequence<Is>{}) ,...);
-                    }(std::make_index_sequence<bitct>{});
-                    return {0, symb};
-                }
-
-                    uint64_t symb{};
-                    uint64_t mask{};
-                    auto f = [&]<size_t I>(std::index_sequence<I>) {
-                        auto b = (bits[I] >> idx) & 1;
-                        mask |= bits[I] ^ -b;
-                        symb |= b << I;
-                    };
-                    [&]<size_t ...Is>(std::index_sequence<Is...>) {
-                        (f(std::index_sequence<Is>{}) ,...);
-                    }(std::make_index_sequence<bitct>{});
-                    return {std::bitset<64>{~mask << (64-idx)}.count(), symb};
-            }();
-            return {blocks[symb] + rank, symb};
         }
-
 
         template <typename Archive>
         void serialize(Archive& ar) {
