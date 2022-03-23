@@ -25,18 +25,20 @@ template <size_t Sigma, typename CB>
 void visitAllTables(CB cb) {
 //    cb(std::type_identity<occtable::naive::OccTable<Sigma>>{}, "naive");
 //    cb(std::type_identity<occtable::bitvector::OccTable<Sigma>>{}, "bitvector");
-    cb(std::type_identity<occtable::interleaved16::OccTable<Sigma>>{}, "interleaved16");
-    cb(std::type_identity<occtable::interleaved32::OccTable<Sigma>>{}, "interleaved32");
+//    cb(std::type_identity<occtable::interleaved16::OccTable<Sigma>>{}, "interleaved16");
+//    cb(std::type_identity<occtable::interleaved32::OccTable<Sigma>>{}, "interleaved32");
     cb(std::type_identity<occtable::interleavedEPR16::OccTable<Sigma>>{}, "interleavedEPR16");
     cb(std::type_identity<occtable::interleavedEPR32::OccTable<Sigma>>{}, "interleavedEPR32");
     cb(std::type_identity<occtable::interleavedEPR16V2::OccTable<Sigma>>{}, "interleavedEPR16V2");
     cb(std::type_identity<occtable::interleavedEPR32V2::OccTable<Sigma>>{}, "interleavedEPR32V2");
-    cb(std::type_identity<occtable::interleavedWavelet::OccTable<Sigma>>{}, "compactWavelet");
+    cb(std::type_identity<occtable::eprV4::OccTable<Sigma>>{}, "EPRV4");
+    cb(std::type_identity<occtable::eprV5::OccTable<Sigma>>{}, "EPRV5");
+//    cb(std::type_identity<occtable::interleavedWavelet::OccTable<Sigma>>{}, "compactWavelet");
 //    cb(std::type_identity<occtable::compactWaveletAligned::OccTable<Sigma>>{}, "compactWaveletAligned");
 //    cb(std::type_identity<occtable::compact2Aligned::OccTable<Sigma>>{}, "compact2Aligned");
-    cb(std::type_identity<occtable::wavelet::OccTable<Sigma>>{}, "wavelet");
-    cb(std::type_identity<occtable::sdsl_wt_bldc::OccTable<Sigma>>{}, "sdsl_wt_bldc");
-    cb(std::type_identity<occtable::sdsl_wt_epr::OccTable<Sigma>>{}, "sdsl_wt_epr");
+//    cb(std::type_identity<occtable::wavelet::OccTable<Sigma>>{}, "wavelet");
+//    cb(std::type_identity<occtable::sdsl_wt_bldc::OccTable<Sigma>>{}, "sdsl_wt_bldc");
+//    cb(std::type_identity<occtable::sdsl_wt_epr::OccTable<Sigma>>{}, "sdsl_wt_epr");
 //    cb(std::type_identity<occtable::compact::OccTable<Sigma>>{}, "compact");
 //    cb(std::type_identity<occtable::compactAligned::OccTable<Sigma>>{}, "compactAligned");
 //    cb(std::type_identity<occtable::compactPrefix::OccTable<Sigma>>{}, "compactPrefix");

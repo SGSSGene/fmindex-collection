@@ -31,7 +31,7 @@ struct BitvectorCompact {
         bool value(size_t idx) const noexcept {
             auto blockId = idx >> 6;
             auto bitId   = idx & 63;
-            return (bits[blockId] & (1ul << bitId));
+            return (bits[blockId] >> bitId) & 1;
         }
 
         void setBlock(size_t blockId, size_t value) {
