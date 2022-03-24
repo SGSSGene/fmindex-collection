@@ -45,6 +45,13 @@ struct BiFMIndex {
                 throw std::runtime_error("wrong rank for the last entry");
             }
         }
+        if constexpr (requires(Table t) {{ t.hasValue(size_t{}) }; }) {
+            for (size_t i{0}; i < occ.size(); ++i) {
+                if (csa.value(i).has_value()) {
+                    occ.setValue(i);
+                }
+            }
+        }
     }
 
     static auto createSA(std::vector<uint8_t> const& input) -> std::vector<int64_t> {
@@ -188,25 +195,39 @@ struct BiFMIndex {
     }
 
     auto locate(size_t idx) const -> std::tuple<size_t, size_t> {
-        auto opt = csa.value(idx);
-        uint64_t steps{};
-        while(!opt) {
-            idx = [&]() {
-                if constexpr (requires(Table t) { { t.rank_symbol(size_t{}) }; }) {
-                    return occ.rank_symbol(idx);
-                } else {
-                    return occ.rank(idx, occ.symbol(idx));
-                }
-            }();
+        if constexpr (requires(Table t) {{ t.hasValue(size_t{}) }; }) {
+            bool v = occ.hasValue(idx);
+            uint64_t steps{};
+            while(!v) {
+                idx = occ.rank_symbol(idx);
+                steps += 1;
+                v = occ.hasValue(idx);
+            }
+            auto opt = csa.value(idx);
+            auto chr = opt.value() >> bitsForPosition;
+            auto pos = (opt.value() & bitPositionMask) + steps;
 
-//            idx = occ.rank(idx, occ.symbol(idx));
-            steps += 1;
-            opt = csa.value(idx);
+            return {chr, pos};
+
+        } else {
+            auto opt = csa.value(idx);
+            uint64_t steps{};
+            while(!opt) {
+                idx = [&]() {
+                    if constexpr (requires(Table t) { { t.rank_symbol(size_t{}) }; }) {
+                        return occ.rank_symbol(idx);
+                    } else {
+                        return occ.rank(idx, occ.symbol(idx));
+                    }
+                }();
+                steps += 1;
+                opt = csa.value(idx);
+            }
+            auto chr = opt.value() >> bitsForPosition;
+            auto pos = (opt.value() & bitPositionMask) + steps;
+
+            return {chr, pos};
         }
-        auto chr = opt.value() >> bitsForPosition;
-        auto pos = (opt.value() & bitPositionMask) + steps;
-
-        return {chr, pos};
     }
 
     auto locate(size_t idx, size_t maxSteps) const -> std::optional<std::tuple<size_t, size_t>> {
