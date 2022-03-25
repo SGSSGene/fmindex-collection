@@ -4,10 +4,6 @@
 #include "occtable/concepts.h"
 #include "utils.h"
 
-#include <cassert>
-#include <cmath>
-#include <numeric>
-
 namespace fmindex_collection {
 
 template <OccTable Table, typename TCSA = CSA>
@@ -55,54 +51,7 @@ struct BiFMIndex {
     }
 
 
-    auto createCSA(std::vector<int64_t> sa, size_t samplingRate, std::vector<size_t> const& _inputSizes, std::function<size_t(size_t)> _label) -> TCSA {
-        auto bitStack = fmindex_collection::BitStack{};
-        auto ssa      = std::vector<uint64_t>{};
-        if (samplingRate > 0) {
-            ssa.reserve(sa.size() / samplingRate + 1 + _inputSizes.size());
-        }
-
-        auto newLabels = std::vector<uint64_t>{};
-        newLabels.resize(sa.size(), std::numeric_limits<uint64_t>::max());
-
-        auto accIter = _inputSizes.begin();
-        size_t subjId{};
-        size_t subjPos{};
-
-        size_t lastSamplingPos{};
-        for (size_t i{0}; i < newLabels.size(); ++i, ++subjPos) {
-            while (subjPos >= *accIter) {
-                subjPos -= *accIter;
-                ++subjId;
-                ++accIter;
-            }
-            bool sample = (samplingRate == 0) || ((i-lastSamplingPos) % samplingRate == 0) || (subjPos == 0);
-            if (sample) {
-                lastSamplingPos = i;
-                newLabels[i] = (subjPos) | (_label(subjId) << bitsForPosition);
-            }
-        }
-
-        for (size_t i{0}; i < sa.size(); ++i) {
-            bool sample = newLabels[sa[i]] != std::numeric_limits<uint64_t>::max();
-            bitStack.push(sample);
-            if (sample) {
-                ssa.push_back(newLabels[sa[i]]);
-            }
-        }
-        return TCSA{std::move(ssa), bitStack, samplingRate};
-    }
-
-    BiFMIndex(std::vector<uint8_t> _input, size_t samplingRate)
-        : occ{cereal_tag{}}
-        , occRev{cereal_tag{}}
-        , csa{cereal_tag{}}
-    {
-        auto input = std::vector<std::vector<uint8_t>>{std::move(_input)};
-        *this = BiFMIndex{std::move(input), samplingRate};
-    }
-
-    BiFMIndex(std::vector<std::vector<uint8_t>> _input, size_t samplingRate, std::vector<size_t> _labels = {})
+    BiFMIndex(std::vector<std::vector<uint8_t>> _input, size_t samplingRate)
         : occ{cereal_tag{}}
         , occRev{cereal_tag{}}
         , csa{cereal_tag{}}
@@ -132,18 +81,10 @@ struct BiFMIndex {
         decltype(_input){}.swap(_input); // input memory can be deleted
 
 
-        auto [bwt, csa] = [&input, &samplingRate, &inputSizes, &_labels, this] () {
+        auto [bwt, csa] = [&input, &samplingRate, &inputSizes, this] () {
             auto sa  = createSA(input);
             auto bwt = createBWT(input, sa);
-            auto csa = [&]() {
-                if (_labels.empty()) {
-                    return createCSA(std::move(sa), samplingRate, inputSizes, [](size_t i) { return i; });
-                } else {
-                    return createCSA(std::move(sa), samplingRate, inputSizes, [&](size_t i) {
-                        return _labels[i];
-                    });
-                }
-            }();
+            auto csa = CSA(std::move(sa), samplingRate, inputSizes);
 
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();
@@ -184,11 +125,8 @@ struct BiFMIndex {
                 steps += 1;
                 v = occ.hasValue(idx);
             }
-            auto opt = csa.value(idx);
-            auto chr = opt.value() >> bitsForPosition;
-            auto pos = (opt.value() & bitPositionMask) + steps;
-
-            return {chr, pos};
+            auto [chr, pos] = csa.value(idx);
+            return {chr, pos+steps};
 
         } else {
             auto opt = csa.value(idx);
@@ -204,10 +142,8 @@ struct BiFMIndex {
                 steps += 1;
                 opt = csa.value(idx);
             }
-            auto chr = opt.value() >> bitsForPosition;
-            auto pos = (opt.value() & bitPositionMask) + steps;
-
-            return {chr, pos};
+            auto [chr, pos] = *opt;
+            return {chr, pos+steps};
         }
     }
 
@@ -219,23 +155,15 @@ struct BiFMIndex {
             steps += 1;
             opt = csa.value(idx);
         }
-        if (!opt) {
-            return std::nullopt;
+        if (opt) {
+            std::get<1>(*opt) += steps;
         }
-        auto chr = opt.value() >> bitsForPosition;
-        auto pos = (opt.value() & bitPositionMask) + steps;
-
-        return std::make_tuple(chr, pos);
+        return opt;
     }
 
 
     auto single_locate_step(size_t idx) const -> std::optional<std::tuple<size_t, size_t>> {
-        auto opt = csa.value(idx);
-        if (!opt) return std::nullopt;
-        auto chr = opt.value() >> bitsForPosition;
-        auto pos = (opt.value() & bitPositionMask);
-
-        return std::make_tuple(chr, pos);
+        return csa.value(idx);
     }
 
 

@@ -47,7 +47,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push(true);
         }
-        auto csa = fmindex_collection::CSA{sa, bitStack, 1};
+        auto csa = fmindex_collection::CSA{sa, bitStack, 1, 63};
         auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa), 63};
 
         REQUIRE(index.size() == bwt.size());
@@ -67,7 +67,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
         auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa), 63};
 
         REQUIRE(index.size() == bwt.size());
@@ -87,7 +87,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
         auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa), 63};
 
         REQUIRE(index.size() == bwt.size());
@@ -108,7 +108,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
         auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa), 63};
 
         REQUIRE(index.size() == bwt.size());
@@ -163,7 +163,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 25
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push(true);
         }
-        auto csa = fmindex_collection::CSA{sa, bitStack, 2};
+        auto csa = fmindex_collection::CSA{sa, bitStack, 2, 63};
         auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa), 63};
 
         REQUIRE(index.size() == bwt.size());
@@ -183,7 +183,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 25
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
         auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa), 63};
 
         REQUIRE(index.size() == bwt.size());
@@ -203,7 +203,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 25
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
         auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa), 63};
 
         REQUIRE(index.size() == bwt.size());
@@ -224,7 +224,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 25
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
         auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa), 63};
 
         REQUIRE(index.size() == bwt.size());

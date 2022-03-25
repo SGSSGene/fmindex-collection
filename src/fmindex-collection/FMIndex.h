@@ -4,10 +4,6 @@
 #include "occtable/concepts.h"
 #include "utils.h"
 
-#include <cassert>
-#include <cmath>
-#include <numeric>
-
 namespace fmindex_collection {
 
 template <OccTable Table>
@@ -18,56 +14,12 @@ struct FMIndex {
 
     Table  occ;
     CSA    csa;
-    size_t bitsForPosition;
-    size_t bitPositionMask;
 
 
-    FMIndex(std::vector<uint8_t> const& bwt, CSA _csa, size_t _bitsForPosition)
+    FMIndex(std::vector<uint8_t> const& bwt, CSA _csa)
         : occ{bwt}
         , csa{std::move(_csa)}
-        , bitsForPosition{_bitsForPosition}
-    {
-        assert(_bitsForPosition < 64);
-        bitPositionMask = (1ul<<bitsForPosition)-1;
-    }
-
-    auto createCSA(std::vector<int64_t> sa, size_t samplingRate, std::vector<size_t> const& _inputSizes, std::function<size_t(size_t)> _label) -> CSA {
-        auto bitStack = fmindex_collection::BitStack{};
-        auto ssa      = std::vector<uint64_t>{};
-        if (samplingRate > 0) {
-            ssa.reserve(sa.size() / samplingRate + 1 + _inputSizes.size());
-        }
-
-        auto newLabels = std::vector<uint64_t>{};
-        newLabels.resize(sa.size(), std::numeric_limits<uint64_t>::max());
-
-        auto accIter = _inputSizes.begin();
-        size_t subjId{};
-        size_t subjPos{};
-
-        size_t lastSamplingPos{};
-        for (size_t i{0}; i < newLabels.size(); ++i, ++subjPos) {
-            while (subjPos >= *accIter) {
-                subjPos -= *accIter;
-                ++subjId;
-                ++accIter;
-            }
-            bool sample = (samplingRate == 0) || ((i-lastSamplingPos) % samplingRate == 0) || (subjPos == 0);
-            if (sample) {
-                lastSamplingPos = i;
-                newLabels[i] = (subjPos) | (_label(subjId) << bitsForPosition);
-            }
-        }
-
-        for (size_t i{0}; i < sa.size(); ++i) {
-            bool sample = newLabels[sa[i]] != std::numeric_limits<uint64_t>::max();
-            bitStack.push(sample);
-            if (sample) {
-                ssa.push_back(newLabels[sa[i]]);
-            }
-        }
-        return CSA{std::move(ssa), bitStack, samplingRate};
-    }
+    {}
 
     FMIndex(std::vector<uint8_t> _input, size_t samplingRate)
         : occ{cereal_tag{}}
@@ -77,16 +29,10 @@ struct FMIndex {
         *this = FMIndex{std::move(input), samplingRate};
     }
 
-    FMIndex(std::vector<std::vector<uint8_t>> _input, size_t samplingRate, std::vector<size_t> _labels = {})
+    FMIndex(std::vector<std::vector<uint8_t>> _input, size_t samplingRate)
         : occ{cereal_tag{}}
         , csa{cereal_tag{}}
     {
-        size_t bitsForSeqId = std::max(1ul, size_t(std::ceil(std::log2(_input.size()))));
-        assert(bitsForSeqId < 64);
-
-        bitsForPosition = 64 - bitsForSeqId;
-        bitPositionMask = (1ul<<bitsForPosition)-1;
-
         size_t totalSize = std::accumulate(begin(_input), end(_input), size_t{0}, [](auto s, auto const& l) { return s + l.size() + 1; });
 
         auto input = std::vector<uint8_t>{};
@@ -96,34 +42,23 @@ struct FMIndex {
         inputSizes.reserve(_input.size());
 
         for (auto const& l : _input) {
-            if (l.size() >= std::pow(2, bitsForPosition)) {
-                throw std::runtime_error("sequence are to long and to many. Of 64bit available " + std::to_string(bitsForPosition) + "bits are required for positions and " + std::to_string(bitsForSeqId) + "bits are required for the sequence id");
-            }
             input.insert(end(input), begin(l), end(l));
             input.emplace_back(0);
             inputSizes.emplace_back(l.size()+1);
         }
         decltype(_input){}.swap(_input); // input memory can be deleted
 
-        auto [bwt, csa] = [&input, &samplingRate, &inputSizes, &_labels, this] () {
+        auto [bwt, csa] = [&input, &samplingRate, &inputSizes, this] () {
             auto sa  = createSA(input);
             auto bwt = createBWT(input, sa);
-            auto csa = [&]() {
-                if (_labels.empty()) {
-                    return createCSA(std::move(sa), samplingRate, inputSizes, [](size_t i) { return i; });
-                } else {
-                    return createCSA(std::move(sa), samplingRate, inputSizes, [&](size_t i) {
-                        return _labels[i];
-                    });
-                }
-            }();
+            auto csa = CSA{std::move(sa), samplingRate, inputSizes};
 
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();
 
         decltype(input){}.swap(input); // input memory can be deleted
 
-        *this = FMIndex{bwt, std::move(csa), bitsForPosition};
+        *this = FMIndex{bwt, std::move(csa)};
     }
 
 
@@ -148,10 +83,8 @@ struct FMIndex {
             steps += 1;
             opt = csa.value(idx);
         }
-        auto chr = opt.value() >> bitsForPosition;
-        auto pos = (opt.value() & bitPositionMask) + steps;
-
-        return {chr, pos};
+        auto [chr, pos] = *opt;
+        return std::make_tuple(chr, pos + steps);
     }
 
     auto locate(size_t idx, size_t maxSteps) const -> std::optional<std::tuple<size_t, size_t>> {
@@ -162,30 +95,21 @@ struct FMIndex {
             steps += 1;
             opt = csa.value(idx);
         }
-        if (!opt) {
-            return std::nullopt;
+        if (opt) {
+            std::get<1>(*opt) += steps;
         }
-        auto chr = opt.value() >> bitsForPosition;
-        auto pos = (opt.value() & bitPositionMask) + steps;
-
-        return std::make_tuple(chr, pos);
+        return opt;
     }
 
 
     auto single_locate_step(size_t idx) const -> std::optional<std::tuple<size_t, size_t>> {
-        auto opt = csa.value(idx);
-        if (!opt) return std::nullopt;
-        auto chr = opt.value() >> bitsForPosition;
-        auto pos = (opt.value() & bitPositionMask);
-
-        return std::make_tuple(chr, pos);
+        return csa.value(idx);
     }
 
 
     template <typename Archive>
     void serialize(Archive& ar) {
         ar(occ, csa);
-        ar(bitsForPosition, bitPositionMask);
     }
 };
 

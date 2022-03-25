@@ -44,12 +44,15 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]",
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push(true);
         }
-        auto csa = fmindex_collection::CSA{sa, bitStack, 1};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa), 63};
+        auto csa = fmindex_collection::CSA{sa, bitStack, 1, 63};
+        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [seqId, seqPos] = index.locate(i);
+            INFO(i);
+            CHECK(seqId == 0);
+            CHECK(seqPos == sa[i]);
         }
     }
 
@@ -64,8 +67,8 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]",
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa), 63};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
+        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -84,8 +87,8 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]",
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa), 63};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
+        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -105,8 +108,8 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]",
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa), 63};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
+        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {

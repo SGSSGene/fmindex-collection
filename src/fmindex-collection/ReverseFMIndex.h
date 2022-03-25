@@ -2,11 +2,7 @@
 
 #include "CSA.h"
 #include "occtable/concepts.h"
-
-#include <cassert>
-#include <cmath>
-#include <numeric>
-#include <sdsl/divsufsort.hpp>
+#include "utils.h"
 
 namespace fmindex_collection {
 
@@ -36,65 +32,6 @@ struct ReverseFMIndex {
         bitPositionMask = (1ul<<bitsForPosition)-1;
     }
 
-    static auto createSA(std::vector<uint8_t> const& input) -> std::vector<int64_t> {
-        auto sa = std::vector<int64_t>{};
-        sa.resize(input.size());
-        auto error = sdsl::divsufsort<int64_t>(static_cast<uint8_t const*>(input.data()), sa.data(), input.size());
-        if (error != 0) {
-            throw std::runtime_error("some error while creating the suffix array");
-        }
-        return sa;
-    }
-
-    static auto createBWT(std::vector<uint8_t> const& input, std::vector<int64_t> const& sa) -> std::vector<uint8_t> {
-        assert(input.size() == sa.size());
-        std::vector<uint8_t> bwt;
-        bwt.resize(input.size());
-        for (size_t i{0}; i < sa.size(); ++i) {
-            bwt[i] = input[(sa[i] + input.size()- 1) % input.size()];
-        }
-        return bwt;
-    }
-
-    auto createCSA(std::vector<int64_t> sa, size_t samplingRate, std::vector<size_t> const& _inputSizes, std::function<size_t(size_t)> _label) -> CSA {
-        auto bitStack = fmindex_collection::BitStack{};
-        auto ssa      = std::vector<uint64_t>{};
-        if (samplingRate > 0) {
-            ssa.reserve(sa.size() / samplingRate + 1 + _inputSizes.size());
-        }
-
-        auto newLabels = std::vector<uint64_t>{};
-        newLabels.resize(sa.size(), std::numeric_limits<uint64_t>::max());
-
-        auto accIter = _inputSizes.begin();
-        size_t subjId{};
-        size_t subjPos{};
-
-        size_t lastSamplingPos{};
-        for (size_t i{0}; i < newLabels.size(); ++i, ++subjPos) {
-            while (subjPos >= *accIter) {
-                subjPos -= *accIter;
-                ++subjId;
-                ++accIter;
-            }
-            bool sample = (samplingRate == 0) || ((i-lastSamplingPos) % samplingRate == 0) || (subjPos == 0);
-            if (sample) {
-                lastSamplingPos = i;
-                auto pos = _inputSizes[subjId] - subjPos-1; // must invert position, so locate finds correct position
-                newLabels[i] = pos | (_label(subjId) << bitsForPosition);
-            }
-        }
-
-        for (size_t i{0}; i < sa.size(); ++i) {
-            bool sample = newLabels[sa[i]] != std::numeric_limits<uint64_t>::max();
-            bitStack.push(sample);
-            if (sample) {
-                ssa.push_back(newLabels[sa[i]]);
-            }
-        }
-        return CSA{std::move(ssa), bitStack, samplingRate};
-    }
-
     ReverseFMIndex(std::vector<uint8_t> _input, size_t samplingRate)
         : occ{cereal_tag{}}
         , csa{cereal_tag{}}
@@ -103,7 +40,7 @@ struct ReverseFMIndex {
         *this = ReverseFMIndex{std::move(input), samplingRate};
     }
 
-    ReverseFMIndex(std::vector<std::vector<uint8_t>> _input, size_t samplingRate, std::vector<size_t> _labels = {})
+    ReverseFMIndex(std::vector<std::vector<uint8_t>> _input, size_t samplingRate)
         : occ{cereal_tag{}}
         , csa{cereal_tag{}}
     {
@@ -132,18 +69,10 @@ struct ReverseFMIndex {
         }
         decltype(_input){}.swap(_input); // input memory can be deleted
 
-        auto [bwt, csa] = [&input, &samplingRate, &inputSizes, &_labels, this] () {
+        auto [bwt, csa] = [&input, &samplingRate, &inputSizes, this] () {
             auto sa  = createSA(input);
             auto bwt = createBWT(input, sa);
-            auto csa = [&]() {
-                if (_labels.empty()) {
-                    return createCSA(std::move(sa), samplingRate, inputSizes, [](size_t i) { return i; });
-                } else {
-                    return createCSA(std::move(sa), samplingRate, inputSizes, [&](size_t i) {
-                        return _labels[i];
-                    });
-                }
-            }();
+            auto csa = CSA{std::move(sa), samplingRate, inputSizes, true};
 
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();
@@ -175,10 +104,8 @@ struct ReverseFMIndex {
             steps += 1;
             opt = csa.value(idx);
         }
-        auto chr = opt.value() >> bitsForPosition;
-        auto pos = (opt.value() & bitPositionMask) - steps;
-
-        return {chr, pos};
+        auto [chr, pos] = *opt;
+        return {chr, pos - steps};
     }
 
     auto locate(size_t idx, size_t maxSteps) const -> std::optional<std::tuple<size_t, size_t>> {
@@ -189,23 +116,15 @@ struct ReverseFMIndex {
             steps += 1;
             opt = csa.value(idx);
         }
-        if (!opt) {
-            return std::nullopt;
+        if (opt) {
+            std::get<1>(*opt) -= steps;
         }
-        auto chr = opt.value() >> bitsForPosition;
-        auto pos = (opt.value() & bitPositionMask) - steps;
-
-        return std::make_tuple(chr, pos);
+        return opt;
     }
 
 
     auto single_locate_step(size_t idx) const -> std::optional<std::tuple<size_t, size_t>> {
-        auto opt = csa.value(idx);
-        if (!opt) return std::nullopt;
-        auto chr = opt.value() >> bitsForPosition;
-        auto pos = (opt.value() & bitPositionMask);
-
-        return std::make_tuple(chr, pos);
+        return csa.value(idx);
     }
 
 

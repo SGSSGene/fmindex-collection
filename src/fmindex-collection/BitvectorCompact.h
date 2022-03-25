@@ -65,6 +65,8 @@ struct BitvectorCompact {
         return superblocks[superblockId].value(bitId);
     }
 
+    BitvectorCompact() = default; //!TODO should not exists
+
     template <typename CB>
     BitvectorCompact(size_t length, CB cb) {
         superblocks.reserve(length/256+1);
