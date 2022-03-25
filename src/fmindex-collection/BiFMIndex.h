@@ -10,7 +10,7 @@
 
 namespace fmindex_collection {
 
-template <OccTable Table>
+template <OccTable Table, typename TCSA = CSA>
 struct BiFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
 
@@ -18,12 +18,12 @@ struct BiFMIndex {
 
     Table  occ;
     Table  occRev;
-    CSA    csa;
+    TCSA   csa;
     size_t bitsForPosition;
     size_t bitPositionMask;
 
 
-    BiFMIndex(std::vector<uint8_t> const& bwt, std::vector<uint8_t> const& bwtRev, CSA _csa, size_t _bitsForPosition)
+    BiFMIndex(std::vector<uint8_t> const& bwt, std::vector<uint8_t> const& bwtRev, TCSA _csa, size_t _bitsForPosition)
         : occ{bwt}
         , occRev{bwtRev}
         , csa{std::move(_csa)}
@@ -74,7 +74,7 @@ struct BiFMIndex {
         return bwt;
     }
 
-    auto createCSA(std::vector<int64_t> sa, size_t samplingRate, std::vector<size_t> const& _inputSizes, std::function<size_t(size_t)> _label) -> CSA {
+    auto createCSA(std::vector<int64_t> sa, size_t samplingRate, std::vector<size_t> const& _inputSizes, std::function<size_t(size_t)> _label) -> TCSA {
         auto bitStack = fmindex_collection::BitStack{};
         auto ssa      = std::vector<uint64_t>{};
         if (samplingRate > 0) {
@@ -109,7 +109,7 @@ struct BiFMIndex {
                 ssa.push_back(newLabels[sa[i]]);
             }
         }
-        return CSA{std::move(ssa), bitStack, samplingRate};
+        return TCSA{std::move(ssa), bitStack, samplingRate};
     }
 
     BiFMIndex(std::vector<uint8_t> _input, size_t samplingRate)
