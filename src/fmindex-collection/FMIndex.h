@@ -2,11 +2,11 @@
 
 #include "CSA.h"
 #include "occtable/concepts.h"
+#include "utils.h"
 
 #include <cassert>
 #include <cmath>
 #include <numeric>
-#include <sdsl/divsufsort.hpp>
 
 namespace fmindex_collection {
 
@@ -29,26 +29,6 @@ struct FMIndex {
     {
         assert(_bitsForPosition < 64);
         bitPositionMask = (1ul<<bitsForPosition)-1;
-    }
-
-    static auto createSA(std::vector<uint8_t> const& input) -> std::vector<int64_t> {
-        auto sa = std::vector<int64_t>{};
-        sa.resize(input.size());
-        auto error = sdsl::divsufsort<int64_t>(static_cast<uint8_t const*>(input.data()), sa.data(), input.size());
-        if (error != 0) {
-            throw std::runtime_error("some error while creating the suffix array");
-        }
-        return sa;
-    }
-
-    static auto createBWT(std::vector<uint8_t> const& input, std::vector<int64_t> const& sa) -> std::vector<uint8_t> {
-        assert(input.size() == sa.size());
-        std::vector<uint8_t> bwt;
-        bwt.resize(input.size());
-        for (size_t i{0}; i < sa.size(); ++i) {
-            bwt[i] = input[(sa[i] + input.size()- 1) % input.size()];
-        }
-        return bwt;
     }
 
     auto createCSA(std::vector<int64_t> sa, size_t samplingRate, std::vector<size_t> const& _inputSizes, std::function<size_t(size_t)> _label) -> CSA {
