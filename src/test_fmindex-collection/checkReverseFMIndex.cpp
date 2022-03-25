@@ -45,7 +45,7 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
             bitStack.push(true);
         }
         auto csa = fmindex_collection::CSA{sa, bitStack, 1, 63};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa), 63};
+        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -65,7 +65,7 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa), 63};
+        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -88,7 +88,7 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa), 63};
+        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -109,7 +109,7 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa), 63};
+        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {

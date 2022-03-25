@@ -19,37 +19,16 @@ struct ReverseFMIndex {
 
     Table  occ;
     CSA    csa;
-    size_t bitsForPosition;
-    size_t bitPositionMask;
 
-
-    ReverseFMIndex(std::vector<uint8_t> const& bwt, CSA _csa, size_t _bitsForPosition)
+    ReverseFMIndex(std::vector<uint8_t> const& bwt, CSA _csa)
         : occ{bwt}
         , csa{std::move(_csa)}
-        , bitsForPosition{_bitsForPosition}
-    {
-        assert(_bitsForPosition < 64);
-        bitPositionMask = (1ul<<bitsForPosition)-1;
-    }
-
-    ReverseFMIndex(std::vector<uint8_t> _input, size_t samplingRate)
-        : occ{cereal_tag{}}
-        , csa{cereal_tag{}}
-    {
-        auto input = std::vector<std::vector<uint8_t>>{std::move(_input)};
-        *this = ReverseFMIndex{std::move(input), samplingRate};
-    }
+    {}
 
     ReverseFMIndex(std::vector<std::vector<uint8_t>> _input, size_t samplingRate)
         : occ{cereal_tag{}}
         , csa{cereal_tag{}}
     {
-        size_t bitsForSeqId = std::max(1ul, size_t(std::ceil(std::log2(_input.size()))));
-        assert(bitsForSeqId < 64);
-
-        bitsForPosition = 64 - bitsForSeqId;
-        bitPositionMask = (1ul<<bitsForPosition)-1;
-
         size_t totalSize = std::accumulate(begin(_input), end(_input), size_t{0}, [](auto s, auto const& l) { return s + l.size() + 1; });
 
         auto input = std::vector<uint8_t>{};
@@ -59,9 +38,6 @@ struct ReverseFMIndex {
         inputSizes.reserve(_input.size());
 
         for (auto& l : _input) {
-            if (l.size() >= std::pow(2, bitsForPosition)) {
-                throw std::runtime_error("sequence are to long and to many. Of 64bit available " + std::to_string(bitsForPosition) + "bits are required for positions and " + std::to_string(bitsForSeqId) + "bits are required for the sequence id");
-            }
             std::reverse(begin(l), end(l));
             input.insert(end(input), begin(l), end(l));
             input.emplace_back(0);
@@ -79,7 +55,7 @@ struct ReverseFMIndex {
 
         decltype(input){}.swap(input); // input memory can be deleted
 
-        *this = ReverseFMIndex{bwt, std::move(csa), bitsForPosition};
+        *this = ReverseFMIndex{bwt, std::move(csa)};
     }
 
 
@@ -131,7 +107,6 @@ struct ReverseFMIndex {
     template <typename Archive>
     void serialize(Archive& ar) {
         ar(occ, csa);
-        ar(bitsForPosition, bitPositionMask);
     }
 };
 

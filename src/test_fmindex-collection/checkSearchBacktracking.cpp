@@ -316,7 +316,7 @@ TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]"
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
 
-    auto index = fmindex_collection::ReverseFMIndex<OccTable>{input, 1};
+    auto index = fmindex_collection::ReverseFMIndex<OccTable>{std::vector<std::vector<uint8_t>>{input}, 1};
 
     SECTION("check symbol call to occurrence table") {
         REQUIRE(input.size()+1 == index.size());

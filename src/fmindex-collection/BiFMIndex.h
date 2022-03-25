@@ -15,19 +15,12 @@ struct BiFMIndex {
     Table  occ;
     Table  occRev;
     TCSA   csa;
-    size_t bitsForPosition;
-    size_t bitPositionMask;
 
-
-    BiFMIndex(std::vector<uint8_t> const& bwt, std::vector<uint8_t> const& bwtRev, TCSA _csa, size_t _bitsForPosition)
+    BiFMIndex(std::vector<uint8_t> const& bwt, std::vector<uint8_t> const& bwtRev, TCSA _csa)
         : occ{bwt}
         , occRev{bwtRev}
         , csa{std::move(_csa)}
-        , bitsForPosition{_bitsForPosition}
     {
-        assert(_bitsForPosition < 64);
-        bitPositionMask = (1ul<<bitsForPosition)-1;
-
         assert(bwt.size() == bwtRev.size());
         assert(occ.size() == occRev.size());
         if (bwt.size() != bwtRev.size()) {
@@ -56,12 +49,6 @@ struct BiFMIndex {
         , occRev{cereal_tag{}}
         , csa{cereal_tag{}}
     {
-        size_t bitsForSeqId = std::max(1ul, size_t(std::ceil(std::log2(_input.size()))));
-        assert(bitsForSeqId < 64);
-
-        bitsForPosition = 64 - bitsForSeqId;
-        bitPositionMask = (1ul<<bitsForPosition)-1;
-
         size_t totalSize = std::accumulate(begin(_input), end(_input), size_t{0}, [](auto s, auto const& l) { return s + l.size() + 1; });
 
         auto input = std::vector<uint8_t>{};
@@ -71,9 +58,6 @@ struct BiFMIndex {
         inputSizes.reserve(_input.size());
 
         for (auto const& l : _input) {
-            if (l.size() >= std::pow(2, bitsForPosition)) {
-                throw std::runtime_error("sequence are to long and to many. Of 64bit available " + std::to_string(bitsForPosition) + "bits are required for positions and " + std::to_string(bitsForSeqId) + "bits are required for the sequence id");
-            }
             input.insert(end(input), begin(l), end(l));
             input.emplace_back(0);
             inputSizes.emplace_back(l.size()+1);
@@ -98,7 +82,7 @@ struct BiFMIndex {
 
         decltype(input){}.swap(input); // input memory can be deleted
 
-        *this = BiFMIndex{bwt, bwtRev, std::move(csa), bitsForPosition};
+        *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
     }
 
 
@@ -170,7 +154,6 @@ struct BiFMIndex {
     template <typename Archive>
     void serialize(Archive& ar) {
         ar(occ, occRev, csa);
-        ar(bitsForPosition, bitPositionMask);
     }
 };
 
