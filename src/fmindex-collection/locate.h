@@ -1,6 +1,6 @@
 #pragma once
 
-#pragma once
+#include <optional>
 
 namespace fmindex_collection {
 
