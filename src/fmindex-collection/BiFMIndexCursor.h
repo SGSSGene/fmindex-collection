@@ -48,10 +48,10 @@ struct BiFMIndexCursor {
 
         auto cursors = std::array<BiFMIndexCursor, Sigma>{};
         cursors[0] = BiFMIndexCursor{*index, rs1[0], lbRev, rs2[0] - rs1[0]};
+        cursors[0].prefetchLeft();
         for (size_t i{1}; i < Sigma; ++i) {
             cursors[i] = BiFMIndexCursor{*index, rs1[i], lbRev + prs2[i-1] - prs1[i-1], rs2[i] - rs1[i]};
         }
-        cursors[1].prefetchLeft();
         return cursors;
     }
 
@@ -65,10 +65,10 @@ struct BiFMIndexCursor {
 
         auto cursors = std::array<BiFMIndexCursor, Sigma>{};
         cursors[0] = BiFMIndexCursor{*index, lb, rs1[0], rs2[0] - rs1[0]};
+        cursors[0].prefetchRight();
         for (size_t i{1}; i < Sigma; ++i) {
             cursors[i] = BiFMIndexCursor{*index, lb + prs2[i-1] - prs1[i-1], rs1[i], rs2[i] - rs1[i]};
         }
-        cursors[1].prefetchRight();
         return cursors;
     }
     void prefetchLeft() const {
