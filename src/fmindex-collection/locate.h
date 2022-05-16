@@ -82,4 +82,32 @@ struct LocateFMTree {
 };
 
 
+template <size_t MaxDepth, typename index_t, typename cursor_t, typename CB>
+void locateFMTree(index_t const& index, cursor_t cursor, CB const& cb, size_t depth=0) {
+    if (depth < MaxDepth and cursor.count() > 1000) {
+        for (size_t pos{cursor.lb}; pos < cursor.lb + cursor.len; ++pos) {
+            auto v = index.single_locate_step(pos);
+            if (v) {
+                auto [seqid, seqpos] = *v;
+                cb(seqid, seqpos+depth);
+            }
+        }
+
+        if (depth+1 < index.csa.samplingRate) {
+            auto cursors = cursor.extendLeft();
+            for (size_t sym{1}; sym < cursors.size(); ++sym) {
+                locateFMTree<MaxDepth>(index, cursors[sym], cb, depth+1);
+            }
+        }
+    } else {
+        for (size_t pos{cursor.lb}; pos < cursor.lb + cursor.len; ++pos) {
+            auto v = index.locate(pos, index.csa.samplingRate - depth);
+            if (v) {
+                auto [seqid, seqpos] = *v;
+                cb(seqid, seqpos+depth);
+            }
+        }
+    }
+}
+
 }

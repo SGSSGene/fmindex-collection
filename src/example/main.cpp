@@ -288,6 +288,7 @@ int main(int argc, char const* const* argv) {
 
                 if (algorithm == "pseudo") search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm.size() == 15 && algorithm.substr(0, 13) == "pseudo_fmtree")  search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
+                else if (algorithm == "pseudo_fmtree")  search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "ng12") search_ng12::search(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "ng14") search_ng14::search(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "ng15") search_ng15::search(index, mut_queries, search_scheme, res_cb);
@@ -318,6 +319,14 @@ int main(int argc, char const* const* argv) {
                         }
                         resultCt += cursor.len;
                     }
+                } else if (algorithm == "pseudo_fmtree") {
+                    for (auto const& [queryId, cursor, e, action] : resultCursors) {
+                        locateFMTree<16>(index, cursor, [&](size_t seqId, size_t pos) {
+                            results.emplace_back(queryId, pos, e ,action);
+                        });
+                        resultCt += cursor.len;
+                    }
+
                 } else {
                     for (auto const& [queryId, cursor, e, action] : resultCursors) {
                         for (auto [seqId, pos] : LocateLinear{index, cursor}) {
