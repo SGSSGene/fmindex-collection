@@ -16,7 +16,7 @@ namespace fmindex_collection {
 struct CSA {
     std::vector<uint64_t> ssa;
     BitvectorCompact bv;
-    size_t samplingRate; // distance between two samples (inside one sequence)
+    size_t samplingRate;    // distance between two samples (inside one sequence)
     size_t bitsForPosition; // bits reserved for position
     size_t bitPositionMask;
 

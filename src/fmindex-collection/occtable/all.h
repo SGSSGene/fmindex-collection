@@ -11,6 +11,7 @@
 #include "EPRV3.h"
 #include "EPRV4.h"
 #include "EPRV5.h"
+#include "DenseEPRV6.h"
 #include "Naive.h"
 #include "Sdsl_wt_bldc.h"
 #include "Sdsl_wt_epr.h"

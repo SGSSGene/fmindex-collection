@@ -53,6 +53,71 @@ struct DenseCSA {
         , bv {cereal_tag{}}
     {}
 
+    DenseCSA(std::vector<int64_t> const& sa, size_t _samplingRate, std::vector<size_t> const& _inputSizes)
+        : ssaPos{cereal_tag{}}
+        , ssaSeq{cereal_tag{}}
+        , bv {cereal_tag{}}
+        , samplingRate{_samplingRate}
+    {
+        size_t bitsForSeqId = std::max(1ul, size_t(std::ceil(std::log2(_inputSizes.size()))));
+        assert(bitsForSeqId < 64);
+        size_t largestText  = *std::max_element(begin(_inputSizes), end(_inputSizes));
+        size_t bitsForPos   = std::max(1ul, size_t(std::ceil(std::log2(largestText))));
+
+
+        auto bitStack = fmindex_collection::BitStack{};
+        auto ssa      = std::vector<uint64_t>{};
+        if (samplingRate > 0) {
+            ssa.reserve(sa.size() / samplingRate + 1 + _inputSizes.size());
+        }
+
+        ssaPos = DenseVector(bitsForPos);
+        ssaSeq = DenseVector(bitsForSeqId);
+
+        auto accIter = _inputSizes.begin();
+        size_t subjId{};
+        size_t subjPos{};
+
+        size_t lastSamplingPos{};
+
+        auto newLabels = std::vector<std::tuple<uint64_t, uint64_t>>{};
+        newLabels.resize(sa.size(), std::make_tuple(std::numeric_limits<uint64_t>::max(), 0ul));
+
+        for (size_t i{0}; i < newLabels.size(); ++i, ++subjPos) {
+            while (subjPos >= *accIter) {
+                subjPos -= *accIter;
+                ++subjId;
+                ++accIter;
+            }
+            bool sample = (samplingRate == 0) || ((i-lastSamplingPos) % samplingRate == 0) || (subjPos == 0);
+            if (sample) {
+                lastSamplingPos = i;
+                auto pos = subjPos;
+                //!TODO this should go back into the reverseFMIndex, by changing how everything else works...
+/*                if (reverse) {
+                    pos = _inputSizes[subjId] - pos -1;
+                }*/
+                newLabels[i] = {subjId, pos};
+            }
+        }
+
+        for (size_t i{0}; i < sa.size(); ++i) {
+            auto [subjId, subjPos] = newLabels[sa[i]];
+            bool sample = subjId != std::numeric_limits<uint64_t>::max();
+            bitStack.push(sample);
+            if (sample) {
+                ssaSeq.push_back(subjId);
+                ssaPos.push_back(subjPos);
+            }
+        }
+
+
+        this->bv  = BitvectorCompact{bitStack.size, [&](size_t idx) {
+            return bitStack.value(idx);
+        }};
+    }
+
+
     auto operator=(DenseCSA const&) -> DenseCSA& = delete;
     auto operator=(DenseCSA&& _other) noexcept -> DenseCSA& = default;
 

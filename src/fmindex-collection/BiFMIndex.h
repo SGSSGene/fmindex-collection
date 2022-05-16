@@ -68,7 +68,7 @@ struct BiFMIndex {
         auto [bwt, csa] = [&input, &samplingRate, &inputSizes, this] () {
             auto sa  = createSA(input);
             auto bwt = createBWT(input, sa);
-            auto csa = CSA(std::move(sa), samplingRate, inputSizes);
+            auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
 
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();
