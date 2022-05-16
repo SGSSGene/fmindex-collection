@@ -12,10 +12,11 @@
 #include <memory>
 #include <sstream>
 #include <string>
-#include <unordered_map>
 
 #include <sdsl/config.hpp>
 #include <sdsl/uintx_t.hpp>
+
+#include <unordered_map>
 
 //! Namespace for the succinct data structure library
 namespace sdsl

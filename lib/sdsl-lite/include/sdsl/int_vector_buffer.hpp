@@ -372,8 +372,6 @@ class int_vector_buffer
         //! Assignment operator
         reference & operator=(reference & x) { return *this = (uint64_t)(x); };
 
-        reference(reference const &) = default;
-
         //! Prefix increment of the proxy object
         reference & operator++()
         {

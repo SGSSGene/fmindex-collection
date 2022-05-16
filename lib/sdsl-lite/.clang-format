@@ -63,7 +63,7 @@ IncludeCategories:
     Priority:        4
   - Regex:           '^(<|")sdsl/'
     Priority:        2
-  - Regex:           '<[[:alnum:]._]+>'
+  - Regex:           '<[[:alnum:].]+>'
     Priority:        1
   - Regex:           '.*'
     Priority:        3
