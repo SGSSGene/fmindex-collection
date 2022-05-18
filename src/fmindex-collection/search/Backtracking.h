@@ -7,13 +7,12 @@
 namespace fmindex_collection {
 namespace search_backtracking {
 
-
 template <typename Index>
 struct SelectIndexCursor;
 
-template <typename OccTable>
-struct SelectIndexCursor<BiFMIndex<OccTable>> {
-    using cursor_t = BiFMIndexCursor<BiFMIndex<OccTable>>;
+template <typename OccTable, typename TCSA>
+struct SelectIndexCursor<BiFMIndex<OccTable, TCSA>> {
+    using cursor_t = BiFMIndexCursor<BiFMIndex<OccTable, TCSA>>;
 };
 
 template <typename OccTable>
@@ -21,9 +20,9 @@ struct SelectIndexCursor<FMIndex<OccTable>> {
     using cursor_t = FMIndexCursor<FMIndex<OccTable>>;
 };
 
-template <typename OccTable>
-struct SelectIndexCursor<ReverseFMIndex<OccTable>> {
-    using cursor_t = ReverseFMIndexCursor<ReverseFMIndex<OccTable>>;
+template <typename OccTable, typename TCSA>
+struct SelectIndexCursor<ReverseFMIndex<OccTable, TCSA>> {
+    using cursor_t = ReverseFMIndexCursor<ReverseFMIndex<OccTable, TCSA>>;
 };
 
 
