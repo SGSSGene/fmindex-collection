@@ -16,6 +16,7 @@ struct BiFMIndex {
     Table  occRev;
     TCSA   csa;
 
+//private:
     BiFMIndex(std::vector<uint8_t> const& bwt, std::vector<uint8_t> const& bwtRev, TCSA _csa)
         : occ{bwt}
         , occRev{bwtRev}
@@ -43,49 +44,45 @@ struct BiFMIndex {
         }
     }
 
-
+public:
+    /**!\brief Creates a BiFMIndex with a specified sampling rate
+     *
+     * \param _input a list of sequences
+     * \param samplingRate rate of the sampling
+     */
     BiFMIndex(std::vector<std::vector<uint8_t>> _input, size_t samplingRate)
         : occ{cereal_tag{}}
         , occRev{cereal_tag{}}
         , csa{cereal_tag{}}
     {
-        size_t totalSize = std::accumulate(begin(_input), end(_input), size_t{0}, [](auto s, auto const& l) { return s + l.size() + 1; });
-
-        auto input = std::vector<uint8_t>{};
-        input.reserve(totalSize);
-
-        auto inputSizes = std::vector<size_t>{};
-        inputSizes.reserve(_input.size());
-
-        for (auto const& l : _input) {
-            input.insert(end(input), begin(l), end(l));
-            input.emplace_back(0);
-            inputSizes.emplace_back(l.size()+1);
-        }
+        auto [totalSize, inputText, inputSizes] = createSequences(_input);
         decltype(_input){}.swap(_input); // input memory can be deleted
 
-
-        auto [bwt, csa] = [&input, &samplingRate, &inputSizes, this] () {
-            auto sa  = createSA(input);
-            auto bwt = createBWT(input, sa);
+        // create BurrowsWheelerTransform and CompressedSuffixArray
+        auto [bwt, csa] = [&] () {
+            auto sa  = createSA(inputText);
+            auto bwt = createBWT(inputText, sa);
             auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
 
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();
 
+        // create BurrowsWheelerTransform on reversed text
         auto bwtRev = [&]() {
-            std::reverse(begin(input), end(input));
-            auto saRev  = createSA(input);
-            auto bwtRev = createBWT(input, saRev);
+            std::reverse(begin(inputText), end(inputText));
+            auto saRev  = createSA(inputText);
+            auto bwtRev = createBWT(inputText, saRev);
             return bwtRev;
         }();
 
-        decltype(input){}.swap(input); // input memory can be deleted
+        decltype(inputText){}.swap(inputText); // inputText memory can be deleted
 
         *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
     }
 
 
+    /*!\brief Specific c'tor for serialization use
+     */
     BiFMIndex(cereal_tag)
         : occ{cereal_tag{}}
         , occRev{cereal_tag{}}

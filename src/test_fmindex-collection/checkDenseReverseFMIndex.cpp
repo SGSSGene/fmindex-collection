@@ -1,9 +1,10 @@
 #include <fmindex-collection/occtable/all.h>
 #include <fmindex-collection/ReverseFMIndex.h>
+#include <fmindex-collection/DenseCSA.h>
 #include <catch2/catch.hpp>
 
 
-TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]",
+TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]",
     fmindex_collection::occtable::bitvector::OccTable<256>,
     fmindex_collection::occtable::bitvectorPrefix::OccTable<256>,
     fmindex_collection::occtable::interleaved8::OccTable<256>,
@@ -27,25 +28,29 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
     fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
+    fmindex_collection::occtable::epr8V3::OccTable<256>,
+    fmindex_collection::occtable::epr16V3::OccTable<256>,
+    fmindex_collection::occtable::epr32V3::OccTable<256>,
+    fmindex_collection::occtable::eprV4::OccTable<256>,
+    fmindex_collection::occtable::eprV5::OccTable<256>,
     fmindex_collection::occtable::naive::OccTable<256>,
     fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
 //    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
 ) {
     using OccTable = TestType;
+    using DenseVector = fmindex_collection::DenseVector;
+
 
     auto bwt = std::vector<uint8_t>{'H', '\0', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
-    auto sa  = std::vector<size_t>{0, 11, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
+    auto sa  = DenseVector{0, 11, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
 
     SECTION("full sa") {
         auto bitStack = fmindex_collection::BitStack{};
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push(true);
         }
-        auto csa = fmindex_collection::CSA{sa, bitStack, 1, 63};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
+        auto csa = fmindex_collection::DenseCSA{sa, bitStack, 1};
+        auto index = fmindex_collection::ReverseFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -55,7 +60,7 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
 
     SECTION("sa with only every second value given - sa sampled") {
         auto bitStack = fmindex_collection::BitStack{};
-        auto sa2 = std::vector<size_t>{};
+        auto sa2 = DenseVector(sa.entry_size());
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 0} || (sa[i] == sa.size()-1);
             bitStack.push(add);
@@ -64,12 +69,13 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
+        auto csa = fmindex_collection::DenseCSA{sa2, bitStack, 2};
+        auto index = fmindex_collection::ReverseFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
+            INFO(std::get<1>(index.locate(i)));
             INFO(sa[i]);
             CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
         }
@@ -77,7 +83,7 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
 
     SECTION("sa with only every second value given - sa sampled - uneven") {
         auto bitStack = fmindex_collection::BitStack{};
-        auto sa2 = std::vector<size_t>{};
+        auto sa2 = DenseVector(sa.entry_size());
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 1} || (sa[i] == sa.size()-1);
             bitStack.push(add);
@@ -86,8 +92,8 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
+        auto csa = fmindex_collection::DenseCSA{sa2, bitStack, 2};
+        auto index = fmindex_collection::ReverseFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -101,7 +107,7 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
 
     SECTION("sa with only every second value given - text sampled") {
         auto bitStack = fmindex_collection::BitStack{};
-        auto sa2 = std::vector<size_t>{};
+        auto sa2 = DenseVector(sa.entry_size());
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{sa[i] % 2 == 0} || (sa[i] == 11);
             bitStack.push(add);
@@ -110,8 +116,8 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
+        auto csa = fmindex_collection::DenseCSA{sa2, bitStack, 2};
+        auto index = fmindex_collection::ReverseFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -125,10 +131,10 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
 
     SECTION("compare to a directly created index") {
         auto bwt = std::vector<uint8_t>{'H', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
-        auto sa  = std::vector<size_t>{0, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
+        auto sa  = DenseVector{0, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
 
         auto text  = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{std::vector<std::vector<uint8_t>>{text}, 1};
+        auto index = fmindex_collection::ReverseFMIndex<OccTable, fmindex_collection::DenseCSA>{std::vector<std::vector<uint8_t>>{text}, 1};
 
         REQUIRE(bwt.size() == index.size());
         REQUIRE(sa.size() == index.size());
@@ -143,10 +149,10 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
 
     SECTION("compare to a directly created index but with sampling") {
         auto bwt = std::vector<uint8_t>{'H', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
-        auto sa  = std::vector<size_t>{0, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
+        auto sa  = DenseVector{0, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
 
         auto text  = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{std::vector<std::vector<uint8_t>>{text}, 2};
+        auto index = fmindex_collection::ReverseFMIndex<OccTable, fmindex_collection::DenseCSA>{std::vector<std::vector<uint8_t>>{text}, 2};
 
         REQUIRE(bwt.size() == index.size());
         REQUIRE(sa.size() == index.size());

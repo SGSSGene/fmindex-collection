@@ -11,16 +11,16 @@ namespace fmindex_collection {
  *
  * TODO: has some correctional features...
  */
-template <OccTable Table>
+template <OccTable Table, typename TCSA = CSA>
 struct ReverseFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
 
     using TTable = Table;
 
     Table  occ;
-    CSA    csa;
+    TCSA   csa;
 
-    ReverseFMIndex(std::vector<uint8_t> const& bwt, CSA _csa)
+    ReverseFMIndex(std::vector<uint8_t> const& bwt, TCSA _csa)
         : occ{bwt}
         , csa{std::move(_csa)}
     {}
@@ -29,31 +29,19 @@ struct ReverseFMIndex {
         : occ{cereal_tag{}}
         , csa{cereal_tag{}}
     {
-        size_t totalSize = std::accumulate(begin(_input), end(_input), size_t{0}, [](auto s, auto const& l) { return s + l.size() + 1; });
 
-        auto input = std::vector<uint8_t>{};
-        input.reserve(totalSize);
-
-        auto inputSizes = std::vector<size_t>{};
-        inputSizes.reserve(_input.size());
-
-        for (auto& l : _input) {
-            std::reverse(begin(l), end(l));
-            input.insert(end(input), begin(l), end(l));
-            input.emplace_back(0);
-            inputSizes.emplace_back(l.size()+1);
-        }
+        auto [totalSize, inputText, inputSizes] = createSequences(_input, true);
         decltype(_input){}.swap(_input); // input memory can be deleted
 
-        auto [bwt, csa] = [&input, &samplingRate, &inputSizes, this] () {
-            auto sa  = createSA(input);
-            auto bwt = createBWT(input, sa);
-            auto csa = CSA{std::move(sa), samplingRate, inputSizes, true};
+        auto [bwt, csa] = [&] () {
+            auto sa  = createSA(inputText);
+            auto bwt = createBWT(inputText, sa);
+            auto csa = TCSA{std::move(sa), samplingRate, inputSizes, true};
 
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();
 
-        decltype(input){}.swap(input); // input memory can be deleted
+        decltype(inputText){}.swap(inputText); // inputText memory can be deleted
 
         *this = ReverseFMIndex{bwt, std::move(csa)};
     }
@@ -73,15 +61,34 @@ struct ReverseFMIndex {
     }
 
     auto locate(size_t idx) const -> std::tuple<size_t, size_t> {
-        auto opt = csa.value(idx);
-        uint64_t steps{};
-        while(!opt) {
-            idx = occ.rank(idx, occ.symbol(idx));
-            steps += 1;
-            opt = csa.value(idx);
+        if constexpr (requires(Table t) {{ t.hasValue(size_t{}) }; }) {
+            bool v = occ.hasValue(idx);
+            uint64_t steps{};
+            while(!v) {
+                idx = occ.rank_symbol(idx);
+                steps += 1;
+                v = occ.hasValue(idx);
+            }
+            auto [chr, pos] = csa.value(idx);
+            return {chr, pos-steps};
+
+        } else {
+            auto opt = csa.value(idx);
+            uint64_t steps{};
+            while(!opt) {
+                idx = [&]() {
+                    if constexpr (requires(Table t) { { t.rank_symbol(size_t{}) }; }) {
+                        return occ.rank_symbol(idx);
+                    } else {
+                        return occ.rank(idx, occ.symbol(idx));
+                    }
+                }();
+                steps += 1;
+                opt = csa.value(idx);
+            }
+            auto [chr, pos] = *opt;
+            return {chr, pos-steps};
         }
-        auto [chr, pos] = *opt;
-        return {chr, pos - steps};
     }
 
     auto locate(size_t idx, size_t maxSteps) const -> std::optional<std::tuple<size_t, size_t>> {

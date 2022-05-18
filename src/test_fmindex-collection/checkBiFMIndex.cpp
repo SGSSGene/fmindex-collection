@@ -42,6 +42,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
     auto bwtRev = std::vector<uint8_t>{'H', '\0', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
     auto sa     = std::vector<size_t>{ 10, 11, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };
 
+
     SECTION("full sa") {
         auto bitStack = fmindex_collection::BitStack{};
         for (size_t i{0}; i < sa.size(); ++i) {

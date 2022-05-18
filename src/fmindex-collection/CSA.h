@@ -71,7 +71,6 @@ struct CSA {
             if (sample) {
                 lastSamplingPos = i;
                 auto pos = subjPos;
-                //!TODO this should go back into the reverseFMIndex, by changing how everything else works...
                 if (reverse) {
                     pos = _inputSizes[subjId] - pos -1;
                 }

@@ -53,7 +53,7 @@ struct DenseCSA {
         , bv {cereal_tag{}}
     {}
 
-    DenseCSA(std::vector<int64_t> const& sa, size_t _samplingRate, std::vector<size_t> const& _inputSizes)
+    DenseCSA(std::vector<int64_t> const& sa, size_t _samplingRate, std::vector<size_t> const& _inputSizes, bool reverse=false)
         : ssaPos{cereal_tag{}}
         , ssaSeq{cereal_tag{}}
         , bv {cereal_tag{}}
@@ -93,10 +93,9 @@ struct DenseCSA {
             if (sample) {
                 lastSamplingPos = i;
                 auto pos = subjPos;
-                //!TODO this should go back into the reverseFMIndex, by changing how everything else works...
-/*                if (reverse) {
+                if (reverse) {
                     pos = _inputSizes[subjId] - pos -1;
-                }*/
+                }
                 newLabels[i] = {subjId, pos};
             }
         }

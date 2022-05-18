@@ -8,9 +8,11 @@ add_executable(${PROJECT_NAME}
     checkDenseBiFMIndex.cpp
     checkFMIndex.cpp
     checkReverseFMIndex.cpp
+    checkDenseReverseFMIndex.cpp
     checkOccTables.cpp
     checkSearchPseudo.cpp
     checkSearchBacktracking.cpp
+    utils.cpp
     main.cpp
 )
 target_link_libraries(${PROJECT_NAME}
