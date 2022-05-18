@@ -33,6 +33,8 @@ auto loadIndex(std::filesystem::path _fileName) {
 
 
 int main(int argc, char const* const* argv) {
+    (void)argc;
+    (void)argv;
 //    auto reference = std::vector<uint8_t>{1, 3, 1, 0, 2, 1, 2, 3};
     auto reference = std::vector<std::vector<uint8_t>>{{1, 3, 1}, {2, 1, 2, 3}};
     auto index = BiFMIndex<Table<Sigma>>{std::move(reference), 16};
@@ -43,6 +45,7 @@ int main(int argc, char const* const* argv) {
     auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 0), queries[0].size());
 
     search_pseudo::search<false>(index, queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
+        (void)errors;
         fmt::print("found something {} {}\n", queryId, cursor.count());
         for (auto i{begin(cursor)}; i < end(cursor); ++i) {
             auto [chr, pos] = index.locate(i);

@@ -86,7 +86,7 @@ struct Bitvector {
 
 
         uint64_t prefix_rank(size_t idx, size_t symb) const {
-            assert(idx >= 0 && idx < 64 / bitct);
+            assert(idx < 64 / bitct);
 
             auto _inblock = inBlock;// & ((1ul<<(idx*bitct)) -1);
 
@@ -104,7 +104,7 @@ struct Bitvector {
 
 
         size_t symbol(size_t idx) const {
-            assert(idx >= 0 && idx < 64 / bitct);
+            assert(idx < 64 / bitct);
 
             auto mask = uint64_t{(1ul<<bitct)-1ul};
             uint64_t symb = (inBlock >> (idx*bitct)) & mask;

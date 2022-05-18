@@ -322,6 +322,7 @@ int main(int argc, char const* const* argv) {
                 } else if (algorithm == "pseudo_fmtree") {
                     for (auto const& [queryId, cursor, e, action] : resultCursors) {
                         locateFMTree<16>(index, cursor, [&](size_t seqId, size_t pos) {
+                            (void)seqId;
                             results.emplace_back(queryId, pos, e ,action);
                         });
                         resultCt += cursor.len;

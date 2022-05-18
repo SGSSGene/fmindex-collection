@@ -44,7 +44,7 @@ struct Bitvector {
         std::array<uint64_t, bitct> bits{};
 
         uint64_t rank(size_t idx, size_t symb) const {
-            assert(idx >= 0 && idx < 64);
+            assert(idx < 64);
             auto f = [&]<size_t I>(std::index_sequence<I>) {
                 return bits[I] ^ -((~symb>>I)&1);
             };
@@ -73,7 +73,7 @@ struct Bitvector {
         }
 
         auto all_ranks(size_t idx) const -> std::array<uint64_t, TSigma> {
-            assert(idx >= 0 && idx < 64);
+            assert(idx < 64);
 
             std::array<uint64_t, TSigma> rs{0};
 
@@ -100,7 +100,7 @@ struct Bitvector {
         }
 
         auto rank_symbol(size_t idx) const -> std::tuple<size_t, size_t> {
-            assert(idx >= 0 && idx < 64);
+            assert(idx < 64);
 
             uint64_t symb{};
             uint64_t mask{};
@@ -226,7 +226,7 @@ struct Bitvector {
         auto level0Id     = idx >>  6;
         auto level1Id     = idx >> level0_size;
 //        auto level2Id     = idx >> level1_size;
-        auto superBlockId = idx >> level1_size;
+//        auto superBlockId = idx >> level1_size;
 
 //        __builtin_prefetch(reinterpret_cast<void const*>(&level2[level2Id]), 0, 0);
         __builtin_prefetch(reinterpret_cast<void const*>(&level1[level1Id]), 0, 0);

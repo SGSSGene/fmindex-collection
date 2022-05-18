@@ -48,7 +48,7 @@ struct Bitvector {
         }
 
         uint64_t rank(size_t idx, size_t symb) const {
-            assert(idx >= 0 && idx < 64);
+            assert(idx < 64);
             auto f = [&]<size_t I>(std::index_sequence<I>) {
                 return bits[I] ^ -((~symb>>I)&1);
             };
@@ -82,7 +82,7 @@ struct Bitvector {
         }
 
         auto all_ranks(size_t idx) const -> std::array<uint64_t, TSigma> {
-            assert(idx >= 0 && idx < 64);
+            assert(idx < 64);
 
             std::array<uint64_t, TSigma> rs{0};
 
@@ -109,7 +109,7 @@ struct Bitvector {
         }
 
         auto rank_symbol(size_t idx) const -> std::tuple<size_t, size_t> {
-            assert(idx >= 0 && idx < 64);
+            assert(idx < 64);
 
             uint64_t symb{};
             uint64_t mask{};

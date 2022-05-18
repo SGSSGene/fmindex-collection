@@ -43,7 +43,7 @@ inline auto createBWT(std::vector<uint8_t> const& input, std::vector<int64_t> co
     return bwt;
 }
 
-inline auto createSequences(std::vector<std::vector<uint8_t>> const& _input, bool reversed = false) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<size_t>> {
+inline auto createSequences(std::vector<std::vector<uint8_t>> const& _input) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<size_t>> {
     // compute total numbers of bytes of the text including delimiters "$"
     size_t totalSize = std::accumulate(begin(_input), end(_input), size_t{0}, [](auto s, auto const& l) { return s + l.size() + 1; });
 

@@ -30,7 +30,7 @@ struct ReverseFMIndex {
         , csa{cereal_tag{}}
     {
 
-        auto [totalSize, inputText, inputSizes] = createSequences(_input, true);
+        auto [totalSize, inputText, inputSizes] = createSequences(_input);
         decltype(_input){}.swap(_input); // input memory can be deleted
 
         auto [bwt, csa] = [&] () {
