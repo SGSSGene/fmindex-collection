@@ -43,8 +43,7 @@ struct Search {
 
     size_t maxErrors{};
 
-    void search(size_t _maxErrors) {
-        maxErrors = _maxErrors;
+    void search() {
         auto cur = cursor_t{index};
         for (size_t qidx{0}; qidx < queries.size(); ++qidx) {
             search_with_errors(0, qidx, queries[qidx], cur, 0);
@@ -91,8 +90,8 @@ struct Search {
 
 template <typename index_t, typename queries_t, typename delegate_t>
 void search(index_t const& index, queries_t&& queries, size_t maxError, delegate_t&& delegate) {
-    auto u = Search{index, queries, delegate};
-    u.search(maxError);
+    auto u = Search{index, queries, delegate, maxError};
+    u.search();
 }
 
 }
