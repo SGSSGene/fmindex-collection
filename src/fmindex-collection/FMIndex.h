@@ -33,30 +33,16 @@ struct FMIndex {
         : occ{cereal_tag{}}
         , csa{cereal_tag{}}
     {
-        size_t totalSize = std::accumulate(begin(_input), end(_input), size_t{0}, [](auto s, auto const& l) { return s + l.size() + 1; });
-
-        auto input = std::vector<uint8_t>{};
-        input.reserve(totalSize);
-
-        auto inputSizes = std::vector<size_t>{};
-        inputSizes.reserve(_input.size());
-
-        for (auto const& l : _input) {
-            input.insert(end(input), begin(l), end(l));
-            input.emplace_back(0);
-            inputSizes.emplace_back(l.size()+1);
-        }
+        auto [totalSize, inputText, inputSizes] = createSequences(_input);
         decltype(_input){}.swap(_input); // input memory can be deleted
 
-        auto [bwt, csa] = [&input, &samplingRate, &inputSizes, this] () {
-            auto sa  = createSA(input);
-            auto bwt = createBWT(input, sa);
+        auto [bwt, csa] = [&] () {
+            auto sa  = createSA(inputText);
+            auto bwt = createBWT(inputText, sa);
             auto csa = CSA{std::move(sa), samplingRate, inputSizes};
 
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();
-
-        decltype(input){}.swap(input); // input memory can be deleted
 
         *this = FMIndex{bwt, std::move(csa)};
     }
