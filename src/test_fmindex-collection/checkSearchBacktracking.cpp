@@ -344,28 +344,28 @@ TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]"
 
 }
 TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMIndex", "[collection]",
-//    fmindex_collection::occtable::bitvector::OccTable<256>,
-//    fmindex_collection::occtable::bitvectorPrefix::OccTable<256>,
-//    fmindex_collection::occtable::interleaved8::OccTable<256>,
-//    fmindex_collection::occtable::interleaved16::OccTable<256>,
-//    fmindex_collection::occtable::interleaved32::OccTable<256>,
-//    fmindex_collection::occtable::interleaved8Aligned::OccTable<256>,
-//    fmindex_collection::occtable::interleaved16Aligned::OccTable<256>,
-//    fmindex_collection::occtable::interleaved32Aligned::OccTable<256>,
-//    fmindex_collection::occtable::interleavedPrefix::OccTable<256>,
-//    fmindex_collection::occtable::wavelet::OccTable<256>,
-//    fmindex_collection::occtable::interleavedWavelet::OccTable<256>,
-//    fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
-//    fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
-//    fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
-//    fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
-//    fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
-//    fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
-//    fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
-//    fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
-//    fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-//    fmindex_collection::occtable::naive::OccTable<256>,
-    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
+    fmindex_collection::occtable::bitvector::OccTable<256>,
+    fmindex_collection::occtable::bitvectorPrefix::OccTable<256>,
+    fmindex_collection::occtable::interleaved8::OccTable<256>,
+    fmindex_collection::occtable::interleaved16::OccTable<256>,
+    fmindex_collection::occtable::interleaved32::OccTable<256>,
+    fmindex_collection::occtable::interleaved8Aligned::OccTable<256>,
+    fmindex_collection::occtable::interleaved16Aligned::OccTable<256>,
+    fmindex_collection::occtable::interleaved32Aligned::OccTable<256>,
+    fmindex_collection::occtable::interleavedPrefix::OccTable<256>,
+    fmindex_collection::occtable::wavelet::OccTable<256>,
+    fmindex_collection::occtable::interleavedWavelet::OccTable<256>,
+    fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
+    fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
+    fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
+    fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
+    fmindex_collection::occtable::naive::OccTable<256>
+//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
 //    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
 ) {
     using OccTable = TestType;
@@ -394,37 +394,37 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMInd
     });
 
     auto expected = std::vector<std::tuple<size_t, size_t>> {
-        std::make_tuple(1ul, 11ul),
-        std::make_tuple(0ul, 11ul),
-        std::make_tuple(1ul, 10ul),
-        std::make_tuple(0ul, 10ul),
-        std::make_tuple(1ul, 9ul),
-        std::make_tuple(0ul, 9ul),
-        std::make_tuple(1ul, 8ul),
-        std::make_tuple(0ul, 8ul),
-        std::make_tuple(1ul, 4ul),
         std::make_tuple(1ul, 0ul),
-        std::make_tuple(0ul, 4ul),
         std::make_tuple(0ul, 0ul),
-        std::make_tuple(1ul, 5ul),
         std::make_tuple(1ul, 1ul),
-        std::make_tuple(0ul, 5ul),
         std::make_tuple(0ul, 1ul),
-        std::make_tuple(1ul, 6ul),
         std::make_tuple(1ul, 2ul),
-        std::make_tuple(0ul, 6ul),
         std::make_tuple(0ul, 2ul),
-        std::make_tuple(1ul, 7ul),
         std::make_tuple(1ul, 3ul),
+        std::make_tuple(0ul, 3ul),
+        std::make_tuple(1ul, 7ul),
+        std::make_tuple(1ul, 11ul),
         std::make_tuple(0ul, 7ul),
-        std::make_tuple(0ul, 3ul)
+        std::make_tuple(0ul, 11ul),
+        std::make_tuple(1ul, 6ul),
+        std::make_tuple(1ul, 10ul),
+        std::make_tuple(0ul, 6ul),
+        std::make_tuple(0ul, 10ul),
+        std::make_tuple(1ul, 5ul),
+        std::make_tuple(1ul, 9ul),
+        std::make_tuple(0ul, 5ul),
+        std::make_tuple(0ul, 9ul),
+        std::make_tuple(1ul, 4ul),
+        std::make_tuple(1ul, 8ul),
+        std::make_tuple(0ul, 4ul),
+        std::make_tuple(0ul, 8ul)
     };
 
-/*    for (size_t i{0}; i < expected.size(); ++i) {
+    for (size_t i{0}; i < expected.size(); ++i) {
         INFO(i);
         auto [il, pl] = index.locate(i);
         auto [ir, pr] = expected[i];
         CHECK(il == ir);
         CHECK(pl == pr);
-    }*/
+    }
 }

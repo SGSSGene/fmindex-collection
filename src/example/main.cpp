@@ -1,6 +1,5 @@
 #include "utils/utils.h"
 
-
 #include <fmindex-collection/fmindex-collection.h>
 #include <fmindex-collection/occtable/all.h>
 #include <fmindex-collection/search/all.h>
@@ -9,6 +8,9 @@
 #include <search_schemes/expand.h>
 
 #include <cereal/archives/binary.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
+
 #include <fmt/format.h>
 #include <proc/readproc.h>
 #include <unordered_set>
