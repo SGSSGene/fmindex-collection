@@ -26,6 +26,15 @@ struct Search {
         }
     }
 
+    template <typename ...Args>
+    static auto extend(cursor_t cur, Args&&... args) {
+        if constexpr (not cursor_t::Reversed) {
+            return cur.extendLeft(std::forward<Args>(args)...);
+        } else {
+            return cur.extendRight(std::forward<Args>(args)...);
+        }
+    }
+
     void search_with_errors(size_t e, size_t qidx, query_t const query, cursor_t cur, size_t i) {
         if (cur.empty()) {
             return;
@@ -36,7 +45,7 @@ struct Search {
         }
         for (; i < query.size(); ++i) {
             auto r = query[query.size() - i - 1];
-            auto nextCur = cur.extendLeft();
+            auto nextCur = extend(cur);
             for (size_t s{1}; s < Sigma; ++s) {
                 if (r != s) {
                     search_with_errors(e+1, qidx, query, nextCur[s], i+1);
@@ -55,7 +64,7 @@ struct Search {
 
         for (; i < query.size(); ++i) {
             auto r = query[query.size() - i - 1];
-            cur = cur.extendLeft(r);
+            cur = extend(cur, r);
             if (cur.empty()) {
                 return;
             }

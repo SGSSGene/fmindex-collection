@@ -9,7 +9,8 @@ struct LeftBiFMIndexCursor;
 
 template <typename Index>
 struct BiFMIndexCursor {
-    static size_t constexpr Sigma = Index::Sigma;
+    static constexpr size_t Sigma    = Index::Sigma;
+    static constexpr bool   Reversed = false;
 
     Index const* index;
     size_t lb;
@@ -119,7 +120,8 @@ auto end(BiFMIndexCursor<Index> const& _cursor) {
 
 template <typename Index>
 struct LeftBiFMIndexCursor {
-    static size_t constexpr Sigma = Index::Sigma;
+    static constexpr size_t Sigma    = Index::Sigma;
+    static constexpr bool   Reversed = false;
 
     Index const* index;
     size_t lb;
