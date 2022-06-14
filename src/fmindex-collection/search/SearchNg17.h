@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 
 /**
  * Ng16 with replaced bandedmatrix
