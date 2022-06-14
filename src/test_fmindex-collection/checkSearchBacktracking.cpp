@@ -24,8 +24,8 @@ TEMPLATE_TEST_CASE("searching with backtracking", "[search]",
     fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>,
-    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
+    fmindex_collection::occtable::naive::OccTable<256>
+//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
 //    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
 ) {
     using OccTable = TestType;
@@ -80,8 +80,8 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]",
     fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>,
-    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
+    fmindex_collection::occtable::naive::OccTable<256>
+//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
 //    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
 ) {
     using OccTable = TestType;
@@ -166,8 +166,8 @@ TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]",
     fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>,
-    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
+    fmindex_collection::occtable::naive::OccTable<256>
+//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
 //    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
 ) {
     using OccTable = TestType;
@@ -222,8 +222,8 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[
     fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>,
-    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
+    fmindex_collection::occtable::naive::OccTable<256>
+//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
 //    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
 ) {
     using OccTable = TestType;
@@ -308,8 +308,8 @@ TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]"
     fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
     fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>,
-    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
+    fmindex_collection::occtable::naive::OccTable<256>
+//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
 //    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
 ) {
     using OccTable = TestType;
