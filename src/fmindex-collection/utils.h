@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <numeric>
-#include <sdsl/divsufsort.hpp>
+#include <libsaispp/sais.hpp>
 #include <span>
 #include <stdexcept>
 #include <tuple>
@@ -13,24 +13,8 @@
 namespace fmindex_collection {
 
 inline auto createSA(std::vector<uint8_t> const& input) -> std::vector<int64_t> {
-    auto sa = std::vector<int64_t>{};
-    sa.resize(input.size());
-    auto error = sdsl::divsufsort<int64_t>(static_cast<uint8_t const*>(input.data()), sa.data(), input.size());
-    if (error != 0) {
-        throw std::runtime_error("some error while creating the suffix array");
-    }
-    return sa;
+    return libsais::constructSA64(input);
 }
-
-/*inline auto createSA(std::span<uint8_t> const& input) -> std::vector<int64_t> {
-    auto sa = std::vector<int64_t>{};
-    sa.resize(input.size());
-    auto error = sdsl::divsufsort<int64_t>(static_cast<uint8_t const*>(input.data()), sa.data(), input.size());
-    if (error != 0) {
-        throw std::runtime_error("some error while creating the suffix array");
-    }
-    return sa;
-}*/
 
 
 inline auto createBWT(std::vector<uint8_t> const& input, std::vector<int64_t> const& sa) -> std::vector<uint8_t> {
