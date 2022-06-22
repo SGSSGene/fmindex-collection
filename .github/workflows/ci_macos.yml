@@ -46,7 +46,7 @@ jobs:
 
     steps:
       - name: Checkout TDL
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: fmc
           fetch-depth: 1
