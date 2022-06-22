@@ -1,4 +1,4 @@
-name: CI on Ubuntu 22.04
+name: CI on macOS
 
 on:
   push:
@@ -8,11 +8,11 @@ on:
   pull_request:
 
 concurrency:
-  group: ubuntu2204-${{ github.event.pull_request.number || github.ref }}
+  group: macos-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
-  CMAKE_VERSION: 3.23.2
+  CMAKE_VERSION: 3.15.1
   TZ: Europe/Berlin
 
 defaults:
@@ -22,7 +22,7 @@ defaults:
 jobs:
   build:
     name: ${{ matrix.name }}
-    runs-on: ubuntu-22.04
+    runs-on: macos-10.15
     timeout-minutes: 10
     strategy:
       fail-fast: true
@@ -43,10 +43,6 @@ jobs:
             cc: "gcc-10"
             build_type: Release
 
-          - name: "gcc12 (c++20, Debug)"
-            cxx: "g++-12"
-            cc: "gcc-12"
-            build_type: Debug
 
     steps:
       - name: Checkout TDL
@@ -55,19 +51,13 @@ jobs:
           path: fmc
           fetch-depth: 1
 
-      - name: Configure APT
-        continue-on-error: true
-        run: |
-          echo 'APT::Acquire::Retries "5";' | sudo tee -a /etc/apt/apt.conf.d/80-retries > /dev/null
-          sudo add-apt-repository --no-update --yes ppa:ubuntu-toolchain-r/ppa
-          sudo add-apt-repository --no-update --yes ppa:ubuntu-toolchain-r/test
-          sudo apt-get update
+      - name: Configure Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
 
       - name: Install Tools
-        run: sudo apt-get install --yes cmake libboost1.74-all-dev libfmt-dev libprocps-dev
-
-      - name: Install compiler ${{ matrix.cxx }}
-        run: sudo apt-get install --yes ${{ matrix.cxx }}
+        run: |
+          brew --help
+          brew install fmt boost cmake gcc@10 gcc gcc@12
 
       - name: Tool versions
         run: |
@@ -81,7 +71,9 @@ jobs:
         run: |
           mkdir fmc-build
           cd fmc-build
-          cmake ../fmc -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          cmake ../fmc -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+                       -DCMAKE_CXX_FLAGS="-isystem $(brew --prefix)/include -L$(brew --prefix)/lib"
+
       - name: Build tests
         run: |
           cd fmc-build
