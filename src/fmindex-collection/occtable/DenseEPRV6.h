@@ -147,7 +147,7 @@ struct Bitvector {
 
     template <typename CB>
     Bitvector(uint64_t length, CB cb)
-        : superBlocks(std::max(1ul, uint64_t(std::ceil(std::log2(length)))))
+        : superBlocks(std::max(uint64_t{1}, uint64_t(std::ceil(std::log2(length)))))
     {
 //        level2.reserve(length/(1ul<<level2_size)+2);
         level1.reserve(length/(1ul<<level1_size)+2);
