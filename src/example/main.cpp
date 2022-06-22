@@ -12,15 +12,21 @@
 #include <cereal/types/vector.hpp>
 
 #include <fmt/format.h>
-#include <proc/readproc.h>
+#ifndef __APPLE__
+#   include <proc/readproc.h>
+#endif
 #include <unordered_set>
 
 using namespace fmindex_collection;
 
 ssize_t memoryUsage() {
+#ifndef __APPLE__
     proc_t usage{};
     look_up_our_self(&usage);
     return usage.vsize;
+#else
+    return 0;
+#endif
 }
 
 template <size_t Sigma, typename CB>
