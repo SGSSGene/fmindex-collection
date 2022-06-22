@@ -15,9 +15,9 @@ namespace occtable {
 namespace eprV6_impl {
 
 // counts how many bits are needed to represent the number y
-constexpr inline size_t bits_count(size_t y) {
+constexpr inline uint64_t bits_count(uint64_t y) {
     if (y == 0) return 1;
-    size_t i{0};
+    uint64_t i{0};
     while (y != 0) {
         y = y >> 1;
         ++i;
@@ -26,13 +26,13 @@ constexpr inline size_t bits_count(size_t y) {
 }
 
 // computes b to the power of y
-constexpr inline size_t pow(size_t b, size_t y) {
+constexpr inline uint64_t pow(uint64_t b, uint64_t y) {
     if (y == 0) return 1;
     return pow(b, (y-1)) * b;
 }
 
 
-template <size_t TSigma, size_t TAlignment>
+template <uint64_t TSigma, uint64_t TAlignment>
 struct Bitvector {
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
@@ -43,12 +43,12 @@ struct Bitvector {
     struct InBits {
         std::array<uint64_t, bitct> bits{};
 
-        uint64_t rank(size_t idx, size_t symb) const {
+        uint64_t rank(uint64_t idx, uint64_t symb) const {
             assert(idx < 64);
-            auto f = [&]<size_t I>(std::index_sequence<I>) {
+            auto f = [&]<uint64_t I>(std::index_sequence<I>) {
                 return bits[I] ^ -((~symb>>I)&1);
             };
-            auto mask = [&]<size_t ...Is>(std::index_sequence<Is...>) {
+            auto mask = [&]<uint64_t ...Is>(std::index_sequence<Is...>) {
                 return (f(std::index_sequence<Is>{})&...);
             }(std::make_index_sequence<bitct>{});
 
@@ -56,14 +56,14 @@ struct Bitvector {
             return bitset.count();
         }
 
-        uint64_t prefix_rank(size_t idx, size_t symb) const {
-            auto f = [&]<size_t I>(std::index_sequence<I>, size_t _symb) {
+        uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
+            auto f = [&]<uint64_t I>(std::index_sequence<I>, uint64_t _symb) {
                 return bits[I] ^ -((~_symb>>I)&1);
             };
-            size_t mask{};
+            uint64_t mask{};
 
-            for (size_t i{0}; i <= symb; ++i) {
-                mask |= [&]<size_t ...Is>(std::index_sequence<Is...>) {
+            for (uint64_t i{0}; i <= symb; ++i) {
+                mask |= [&]<uint64_t ...Is>(std::index_sequence<Is...>) {
                     return (f(std::index_sequence<Is>{}, i)&...);
                 }(std::make_index_sequence<bitct>{});
             }
@@ -72,17 +72,17 @@ struct Bitvector {
             return bitset.count();
         }
 
-        auto all_ranks(size_t idx) const -> std::array<uint64_t, TSigma> {
+        auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
             assert(idx < 64);
 
             std::array<uint64_t, TSigma> rs{0};
 
-            auto f = [&]<size_t I>(uint64_t symb, std::index_sequence<I>) {
+            auto f = [&]<uint64_t I>(uint64_t symb, std::index_sequence<I>) {
                 return bits[I] ^ -((~symb>>I)&1);
             };
 
-            for (size_t i{0}; i < TSigma; ++i) {
-                auto mask = [&]<size_t ...Is>(std::index_sequence<Is...>) {
+            for (uint64_t i{0}; i < TSigma; ++i) {
+                auto mask = [&]<uint64_t ...Is>(std::index_sequence<Is...>) {
                     return (f(i, std::index_sequence<Is>{})&...);
                 }(std::make_index_sequence<bitct>{});
                 rs[i] = (std::bitset<64>(mask) << (64 - idx)).count();
@@ -90,26 +90,26 @@ struct Bitvector {
             return rs;
         }
 
-        size_t symbol(size_t idx) const {
+        uint64_t symbol(uint64_t idx) const {
             uint64_t symb{};
-            for (size_t i{bitct}; i > 0; --i) {
+            for (uint64_t i{bitct}; i > 0; --i) {
                 auto b = (bits[i-1] >> idx) & 1;
                 symb = (symb<<1) | b;
             }
             return symb;
         }
 
-        auto rank_symbol(size_t idx) const -> std::tuple<size_t, size_t> {
+        auto rank_symbol(uint64_t idx) const -> std::tuple<uint64_t, uint64_t> {
             assert(idx < 64);
 
             uint64_t symb{};
             uint64_t mask{};
-            auto f = [&]<size_t I>(std::index_sequence<I>) {
+            auto f = [&]<uint64_t I>(std::index_sequence<I>) {
                 auto b = (bits[I] >> idx) & 1;
                 mask |= bits[I] ^ -b;
                 symb |= b << I;
             };
-            [&]<size_t ...Is>(std::index_sequence<Is...>) {
+            [&]<uint64_t ...Is>(std::index_sequence<Is...>) {
                 (f(std::index_sequence<Is>{}) ,...);
             }(std::make_index_sequence<bitct>{});
 
@@ -127,9 +127,9 @@ struct Bitvector {
     using blockL0_t = uint8_t;
     using blockL1_t = uint16_t;
 //    using blockL2_t = uint32_t;
-    static constexpr size_t level0_size = sizeof(blockL0_t) * 8;
-    static constexpr size_t level1_size = sizeof(blockL1_t) * 8;
-//    static constexpr size_t level2_size = sizeof(blockL2_t) * 8;
+    static constexpr uint64_t level0_size = sizeof(blockL0_t) * 8;
+    static constexpr uint64_t level1_size = sizeof(blockL1_t) * 8;
+//    static constexpr uint64_t level2_size = sizeof(blockL2_t) * 8;
 
     using BlockL0 = std::array<blockL0_t, TSigma>;
     using BlockL1 = std::array<blockL1_t, TSigma>;
@@ -145,8 +145,8 @@ struct Bitvector {
     std::array<uint64_t, TSigma+1> C;
 
     template <typename CB>
-    Bitvector(size_t length, CB cb)
-        : superBlocks(std::max(1ul, size_t(std::ceil(std::log2(length)))))
+    Bitvector(uint64_t length, CB cb)
+        : superBlocks(std::max(1ul, uint64_t(std::ceil(std::log2(length)))))
     {
 //        level2.reserve(length/(1ul<<level2_size)+2);
         level1.reserve(length/(1ul<<level1_size)+2);
@@ -159,7 +159,7 @@ struct Bitvector {
         std::array<uint64_t, TSigma> sblock_acc{0};
 
 
-        for (size_t size{0}; size < length; ++size) {
+        for (uint64_t size{0}; size < length; ++size) {
             if (size % (1ul<<level1_size) == 0) { // new l3 block
                 for (auto v : sblock_acc) {
                     superBlocks.push_back(v);
@@ -190,9 +190,9 @@ struct Bitvector {
             auto level0Id     = size >>  6;
             auto bitId        = size &  63;
 
-            size_t symb = cb(size);
+            uint64_t symb = cb(size);
 
-            for (size_t i{}; i < bitct; ++i) {
+            for (uint64_t i{}; i < bitct; ++i) {
                 auto b = ((symb>>i)&1);
                 bits[level0Id].bits[i] |= (b << bitId);
             }
@@ -202,7 +202,7 @@ struct Bitvector {
         }
 
         C[0] = 0;
-        for (size_t i{0}; i < TSigma; ++i) {
+        for (uint64_t i{0}; i < TSigma; ++i) {
             C[i+1] = sblock_acc[i] + C[i];
         }
     }
@@ -212,7 +212,7 @@ struct Bitvector {
     {}
 
 
-    size_t memoryUsage() const {
+    uint64_t memoryUsage() const {
         return    bits.size() * sizeof(bits.back())
                 + level0.size() * sizeof(level0.back())
                 + level1.size() * sizeof(level1.back())
@@ -222,7 +222,7 @@ struct Bitvector {
                 + sizeof(C);
     }
 
-    void prefetch(size_t idx) const {
+    void prefetch(uint64_t idx) const {
         auto level0Id     = idx >>  6;
         auto level1Id     = idx >> level0_size;
 //        auto level2Id     = idx >> level1_size;
@@ -235,7 +235,7 @@ struct Bitvector {
 //        __builtin_prefetch(reinterpret_cast<void const*>(&superBlocks[superBlockId]), 0, 0);
     }
 
-    uint64_t rank(uint64_t idx, size_t symb) const {
+    uint64_t rank(uint64_t idx, uint64_t symb) const {
         prefetch(idx);
 
         auto level0Id     = idx >>  6;
@@ -251,7 +251,7 @@ struct Bitvector {
                 + C[symb];
     }
 
-    uint64_t prefix_rank(uint64_t idx, size_t symb) const {
+    uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
         prefetch(idx);
 
         auto level0Id     = idx >>  6;
@@ -260,7 +260,7 @@ struct Bitvector {
         auto superBlockId = idx >> level1_size;
         auto bitId        = idx &  63;
         uint64_t a={};
-        for (size_t i{0}; i<= symb; ++i) {
+        for (uint64_t i{0}; i<= symb; ++i) {
             a +=   level0[level0Id][i]
                  + level1[level1Id][i]
 //                 + level2[level2Id][i]
@@ -280,7 +280,7 @@ struct Bitvector {
         auto superBlockId = idx >> level1_size;
         auto bitId        = idx &  63;
         auto res = std::array<uint64_t, TSigma>{};
-        for (size_t symb{0}; symb < TSigma; ++symb) {
+        for (uint64_t symb{0}; symb < TSigma; ++symb) {
             res[symb] =   bits[level0Id].rank(bitId, symb)
                         + level0[level0Id][symb]
                         + level1[level1Id][symb]
@@ -310,7 +310,7 @@ struct Bitvector {
                  + C[0];
 
         prs[0] = rs[0];
-        for (size_t symb{1}; symb < TSigma; ++symb) {
+        for (uint64_t symb{1}; symb < TSigma; ++symb) {
             auto a =   level0[level0Id][symb]
                      + level1[level1Id][symb]
 //                     + level2[level2Id][symb]
@@ -322,13 +322,13 @@ struct Bitvector {
         return {rs, prs};
     }
 
-    size_t symbol(uint64_t idx) const {
+    uint64_t symbol(uint64_t idx) const {
         auto level0Id     = idx >>  6;
         auto bitId        = idx &  63;
         return bits[level0Id].symbol(bitId);
     }
 
-    size_t rank_symbol(uint64_t idx) const {
+    uint64_t rank_symbol(uint64_t idx) const {
         prefetch(idx);
 
         auto level0Id     = idx >>  6;
@@ -353,25 +353,25 @@ struct Bitvector {
 };
 
 
-template <size_t TSigma, size_t TAlignment>
+template <uint64_t TSigma, uint64_t TAlignment>
 struct OccTable {
     using TLengthType = uint64_t;
-    static constexpr size_t Sigma = TSigma;
+    static constexpr uint64_t Sigma = TSigma;
 
     Bitvector<Sigma, TAlignment> bitvector;
 
-    static size_t expectedMemoryUsage(size_t length) {
+    static uint64_t expectedMemoryUsage(uint64_t length) {
         using Block = typename Bitvector<TSigma, TAlignment>::BlockL1;
         auto blockSize = std::max(alignof(Block), sizeof(Block));
 
-        size_t C           = sizeof(uint64_t) * (Sigma+1);
-        size_t blocks      = blockSize        * (length+1) / 64;
-        size_t superblocks = sizeof(uint64_t) * (length+1) / (1ul << (sizeof(uint16_t) * 8));
+        uint64_t C           = sizeof(uint64_t) * (Sigma+1);
+        uint64_t blocks      = blockSize        * (length+1) / 64;
+        uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ul << (sizeof(uint16_t) * 8));
         return C + blocks + superblocks;
     }
 
     OccTable(std::vector<uint8_t> const& _bwt)
-        : bitvector(_bwt.size(), [&](size_t i) -> uint8_t {
+        : bitvector(_bwt.size(), [&](uint64_t i) -> uint8_t {
             return _bwt[i];
         })
     {}
@@ -380,7 +380,7 @@ struct OccTable {
         : bitvector(cereal_tag{})
     {}
 
-    size_t memoryUsage() const {
+    uint64_t memoryUsage() const {
         return bitvector.memoryUsage() + sizeof(OccTable);
     }
 
@@ -392,19 +392,19 @@ struct OccTable {
         bitvector.prefetch(idx);
     }
 
-    uint64_t rank(uint64_t idx, size_t symb) const {
+    uint64_t rank(uint64_t idx, uint64_t symb) const {
         return bitvector.rank(idx, symb);
     }
 
-    uint64_t prefix_rank(uint64_t idx, size_t symb) const {
+    uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
         return bitvector.prefix_rank(idx, symb);
     }
 
-    size_t symbol(uint64_t idx) const {
+    uint64_t symbol(uint64_t idx) const {
         return bitvector.symbol(idx);
     }
 
-    size_t rank_symbol(size_t idx) const {
+    uint64_t rank_symbol(uint64_t idx) const {
         return bitvector.rank_symbol(idx);
     }
 
@@ -423,7 +423,7 @@ struct OccTable {
 }
 
 namespace eprV6 {
-template <size_t TSigma>
+template <uint64_t TSigma>
 struct OccTable : eprV6_impl::OccTable<TSigma, 1> {
     static auto name() -> std::string {
         return "EPR V6";

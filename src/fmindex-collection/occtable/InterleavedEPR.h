@@ -13,9 +13,9 @@ namespace occtable {
 namespace interleavedEPR_impl {
 
 // counts how many bits are needed to represent the number y
-constexpr inline size_t bits_count(size_t y) {
+constexpr inline uint64_t bits_count(uint64_t y) {
     if (y == 0) return 1;
-    size_t i{0};
+    uint64_t i{0};
     while (y != 0) {
         y = y >> 1;
         ++i;
@@ -24,13 +24,13 @@ constexpr inline size_t bits_count(size_t y) {
 }
 
 // computes b to the power of y
-constexpr inline size_t pow(size_t b, size_t y) {
+constexpr inline uint64_t pow(uint64_t b, uint64_t y) {
     if (y == 0) return 1;
     return pow(b, (y-1)) * b;
 }
 
 
-template <size_t TSigma, size_t TAlignment, typename block_t>
+template <uint64_t TSigma, uint64_t TAlignment, typename block_t>
 struct Bitvector {
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
@@ -41,20 +41,20 @@ struct Bitvector {
 
     // To select a char at the even/uneven position
     static constexpr uint64_t maskEven = []() {
-        size_t entries = 64 / bitct;
+        uint64_t entries = 64 / bitct;
         auto result = uint64_t{0};
         auto chunkMaskEven = uint64_t{(1ul << bitct)-1ul};
-        for (size_t i{0}; i < entries; i += 2) {
+        for (uint64_t i{0}; i < entries; i += 2) {
             result = (result << (bitct*2)) | chunkMaskEven;
         }
         return result;
     }();
 
     static constexpr uint64_t bitMask = []() {
-        size_t entries = 64 / bitct;
+        uint64_t entries = 64 / bitct;
         auto result = uint64_t{0};
         auto mask = 1<<bitct;
-        for (size_t i{0}; i < entries; i += 2) {
+        for (uint64_t i{0}; i < entries; i += 2) {
             result = (result << (bitct*2)) | mask;
         }
         return result;
@@ -64,10 +64,10 @@ struct Bitvector {
     static constexpr std::array<uint64_t, TSigma> rb = []() {
         auto results = std::array<uint64_t, TSigma>{};
 
-        for (size_t symb{0}; symb < TSigma; ++symb) {
-            size_t mask = symb | (1<<bitct);
-            size_t entries = 64 / bitct;
-            for (size_t i{0}; i < entries; i += 2) {
+        for (uint64_t symb{0}; symb < TSigma; ++symb) {
+            uint64_t mask = symb | (1<<bitct);
+            uint64_t entries = 64 / bitct;
+            for (uint64_t i{0}; i < entries; i += 2) {
                 results[symb] = (results[symb] << (bitct*2)) | mask;
             }
         }
@@ -85,7 +85,7 @@ struct Bitvector {
         }
 
 
-        uint64_t prefix_rank(size_t idx, size_t symb) const {
+        uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
             assert(idx < 64 / bitct);
 
             auto _inblock = inBlock;// & ((1ul<<(idx*bitct)) -1);
@@ -96,14 +96,14 @@ struct Bitvector {
 
             auto ct = std::bitset<64>{epr}.count();
 
-            for (size_t i{0}; i <= symb; ++i) {
+            for (uint64_t i{0}; i <= symb; ++i) {
                 ct += blocks[i];
             }
             return ct;
         }
 
 
-        size_t symbol(size_t idx) const {
+        uint64_t symbol(uint64_t idx) const {
             assert(idx < 64 / bitct);
 
             auto mask = uint64_t{(1ul<<bitct)-1ul};
@@ -117,8 +117,8 @@ struct Bitvector {
         }
     };
 
-    constexpr static size_t letterFit = 64 / bitct;
-    static constexpr size_t block_size = ((1ul<<(sizeof(block_t)*8)) / letterFit)*letterFit;
+    constexpr static uint64_t letterFit = 64 / bitct;
+    static constexpr uint64_t block_size = ((1ul<<(sizeof(block_t)*8)) / letterFit)*letterFit;
 
     std::vector<Block> blocks;
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
@@ -126,13 +126,13 @@ struct Bitvector {
 
 
     template <typename CB>
-    Bitvector(size_t length, CB cb) {
+    Bitvector(uint64_t length, CB cb) {
         blocks.reserve(length/64+2);
 
         std::array<uint64_t, TSigma> sblock_acc{0};
         std::array<block_t, TSigma> block_acc{0};
 
-        for (size_t size{0}; size < length; ++size) {
+        for (uint64_t size{0}; size < length; ++size) {
             if (size % block_size == 0) { // new super block + new block
                 superBlocks.emplace_back(sblock_acc);
                 blocks.emplace_back();
@@ -144,7 +144,7 @@ struct Bitvector {
             auto blockId      = size / letterFit;
             auto bitId        = size % letterFit;
 
-            size_t symb = cb(size);
+            uint64_t symb = cb(size);
             blocks[blockId].inBlock |= symb << (bitct * bitId);
 
             block_acc[symb] += 1;
@@ -152,7 +152,7 @@ struct Bitvector {
         }
 
         C[0] = 0;
-        for (size_t i{0}; i < TSigma; ++i) {
+        for (uint64_t i{0}; i < TSigma; ++i) {
             C[i+1] = sblock_acc[i] + C[i];
         }
     }
@@ -160,18 +160,18 @@ struct Bitvector {
     Bitvector(cereal_tag) {}
 
 
-    size_t memoryUsage() const {
+    uint64_t memoryUsage() const {
         return blocks.size() * sizeof(blocks.back())
             + superBlocks.size() * sizeof(superBlocks.back())
             + sizeof(C);
     }
 
-    void prefetch(size_t idx) const {
+    void prefetch(uint64_t idx) const {
         auto blockId      = idx / letterFit;
         blocks[blockId].prefetch();
     }
 
-    uint64_t rank(uint64_t idx, size_t symb) const {
+    uint64_t rank(uint64_t idx, uint64_t symb) const {
         auto blockId      = idx / letterFit;
         auto superBlockId = idx / block_size;
         auto bitId        = idx % letterFit;
@@ -181,12 +181,12 @@ struct Bitvector {
                + C[symb];
     }
 
-    uint64_t prefix_rank(uint64_t idx, size_t symb) const {
+    uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
         auto blockId      = idx / letterFit;
         auto superBlockId = idx / block_size;
         auto bitId        = idx % letterFit;
         uint64_t a={};
-        for (size_t i{0}; i<= symb; ++i) {
+        for (uint64_t i{0}; i<= symb; ++i) {
             a += superBlocks[superBlockId][i];
         }
         return blocks[blockId].prefix_rank(bitId, symb) + a;
@@ -200,13 +200,13 @@ struct Bitvector {
         auto res = std::array<uint64_t, TSigma>{};
 
         auto pre = std::array<uint64_t, TSigma>{};
-        for (size_t symb{0}; symb < TSigma; ++symb) {
+        for (uint64_t symb{0}; symb < TSigma; ++symb) {
             pre[symb] = blocks[blockId].prefix_rank(bitId, symb);
         }
 
         res[0] = pre[0] + superBlocks[superBlockId][0] + C[0];
 
-        for (size_t symb{1}; symb < TSigma; ++symb) {
+        for (uint64_t symb{1}; symb < TSigma; ++symb) {
             res[symb] = pre[symb] - pre[symb-1] + superBlocks[superBlockId][symb] + C[symb];
         }
         return res;
@@ -221,29 +221,29 @@ struct Bitvector {
         auto prs = std::array<uint64_t, TSigma>{};
 
         auto pre = std::array<uint64_t, TSigma>{};
-        for (size_t symb{0}; symb < TSigma; ++symb) {
+        for (uint64_t symb{0}; symb < TSigma; ++symb) {
             pre[symb] = blocks[blockId].prefix_rank(bitId, symb);
         }
 
         rs[0] = pre[0];
-        for (size_t symb{1}; symb < TSigma; ++symb) {
+        for (uint64_t symb{1}; symb < TSigma; ++symb) {
             rs[symb]  = pre[symb]-pre[symb-1];
         }
-        for (size_t symb{0}; symb < TSigma; ++symb) {
+        for (uint64_t symb{0}; symb < TSigma; ++symb) {
             rs[symb] += superBlocks[superBlockId][symb];
         }
         prs[0] = rs[0];
-        for (size_t symb{1}; symb < TSigma; ++symb) {
+        for (uint64_t symb{1}; symb < TSigma; ++symb) {
             prs[symb]= prs[symb-1] + rs[symb];
         }
 
-        for (size_t symb{0}; symb < TSigma; ++symb) {
+        for (uint64_t symb{0}; symb < TSigma; ++symb) {
             rs[symb] += C[symb];
         }
         return {rs, prs};
     }
 
-    size_t symbol(uint64_t idx) const {
+    uint64_t symbol(uint64_t idx) const {
         auto blockId      = idx / letterFit;
         auto bitId        = idx % letterFit;
         return blocks[blockId].symbol(bitId);
@@ -256,25 +256,25 @@ struct Bitvector {
 };
 
 
-template <size_t TSigma, typename block_t, size_t TAlignment>
+template <uint64_t TSigma, typename block_t, uint64_t TAlignment>
 struct OccTable {
     using TLengthType = uint64_t;
-    static constexpr size_t Sigma = TSigma;
+    static constexpr uint64_t Sigma = TSigma;
 
     Bitvector<Sigma, TAlignment, block_t> bitvector;
 
-    static size_t expectedMemoryUsage(size_t length) {
+    static uint64_t expectedMemoryUsage(uint64_t length) {
         using Block = typename Bitvector<TSigma, TAlignment, block_t>::Block;
         auto blockSize = std::max(alignof(Block), sizeof(Block));
 
-        size_t C           = sizeof(uint64_t) * (Sigma+1);
-        size_t blocks      = blockSize        * (length+1) / 64;
-        size_t superblocks = sizeof(uint64_t) * (length+1) / (1ul << (sizeof(block_t) * 8));
+        uint64_t C           = sizeof(uint64_t) * (Sigma+1);
+        uint64_t blocks      = blockSize        * (length+1) / 64;
+        uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ul << (sizeof(block_t) * 8));
         return C + blocks + superblocks;
     }
 
     OccTable(std::vector<uint8_t> const& _bwt)
-        : bitvector(_bwt.size(), [&](size_t i) -> uint8_t {
+        : bitvector(_bwt.size(), [&](uint64_t i) -> uint8_t {
             return _bwt[i];
         })
     {}
@@ -283,7 +283,7 @@ struct OccTable {
         : bitvector(cereal_tag{})
     {}
 
-    size_t memoryUsage() const {
+    uint64_t memoryUsage() const {
         return bitvector.memoryUsage() + sizeof(OccTable);
     }
 
@@ -295,15 +295,15 @@ struct OccTable {
         bitvector.prefetch(idx);
     }
 
-    uint64_t rank(uint64_t idx, size_t symb) const {
+    uint64_t rank(uint64_t idx, uint64_t symb) const {
         return bitvector.rank(idx, symb);
     }
 
-    uint64_t prefix_rank(uint64_t idx, size_t symb) const {
+    uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
         return bitvector.prefix_rank(idx, symb);
     }
 
-    size_t symbol(uint64_t idx) const {
+    uint64_t symbol(uint64_t idx) const {
         return bitvector.symbol(idx);
     }
 
@@ -320,7 +320,7 @@ struct OccTable {
 }
 
 namespace interleavedEPR8 {
-template <size_t TSigma>
+template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 1> {
     static auto name() -> std::string {
         return "Interleaved EPR (8bit)";
@@ -333,7 +333,7 @@ struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 1> {
 static_assert(checkOccTable<OccTable>);
 }
 namespace interleavedEPR16 {
-template <size_t TSigma>
+template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 1> {
     static auto name() -> std::string {
         return "Interleaved EPR (16bit)";
@@ -346,7 +346,7 @@ struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 1> {
 static_assert(checkOccTable<OccTable>);
 }
 namespace interleavedEPR32 {
-template <size_t TSigma>
+template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint32_t, 1> {
     static auto name() -> std::string {
         return "Interleaved EPR (32bit)";
@@ -359,7 +359,7 @@ struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint32_t, 1> {
 static_assert(checkOccTable<OccTable>);
 }
 namespace interleavedEPR8Aligned {
-template <size_t TSigma>
+template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 64> {
     static auto name() -> std::string {
         return "Interleaved EPR (8bit, aligned)";
@@ -372,7 +372,7 @@ struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 64> {
 static_assert(checkOccTable<OccTable>);
 }
 namespace interleavedEPR16Aligned {
-template <size_t TSigma>
+template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 64> {
     static auto name() -> std::string {
         return "Interleaved EPR (16bit, aligned)";
@@ -385,7 +385,7 @@ struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 64> {
 static_assert(checkOccTable<OccTable>);
 }
 namespace interleavedEPR32Aligned {
-template <size_t TSigma>
+template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint32_t, 64> {
     static auto name() -> std::string {
         return "Interleaved EPR (32bit, aligned)";

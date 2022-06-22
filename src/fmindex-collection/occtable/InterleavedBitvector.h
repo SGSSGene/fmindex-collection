@@ -6,7 +6,7 @@ namespace fmindex_collection {
 namespace occtable {
 
 namespace interleaved8 {
-template <size_t TSigma>
+template <uint64_t TSigma>
 struct OccTable : genericInterleaved::OccTable<TSigma, 8, uint8_t> {
     static auto name() -> std::string {
         return "Interleaved 8bit";
@@ -20,7 +20,7 @@ static_assert(checkOccTable<OccTable>);
 }
 
 namespace interleaved16 {
-template <size_t TSigma>
+template <uint64_t TSigma>
 struct OccTable : genericInterleaved::OccTable<TSigma, 8, uint16_t> {
     static auto name() -> std::string {
         return "Interleaved 16bit";
@@ -34,7 +34,7 @@ static_assert(checkOccTable<OccTable>);
 }
 
 namespace interleaved32 {
-template <size_t TSigma>
+template <uint64_t TSigma>
 struct OccTable : genericInterleaved::OccTable<TSigma, 8, uint32_t> {
     static auto name() -> std::string {
         return "Interleaved 32bit";
@@ -48,7 +48,7 @@ static_assert(checkOccTable<OccTable>);
 }
 
 namespace interleaved8Aligned {
-template <size_t TSigma>
+template <uint64_t TSigma>
 struct OccTable : genericInterleaved::OccTable<TSigma, 64, uint8_t> {
     static auto name() -> std::string {
         return "Aligned Interleaved 8bit";
@@ -62,7 +62,7 @@ static_assert(checkOccTable<OccTable>);
 }
 
 namespace interleaved16Aligned {
-template <size_t TSigma>
+template <uint64_t TSigma>
 struct OccTable : genericInterleaved::OccTable<TSigma, 64, uint16_t> {
     static auto name() -> std::string {
         return "Aligned Interleaved 16bit";
@@ -76,7 +76,7 @@ static_assert(checkOccTable<OccTable>);
 }
 
 namespace interleaved32Aligned {
-template <size_t TSigma>
+template <uint64_t TSigma>
 struct OccTable : genericInterleaved::OccTable<TSigma, 64, uint32_t> {
     static auto name() -> std::string {
         return "Aligned Interleaved 32bit";

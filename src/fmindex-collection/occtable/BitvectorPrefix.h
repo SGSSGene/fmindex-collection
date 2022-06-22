@@ -18,7 +18,7 @@ struct alignas(64) Superblock {
     uint64_t blockEntries{};
     std::array<uint64_t, 6> bits{};
 
-    uint64_t rank(size_t idx) const noexcept {
+    uint64_t rank(uint64_t idx) const noexcept {
         assert(idx < 384);
 
         auto blockId = idx >> 6;
@@ -31,7 +31,7 @@ struct alignas(64) Superblock {
         return total;
     }
 
-    bool value(size_t idx) const noexcept {
+    bool value(uint64_t idx) const noexcept {
         assert(idx < 384);
 
         auto blockId = idx >> 6;
@@ -39,7 +39,7 @@ struct alignas(64) Superblock {
         return bits[blockId] & (1ul << bitId);
     }
 
-    void setBlock(size_t blockId, size_t value) {
+    void setBlock(uint64_t blockId, uint64_t value) {
         blockEntries = blockEntries & ~uint64_t{0b111111111ul << blockId*9};
         blockEntries = blockEntries | uint64_t{value << blockId*9};
     }
@@ -53,20 +53,20 @@ struct alignas(64) Superblock {
 struct Bitvector {
     std::vector<Superblock> superblocks{};
 
-    uint64_t rank(size_t idx) const noexcept {
+    uint64_t rank(uint64_t idx) const noexcept {
         auto superblockId = idx / 384;
         auto bitId        = idx % 384;
         return superblocks[superblockId].rank(bitId);
     }
 
-    bool value(size_t idx) const noexcept {
+    bool value(uint64_t idx) const noexcept {
         idx += 1;
         auto superblockId = idx / 384;
         auto bitId        = idx % 384;
         return superblocks[superblockId].value(bitId);
     }
 
-    size_t memoryUsage() const {
+    uint64_t memoryUsage() const {
         return superblocks.size() * sizeof(superblocks.back());
     }
 
@@ -77,13 +77,13 @@ struct Bitvector {
 };
 
 
-template <size_t TSigma, typename CB>
-auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvector, TSigma>, std::array<Bitvector, TSigma>, std::array<uint64_t, TSigma+1>> {
+template <uint64_t TSigma, typename CB>
+auto construct_bitvectors(uint64_t length, CB cb) -> std::tuple<std::array<Bitvector, TSigma>, std::array<Bitvector, TSigma>, std::array<uint64_t, TSigma+1>> {
     std::array<Bitvector, TSigma> bv1;
     std::array<Bitvector, TSigma> bv2;
 
 
-    for (size_t j{0}; j < TSigma; ++j) {
+    for (uint64_t j{0}; j < TSigma; ++j) {
         bv1[j].superblocks.reserve(length/384+1);
         bv2[j].superblocks.reserve(length/384+1);
         bv1[j].superblocks.emplace_back();
@@ -97,9 +97,9 @@ auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvect
     std::array<uint16_t, TSigma> block_acc2{0};
 
 
-    for (size_t size{1}; size <= length; ++size) {
+    for (uint64_t size{1}; size <= length; ++size) {
         if (size % 384 == 0) { // new super block + new block
-            for (size_t j{0}; j < TSigma; ++j) {
+            for (uint64_t j{0}; j < TSigma; ++j) {
                 bv1[j].superblocks.emplace_back();
                 bv1[j].superblocks.back().superBlockEntry = sblock_acc[j];
                 block_acc[j] = 0;
@@ -109,7 +109,7 @@ auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvect
                 block_acc2[j] = 0;
             }
         } else if (size % 64 == 0) { // new block
-            for (size_t j{0}; j < TSigma; ++j) {
+            for (uint64_t j{0}; j < TSigma; ++j) {
                 bv1[j].superblocks.back().setBlock((size % 384) / 64, block_acc[j]);
                 bv2[j].superblocks.back().setBlock((size % 384) / 64, block_acc2[j]);
             }
@@ -128,7 +128,7 @@ auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvect
         }
         { // update prefix rank
             auto symb = cb(size-1);
-            for (size_t j{symb}; j < TSigma; ++j) {
+            for (uint64_t j{symb}; j < TSigma; ++j) {
                 auto& bits = bv2[j].superblocks.back().bits[blockId];
                 bits = bits | (1ul << bitId);
 
@@ -141,32 +141,32 @@ auto construct_bitvectors(size_t length, CB cb) -> std::tuple<std::array<Bitvect
 
     std::array<uint64_t, TSigma+1> C;
     C[0] = 0;
-    for (size_t i{0}; i < TSigma; ++i) {
+    for (uint64_t i{0}; i < TSigma; ++i) {
         C[i+1] = sblock_acc[i] + C[i];
     }
     return {std::move(bv1), std::move(bv2), C};
 }
 
-template <size_t TSigma>
+template <uint64_t TSigma>
 struct OccTable {
     using TLengthType = uint64_t;
-    static constexpr size_t Sigma = TSigma;
+    static constexpr uint64_t Sigma = TSigma;
 
     std::array<Bitvector, Sigma> bitvector1;
     std::array<Bitvector, Sigma> bitvector2;
 
     std::array<uint64_t, Sigma+1> C;
 
-    static size_t expectedMemoryUsage(size_t length) {
-        size_t blockSize   = std::max(alignof(Superblock), sizeof(Superblock));
-        size_t C           = sizeof(uint64_t) * (Sigma+1);
-        size_t blocks      = blockSize        * (length+1) / 384 * Sigma;
+    static uint64_t expectedMemoryUsage(uint64_t length) {
+        uint64_t blockSize   = std::max(alignof(Superblock), sizeof(Superblock));
+        uint64_t C           = sizeof(uint64_t) * (Sigma+1);
+        uint64_t blocks      = blockSize        * (length+1) / 384 * Sigma;
         return C + blocks*2;
     }
 
 
     OccTable(std::vector<uint8_t> const& _bwt) {
-        std::tie(bitvector1, bitvector2, C) = construct_bitvectors<Sigma>(_bwt.size(), [&](size_t i) -> uint8_t {
+        std::tie(bitvector1, bitvector2, C) = construct_bitvectors<Sigma>(_bwt.size(), [&](uint64_t i) -> uint8_t {
             return _bwt[i];
         });
     }
@@ -181,8 +181,8 @@ struct OccTable {
         return "bvpre";
     }
 
-    size_t memoryUsage() const {
-        size_t memory{};
+    uint64_t memoryUsage() const {
+        uint64_t memory{};
         for (auto const& bv : bitvector1) {
             memory += bv.memoryUsage();
         }
@@ -205,8 +205,8 @@ struct OccTable {
         return bitvector2[symb].rank(idx);
     }
 
-    size_t symbol(uint64_t idx) const {
-        for (size_t i{0}; i < Sigma-1; ++i) {
+    uint64_t symbol(uint64_t idx) const {
+        for (uint64_t i{0}; i < Sigma-1; ++i) {
             if (bitvector1[i].value(idx)) {
                 return i;
             }
@@ -217,7 +217,7 @@ struct OccTable {
     auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
         std::array<uint64_t, Sigma> rs{0};
         std::array<uint64_t, Sigma> prs{0};
-        for (size_t i{0}; i < Sigma; ++i) {
+        for (uint64_t i{0}; i < Sigma; ++i) {
             rs[i] = rank(idx, i);
             prs[i] = prefix_rank(idx, i);
         }
