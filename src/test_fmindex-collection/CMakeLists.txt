@@ -24,3 +24,4 @@ target_link_libraries(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PRIVATE ${DIVSUFSORT64_INCLUDE_DIRS})
 target_compile_options(${PROJECT_NAME} PRIVATE ${DIVSUFSORT64_CFLAGS})
 target_link_libraries(${PROJECT_NAME} ${DIVSUFSORT64_LIBRARIES})
+add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})

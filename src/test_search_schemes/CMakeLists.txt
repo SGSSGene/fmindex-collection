@@ -16,3 +16,4 @@ target_link_libraries(${PROJECT_NAME}
     Catch2::Catch2
     search_schemes
 )
+add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})

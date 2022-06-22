@@ -17,10 +17,11 @@ add_subdirectory(src/fmindex-collection)
 add_subdirectory(src/search_schemes)
 add_subdirectory(src/libsaispp)
 
-if (DEFINED ROOT_PROJECT)
+if (${ROOT_PROJECT})
     add_subdirectory(lib/Catch2)
     add_subdirectory(lib/cereal)
 
+    enable_testing()
     add_subdirectory(src/test_fmindex-collection)
     add_subdirectory(src/test_search_schemes)
     add_subdirectory(src/test_libsaispp)
