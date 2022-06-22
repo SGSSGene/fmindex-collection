@@ -56,7 +56,7 @@ jobs:
 
       - name: Install Tools
         run: |
-          brew --help
+          brew update
           brew install fmt boost cmake gcc@10 gcc gcc@12
 
       - name: Tool versions
