@@ -165,7 +165,6 @@ int main(int argc, char const* const* argv) {
     size_t maxQueries{};
     size_t readLength{};
     bool saveOutput{false};
-    bool sleepAfterLoad{false};
     size_t minK{0}, maxK{6}, k_stepSize{1};
     bool reverse{true};
 
@@ -187,8 +186,6 @@ int main(int argc, char const* const* argv) {
             readLength = std::stod(argv[i]);
         } else if (argv[i] == std::string{"--save_output"}) {
             saveOutput = true;
-        } else if (argv[i] == std::string{"--sleep_after_load"}) {
-            sleepAfterLoad = true;
         } else if (argv[i] == std::string{"--min_k"} and i+1 < argc) {
             ++i;
             minK = std::stod(argv[i]);
@@ -231,9 +228,6 @@ int main(int argc, char const* const* argv) {
 
 //        auto index = loadIndex<Sigma, CSA, Table>("/home/gene/short_test/text");
         fmt::print("index loaded {}\n", memory / 1000./1000.);
-        if (sleepAfterLoad) {
-            usleep(5000000);
-        }
         for (auto const& algorithm : algorithms) {
             fmt::print("using algorithm {}\n", algorithm);
 
