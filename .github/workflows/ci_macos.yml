@@ -51,14 +51,9 @@ jobs:
           path: fmc
           fetch-depth: 1
 
-      - name: Configure Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
-
       - name: Install Tools
         run: |
           brew update
-          brew doctor
-          brew config
           brew install fmt boost cmake gcc@10 gcc gcc@12
 
       - name: Tool versions
