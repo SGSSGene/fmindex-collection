@@ -19,7 +19,7 @@ jobs:
   build:
     name: ${{ matrix.name }}
     runs-on: ubuntu-22.04
-    timeout-minutes: 10
+    timeout-minutes: 30
     strategy:
       fail-fast: true
       matrix:
@@ -73,7 +73,7 @@ jobs:
       - name: Build tests
         run: |
           cd fmc-build
-          make -j2
+          make -k -j2
 
       - name: Run tests
         run: |
