@@ -1,4 +1,4 @@
-name: CI on macOS-11
+name: CI on MacOS 11
 
 on:
   push:
@@ -12,12 +12,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CMAKE_VERSION: 3.15.1
+  CMAKE_VERSION: 3.23.2
   TZ: Europe/Berlin
-
-defaults:
-  run:
-    shell: bash -ex {0}
 
 jobs:
   build:
@@ -43,6 +39,10 @@ jobs:
             cc: "gcc-10"
             build_type: Release
 
+          - name: "gcc12 (c++20, Debug)"
+            cxx: "g++-12"
+            cc: "gcc-12"
+            build_type: Debug
 
     steps:
       - name: Checkout TDL

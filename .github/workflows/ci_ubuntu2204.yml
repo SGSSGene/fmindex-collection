@@ -8,16 +8,12 @@ on:
   pull_request:
 
 concurrency:
-  group: ubuntu2204-${{ github.event.pull_request.number || github.ref }}
+  group: ubuntu-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
   CMAKE_VERSION: 3.23.2
   TZ: Europe/Berlin
-
-defaults:
-  run:
-    shell: bash -ex {0}
 
 jobs:
   build:
@@ -50,24 +46,15 @@ jobs:
 
     steps:
       - name: Checkout TDL
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: fmc
           fetch-depth: 1
 
-      - name: Configure APT
-        continue-on-error: true
-        run: |
-          echo 'APT::Acquire::Retries "5";' | sudo tee -a /etc/apt/apt.conf.d/80-retries > /dev/null
-          sudo add-apt-repository --no-update --yes ppa:ubuntu-toolchain-r/ppa
-          sudo add-apt-repository --no-update --yes ppa:ubuntu-toolchain-r/test
-          sudo apt-get update
-
       - name: Install Tools
-        run: sudo apt-get install --yes cmake libboost1.74-all-dev libfmt-dev libprocps-dev
-
-      - name: Install compiler ${{ matrix.cxx }}
-        run: sudo apt-get install --yes ${{ matrix.cxx }}
+        run: |
+          brew update
+          brew install fmt boost cmake gcc@10 gcc gcc@12 procps
 
       - name: Tool versions
         run: |
@@ -81,7 +68,9 @@ jobs:
         run: |
           mkdir fmc-build
           cd fmc-build
-          cmake ../fmc -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          cmake ../fmc -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+                       -DCMAKE_CXX_FLAGS="-isystem $(brew --prefix)/include -L$(brew --prefix)/lib"
+
       - name: Build tests
         run: |
           cd fmc-build
