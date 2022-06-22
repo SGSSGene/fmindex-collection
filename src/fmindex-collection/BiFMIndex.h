@@ -4,6 +4,8 @@
 #include "occtable/concepts.h"
 #include "utils.h"
 
+#include <algorithm>
+
 namespace fmindex_collection {
 
 template <OccTable Table, typename TCSA = CSA>

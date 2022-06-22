@@ -6,6 +6,7 @@
 #include "DenseVector.h"
 #include "cereal_tag.h"
 
+#include <algorithm>
 #include <optional>
 #include <tuple>
 
