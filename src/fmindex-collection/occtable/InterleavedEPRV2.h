@@ -50,27 +50,27 @@ struct Bitvector {
 
         uint64_t rank(uint64_t idx, uint64_t symb) const {
             assert(idx < 64);
-            auto f = [&]<uint64_t I>(std::index_sequence<I>) {
+            auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>) {
                 return bits[I] ^ -((~symb>>I)&1);
             };
-            auto mask = [&]<uint64_t ...Is>(std::index_sequence<Is...>) {
-                return (f(std::index_sequence<Is>{})&...);
-            }(std::make_index_sequence<bitct>{});
+            auto mask = [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
+                return (f(std::integer_sequence<uint64_t, Is>{})&...);
+            }(std::make_integer_sequence<uint64_t, bitct>{});
 
             auto bitset = std::bitset<64>(mask) << (64-idx);
             return blocks[symb] + bitset.count();
         }
 
         uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
-            auto f = [&]<uint64_t I>(std::index_sequence<I>, uint64_t _symb) {
+            auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>, uint64_t _symb) {
                 return bits[I] ^ -((~_symb>>I)&1);
             };
             uint64_t mask{};
 
             for (uint64_t i{0}; i <= symb; ++i) {
-                mask |= [&]<uint64_t ...Is>(std::index_sequence<Is...>) {
-                    return (f(std::index_sequence<Is>{}, i)&...);
-                }(std::make_index_sequence<bitct>{});
+                mask |= [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
+                    return (f(std::integer_sequence<uint64_t, Is>{}, i)&...);
+                }(std::make_integer_sequence<uint64_t, bitct>{});
             }
 
             auto bitset = std::bitset<64>(mask) << (64-idx);
@@ -87,14 +87,14 @@ struct Bitvector {
 
             std::array<uint64_t, TSigma> rs{0};
 
-            auto f = [&]<uint64_t I>(uint64_t symb, std::index_sequence<I>) {
+            auto f = [&]<uint64_t I>(uint64_t symb, std::integer_sequence<uint64_t, I>) {
                 return bits[I] ^ -((~symb>>I)&1);
             };
 
             for (uint64_t i{0}; i < TSigma; ++i) {
-                auto mask = [&]<uint64_t ...Is>(std::index_sequence<Is...>) {
-                    return (f(i, std::index_sequence<Is>{})&...);
-                }(std::make_index_sequence<bitct>{});
+                auto mask = [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
+                    return (f(i, std::integer_sequence<uint64_t, Is>{})&...);
+                }(std::make_integer_sequence<uint64_t, bitct>{});
                 rs[i] = (std::bitset<64>(mask) << (64 - idx)).count() + blocks[i];
             }
             return rs;
@@ -114,14 +114,14 @@ struct Bitvector {
 
             uint64_t symb{};
             uint64_t mask{};
-            auto f = [&]<uint64_t I>(std::index_sequence<I>) {
-                auto b = (bits[I] >> idx) & 1;
+            auto f = [&]<auto I>(std::integer_sequence<uint64_t, I>) {
+                auto b = (bits[uint64_t{I}] >> idx) & 1;
                 mask |= bits[I] ^ -b;
                 symb |= b << I;
             };
-            [&]<uint64_t ...Is>(std::index_sequence<Is...>) {
-                (f(std::index_sequence<Is>{}) ,...);
-            }(std::make_index_sequence<bitct>{});
+            [&]<auto ...Is>(std::integer_sequence<uint64_t, Is...>) {
+                (f(std::integer_sequence<uint64_t, Is>{}) ,...);
+            }(std::make_integer_sequence<uint64_t, bitct>{});
 
             auto bitset = std::bitset<64>{~mask} << (64-idx);
 

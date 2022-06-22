@@ -137,7 +137,7 @@ struct Bitvector {
                 bvAccess<Depth+1, (I << 1)>  (s,    c0, d0, cb);
                 bvAccess<Depth+1, (I << 1)+1>(s+c0, c1, d1, cb);
             } else {
-                cb(d0, d1, std::index_sequence<(I << 1)>{});
+                cb(d0, d1, std::integer_sequence<uint64_t, (I << 1)>{});
             }
         }
         template <uint64_t Depth, uint64_t I, typename CB>
@@ -146,13 +146,13 @@ struct Bitvector {
                 bvAccess0<Depth+1, (I << 1)>(cb);
                 bvAccess0<Depth+1, (I << 1)+1>(cb);
             } else {
-                cb(0, 0, std::index_sequence<(I << 1)>{});
+                cb(0, 0, std::integer_sequence<uint64_t, (I << 1)>{});
             }
         }
 
         auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
             std::array<uint64_t, TSigma> rs{0};
-            bvAccess(idx, [&]<uint64_t I>(uint64_t d0, uint64_t d1, std::index_sequence<I>) {
+            bvAccess(idx, [&]<uint64_t I>(uint64_t d0, uint64_t d1, std::integer_sequence<uint64_t, I>) {
                 if constexpr (I < TSigma) {
                     rs[I]    = d0 + blocks[I];
                 }
