@@ -3,6 +3,7 @@
 #include "concepts.h"
 #include "../DenseVector.h"
 
+#include <algorithm>
 #include <array>
 #include <bitset>
 #include <cstdint>
