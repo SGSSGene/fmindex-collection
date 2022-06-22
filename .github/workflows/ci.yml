@@ -1,5 +1,4 @@
-name: CI on Ubuntu 22.04
-
+name: Tests(c++20)
 on:
   push:
     branches:
@@ -8,7 +7,7 @@ on:
   pull_request:
 
 concurrency:
-  group: ubuntu-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -17,29 +16,39 @@ env:
 
 jobs:
   build:
-    name: ${{ matrix.name }}
-    runs-on: ubuntu-22.04
+    name: ${{ matrix.compiler }} / ${{ matrix.osname }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
+        osname: ["MacOS 11"]
+        compiler: ["gcc12", "gcc11", "gcc10", "gcc12-debug"]
         include:
-          - name: "gcc12 (c++20)"
+          - osname: "Ubuntu 22.04"
+            os: ubuntu-22.04
+            extra: ""
+          - osname: "MacOS 11"
+            os: macos-11
+            extra: "-nostdinc++ -nodefaultlibs -lc -lc++ -lc++abi -isystem /usr/include/c++/v1 -lc++abi -lunwind -lm"
+            removed: "-lgcc_s"
+
+          - compiler: "gcc12"
             cxx: "g++-12"
             cc: "gcc-12"
             build_type: Release
 
-          - name: "gcc11 (c++20)"
+          - compiler: "gcc11"
             cxx: "g++-11"
             cc: "gcc-11"
             build_type: Release
 
-          - name: "gcc10 (c++20)"
+          - compiler: "gcc10"
             cxx: "g++-10"
             cc: "gcc-10"
             build_type: Release
 
-          - name: "gcc12 (c++20, Debug)"
+          - compiler: "gcc12-debug"
             cxx: "g++-12"
             cc: "gcc-12"
             build_type: Debug
@@ -54,7 +63,7 @@ jobs:
       - name: Install Tools
         run: |
           brew update
-          brew install fmt boost cmake gcc@10 gcc gcc@12 procps
+          brew install fmt boost cmake gcc@10 gcc gcc@12
 
       - name: Tool versions
         run: |
@@ -69,7 +78,7 @@ jobs:
           mkdir fmc-build
           cd fmc-build
           cmake ../fmc -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-                       -DCMAKE_CXX_FLAGS="-isystem $(brew --prefix)/include -L$(brew --prefix)/lib"
+                       -DCMAKE_CXX_FLAGS="-isystem $(brew --prefix)/include -L$(brew --prefix)/lib ${{ matrix.extra }}"
 
       - name: Build tests
         run: |
