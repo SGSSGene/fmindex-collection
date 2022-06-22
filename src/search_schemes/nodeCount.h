@@ -36,7 +36,7 @@ inline long double nodeCount(Search s, size_t sigma) {
 }
 
 inline long double nodeCount(Scheme const& ss, size_t sigma) {
-    return std::accumulate(begin(ss), end(ss), (long double){0.}, [&](long double v, auto const& s) {
+    return std::accumulate(begin(ss), end(ss), static_cast<long double>(0.), [&](long double v, auto const& s) {
         return v + nodeCount(s, sigma);
     });
 }
@@ -69,7 +69,7 @@ inline long double nodeCountEdit(Search s, size_t sigma) {
 }
 
 inline long double nodeCountEdit(Scheme const& ss, int sigma) {
-    return std::accumulate(begin(ss), end(ss), (long double){0.}, [&](long double v, auto const& s) {
+    return std::accumulate(begin(ss), end(ss), static_cast<long double>(0.), [&](long double v, auto const& s) {
         return v + nodeCountEdit(s, sigma);
     });
 }
