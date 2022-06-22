@@ -68,8 +68,7 @@ jobs:
         run: |
           mkdir fmc-build
           cd fmc-build
-          cmake ../fmc -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-                       -DCMAKE_CXX_FLAGS="-isystem $(brew --prefix)/include -L$(brew --prefix)/lib"
+          cmake ../fmc -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
       - name: Build tests
         run: |

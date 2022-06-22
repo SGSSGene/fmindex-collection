@@ -12,6 +12,14 @@ endif ()
 
 project(fmindex-collection)
 
+find_package (Boost)
+include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
+link_libraries (${Boost_LIBRARIES})
+
+find_package (fmt)
+link_libraries (fmt::fmt-header-only)
+
+include_directories (SYSTEM "${CMAKE_CURRENT_LIST_DIR}/lib/cereal/include")
 
 add_subdirectory(src/fmindex-collection)
 add_subdirectory(src/search_schemes)
@@ -19,7 +27,6 @@ add_subdirectory(src/libsaispp)
 
 if (${ROOT_PROJECT})
     add_subdirectory(lib/Catch2)
-    add_subdirectory(lib/cereal)
 
     enable_testing()
     add_subdirectory(src/test_fmindex-collection)
@@ -36,8 +43,6 @@ if (${ROOT_PROJECT})
         PRIVATE
         fmindex-collection
         search_schemes
-        cereal
-        fmt
     )
 
     # easyExample executable
@@ -48,7 +53,5 @@ if (${ROOT_PROJECT})
         PRIVATE
         fmindex-collection
         search_schemes
-        cereal
-        fmt
     )
 endif()
