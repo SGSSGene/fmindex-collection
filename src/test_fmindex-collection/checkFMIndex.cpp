@@ -37,7 +37,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]",
     using OccTable = TestType;
 
     auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
-    auto sa     = std::vector<size_t>{ 10, 11, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };
+    auto sa     = std::vector<uint64_t>{ 10, 11, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };
 
     SECTION("full sa") {
         auto bitStack = fmindex_collection::BitStack{};
@@ -58,7 +58,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]",
 
     SECTION("sa with only every second value given - sa sampled") {
         auto bitStack = fmindex_collection::BitStack{};
-        auto sa2 = std::vector<size_t>{};
+        auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 0} || (sa[i] == 0);
             bitStack.push(add);
@@ -78,7 +78,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]",
 
     SECTION("sa with only every second value given - sa sampled - uneven") {
         auto bitStack = fmindex_collection::BitStack{};
-        auto sa2 = std::vector<size_t>{};
+        auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 1};
             bitStack.push(add);
@@ -99,7 +99,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]",
 
     SECTION("sa with only every second value given - text sampled") {
         auto bitStack = fmindex_collection::BitStack{};
-        auto sa2 = std::vector<size_t>{};
+        auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{sa[i] % 2 == 0};
             bitStack.push(add);
