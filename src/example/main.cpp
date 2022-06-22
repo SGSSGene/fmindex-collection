@@ -12,22 +12,9 @@
 #include <cereal/types/vector.hpp>
 
 #include <fmt/format.h>
-#ifndef __APPLE__
-#   include <proc/readproc.h>
-#endif
 #include <unordered_set>
 
 using namespace fmindex_collection;
-
-ssize_t memoryUsage() {
-#ifndef __APPLE__
-    proc_t usage{};
-    look_up_our_self(&usage);
-    return usage.vsize;
-#else
-    return 0;
-#endif
-}
 
 template <size_t Sigma, typename CB>
 void visitAllTables(CB cb) {
@@ -222,12 +209,10 @@ int main(int argc, char const* const* argv) {
             }
         }
 
-        auto startMemory = memoryUsage();
         auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/text.dna4");
-        auto memory = memoryUsage() - startMemory;
 
 //        auto index = loadIndex<Sigma, CSA, Table>("/home/gene/short_test/text");
-        fmt::print("index loaded {}\n", memory / 1000./1000.);
+        fmt::print("index loaded\n");
         for (auto const& algorithm : algorithms) {
             fmt::print("using algorithm {}\n", algorithm);
 

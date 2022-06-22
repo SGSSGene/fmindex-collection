@@ -38,7 +38,6 @@ if (${ROOT_PROJECT})
         search_schemes
         cereal
         fmt
-        procps
     )
 
     # easyExample executable
@@ -51,6 +50,5 @@ if (${ROOT_PROJECT})
         search_schemes
         cereal
         fmt
-        procps
     )
 endif()
