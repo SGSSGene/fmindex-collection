@@ -3,11 +3,12 @@
 #include <search_schemes/Scheme.h>
 
 #include "../BiFMIndexCursor.h"
+#include "../concepts.h"
 
 namespace fmindex_collection {
 namespace search_pseudo {
 
-template <bool EditDistance, typename index_t, typename search_scheme_t, typename delegate_t>
+template <bool EditDistance, typename index_t, typename search_scheme_t, Sequence query_t, typename delegate_t>
 struct Search {
     constexpr static size_t Sigma = index_t::Sigma;
 
@@ -18,8 +19,6 @@ struct Search {
     decltype(search_scheme_t::pi) const& pi;
     decltype(search_scheme_t::l) const& l;
     decltype(search_scheme_t::u) const& u;
-
-    using query_t = std::vector<uint8_t>;
 
     query_t const& query;
     delegate_t const& delegate;
@@ -158,7 +157,7 @@ struct Search {
 };
 
 
-template <bool EditDistance, typename index_t, typename queries_t, typename search_schemes_t, typename delegate_t>
+template <bool EditDistance, typename index_t, Sequences queries_t, typename search_schemes_t, typename delegate_t>
 void search(index_t const & index, queries_t && queries, search_schemes_t const & search_scheme, delegate_t && delegate)
 {
     std::size_t qidx;
@@ -168,10 +167,22 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 
     for (qidx = {0}; qidx < queries.size(); ++qidx) {
         for (size_t j{0}; j < search_scheme.size(); ++j) {
-            Search<EditDistance, std::decay_t<decltype(index)>, std::decay_t<decltype(search_scheme[j])>, std::decay_t<decltype(internal_delegate)>> {index, search_scheme[j], queries[qidx], internal_delegate};
+            Search<EditDistance, std::decay_t<decltype(index)>, std::decay_t<decltype(search_scheme[j])>, std::decay_t<decltype(queries[qidx])>, std::decay_t<decltype(internal_delegate)>> {index, search_scheme[j], queries[qidx], internal_delegate};
         }
     }
 }
+template <bool EditDistance, typename index_t, Sequence query_t, typename search_schemes_t, typename delegate_t>
+void search(index_t const & index, query_t && query, search_schemes_t const & search_scheme, delegate_t && delegate)
+{
+    auto internal_delegate = [&delegate] (auto const & it, size_t e) {
+        delegate(it, e);
+    };
+
+    for (size_t j{0}; j < search_scheme.size(); ++j) {
+        Search<EditDistance, std::decay_t<decltype(index)>, std::decay_t<decltype(search_scheme[j])>, std::decay_t<decltype(query)>, std::decay_t<decltype(internal_delegate)>> {index, search_scheme[j], query, internal_delegate};
+    }
+}
+
 
 }
 }

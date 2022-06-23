@@ -1,17 +1,18 @@
 #pragma once
 
 #include "SelectCursor.h"
+#include "../concepts.h"
 
 namespace fmindex_collection {
 namespace search_backtracking {
 
 /* Search algorithm with explicit programmed search scheme
  */
-template <typename index_t, typename queries_t, typename delegate_t>
+template <typename index_t, Sequences queries_t, typename delegate_t>
 struct Search {
     using cursor_t = select_cursor_t<index_t>;
     constexpr static size_t Sigma = index_t::Sigma;
-    using query_t = std::vector<uint8_t>;
+    using query_t = std::decay_t<decltype(*std::declval<queries_t>().begin())>;
 
     index_t const& index;
     queries_t const& queries;
@@ -73,11 +74,20 @@ struct Search {
     }
 };
 
-template <typename index_t, typename queries_t, typename delegate_t>
-void search(index_t const& index, queries_t&& queries, size_t maxError, delegate_t&& delegate) {
+template <typename index_t, Sequences queries_t, typename delegate_t>
+void search(index_t const& index, queries_t const& queries, size_t maxError, delegate_t&& delegate) {
     auto u = Search{index, queries, delegate, maxError};
     u.search();
 }
+template <typename index_t, Sequence query_t, typename delegate_t>
+void search(index_t const& index, query_t const& query, size_t maxError, delegate_t&& delegate) {
+    auto queries = std::array<query_t, 1>{query};
+    auto u = Search{index, queries, [&](auto /*queryId*/, auto const& cursor, size_t errors) {
+        delegate(cursor, errors);
+    }, maxError};
+    u.search();
+}
+
 
 }
 }
