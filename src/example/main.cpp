@@ -1,6 +1,5 @@
 #include "utils/utils.h"
 
-
 #include <fmindex-collection/fmindex-collection.h>
 #include <fmindex-collection/occtable/all.h>
 #include <fmindex-collection/search/all.h>
@@ -9,17 +8,13 @@
 #include <search_schemes/expand.h>
 
 #include <cereal/archives/binary.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
+
 #include <fmt/format.h>
-#include <proc/readproc.h>
 #include <unordered_set>
 
 using namespace fmindex_collection;
-
-ssize_t memoryUsage() {
-    proc_t usage{};
-    look_up_our_self(&usage);
-    return usage.vsize;
-}
 
 template <size_t Sigma, typename CB>
 void visitAllTables(CB cb) {
@@ -157,7 +152,6 @@ int main(int argc, char const* const* argv) {
     size_t maxQueries{};
     size_t readLength{};
     bool saveOutput{false};
-    bool sleepAfterLoad{false};
     size_t minK{0}, maxK{6}, k_stepSize{1};
     bool reverse{true};
 
@@ -179,8 +173,6 @@ int main(int argc, char const* const* argv) {
             readLength = std::stod(argv[i]);
         } else if (argv[i] == std::string{"--save_output"}) {
             saveOutput = true;
-        } else if (argv[i] == std::string{"--sleep_after_load"}) {
-            sleepAfterLoad = true;
         } else if (argv[i] == std::string{"--min_k"} and i+1 < argc) {
             ++i;
             minK = std::stod(argv[i]);
@@ -217,15 +209,10 @@ int main(int argc, char const* const* argv) {
             }
         }
 
-        auto startMemory = memoryUsage();
         auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/text.dna4");
-        auto memory = memoryUsage() - startMemory;
 
 //        auto index = loadIndex<Sigma, CSA, Table>("/home/gene/short_test/text");
-        fmt::print("index loaded {}\n", memory / 1000./1000.);
-        if (sleepAfterLoad) {
-            usleep(5000000);
-        }
+        fmt::print("index loaded\n");
         for (auto const& algorithm : algorithms) {
             fmt::print("using algorithm {}\n", algorithm);
 

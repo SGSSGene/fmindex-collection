@@ -6,7 +6,8 @@ namespace fmindex_collection {
 
 template <typename Index>
 struct ReverseFMIndexCursor {
-    static size_t constexpr Sigma = Index::Sigma;
+    static constexpr size_t Sigma    = Index::Sigma;
+    static constexpr bool   Reversed = true;
 
     Index const* index;
     size_t lb;
@@ -28,12 +29,12 @@ struct ReverseFMIndexCursor {
     ReverseFMIndexCursor(ReverseFMIndexCursor const&) = default;
     auto operator=(ReverseFMIndexCursor const&) -> ReverseFMIndexCursor& = default;
 
-    auto extendLeft(uint8_t symb) const -> ReverseFMIndexCursor {
+    auto extendRight(uint8_t symb) const -> ReverseFMIndexCursor {
         size_t newLb  = index->occ.rank(lb, symb);
         size_t newLen = index->occ.rank(lb+len, symb) - newLb;
         return {*index, newLb, newLen};
     }
-    auto extendLeft() const -> std::array<ReverseFMIndexCursor, Sigma> {
+    auto extendRight() const -> std::array<ReverseFMIndexCursor, Sigma> {
         auto [rs1, prs1] = index->occ.all_ranks(lb);
         auto [rs2, prs2] = index->occ.all_ranks(lb+len);
 

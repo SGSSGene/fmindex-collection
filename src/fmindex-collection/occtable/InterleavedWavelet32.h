@@ -12,7 +12,7 @@ namespace occtable {
 namespace interleavedWavelet32_detail {
 
 // counts how many bits are needed to represent the number y
-constexpr inline size_t bits_count(uint32_t y) {
+constexpr inline uint64_t bits_count(uint32_t y) {
     if (y == 0) return 1;
     uint32_t i{0};
     while (y != 0) {
@@ -124,7 +124,7 @@ struct Bitvector {
             bvAccess(0, 64, idx, cb);
         }
 
-        template <uint32_t Depth=0, size_t I=0, typename CB>
+        template <uint32_t Depth=0, uint64_t I=0, typename CB>
         void bvAccess(uint32_t s, uint32_t l1, uint32_t idx, CB cb) const {
             auto bv = std::bitset<64>(bits[Depth]) >> s;
             auto d1 = uint32_t((bv << (64-idx)).count());
@@ -135,22 +135,22 @@ struct Bitvector {
                 bvAccess<Depth+1, (I << 1)>  (s,    c0, d0, cb);
                 bvAccess<Depth+1, (I << 1)+1>(s+c0, c1, d1, cb);
             } else {
-                cb(d0, d1, std::index_sequence<(I << 1)>{});
+                cb(d0, d1, std::integer_sequence<uint64_t, (I << 1)>{});
             }
         }
-        template <uint32_t Depth, size_t I, typename CB>
+        template <uint32_t Depth, uint64_t I, typename CB>
         void bvAccess0(CB cb) const {
             if constexpr (Depth < bitct-1) {
                 bvAccess0<Depth+1, (I << 1)>(cb);
                 bvAccess0<Depth+1, (I << 1)+1>(cb);
             } else {
-                cb(0, 0, std::index_sequence<(I << 1)>{});
+                cb(0, 0, std::integer_sequence<uint64_t, (I << 1)>{});
             }
         }
 
         auto all_ranks(uint32_t idx) const -> std::array<uint32_t, TSigma> {
             std::array<uint32_t, TSigma> rs{0};
-            bvAccess(idx, [&]<size_t I>(uint32_t d0, uint32_t d1, std::index_sequence<I>) {
+            bvAccess(idx, [&]<uint64_t I>(uint32_t d0, uint32_t d1, std::integer_sequence<uint64_t, I>) {
                 if constexpr (I < TSigma) {
                     rs[I]    = d0 + blocks[I];
                 }
@@ -236,7 +236,7 @@ struct Bitvector {
     Bitvector(cereal_tag) {}
 
 
-    size_t memoryUsage() const {
+    uint64_t memoryUsage() const {
         return blocks.size() * sizeof(blocks.back())
             + sizeof(C);
     }
@@ -294,20 +294,20 @@ struct OccTable {
     static constexpr uint32_t Sigma = TSigma;
 
     Bitvector<Sigma, TAlignment> bitvector;
-    size_t size_{};
+    uint64_t size_{};
 
-    static size_t expectedMemoryUsage(uint32_t length) {
+    static uint64_t expectedMemoryUsage(uint32_t length) {
         using Block = typename Bitvector<TSigma, TAlignment>::Block;
         auto blockSize = std::max(alignof(Block), sizeof(Block));
 
-        size_t C           = sizeof(uint32_t) * (Sigma+1);
-        size_t blocks      = blockSize        * (length+1) / 64;
+        uint64_t C           = sizeof(uint32_t) * (Sigma+1);
+        uint64_t blocks      = blockSize        * (length+1) / 64;
         return C + blocks;
     }
 
 
     OccTable(std::vector<uint8_t> const& _bwt)
-        : bitvector(_bwt.size(), [&](size_t i) -> uint8_t {
+        : bitvector(_bwt.size(), [&](uint64_t i) -> uint8_t {
             return _bwt[i];
         })
         , size_{_bwt.size()}
@@ -317,7 +317,7 @@ struct OccTable {
         : bitvector{cereal_tag{}}
     {}
 
-    size_t memoryUsage() const {
+    uint64_t memoryUsage() const {
         return bitvector.memoryUsage() + sizeof(OccTable);
     }
 
@@ -329,11 +329,11 @@ struct OccTable {
         bitvector.prefetch(idx);
     }
 
-    uint32_t rank(uint32_t idx, size_t symb) const {
+    uint32_t rank(uint32_t idx, uint64_t symb) const {
         return bitvector.rank(idx, symb);
     }
 
-    uint32_t prefix_rank(uint32_t idx, size_t symb) const {
+    uint32_t prefix_rank(uint32_t idx, uint64_t symb) const {
         return bitvector.prefix_rank(idx, symb);
     }
 
@@ -362,7 +362,7 @@ struct OccTable {
 }
 
 namespace interleavedWavelet32 {
-template <size_t Sigma>
+template <uint64_t Sigma>
 struct OccTable : interleavedWavelet32_detail::OccTable<Sigma, 8> {
     static auto name() -> std::string {
         return "Interleaved Wavelet (size: 32bit)";
@@ -376,7 +376,7 @@ static_assert(checkOccTable<OccTable>);
 }
 
 namespace interleavedWavelet32Aligned {
-template <size_t Sigma>
+template <uint64_t Sigma>
 struct OccTable : interleavedWavelet32_detail::OccTable<Sigma, 64> {
     static auto name() -> std::string {
         return "Interleaved Wavelet Aligned (size: 32bit)";

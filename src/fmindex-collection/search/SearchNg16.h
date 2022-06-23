@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 
 /**
  * As ng15 and 20 combined

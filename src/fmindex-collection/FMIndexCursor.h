@@ -6,7 +6,8 @@ namespace fmindex_collection {
 
 template <typename Index>
 struct FMIndexCursor {
-    static size_t constexpr Sigma = Index::Sigma;
+    static constexpr size_t Sigma    = Index::Sigma;
+    static constexpr bool   Reversed = false;
 
     Index const* index;
     size_t lb;

@@ -33,8 +33,8 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]",
     fmindex_collection::occtable::epr32V3::OccTable<256>,
     fmindex_collection::occtable::eprV4::OccTable<256>,
     fmindex_collection::occtable::eprV5::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>,
-    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
+    fmindex_collection::occtable::naive::OccTable<256>
+//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
 //    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
 ) {
     using OccTable = TestType;

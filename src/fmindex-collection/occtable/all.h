@@ -13,6 +13,9 @@
 #include "EPRV5.h"
 #include "DenseEPRV6.h"
 #include "Naive.h"
+#include "Wavelet.h"
+
+#ifdef FMC_USE_SDSL
 #include "Sdsl_wt_bldc.h"
 #include "Sdsl_wt_epr.h"
-#include "Wavelet.h"
+#endif

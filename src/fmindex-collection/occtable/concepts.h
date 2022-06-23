@@ -115,13 +115,13 @@ concept OccTableMemoryUsage = OccTable<T> and requires(T t) {
      * \param first - length of the text to be indexed
      * \return number of bytes expected to be needed
      */
-    { T::expectedMemoryUsage(size_t{}) } -> std::same_as<size_t>;
+    { T::expectedMemoryUsage(uint64_t{}) } -> std::same_as<uint64_t>;
 
     /* Computes the actual memory usage of this data structure
      *
      * \return number of bytes that are being used
      */
-    { t.memoryUsage() } -> std::same_as<size_t>;
+    { t.memoryUsage() } -> std::same_as<uint64_t>;
 };
 
 }
