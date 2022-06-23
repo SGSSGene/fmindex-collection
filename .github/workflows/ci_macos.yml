@@ -73,7 +73,7 @@ jobs:
       - name: Build tests
         run: |
           cd fmc-build
-          make -k -j2
+          make -k -j2 VERBOSE=1
 
       - name: Run tests
         run: |
