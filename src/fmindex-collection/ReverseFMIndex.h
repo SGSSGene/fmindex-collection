@@ -25,13 +25,12 @@ struct ReverseFMIndex {
         , csa{std::move(_csa)}
     {}
 
-    ReverseFMIndex(std::vector<std::vector<uint8_t>> _input, size_t samplingRate)
+    ReverseFMIndex(Sequences auto const& _input, size_t samplingRate)
         : occ{cereal_tag{}}
         , csa{cereal_tag{}}
     {
 
         auto [totalSize, inputText, inputSizes] = createSequences(_input, true);
-        decltype(_input){}.swap(_input); // input memory can be deleted
 
         auto [bwt, csa] = [&] () {
             auto sa  = createSA(inputText);
