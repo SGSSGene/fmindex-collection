@@ -1,4 +1,4 @@
-name: CI on MacOS 11
+name: Tests
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   pull_request:
 
 concurrency:
-  group: macos-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -17,12 +17,14 @@ env:
 
 jobs:
   build:
-    name: ${{ matrix.name }}
-    runs-on: macos-11
+    name: ${{ matrix.os }} / ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: true
       matrix:
+        os: [macos-11, ubuntu-22.04]
+        name: ["gcc12 (c++20)", "gcc11 (c++20)", "gcc10 (c++20)", "gcc12 (c++20, Debug)"]
         include:
           - name: "gcc12 (c++20)"
             cxx: "g++-12"
