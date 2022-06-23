@@ -17,14 +17,14 @@ project(fmindex-collection)
 
 option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${ROOT_PROJECT})
 
-find_package (Boost)
-find_package (fmt)
-
 add_subdirectory(src/fmindex-collection)
 add_subdirectory(src/search_schemes)
 add_subdirectory(src/libsaispp)
 
 if (${ROOT_PROJECT})
+    find_package (Boost)
+    find_package (fmt)
+
     add_subdirectory(lib/Catch2)
 
     enable_testing()
