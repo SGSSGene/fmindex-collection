@@ -17,31 +17,38 @@ env:
 
 jobs:
   build:
-    name: ${{ matrix.os }} / ${{ matrix.name }}
+    name: ${{ matrix.os }} / ${{ matrix.compiler }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: true
       matrix:
-        os: [macos-11, ubuntu-22.04]
-        name: ["gcc12 (c++20)", "gcc11 (c++20)", "gcc10 (c++20)", "gcc12 (c++20, Debug)"]
+        osname: ["MacOS 11", "Ubuntu 22.04"]
+        compiler: ["gcc12 (c++20)", "gcc11 (c++20)", "gcc10 (c++20)", "gcc12 (c++20, Debug)"]
         include:
-          - name: "gcc12 (c++20)"
+          - osname: "Ubuntu 22.04"
+            os: ubuntu-22.04
+            cmake_flags: ""
+          - osname: "MacOS 11"
+            os: macos-11
+            cmake_flags: "-DFMC_USE_SDSL=NO"
+
+          - compiler: "gcc12 (c++20)"
             cxx: "g++-12"
             cc: "gcc-12"
             build_type: Release
 
-          - name: "gcc11 (c++20)"
+          - compiler: "gcc11 (c++20)"
             cxx: "g++-11"
             cc: "gcc-11"
             build_type: Release
 
-          - name: "gcc10 (c++20)"
+          - compiler: "gcc10 (c++20)"
             cxx: "g++-10"
             cc: "gcc-10"
             build_type: Release
 
-          - name: "gcc12 (c++20, Debug)"
+          - compiler: "gcc12 (c++20, Debug)"
             cxx: "g++-12"
             cc: "gcc-12"
             build_type: Debug
@@ -70,7 +77,7 @@ jobs:
         run: |
           mkdir fmc-build
           cd fmc-build
-          cmake ../fmc -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          cmake ../fmc -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_flags }}
 
       - name: Build tests
         run: |
