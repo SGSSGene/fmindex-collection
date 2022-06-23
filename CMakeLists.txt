@@ -17,7 +17,7 @@ include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 link_libraries (${Boost_LIBRARIES})
 
 find_package (fmt)
-link_libraries (fmt::fmt-header-only)
+link_libraries (fmt::fmt)
 
 include_directories (SYSTEM "${CMAKE_CURRENT_LIST_DIR}/lib/cereal/include")
 
