@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         osname: ["MacOS 11", "Ubuntu 22.04"]
         compiler: ["gcc12 (c++20)", "gcc11 (c++20)", "gcc10 (c++20)", "gcc12 (c++20, Debug)"]
