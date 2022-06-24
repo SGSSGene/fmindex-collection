@@ -73,7 +73,7 @@ jobs:
         run: |
           touch ${HOME}/.activate_brew
           brew update
-          brew install --force-bottle fmt boost cmake gcc@10 gcc@11 gcc@12 pkg-config
+          brew install --force-bottle fmt boost cmake ${{ matrix.brew_pkgs }} pkg-config
         if: matrix.osname == 'MacOS 11'
 
       - name: Install Tools on Ubuntu
@@ -83,7 +83,7 @@ jobs:
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           sudo apt-get update -y
           sudo apt-get install -y build-essential
-          brew install --force-bottle fmt boost cmake gcc@10 gcc@11 gcc@12 pkg-config
+          brew install --force-bottle fmt boost cmake ${{ matrix.brew_pkgs }} pkg-config
           ${{ matrix.cxx }} --version
         if: matrix.osname == 'Ubuntu 22.04'
 
