@@ -71,7 +71,7 @@ jobs:
       - name: Install Tools
         run: |
           brew update
-          brew install --force-bottle fmt boost cmake ${{ matrix.brew_pkgs }}
+          brew install --force-bottle fmt cmake ${{ matrix.brew_pkgs }}
 
       - name: Tool versions
         run: |

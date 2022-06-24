@@ -22,7 +22,6 @@ add_subdirectory(src/search_schemes)
 add_subdirectory(src/libsaispp)
 
 if (${ROOT_PROJECT})
-    find_package (Boost)
     find_package (fmt)
 
     add_subdirectory(lib/Catch2)
@@ -40,14 +39,12 @@ if (${ROOT_PROJECT})
 
     target_include_directories(example
         SYSTEM PRIVATE
-        ${Boost_INCLUDE_DIRS}
         "${CMAKE_CURRENT_LIST_DIR}/lib/cereal/include"
     )
     target_link_libraries(example
         PRIVATE
         fmindex-collection
         search_schemes
-        ${Boost_LIBRARIES}
         fmt::fmt-header-only
     )
 
@@ -58,14 +55,12 @@ if (${ROOT_PROJECT})
     )
     target_include_directories(easyExample
         SYSTEM PRIVATE
-        ${Boost_INCLUDE_DIRS}
         "${CMAKE_CURRENT_LIST_DIR}/lib/cereal/include"
     )
     target_link_libraries(easyExample
         PRIVATE
         fmindex-collection
         search_schemes
-        ${Boost_LIBRARIES}
         fmt::fmt-header-only
     )
 endif()
