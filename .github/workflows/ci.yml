@@ -29,9 +29,12 @@ jobs:
           - osname: "Ubuntu 22.04"
             os: ubuntu-22.04
             cmake_flags: ""
+            threads: 2
+
           - osname: "MacOS 11"
             os: macos-11
             cmake_flags: "-DFMC_USE_SDSL=NO"
+            threads: 3
 
           - compiler: "gcc12 (c++20)"
             cxx: "g++-12"
@@ -104,4 +107,4 @@ jobs:
         run: |
           source ${HOME}/.activate_brew
           cd fmc-build
-          ctest . -j2 --output-on-failure
+          ctest . -j ${{ matrix.threads }} --output-on-failure
