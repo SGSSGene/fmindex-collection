@@ -22,7 +22,7 @@ add_subdirectory(src/search_schemes)
 add_subdirectory(src/libsaispp)
 
 if (${ROOT_PROJECT})
-    find_package (fmt)
+    find_package (fmt REQUIRED)
 
     add_subdirectory(lib/Catch2)
 
