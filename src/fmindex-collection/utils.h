@@ -33,11 +33,11 @@ auto createSequences(Sequences auto const& _input, bool reverse=false) -> std::t
     // compute total numbers of bytes of the text including delimiters "$"
     size_t totalSize = std::accumulate(begin(_input), end(_input), size_t{0}, [](auto s, auto const& l) { return s + l.size() + 1; });
 
-    // our concatenated sequences with delemiters
+    // our concatenated sequences with delimiters
     auto inputText = std::vector<uint8_t>{};
     inputText.reserve(totalSize);
 
-    // list of sizes of the individual sequenes
+    // list of sizes of the individual sequences
     auto inputSizes = std::vector<size_t>{};
     inputSizes.reserve(_input.size());
 

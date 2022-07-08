@@ -9,27 +9,23 @@ struct ReverseFMIndexCursor {
     static constexpr size_t Sigma    = Index::Sigma;
     static constexpr bool   Reversed = true;
 
-    Index const* index;
+    Index const* index{};
     size_t lb;
-    size_t len;
+    size_t len{};
     size_t depth{};
 
-    ReverseFMIndexCursor()
-        : index{nullptr}
-    {}
+    ReverseFMIndexCursor() noexcept = default;
 
-    ReverseFMIndexCursor(Index const& index)
+    ReverseFMIndexCursor(Index const& index) noexcept
         : ReverseFMIndexCursor{index, 0, index.size(), 0}
     {}
 
-    ReverseFMIndexCursor(Index const& index, size_t lb, size_t len, size_t depth)
+    ReverseFMIndexCursor(Index const& index, size_t lb, size_t len, size_t depth) noexcept
         : index{&index}
         , lb{lb}
         , len{len}
         , depth{depth}
     {}
-    ReverseFMIndexCursor(ReverseFMIndexCursor const&) = default;
-    auto operator=(ReverseFMIndexCursor const&) -> ReverseFMIndexCursor& = default;
 
     auto extendRight(uint8_t symb) const -> ReverseFMIndexCursor {
         size_t newLb  = index->occ.rank(lb, symb);
