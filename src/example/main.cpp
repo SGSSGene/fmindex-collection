@@ -19,12 +19,12 @@ void visitAllTables(CB cb) {
 //    cb(std::type_identity<occtable::bitvector::OccTable<Sigma>>{}, "bitvector");
 //    cb(std::type_identity<occtable::interleaved16::OccTable<Sigma>>{}, "interleaved16");
 //    cb(std::type_identity<occtable::interleaved32::OccTable<Sigma>>{}, "interleaved32");
-    cb(std::type_identity<occtable::interleavedEPR16::OccTable<Sigma>>{}, "interleavedEPR16");
-    cb(std::type_identity<occtable::interleavedEPR32::OccTable<Sigma>>{}, "interleavedEPR32");
-    cb(std::type_identity<occtable::interleavedEPR16V2::OccTable<Sigma>>{}, "interleavedEPR16V2");
-    cb(std::type_identity<occtable::interleavedEPR32V2::OccTable<Sigma>>{}, "interleavedEPR32V2");
-    cb(std::type_identity<occtable::eprV4::OccTable<Sigma>>{}, "EPRV4");
-    cb(std::type_identity<occtable::eprV5::OccTable<Sigma>>{}, "EPRV5");
+    cb(std::type_identity<occtable::interleavedEPR16::OccTable<Sigma>>{});
+    cb(std::type_identity<occtable::interleavedEPR32::OccTable<Sigma>>{});
+    cb(std::type_identity<occtable::interleavedEPR16V2::OccTable<Sigma>>{});
+    cb(std::type_identity<occtable::interleavedEPR32V2::OccTable<Sigma>>{});
+    cb(std::type_identity<occtable::eprV4::OccTable<Sigma>>{});
+    cb(std::type_identity<occtable::eprV5::OccTable<Sigma>>{});
 //    cb(std::type_identity<occtable::interleavedWavelet::OccTable<Sigma>>{}, "compactWavelet");
 //    cb(std::type_identity<occtable::compactWaveletAligned::OccTable<Sigma>>{}, "compactWaveletAligned");
 //    cb(std::type_identity<occtable::compact2Aligned::OccTable<Sigma>>{}, "compact2Aligned");
@@ -43,16 +43,36 @@ int main(int argc, char const* const* argv) {
 
 
     auto config = loadConfig(argc, argv);
-    if (config.queryPath.empty()) {
-        throw std::runtime_error("no queryPath given");
+    if (config.help) {
+        fmt::print("Usage:\n"
+                    "./example --index somefile.fasta\n"
+                    "   this will only build the index files for somefile.fasta\n"
+                    "\n"
+                    "./example --index somefile.fasta\\\n"
+                    "          --query queryfile.fasta\\\n"
+                    "          --algo [pseudo, pseudo_fmtree00-pseudo_fmtree99, ng12, ng14, ng15, ng16, ng17, ng20, ng21, ng22, noerror]\\\n"
+                    "          --gen <pigeon_opt|pigeon|h2|kucherov|backtracking>\\\n"
+                    "          --queries <int> (maximal of number of queries)\\\n"
+                    "          --read_length <int> (shorten all queries to this length)\\\n"
+                    "          --save_output (saves output at the end)\\\n"
+                    "          --min_k <int> (minimal number of errors)\\\n"
+                    "          --max_k <int> (maximal number of errors)\\\n"
+                    "          --stepSize_k <int> (steps of errors)\\\n"
+                    "          --no-reverse (don't use reverse compliment)\n"
+        );
+        return 0;
     }
     auto const [queries, queryInfos] = loadQueries<Sigma>(config.queryPath, config.reverse);
 
-    fmt::print("loaded {} queries (incl reverse complements)\n", queries.size());
-    fmt::print("{:15}: {:>10}  ({:>10} +{:>10} ) {:>10}    - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", "name", "time_search + time_locate", "time_search", "time_locate", "(time_search+time_locate)/queries.size()", "resultCt", "results.size()", "uniqueResults.size()", "readIds.size()", "memory");
+    if (!queries.empty()) {
+        fmt::print("loaded {} queries (incl reverse complements)\n", queries.size());
+        fmt::print("{:15}: {:>10}  ({:>10} +{:>10} ) {:>10}    - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", "name", "time_search + time_locate", "time_search", "time_locate", "(time_search+time_locate)/queries.size()", "resultCt", "results.size()", "uniqueResults.size()", "readIds.size()", "memory");
+    }
 
 
-    visitAllTables<Sigma>([&]<template <size_t> typename Table>(std::type_identity<Table<Sigma>>, std::string name) {
+    visitAllTables<Sigma>([&]<template <size_t> typename Table>(std::type_identity<Table<Sigma>>) {
+        std::string name = Table<Sigma>::extension();
+
         if constexpr (OccTableMemoryUsage<Table<Sigma>>) {
             size_t s = Table<Sigma>::expectedMemoryUsage(3'000'000'000ul);
             if (s > 1024*1024*1024*56ul) {

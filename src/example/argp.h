@@ -7,6 +7,7 @@ struct Config {
     bool saveOutput{false};
     size_t minK{0}, maxK{6}, k_stepSize{1};
     bool reverse{true};
+    bool help{false};
 
     std::vector<std::string> algorithms;
 
@@ -48,6 +49,8 @@ auto loadConfig(int argc, char const* const* argv) {
             config.k_stepSize = std::stod(argv[i]);
         } else if (argv[i] == std::string{"--no-reverse"}) {
             config.reverse = false;
+        } else if (argv[i] == std::string{"--help"}) {
+            config.help = true;
         } else {
             throw std::runtime_error("unknown commandline " + std::string{argv[i]});
         }

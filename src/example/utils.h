@@ -22,6 +22,9 @@ template <size_t Sigma>
 auto loadQueries(std::string path, bool reverse) {
     std::vector<std::vector<uint8_t>> queries;
     std::vector<Query> queryInfos;
+    if (path.empty() || !std::filesystem::exists(path)) {
+        return std::make_tuple(queries, queryInfos);
+    }
     enum class Mode { Name, Sequence };
     {
         auto b = readFile(path);
@@ -92,7 +95,7 @@ template <size_t Sigma, typename CSA, template <size_t> typename Table>
 auto loadIndex(std::string path) {
     auto indexPath = path + "." + Table<Sigma>::extension() + ".index";
     if (!std::filesystem::exists(indexPath)) {
-        auto [ref, refInfo] = loadQueries<Sigma>(path + ".fasta", false);
+        auto [ref, refInfo] = loadQueries<Sigma>(path, false);
         auto index = fmindex_collection::BiFMIndex<Table<Sigma>>{ref, 16};
         // save index here
         auto ofs     = std::ofstream{indexPath, std::ios::binary};
