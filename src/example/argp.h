@@ -8,6 +8,7 @@ struct Config {
     size_t minK{0}, maxK{6}, k_stepSize{1};
     bool reverse{true};
     bool help{false};
+    std::set<std::string> extensions;
 
     std::vector<std::string> algorithms;
 
@@ -27,6 +28,9 @@ auto loadConfig(int argc, char const* const* argv) {
         } else if (argv[i] == std::string{"--algo"} and i+1 < argc) {
             ++i;
             config.algorithms.emplace_back(argv[i]);
+        } else if (argv[i] == std::string{"--ext"} and i+1 < argc) {
+            ++i;
+            config.extensions.emplace(argv[i]);
         } else if (argv[i] == std::string{"--gen"} and i+1 < argc) {
             ++i;
             config.generator = argv[i];

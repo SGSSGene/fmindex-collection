@@ -1,8 +1,6 @@
 #include "utils.h"
 #include "argp.h"
 
-#include <fmindex-collection/fmindex-collection.h>
-#include <fmindex-collection/occtable/all.h>
 #include <fmindex-collection/search/all.h>
 #include <fmindex-collection/locate.h>
 #include <search_schemes/generator/all.h>
@@ -13,29 +11,6 @@
 
 using namespace fmindex_collection;
 
-template <size_t Sigma, typename CB>
-void visitAllTables(CB cb) {
-//    cb(std::type_identity<occtable::naive::OccTable<Sigma>>{}, "naive");
-//    cb(std::type_identity<occtable::bitvector::OccTable<Sigma>>{}, "bitvector");
-//    cb(std::type_identity<occtable::interleaved16::OccTable<Sigma>>{}, "interleaved16");
-//    cb(std::type_identity<occtable::interleaved32::OccTable<Sigma>>{}, "interleaved32");
-    cb(std::type_identity<occtable::interleavedEPR16::OccTable<Sigma>>{});
-    cb(std::type_identity<occtable::interleavedEPR32::OccTable<Sigma>>{});
-    cb(std::type_identity<occtable::interleavedEPR16V2::OccTable<Sigma>>{});
-    cb(std::type_identity<occtable::interleavedEPR32V2::OccTable<Sigma>>{});
-    cb(std::type_identity<occtable::eprV4::OccTable<Sigma>>{});
-    cb(std::type_identity<occtable::eprV5::OccTable<Sigma>>{});
-//    cb(std::type_identity<occtable::interleavedWavelet::OccTable<Sigma>>{}, "compactWavelet");
-//    cb(std::type_identity<occtable::compactWaveletAligned::OccTable<Sigma>>{}, "compactWaveletAligned");
-//    cb(std::type_identity<occtable::compact2Aligned::OccTable<Sigma>>{}, "compact2Aligned");
-//    cb(std::type_identity<occtable::wavelet::OccTable<Sigma>>{}, "wavelet");
-//    cb(std::type_identity<occtable::sdsl_wt_bldc::OccTable<Sigma>>{}, "sdsl_wt_bldc");
-//    cb(std::type_identity<occtable::sdsl_wt_epr::OccTable<Sigma>>{}, "sdsl_wt_epr");
-//    cb(std::type_identity<occtable::compact::OccTable<Sigma>>{}, "compact");
-//    cb(std::type_identity<occtable::compactAligned::OccTable<Sigma>>{}, "compactAligned");
-//    cb(std::type_identity<occtable::compactPrefix::OccTable<Sigma>>{}, "compactPrefix");
-//    cb(std::type_identity<occtable::bitvectorPrefix::OccTable<Sigma>>{}, "bitvectorPrefix");
-}
 
 
 int main(int argc, char const* const* argv) {
@@ -43,7 +18,26 @@ int main(int argc, char const* const* argv) {
 
 
     auto config = loadConfig(argc, argv);
+    auto count = std::map<std::string, int>{};
+    visitAllTables<Sigma>([&]<template <size_t> typename Table>(std::type_identity<Table<Sigma>>) {
+        auto ext = Table<Sigma>::extension();
+        count[ext] += 1;
+        if (count.at(ext) != 1) {
+            throw std::runtime_error("two different indices share the same file ending");
+        }
+    });
+
+    if (config.extensions.empty()) {
+        for (auto [key, value] : count) {
+            config.extensions.emplace(key);
+        }
+    }
+
     if (config.help) {
+        std::string ext = count.begin()->first;
+        for (auto iter = ++count.begin(); iter != count.end(); ++iter) {
+            ext += ", " + iter->first;
+        }
         fmt::print("Usage:\n"
                     "./example --index somefile.fasta\n"
                     "   this will only build the index files for somefile.fasta\n"
@@ -51,6 +45,7 @@ int main(int argc, char const* const* argv) {
                     "./example --index somefile.fasta\\\n"
                     "          --query queryfile.fasta\\\n"
                     "          --algo [pseudo, pseudo_fmtree00-pseudo_fmtree99, ng12, ng14, ng15, ng16, ng17, ng20, ng21, ng22, noerror]\\\n"
+                    "          --ext [{}]\\\n"
                     "          --gen <pigeon_opt|pigeon|h2|kucherov|backtracking>\\\n"
                     "          --queries <int> (maximal of number of queries)\\\n"
                     "          --read_length <int> (shorten all queries to this length)\\\n"
@@ -59,7 +54,7 @@ int main(int argc, char const* const* argv) {
                     "          --max_k <int> (maximal number of errors)\\\n"
                     "          --stepSize_k <int> (steps of errors)\\\n"
                     "          --no-reverse (don't use reverse compliment)\n"
-        );
+        , ext);
         return 0;
     }
     auto const [queries, queryInfos] = loadQueries<Sigma>(config.queryPath, config.reverse);
@@ -72,6 +67,7 @@ int main(int argc, char const* const* argv) {
 
     visitAllTables<Sigma>([&]<template <size_t> typename Table>(std::type_identity<Table<Sigma>>) {
         std::string name = Table<Sigma>::extension();
+        if (config.extensions.count(name) == 0) return;
 
         if constexpr (OccTableMemoryUsage<Table<Sigma>>) {
             size_t s = Table<Sigma>::expectedMemoryUsage(3'000'000'000ul);
@@ -80,9 +76,9 @@ int main(int argc, char const* const* argv) {
                 return;
             }
         }
-
+        fmt::print("start loading {} ...", name);
         auto index = loadIndex<Sigma, CSA, Table>(config.indexPath);
-        fmt::print("index loaded\n");
+        fmt::print("done\n");
         for (auto const& algorithm : config.algorithms) {
             fmt::print("using algorithm {}\n", algorithm);
 
