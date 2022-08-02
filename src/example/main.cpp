@@ -157,8 +157,17 @@ int main(int argc, char const* const* argv) {
 
     std::vector<std::string> algorithms;
 
+    std::string queryPath{};
+    std::string indexPath{};
+
     for (int i{1}; i < argc; ++i) {
-        if (argv[i] == std::string{"--algo"} and i+1 < argc) {
+	if (argv[i] == std::string{"--query"} and i+1 < argc) {
+            ++i;
+            queryPath = argv[i];
+	} else if (argv[i] == std::string{"--index"} and i+1 < argc) {
+            ++i;
+            indexPath = argv[i];
+        } else if (argv[i] == std::string{"--algo"} and i+1 < argc) {
             ++i;
             algorithms.emplace_back(argv[i]);
 //            algorithm = argv[i];
@@ -188,7 +197,10 @@ int main(int argc, char const* const* argv) {
             throw std::runtime_error("unknown commandline " + std::string{argv[i]});
         }
     }
-     auto const [queries, queryInfos] = loadQueries<Sigma>("/home/gene/hg38/sampled_illumina_reads.fasta", reverse);
+    if (queryPath.empty()) {
+        throw std::runtime_error("no queryPath given");
+    }
+    auto const [queries, queryInfos] = loadQueries<Sigma>(queryPath, reverse);
 
 //    auto const [queries, queryInfos] = loadQueries<Sigma>("/home/gene/short_test/read.fasta", reverse);
 
@@ -209,7 +221,7 @@ int main(int argc, char const* const* argv) {
             }
         }
 
-        auto index = loadIndex<Sigma, CSA, Table>("/home/gene/hg38/text.dna4");
+        auto index = loadIndex<Sigma, CSA, Table>(indexPath);
 
 //        auto index = loadIndex<Sigma, CSA, Table>("/home/gene/short_test/text");
         fmt::print("index loaded\n");
