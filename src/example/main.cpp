@@ -148,7 +148,9 @@ int main(int argc, char const* const* argv) {
                 else if (algorithm == "ng20") search_ng20::search(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "ng21") search_ng21::search(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "ng22") search_ng22::search(index, mut_queries, search_scheme, res_cb2);
-                else if (algorithm == "noerror") search_no_errors::search(index, mut_queries, res_cb);
+                else if (algorithm == "noerror") search_no_errors::search(index, mut_queries, [&](size_t queryId, auto cursor) {
+                    res_cb(queryId, cursor, 0);
+                });
 
                 auto time_search = sw.reset();
 
