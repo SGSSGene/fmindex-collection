@@ -38,6 +38,10 @@ int main(int argc, char const* const* argv) {
         for (auto iter = ++count.begin(); iter != count.end(); ++iter) {
             ext += ", " + iter->first;
         }
+        std::string gens = search_schemes::generator::all.begin()->first;
+        for (auto iter = ++search_schemes::generator::all.begin(); iter != search_schemes::generator::all.end(); ++iter) {
+            gens += "|" + iter->first;
+        }
         fmt::print("Usage:\n"
                     "./example --index somefile.fasta\n"
                     "   this will only build the index files for somefile.fasta\n"
@@ -46,7 +50,7 @@ int main(int argc, char const* const* argv) {
                     "          --query queryfile.fasta\\\n"
                     "          --algo [pseudo, pseudo_fmtree00-pseudo_fmtree99, ng12, ng14, ng15, ng16, ng17, ng20, ng21, ng22, noerror]\\\n"
                     "          --ext [{}]\\\n"
-                    "          --gen <pigeon_opt|pigeon|h2|kucherov|backtracking>\\\n"
+                    "          --gen <{}>\\\n"
                     "          --queries <int> (maximal of number of queries)\\\n"
                     "          --read_length <int> (shorten all queries to this length)\\\n"
                     "          --save_output (saves output at the end)\\\n"
@@ -54,7 +58,7 @@ int main(int argc, char const* const* argv) {
                     "          --max_k <int> (maximal number of errors)\\\n"
                     "          --stepSize_k <int> (steps of errors)\\\n"
                     "          --no-reverse (don't use reverse compliment)\n"
-        , ext);
+        , ext, gens);
         return 0;
     }
     auto const [queries, queryInfos] = loadQueries<Sigma>(config.queryPath, config.reverse);
@@ -107,12 +111,11 @@ int main(int argc, char const* const* argv) {
                     mut_queries.resize(mut_queries.size() / 10);
                 }
                 auto search_scheme = [&]() {
-                    if (config.generator == "pigeon_opt")   return search_schemes::expand(search_schemes::generator::pigeon_opt(0, k), mut_queries[0].size());
-                    if (config.generator == "pigeon")       return search_schemes::expand(search_schemes::generator::pigeon_trivial(0, k), mut_queries[0].size());
-                    if (config.generator == "h2")           return search_schemes::expand(search_schemes::generator::h2(k+2, 0, k), mut_queries[0].size());
-                    if (config.generator == "kucherov")     return search_schemes::expand(search_schemes::generator::kucherov(k+1, k), mut_queries[0].size());
-                    if (config.generator == "backtracking") return search_schemes::expand(search_schemes::generator::backtracking(1, 0, k), mut_queries[0].size());
-                    throw std::runtime_error("unknown search scheme");
+                    auto iter = search_schemes::generator::all.find(config.generator);
+                    if (iter == search_schemes::generator::all.end()) {
+                        throw std::runtime_error("unknown search scheme generetaror \"" + config.generator + "\"");
+                    }
+                    return iter->second(0, k, 0, 0); //!TODO last two parameters are not being used
                 }();
 
                 size_t resultCt{};
