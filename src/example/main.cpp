@@ -115,7 +115,8 @@ int main(int argc, char const* const* argv) {
                     if (iter == search_schemes::generator::all.end()) {
                         throw std::runtime_error("unknown search scheme generetaror \"" + config.generator + "\"");
                     }
-                    return iter->second(0, k, 0, 0); //!TODO last two parameters are not being used
+                    auto len = mut_queries[0].size();
+                    return search_schemes::expand(iter->second(0, k, 0, 0), len); //!TODO last two parameters of second are not being used
                 }();
 
                 size_t resultCt{};
