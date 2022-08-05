@@ -63,4 +63,15 @@ if (${ROOT_PROJECT})
         search_schemes
         fmt::fmt-header-only
     )
+
+    add_executable(run_search_schemes
+        src/run_search_schemes/main.cpp
+    )
+
+    target_link_libraries(run_search_schemes
+        PRIVATE
+        search_schemes
+        fmt::fmt-header-only
+    )
+
 endif()
