@@ -108,25 +108,23 @@ int main(int argc, char const* const* argv) {
                 }
             }();
             for (size_t k{config.minK}; k <= config.maxK; k = k + config.k_stepSize) {
-                if (k >= 4 and k != 6) {
+                /*if (k >= 4 and k != 6) {
                     mut_queries.resize(mut_queries.size() / 10);
-                }
+                }*/
                 auto search_scheme = [&]() {
-                    bool dyn = false;
-                    if (config.generator.size() > 4 and config.generator.substr(config.generator.size()-4) == "_dyn") {
-                        config.generator = config.generator.substr(config.generator.size()-4);
-                        dyn = true;
-                    }
                     auto iter = search_schemes::generator::all.find(config.generator);
                     if (iter == search_schemes::generator::all.end()) {
                         throw std::runtime_error("unknown search scheme generetaror \"" + config.generator + "\"");
                     }
                     auto len = mut_queries[0].size();
-                    if (!dyn) {
-                        return search_schemes::expand(iter->second(0, k, 0, 0), len); //!TODO last two parameters of second are not being used
+                auto oss = iter->second(0, k, 0, 0); //!TODO last two parameters of second are not being used
+                auto ess = search_schemes::expand(oss, len);
+                auto dss = search_schemes::expandDynamic(oss, len, 4, 3'000'000'000); //!TODO use correct Sigma and text size
+                fmt::print("ss diff: {} to {}, using dyn: {}\n", search_schemes::expectedNodeCount(ess, 4, 3'000'000'000), search_schemes::expectedNodeCount(dss, 4, 3'000'000'000), config.generator_dyn);
+                    if (!config.generator_dyn) {
+                        return ess;
                     } else {
-                        //!TODO this should be the actually text size
-                        return search_schemes::expandDynamic(iter->second(0, k, 0, 0), 4, len, 3'000'000'000); //!TODO last two parameters of second are not being used
+                        return dss;
                     }
                 }();
 

@@ -1,7 +1,8 @@
 #pragma once
 
 struct Config {
-    std::string generator = "h2";
+    std::string generator = "h2-k2";
+    bool generator_dyn = false;
     size_t maxQueries{};
     size_t readLength{};
     bool saveOutput{false};
@@ -34,6 +35,10 @@ auto loadConfig(int argc, char const* const* argv) {
         } else if (argv[i] == std::string{"--gen"} and i+1 < argc) {
             ++i;
             config.generator = argv[i];
+            if (config.generator.size() > 4 and config.generator.substr(config.generator.size()-4) == "_dyn") {
+                config.generator = config.generator.substr(0, config.generator.size()-4);
+                config.generator_dyn = true;
+            }
         } else if (argv[i] == std::string{"--queries"} and i+1 < argc) {
             ++i;
             config.maxQueries = std::stod(argv[i]);
