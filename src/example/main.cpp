@@ -39,8 +39,9 @@ int main(int argc, char const* const* argv) {
             ext += ", " + iter->first;
         }
         std::string gens = search_schemes::generator::all.begin()->first;
+        gens = gens + "|" + gens + "_dyn";
         for (auto iter = ++search_schemes::generator::all.begin(); iter != search_schemes::generator::all.end(); ++iter) {
-            gens += "|" + iter->first;
+            gens += "|" + iter->first + "|" + iter->first + "_dyn";
         }
         fmt::print("Usage:\n"
                     "./example --index somefile.fasta\n"
@@ -111,12 +112,22 @@ int main(int argc, char const* const* argv) {
                     mut_queries.resize(mut_queries.size() / 10);
                 }
                 auto search_scheme = [&]() {
+                    bool dyn = false;
+                    if (config.generator.size() > 4 and config.generator.substr(config.generator.size()-4) == "_dyn") {
+                        config.generator = config.generator.substr(config.generator.size()-4);
+                        dyn = true;
+                    }
                     auto iter = search_schemes::generator::all.find(config.generator);
                     if (iter == search_schemes::generator::all.end()) {
                         throw std::runtime_error("unknown search scheme generetaror \"" + config.generator + "\"");
                     }
                     auto len = mut_queries[0].size();
-                    return search_schemes::expand(iter->second(0, k, 0, 0), len); //!TODO last two parameters of second are not being used
+                    if (!dyn) {
+                        return search_schemes::expand(iter->second(0, k, 0, 0), len); //!TODO last two parameters of second are not being used
+                    } else {
+                        //!TODO this should be the actually text size
+                        return search_schemes::expandDynamic(iter->second(0, k, 0, 0), 4, len, 3'000'000'000); //!TODO last two parameters of second are not being used
+                    }
                 }();
 
                 size_t resultCt{};
