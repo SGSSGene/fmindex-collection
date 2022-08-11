@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Backtracking.h"
+#include "BacktrackingWithBuffers.h"
 #include "SearchNg12.h"
 #include "SearchNg14.h"
 #include "SearchNg15.h"
