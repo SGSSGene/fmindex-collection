@@ -130,7 +130,7 @@ int main(int argc, char const* const* argv) {
 
                 size_t resultCt{};
                 StopWatch sw;
-                auto results       = std::vector<std::tuple<size_t, size_t, size_t, std::string>>{};
+                auto results       = std::vector<std::tuple<size_t, size_t, size_t, size_t, std::string>>{};
                 auto resultCursors = std::vector<std::tuple<size_t, LeftBiFMIndexCursor<decltype(index)>, size_t, std::string>>{};
 
                 auto res_cb = [&](size_t queryId, auto cursor, size_t errors) {
@@ -167,15 +167,14 @@ int main(int argc, char const* const* argv) {
                     size_t maxDepth = std::stod(algorithm.substr(13, 2));
                     for (auto const& [queryId, cursor, e, action] : resultCursors) {
                         for (auto [seqId, pos] : LocateFMTree{index, cursor, maxDepth}) {
-                            results.emplace_back(queryId, pos, e, action);
+                            results.emplace_back(queryId, seqId, pos, e, action);
                         }
                         resultCt += cursor.len;
                     }
                 } else if (algorithm == "pseudo_fmtree") {
                     for (auto const& [queryId, cursor, e, action] : resultCursors) {
                         locateFMTree<16>(index, cursor, [&](size_t seqId, size_t pos) {
-                            (void)seqId;
-                            results.emplace_back(queryId, pos, e ,action);
+                            results.emplace_back(queryId, seqId, pos, e ,action);
                         });
                         resultCt += cursor.len;
                     }
@@ -183,7 +182,7 @@ int main(int argc, char const* const* argv) {
                 } else {
                     for (auto const& [queryId, cursor, e, action] : resultCursors) {
                         for (auto [seqId, pos] : LocateLinear{index, cursor}) {
-                            results.emplace_back(queryId, pos, e, action);
+                            results.emplace_back(queryId, seqId, pos, e, action);
                         }
                         resultCt += cursor.len;
                     }
@@ -209,10 +208,9 @@ int main(int argc, char const* const* argv) {
                     if (config.saveOutput) {
                         auto filename =fmt::format("out.k{}.alg{}.ss{}.txt", k, algorithm, name);
                         auto ofs = fopen(filename.c_str(), "w");
-                        fmt::print(ofs, "identifier\tposition\tlength\tED\treverseComlpement\talignment\n");
-                        for (auto const& [queryId, pos, e, action] : results) {
-                            auto const& qi = queryInfos[queryId];
-                            fmt::print(ofs, "{}\t{}\t{}\t{}\t{}\t{}\n", qi.name, pos, 101, e, qi.reverse?1:0, action);
+                        for (auto const& [queryId, seqId, pos, e, action] : results) {
+//                            auto const& qi = queryInfos[queryId];
+                            fmt::print(ofs, "{} {} {}\n", queryId, seqId, pos);
                         }
                         fclose(ofs);
                     }
