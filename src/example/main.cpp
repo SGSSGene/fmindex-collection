@@ -49,7 +49,7 @@ int main(int argc, char const* const* argv) {
                     "\n"
                     "./example --index somefile.fasta\\\n"
                     "          --query queryfile.fasta\\\n"
-                    "          --algo [pseudo, pseudo_fmtree00-pseudo_fmtree99, ng12, ng14, ng15, ng16, ng17, ng20, ng21, ng22, noerror]\\\n"
+                    "          --algo [pseudo, pseudo_ham, pseudo_fmtree00-pseudo_fmtree99, ng12, ng14, ng15, ng16, ng17, ng20, ng21, ng22, noerror, oneerror]\\\n"
                     "          --ext [{}]\\\n"
                     "          --gen <{}>\\\n"
                     "          --queries <int> (maximal of number of queries)\\\n"
@@ -147,6 +147,7 @@ int main(int argc, char const* const* argv) {
 
 
                 if (algorithm == "pseudo") search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
+                if (algorithm == "pseudo_ham") search_pseudo::search<false>(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm.size() == 15 && algorithm.substr(0, 13) == "pseudo_fmtree")  search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "pseudo_fmtree")  search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
                 else if (algorithm == "ng12") search_ng12::search(index, mut_queries, search_scheme, res_cb);
@@ -160,6 +161,8 @@ int main(int argc, char const* const* argv) {
                 else if (algorithm == "noerror") search_no_errors::search(index, mut_queries, [&](size_t queryId, auto cursor) {
                     res_cb(queryId, cursor, 0);
                 });
+                else if (algorithm == "oneerror") search_one_error::search(index, mut_queries,res_cb);
+
 
                 auto time_search = sw.reset();
 
