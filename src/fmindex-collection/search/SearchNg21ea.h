@@ -1,6 +1,9 @@
 #pragma once
 
+#include "../BiFMIndexCursor.h"
+
 #include <array>
+#include <cstddef>
 
 /**
  * Like Ng21, but aborts early

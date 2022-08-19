@@ -1,8 +1,11 @@
 #pragma once
 
-#include <vector>
-#include <functional>
+#include "../BiFMIndexCursor.h"
 
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <vector>
 
 /**
  * As ng14

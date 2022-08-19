@@ -1,6 +1,11 @@
 #pragma once
 
-#include <array>
+#include "../BiFMIndexCursor.h"
+
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <vector>
 
 namespace fmindex_collection {
 namespace search_ng12 {

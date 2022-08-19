@@ -1,9 +1,12 @@
 #pragma once
 
-#include <vector>
+#include "../BiFMIndexCursor.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <limits>
+#include <vector>
 
 /**
  * As ng15 and 20 combined

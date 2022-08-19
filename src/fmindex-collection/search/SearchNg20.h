@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../BiFMIndexCursor.h"
 
 #include <vector>
 #include <cstddef>

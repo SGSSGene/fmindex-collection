@@ -1,6 +1,8 @@
 #pragma once
 
 #include <optional>
+#include <tuple>
+#include <vector>
 
 namespace fmindex_collection {
 

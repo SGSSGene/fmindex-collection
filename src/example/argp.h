@@ -1,5 +1,10 @@
 #pragma once
 
+#include <set>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
 struct Config {
     std::string generator = "h2-k2";
     bool generator_dyn = false;

@@ -2,6 +2,9 @@
 
 #include "../concepts.h"
 
+#include "../BiFMIndexCursor.h"
+
+
 namespace fmindex_collection::search_no_errors {
 
 template <typename index_t, Sequence query_t, typename delegate_t>
