@@ -72,7 +72,7 @@ struct Search {
         auto rInfo = RInfo;
 
         if (mismatchAllowed) {
-            auto cursors = cur.extendLeft();
+            auto cursors = cur.extendRight();
 
             pos += 1;
             if (matchAllowed) {
@@ -103,7 +103,7 @@ struct Search {
 
             e -= 1;
         } else if (matchAllowed) {
-            auto newCur = cur.extendLeft(symb);
+            auto newCur = cur.extendRight(symb);
             RInfo = 'M';
             pos += 1;
             search_next(newCur, symb);
