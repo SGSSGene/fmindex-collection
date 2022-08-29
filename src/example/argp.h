@@ -20,6 +20,13 @@ struct Config {
 
     std::string queryPath{};
     std::string indexPath{};
+
+    enum class Mode {
+        All,
+        BestHits,
+    };
+    Mode mode {Mode::All};
+    size_t maxHitsPerQuery{std::numeric_limits<size_t>::max()};
 };
 
 auto loadConfig(int argc, char const* const* argv) {
@@ -65,6 +72,22 @@ auto loadConfig(int argc, char const* const* argv) {
             config.reverse = false;
         } else if (argv[i] == std::string{"--help"}) {
             config.help = true;
+        } else if (argv[i] == std::string{"--mode"} and i+1 < argc) {
+            ++i;
+            auto s = std::string{argv[i]};
+            if (s == "all") {
+                config.mode = Config::Mode::All;
+            } else if (s == "besthits") {
+                config.mode = Config::Mode::BestHits;
+            } else {
+                throw std::runtime_error("invalid mode \"" + s + "\", must be any of \"all\", \"besthits\"");
+            }
+        } else if (argv[i] == std::string{"--maxhitperquery"} and i+1 < argc) {
+            ++i;
+            config.maxHitsPerQuery = std::stod(argv[i]);
+            if (config.maxHitsPerQuery == 0) {
+                config.maxHitsPerQuery = std::numeric_limits<size_t>::max();
+            }
         } else {
             throw std::runtime_error("unknown commandline " + std::string{argv[i]});
         }

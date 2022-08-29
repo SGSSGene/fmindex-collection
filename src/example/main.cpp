@@ -58,7 +58,9 @@ int main(int argc, char const* const* argv) {
                     "          --min_k <int> (minimal number of errors)\\\n"
                     "          --max_k <int> (maximal number of errors)\\\n"
                     "          --stepSize_k <int> (steps of errors)\\\n"
-                    "          --no-reverse (don't use reverse compliment)\n"
+                    "          --no-reverse (don't use reverse compliment)\\\n"
+                    "          --mode [all, besthits] (all: all hits with k errors (default), besthits: all hits with the lowest hit)\\\n"
+                    "          --maxhitsperquery <int> (some int, 0 = infinit hits)\n"
         , ext, gens);
         return 0;
     }
