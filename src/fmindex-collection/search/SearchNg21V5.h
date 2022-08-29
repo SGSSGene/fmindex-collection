@@ -61,6 +61,7 @@ struct Search {
         }
     }
     void search_next_dir_right(cursor_t const& cur, size_t lastRank) noexcept {
+	if (LInfo != 'M' and LInfo != 'I') return;
         auto symb = query[search.pi[pos]];
 
         bool matchAllowed    = search.l[pos] <= e and e <= search.u[pos]
@@ -114,6 +115,8 @@ struct Search {
 
 
     void search_next_dir_left(cursor_t const& cur, size_t lastRank) noexcept {
+	if (RInfo != 'M' and RInfo != 'I') return;
+
         auto symb = query[search.pi[pos]];
 
         bool matchAllowed    = search.l[pos] <= e and e <= search.u[pos]
