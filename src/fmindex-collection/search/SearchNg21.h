@@ -42,7 +42,7 @@ struct Search {
         auto cur       = cursor_t{index};
         auto blockIter = search.begin();
 
-        search_next<'M', 'M'>(cur, 0, blockIter,0 );
+        search_next<'M', 'M'>(cur, 0, blockIter, 0);
     }
 
     template <bool Right>
@@ -60,17 +60,6 @@ struct Search {
         } else {
             return cur.extendLeft();
         }
-
-        /*auto cursors = std::array<cursor_t, Sigma>{};
-        for (size_t i{1}; i < Sigma; ++i) {
-            if constexpr (Direction == Dir::Right) {
-                cursors[i] = cur.extendRight(i);
-            } else {
-                cursors[i] = cur.extendLeft(i);
-            }
-        }
-        return cursors;*/
-
     }
 
 
