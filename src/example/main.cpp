@@ -50,7 +50,7 @@ int main(int argc, char const* const* argv) {
                     "\n"
                     "./example --index somefile.fasta\\\n"
                     "          --query queryfile.fasta\\\n"
-                    "          --algo [pseudo, pseudo_ham, pseudo_fmtree00-pseudo_fmtree99, ng12, ng14, ng15, ng16, ng17, ng20, ng21, ng22, noerror, oneerror]\\\n"
+                    "          --algo [pseudo, pseudo_ham, pseudo_fmtree00-pseudo_fmtree99, ng12, ng14, ng15, ng16, ng17, ng20, ng21, ng21v2, ng21v3, ng22, noerror, oneerror]\\\n"
                     "          --ext [{}]\\\n"
                     "          --gen <{}>\\\n"
                     "          --queries <int> (maximal of number of queries)\\\n"
@@ -163,6 +163,8 @@ int main(int argc, char const* const* argv) {
                     else if (algorithm == "ng17") search_ng17::search(index, mut_queries, search_scheme, res_cb);
                     else if (algorithm == "ng20") search_ng20::search(index, mut_queries, search_scheme, res_cb);
                     else if (algorithm == "ng21") search_ng21::search(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "ng21v2") search_ng21V2::search(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "ng21v3") search_ng21V3::search(index, mut_queries, search_scheme, res_cb);
                     else if (algorithm == "ng22") search_ng22::search(index, mut_queries, search_scheme, res_cb2);
                     else if (algorithm == "noerror") search_no_errors::search(index, mut_queries, [&](size_t queryId, auto cursor) {
                         res_cb(queryId, cursor, 0);

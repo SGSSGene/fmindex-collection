@@ -10,6 +10,8 @@
 #include "SearchNg17ea.h"
 #include "SearchNg20.h"
 #include "SearchNg21.h"
+#include "SearchNg21V2.h"
+#include "SearchNg21V3.h"
 #include "SearchNg21ea.h"
 #include "SearchNg22.h"
 #include "SearchPseudo.h"
