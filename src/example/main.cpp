@@ -139,7 +139,7 @@ int main(int argc, char const* const* argv) {
                                 throw std::runtime_error("unknown search scheme generetaror \"" + config.generator + "\"");
                             }
                             auto len = mut_queries[0].size();
-                            auto oss = iter->second(0, j, 0, 0); //!TODO last two parameters of second are not being used
+                            auto oss = iter->second(j, j, 0, 0); //!TODO last two parameters of second are not being used
                             auto ess = search_schemes::expand(oss, len);
                             auto dss = search_schemes::expandDynamic(oss, len, 4, 3'000'000'000); //!TODO use correct Sigma and text size
                             fmt::print("ss diff: {} to {}, using dyn: {}\n", search_schemes::expectedNodeCount(ess, 4, 3'000'000'000), search_schemes::expectedNodeCount(dss, 4, 3'000'000'000), config.generator_dyn);

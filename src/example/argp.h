@@ -26,7 +26,7 @@ struct Config {
         BestHits,
     };
     Mode mode {Mode::All};
-    size_t maxHitsPerQuery{std::numeric_limits<size_t>::max()};
+    size_t maxHitsPerQuery{0};
 };
 
 auto loadConfig(int argc, char const* const* argv) {
