@@ -12,6 +12,7 @@
 using namespace fmindex_collection;
 
 
+class abort_search {};
 
 int main(int argc, char const* const* argv) {
     constexpr size_t Sigma = 5;
@@ -119,75 +120,80 @@ int main(int argc, char const* const* argv) {
                         throw std::runtime_error("unknown search scheme generetaror \"" + config.generator + "\"");
                     }
                     auto len = mut_queries[0].size();
-                auto oss = iter->second(0, k, 0, 0); //!TODO last two parameters of second are not being used
-                auto ess = search_schemes::expand(oss, len);
-                auto dss = search_schemes::expandDynamic(oss, len, 4, 3'000'000'000); //!TODO use correct Sigma and text size
-                fmt::print("ss diff: {} to {}, using dyn: {}\n", search_schemes::expectedNodeCount(ess, 4, 3'000'000'000), search_schemes::expectedNodeCount(dss, 4, 3'000'000'000), config.generator_dyn);
-                    if (!config.generator_dyn) {
-                        return ess;
-                    } else {
-                        return dss;
-                    }
+                    auto oss = iter->second(0, k, 0, 0); //!TODO last two parameters of second are not being used
+                    auto ess = search_schemes::expand(oss, len);
+                    auto dss = search_schemes::expandDynamic(oss, len, 4, 3'000'000'000); //!TODO use correct Sigma and text size
+                    fmt::print("ss diff: {} to {}, using dyn: {}\n", search_schemes::expectedNodeCount(ess, 4, 3'000'000'000), search_schemes::expectedNodeCount(dss, 4, 3'000'000'000), config.generator_dyn);
+                        if (!config.generator_dyn) {
+                            return ess;
+                        } else {
+                            return dss;
+                        }
                 }();
 
                 size_t resultCt{};
                 StopWatch sw;
-                auto results       = std::vector<std::tuple<size_t, size_t, size_t, size_t, std::string>>{};
-                auto resultCursors = std::vector<std::tuple<size_t, LeftBiFMIndexCursor<decltype(index)>, size_t, std::string>>{};
+                auto results       = std::vector<std::tuple<size_t, size_t, size_t, size_t>>{};
+                auto resultCursors = std::vector<std::tuple<size_t, LeftBiFMIndexCursor<decltype(index)>, size_t>>{};
+                auto resultCursorsEditTranscript = std::vector<std::string>{};
 
-                auto res_cb = [&](size_t queryId, auto cursor, size_t errors) {
-                    resultCursors.emplace_back(queryId, cursor, errors, "");
-                };
-                auto res_cb2 = [&](size_t queryId, auto cursor, size_t errors, auto const& actions) {
-                    std::string s;
-                    for (auto a : actions) {
-                        s += a;
-                    }
-                    resultCursors.emplace_back(queryId, cursor, errors, s);
-                };
+                try {
+                    auto res_cb = [&](size_t queryId, auto cursor, size_t errors) {
+                        resultCursors.emplace_back(queryId, cursor, errors);
+                    };
+                    auto res_cb2 = [&](size_t queryId, auto cursor, size_t errors, auto const& actions) {
+                        std::string s;
+                        for (auto a : actions) {
+                            s += a;
+                        }
+                        resultCursors.emplace_back(queryId, cursor, errors);
+                        resultCursorsEditTranscript.emplace_back(std::move(s));
+                    };
 
 
 
-                if (algorithm == "pseudo") search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
-                if (algorithm == "pseudo_ham") search_pseudo::search<false>(index, mut_queries, search_scheme, res_cb);
-                else if (algorithm.size() == 15 && algorithm.substr(0, 13) == "pseudo_fmtree")  search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
-                else if (algorithm == "pseudo_fmtree")  search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
-                else if (algorithm == "ng12") search_ng12::search(index, mut_queries, search_scheme, res_cb);
-                else if (algorithm == "ng14") search_ng14::search(index, mut_queries, search_scheme, res_cb);
-                else if (algorithm == "ng15") search_ng15::search(index, mut_queries, search_scheme, res_cb);
-                else if (algorithm == "ng16") search_ng16::search(index, mut_queries, search_scheme, res_cb);
-                else if (algorithm == "ng17") search_ng17::search(index, mut_queries, search_scheme, res_cb);
-                else if (algorithm == "ng20") search_ng20::search(index, mut_queries, search_scheme, res_cb);
-                else if (algorithm == "ng21") search_ng21::search(index, mut_queries, search_scheme, res_cb);
-                else if (algorithm == "ng22") search_ng22::search(index, mut_queries, search_scheme, res_cb2);
-                else if (algorithm == "noerror") search_no_errors::search(index, mut_queries, [&](size_t queryId, auto cursor) {
-                    res_cb(queryId, cursor, 0);
-                });
-                else if (algorithm == "oneerror") search_one_error::search(index, mut_queries,res_cb);
+                    if (algorithm == "pseudo") search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
+                    if (algorithm == "pseudo_ham") search_pseudo::search<false>(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm.size() == 15 && algorithm.substr(0, 13) == "pseudo_fmtree")  search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "pseudo_fmtree")  search_pseudo::search<true>(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "ng12") search_ng12::search(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "ng14") search_ng14::search(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "ng15") search_ng15::search(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "ng16") search_ng16::search(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "ng17") search_ng17::search(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "ng20") search_ng20::search(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "ng21") search_ng21::search(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "ng22") search_ng22::search(index, mut_queries, search_scheme, res_cb2);
+                    else if (algorithm == "noerror") search_no_errors::search(index, mut_queries, [&](size_t queryId, auto cursor) {
+                        res_cb(queryId, cursor, 0);
+                    });
+                    else if (algorithm == "oneerror") search_one_error::search(index, mut_queries,res_cb);
+                } catch(abort_search const&) {}
 
 
                 auto time_search = sw.reset();
 
+                //!TODO not handling resultCursorsEditTranscripts
                 if (algorithm.size() == 15 && algorithm.substr(0, 13)  == "pseudo_fmtree") {
                     size_t maxDepth = std::stod(algorithm.substr(13, 2));
-                    for (auto const& [queryId, cursor, e, action] : resultCursors) {
+                    for (auto const& [queryId, cursor, e] : resultCursors) {
                         for (auto [seqId, pos] : LocateFMTree{index, cursor, maxDepth}) {
-                            results.emplace_back(queryId, seqId, pos, e, action);
+                            results.emplace_back(queryId, seqId, pos, e);
                         }
                         resultCt += cursor.len;
                     }
                 } else if (algorithm == "pseudo_fmtree") {
-                    for (auto const& [queryId, cursor, e, action] : resultCursors) {
+                    for (auto const& [queryId, cursor, e] : resultCursors) {
                         locateFMTree<16>(index, cursor, [&](size_t seqId, size_t pos) {
-                            results.emplace_back(queryId, seqId, pos, e ,action);
+                            results.emplace_back(queryId, seqId, pos, e);
                         });
                         resultCt += cursor.len;
                     }
 
                 } else {
-                    for (auto const& [queryId, cursor, e, action] : resultCursors) {
+                    for (auto const& [queryId, cursor, e] : resultCursors) {
                         for (auto [seqId, pos] : LocateLinear{index, cursor}) {
-                            results.emplace_back(queryId, seqId, pos, e, action);
+                            results.emplace_back(queryId, seqId, pos, e);
                         }
                         resultCt += cursor.len;
                     }
@@ -200,7 +206,7 @@ int main(int argc, char const* const* argv) {
                     return list;
                 }(results);
                 std::unordered_set<size_t> readIds;
-                for (auto const& [queryId, cursor, e, actions] : resultCursors) {
+                for (auto const& [queryId, cursor, e] : resultCursors) {
                     if (queryId > mut_queries.size()/2) {
                         readIds.insert(queryId - mut_queries.size() / 2);
                     } else {
@@ -213,7 +219,7 @@ int main(int argc, char const* const* argv) {
                     if (config.saveOutput) {
                         auto filename =fmt::format("out.k{}.alg{}.ss{}.txt", k, algorithm, name);
                         auto ofs = fopen(filename.c_str(), "w");
-                        for (auto const& [queryId, seqId, pos, e, action] : results) {
+                        for (auto const& [queryId, seqId, pos, e] : results) {
 //                            auto const& qi = queryInfos[queryId];
                             fmt::print(ofs, "{} {} {}\n", queryId, seqId, pos);
                         }
