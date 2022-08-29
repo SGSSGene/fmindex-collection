@@ -85,9 +85,6 @@ auto loadConfig(int argc, char const* const* argv) {
         } else if (argv[i] == std::string{"--maxhitperquery"} and i+1 < argc) {
             ++i;
             config.maxHitsPerQuery = std::stod(argv[i]);
-            if (config.maxHitsPerQuery == 0) {
-                config.maxHitsPerQuery = std::numeric_limits<size_t>::max();
-            }
         } else {
             throw std::runtime_error("unknown commandline " + std::string{argv[i]});
         }

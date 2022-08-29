@@ -130,6 +130,28 @@ int main(int argc, char const* const* argv) {
                         return dss;
                     }
                 }();
+                auto search_schemes = [&]() {
+                    auto r = std::vector<decltype(search_scheme)>{};
+                    for (size_t j{0}; j<=k; ++j) {
+                        r.emplace_back([&]() {
+                            auto iter = search_schemes::generator::all.find(config.generator);
+                            if (iter == search_schemes::generator::all.end()) {
+                                throw std::runtime_error("unknown search scheme generetaror \"" + config.generator + "\"");
+                            }
+                            auto len = mut_queries[0].size();
+                            auto oss = iter->second(0, j, 0, 0); //!TODO last two parameters of second are not being used
+                            auto ess = search_schemes::expand(oss, len);
+                            auto dss = search_schemes::expandDynamic(oss, len, 4, 3'000'000'000); //!TODO use correct Sigma and text size
+                            fmt::print("ss diff: {} to {}, using dyn: {}\n", search_schemes::expectedNodeCount(ess, 4, 3'000'000'000), search_schemes::expectedNodeCount(dss, 4, 3'000'000'000), config.generator_dyn);
+                            if (!config.generator_dyn) {
+                                return ess;
+                            } else {
+                                return dss;
+                            }
+                        }());
+                    }
+                    return r;
+                }();
 
                 size_t resultCt{};
                 StopWatch sw;
@@ -162,7 +184,15 @@ int main(int argc, char const* const* argv) {
                     else if (algorithm == "ng16") search_ng16::search(index, mut_queries, search_scheme, res_cb);
                     else if (algorithm == "ng17") search_ng17::search(index, mut_queries, search_scheme, res_cb);
                     else if (algorithm == "ng20") search_ng20::search(index, mut_queries, search_scheme, res_cb);
-                    else if (algorithm == "ng21") search_ng21::search(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "ng21") {
+                        if (config.mode == Config::Mode::All) {
+                            if (config.maxHitsPerQuery == 0) search_ng21::search(index, mut_queries, search_scheme, res_cb);
+                            else                             search_ng21::search_n(index, mut_queries, search_scheme, config.maxHitsPerQuery, res_cb);
+                        } else if (config.mode == Config::Mode::BestHits) {
+                            if (config.maxHitsPerQuery == 0) search_ng21::search_best(index, mut_queries, search_schemes, res_cb);
+                            else                             search_ng21::search_best_n(index, mut_queries, search_schemes, config.maxHitsPerQuery, res_cb);
+                        }
+                    }
                     else if (algorithm == "ng21v2") search_ng21V2::search(index, mut_queries, search_scheme, res_cb);
                     else if (algorithm == "ng21v3") search_ng21V3::search(index, mut_queries, search_scheme, res_cb);
                     else if (algorithm == "ng21v4") search_ng21V4::search(index, mut_queries, search_scheme, res_cb);
