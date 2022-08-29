@@ -165,6 +165,8 @@ int main(int argc, char const* const* argv) {
                     else if (algorithm == "ng21") search_ng21::search(index, mut_queries, search_scheme, res_cb);
                     else if (algorithm == "ng21v2") search_ng21V2::search(index, mut_queries, search_scheme, res_cb);
                     else if (algorithm == "ng21v3") search_ng21V3::search(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "ng21v4") search_ng21V4::search(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "ng21v5") search_ng21V5::search(index, mut_queries, search_scheme, res_cb);
                     else if (algorithm == "ng22") search_ng22::search(index, mut_queries, search_scheme, res_cb2);
                     else if (algorithm == "noerror") search_no_errors::search(index, mut_queries, [&](size_t queryId, auto cursor) {
                         res_cb(queryId, cursor, 0);
