@@ -250,9 +250,8 @@ int main(int argc, char const* const* argv) {
 
                 fmt::print("{:15} {:3}: {:>10.3}s ({:>10.3}s+{:>10.3}s) {:>10.3}q/s - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", name, k, time_search + time_locate, time_search, time_locate, mut_queries.size() / (time_search+time_locate), resultCt, results.size(), uniqueResults.size(), readIds.size(), memory);
                 {
-                    if (config.saveOutput) {
-                        auto filename =fmt::format("out.k{}.alg{}.ss{}.txt", k, algorithm, name);
-                        auto ofs = fopen(filename.c_str(), "w");
+                    if (!config.saveOutput.empty()) {
+                        auto ofs = fopen(config.saveOutput.c_str(), "w");
                         for (auto const& [queryId, seqId, pos, e] : results) {
 //                            auto const& qi = queryInfos[queryId];
                             fmt::print(ofs, "{} {} {}\n", queryId, seqId, pos);

@@ -10,7 +10,7 @@ struct Config {
     bool generator_dyn = false;
     size_t maxQueries{};
     size_t readLength{};
-    bool saveOutput{false};
+    std::filesystem::path saveOutput;
     size_t minK{0}, maxK{6}, k_stepSize{1};
     bool reverse{true};
     bool help{false};
@@ -57,8 +57,9 @@ auto loadConfig(int argc, char const* const* argv) {
         } else if (argv[i] == std::string{"--read_length"} and i+1 < argc) {
             ++i;
             config.readLength = std::stod(argv[i]);
-        } else if (argv[i] == std::string{"--save_output"}) {
-            config.saveOutput = true;
+        } else if (argv[i] == std::string{"--save_output"} and i+1 < argc) {
+            ++i;
+            config.saveOutput = argv[i];
         } else if (argv[i] == std::string{"--min_k"} and i+1 < argc) {
             ++i;
             config.minK = std::stod(argv[i]);
