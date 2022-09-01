@@ -211,8 +211,8 @@ int main(int argc, char const* const* argv) {
                             if (config.maxHitsPerQuery == 0) search_ng21V7::search(index, mut_queries, search_scheme, res_cb);
                             else                             search_ng21V7::search_n(index, mut_queries, search_scheme, config.maxHitsPerQuery, res_cb);
                         } else if (config.mode == Config::Mode::BestHits) {
-                            if (config.maxHitsPerQuery == 0) search_ng21V7::search_best(index, mut_queries, search_schemes, res_cb);
-                            else                             search_ng21V7::search_best_n(index, mut_queries, search_schemes, config.maxHitsPerQuery, res_cb);
+                            if (config.maxHitsPerQuery == 0) search_ng21V7::search_best(index, mut_queries, search_scheme, res_cb);
+                            else                             search_ng21V7::search_best_n(index, mut_queries, search_scheme, config.maxHitsPerQuery, res_cb);
                         }
                     }
                     else if (algorithm == "ng22") search_ng22::search(index, mut_queries, search_scheme, res_cb2);

@@ -15,7 +15,7 @@ namespace search_ng21V7 {
 enum class Dir : uint8_t { Left, Right };
 template <typename T>
 struct Block {
-    T       rank;
+    T      rank;
     size_t l;
     size_t u;
     Dir dir;
@@ -29,56 +29,106 @@ struct Search {
     using BlockIter = typename search_scheme_t::const_iterator;
 
     index_t const& index;
-    search_scheme_t const& search;
+    std::vector<std::vector<Block<size_t>>> searches;
+    search_scheme_t const& search_scheme;
     delegate_t const& delegate;
 
-    using ReturnValue = std::decay_t<decltype(delegate(std::declval<cursor_t>(), 0))>;
-    ReturnValue abort{};
-
-
     struct QueueEntry {
+        std::vector<Block<size_t>> const& scheme;
         cursor_t cursor;
         size_t   pos;
         size_t   lastRank;
 
-        using F = void (Search::*)(cursor_t const&, size_t e, size_t pos, size_t lastRank);
+        using F = void (Search::*)(std::vector<Block<size_t>> const&, cursor_t const&, size_t e, size_t pos, size_t lastRank);
         F func;
     };
 
-    std::vector<QueueEntry> current{};
-    std::vector<QueueEntry> next{};
-    std::vector<QueueEntry> after{};
+    struct Buffer {
+        std::vector<QueueEntry> current{};
+        std::vector<QueueEntry> next{};
+        std::vector<QueueEntry> after{};
+    };
+
+    Buffer buffer;
+
+    using ReturnValue = std::decay_t<decltype(delegate(0, std::declval<cursor_t>(), 0))>;
+    ReturnValue abort{};
+    size_t ct{};
+    size_t qidx{};
 
 
-
-    Search(index_t const& _index, search_scheme_t const& _search,  delegate_t const& _delegate)
-        : index     {_index}
-        , search    {_search}
-        , delegate  {_delegate}
+    Search(index_t const& _index, search_scheme_t const& _search_scheme, delegate_t const& _delegate)
+        : index        {_index}
+        , search_scheme{_search_scheme}
+        , delegate     {_delegate}
     {
-        auto entry = QueueEntry {
-            .cursor   = cursor_t{index},
-            .pos      = 0,
-            .lastRank = 0,
-            .func     = &Search::search_next<'M', 'M'>,
-        };
-        after.emplace_back(entry);
 
+        // generate reordered searches
+        auto reordered = std::vector<std::vector<Block<size_t>>>{};
+        auto search2 = std::vector<Block<size_t>>{};
+        for (auto const& s : search_scheme) {
+            for (size_t i{0}; i < s.pi.size(); ++i) {
+                auto dir = [&]() {
+                    if (i == 0) {
+                        return s.pi[i] < s.pi[i+1]?Dir::Right:Dir::Left;
+                    } else {
+                        return s.pi[i-1] < s.pi[i]?Dir::Right:Dir::Left;
+                    }
+                }();
+                search2.emplace_back(Block<size_t>{{}, size_t{s.l[i]}, size_t{s.u[i]}, dir});
+            }
+            reordered.emplace_back(search2);
+            search2.clear();
+        }
+        searches = std::move(reordered);
+    }
+
+    template <typename query_t>
+    void search(size_t _qidx, query_t const& query, bool bestHit = false) {
+        qidx = _qidx;
+        abort = {};
+        ct = 0;
+        // initialize search schemes
+        for (size_t j{0}; j < searches.size(); ++j) {
+            auto& search = searches[j];
+            for (size_t k {0}; k < search.size(); ++k) {
+                search[k].rank = query[search_scheme[j].pi[k]];
+            }
+        }
+
+        // initialize buffers
+        for (size_t i{0}; i < searches.size(); ++i) {
+            auto entry = QueueEntry {
+                .scheme   = searches[i],
+                .cursor   = cursor_t{index},
+                .pos      = 0,
+                .lastRank = 0,
+                .func     = &Search::search_next<'M', 'M'>,
+            };
+            buffer.after.emplace_back(entry);
+        }
+
+        // performe searches
         size_t e{};
         do {
-            std::swap(after, current);
-            after.clear();
-            while (!current.empty()) {
-                for (auto const& q : current) {
-                    (this->*q.func)(q.cursor, e, q.pos, q.lastRank);
+            std::swap(buffer.after, buffer.current);
+            buffer.after.clear();
+            while (!buffer.current.empty()) {
+                for (auto const& q : buffer.current) {
+                    (this->*q.func)(q.scheme, q.cursor, e, q.pos, q.lastRank);
                     if (abort) return;
                 }
-                std::swap(current, next);
-                next.clear();
+                std::swap(buffer.current, buffer.next);
+                buffer.next.clear();
+            }
+            if (bestHit and ct > 0) {
+                buffer.after.clear();
+                break;
             }
             e += 1;
-        } while(!after.empty());
+        } while(!buffer.after.empty());
     }
+
 
     template <bool Right>
     static auto extend(cursor_t const& cur, uint8_t symb) noexcept {
@@ -99,25 +149,26 @@ struct Search {
 
 
     template <char LInfo, char RInfo>
-    void search_next(cursor_t const& cur, size_t e, size_t pos, size_t lastRank) {
+    void search_next(std::vector<Block<size_t>> const& search, cursor_t const& cur, size_t e, size_t pos, size_t lastRank) {
         if (pos == search.size()) {
             if constexpr ((LInfo == 'M' or LInfo == 'I') and (RInfo == 'M' or RInfo == 'I')) {
-                abort = delegate(cur, e);
+                ct += cur.count();
+                abort = delegate(qidx, cur, e);
                 return;
             }
             return;
         }
         if (search[pos].dir == Dir::Right) {
             cur.prefetchRight();
-            search_next_dir<LInfo, RInfo, true>(cur, e, pos, lastRank);
+            search_next_dir<LInfo, RInfo, true>(search, cur, e, pos, lastRank);
         } else {
             cur.prefetchLeft();
-            search_next_dir<LInfo, RInfo, false>(cur, e, pos, lastRank);
+            search_next_dir<LInfo, RInfo, false>(search, cur, e, pos, lastRank);
         }
     }
 
     template <char LInfo, char RInfo, bool Right>
-    void search_next_dir(cursor_t const& cur, size_t e, size_t pos, size_t lastRank) {
+    void search_next_dir(std::vector<Block<size_t>> const& search, cursor_t const& cur, size_t e, size_t pos, size_t lastRank) {
         static constexpr char TInfo = Right ? RInfo : LInfo;
 
         constexpr bool Deletion     = TInfo == 'M' or TInfo == 'D';
@@ -144,7 +195,7 @@ struct Search {
             auto cursors = extend<Right>(cur);
 
             if (matchAllowed) {
-                next.emplace_back(cursors[symb], pos+1, symb, &Search::search_next<OnMatchL, OnMatchR>);
+                buffer.next.emplace_back(search, cursors[symb], pos+1, symb, &Search::search_next<OnMatchL, OnMatchR>);
             }
 
             for (uint8_t i{1}; i < Sigma; ++i) {
@@ -152,155 +203,80 @@ struct Search {
                 if (cursors[i].count() == 0) continue;
 
                 if constexpr (Deletion) {
-                    after.emplace_back(cursors[i], pos, i, &Search::search_next<OnDeletionL, OnDeletionR>); // deletion occured in query
+                    buffer.after.emplace_back(search, cursors[i], pos, i, &Search::search_next<OnDeletionL, OnDeletionR>); // deletion occured in query
                 }
-                after.emplace_back(cursors[i], pos+1, i, &Search::search_next<OnSubstituteL, OnSubstituteR>); // as substitute
+                buffer.after.emplace_back(search, cursors[i], pos+1, i, &Search::search_next<OnSubstituteL, OnSubstituteR>); // as substitute
             }
 
             if constexpr (Insertion) {
-                after.emplace_back(cur, pos+1, lastRank, &Search::search_next<OnInsertionL, OnInsertionR>); // insertion occurred in query
+                buffer.after.emplace_back(search, cur, pos+1, lastRank, &Search::search_next<OnInsertionL, OnInsertionR>); // insertion occurred in query
             }
         } else if (matchAllowed) {
             auto newCur = extend<Right>(cur, symb);
             if (newCur.count()) {
-                next.emplace_back(newCur, pos+1, symb, &Search::search_next<OnMatchL, OnMatchR>);
+                buffer.next.emplace_back(search, newCur, pos+1, symb, &Search::search_next<OnMatchL, OnMatchR>);
             }
         }
     }
 };
 
 
-
-template <typename index_t, typename query_t, typename search_scheme_t, typename search_scheme_reordered_t, typename delegate_t>
-void search_reordered(index_t const& index, query_t&& query, search_scheme_t const& search_scheme, search_scheme_reordered_t& reordered, delegate_t&& delegate) {
+template <typename index_t, typename delegate_t>
+auto refine_callback(delegate_t const& delegate) {
     using cursor_t = BiFMIndexCursor<index_t>;
-    using R = std::decay_t<decltype(delegate(std::declval<cursor_t>(), 0))>;
+    using R = std::decay_t<decltype(delegate(0, std::declval<cursor_t>(), 0))>;
 
-    auto internal_delegate = [&]() {
+    return [&](size_t qidx, auto cur, size_t e) {
         if constexpr (std::same_as<R, bool>) {
-            return delegate;
+            return delegate(qidx, cur, e);
         } else {
-            return [=](auto cur, size_t e) {
-                delegate(cur, e);
-                return std::false_type{};
-            };
-        }
-    }();
-
-    for (size_t j{0}; j < search_scheme.size(); ++j) {
-        auto& search = reordered[j];
-        for (size_t k {0}; k < search.size(); ++k) {
-            search[k].rank = query[search_scheme[j].pi[k]];
-        }
-        auto abort = Search{index, search, internal_delegate}.abort;
-        if (abort) {
-            return;
-        }
-    }
-}
-
-template <typename search_scheme_t>
-auto prepare_reorder(search_scheme_t const& search_scheme) {
-    auto reordered = std::vector<std::vector<Block<size_t>>>{};
-    auto search2 = std::vector<Block<size_t>>{};
-    for (auto const& s : search_scheme) {
-        for (size_t i{0}; i < s.pi.size(); ++i) {
-            auto dir = [&]() {
-                if (i == 0) {
-                    return s.pi[i] < s.pi[i+1]?Dir::Right:Dir::Left;
-                } else {
-                    return s.pi[i-1] < s.pi[i]?Dir::Right:Dir::Left;
-                }
-            }();
-            search2.emplace_back(Block<size_t>{{}, size_t{s.l[i]}, size_t{s.u[i]}, dir});
-        }
-        reordered.emplace_back(search2);
-        search2.clear();
-    }
-    return reordered;
-}
-
-template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t>
-void search(index_t const & index, queries_t && queries, search_scheme_t const & search_scheme, delegate_t && delegate) {
-    if (search_scheme.empty()) return;
-
-    auto reordered = prepare_reorder(search_scheme);
-
-    for (size_t qidx{}; qidx < queries.size(); ++qidx) {
-        search_reordered(index, queries[qidx], search_scheme, reordered, [&](auto const& cur, size_t e) {
             delegate(qidx, cur, e);
-        });
-    }
-}
-
-
-template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t>
-void search_n(index_t const & index, queries_t && queries, search_scheme_t const & search_scheme, size_t n, delegate_t && delegate) {
-    if (search_scheme.empty()) return;
-
-    auto reordered = prepare_reorder(search_scheme);
-
-    for (size_t qidx{}; qidx < queries.size(); ++qidx) {
-        size_t ct{};
-        search_reordered(index, queries[qidx], search_scheme, reordered, [&] (auto cur, size_t e) {
-            if (cur.count() + ct > n) {
-                cur.len = n-ct;
-            }
-            ct += cur.count();
-            delegate(qidx, cur, e);
-            return ct == n;
-        });
-    }
-}
-
-template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t>
-void search_best(index_t const & index, queries_t && queries, std::vector<search_scheme_t> const & search_schemes, delegate_t && delegate) {
-    if (search_schemes.empty()) return;
-
-    auto reordered_list = std::vector<decltype(prepare_reorder(search_schemes[0]))>{};
-    for (auto const& search_scheme : search_schemes) {
-        reordered_list.emplace_back(prepare_reorder(search_scheme));
-    }
-
-    for (size_t qidx{}; qidx < queries.size(); ++qidx) {
-        for (size_t i{0}; i < reordered_list.size(); ++i) {
-            auto& reordered     = reordered_list[i];
-            auto& search_scheme = search_schemes[i];
-            size_t ct{};
-            search_reordered(index, queries[qidx], search_scheme, reordered, [&] (auto const& cur, size_t e) {
-                ct += cur.count();
-                delegate(qidx, cur, e);
-            });
-            if (ct > 0) break;
+            return std::false_type{};
         }
-    }
+    };
 }
 
 template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t>
-void search_best_n(index_t const & index, queries_t && queries, std::vector<search_scheme_t> const & search_schemes, size_t n, delegate_t && delegate) {
-    if (search_schemes.empty()) return;
+void search(index_t const & index, queries_t && queries, search_scheme_t const & search_scheme, delegate_t && delegate, bool bestHit = false) {
+    auto internal_delegate = refine_callback<index_t>(delegate);
 
-    auto reordered_list = std::vector<decltype(prepare_reorder(search_schemes[0]))>{};
-    for (auto const& search_scheme : search_schemes) {
-        reordered_list.emplace_back(prepare_reorder(search_scheme));
+    auto search = Search{index, search_scheme, internal_delegate};
+    for (size_t qidx{}; qidx < queries.size(); ++qidx) {
+        search.search(qidx, queries[qidx], bestHit);
     }
+}
+
+
+template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t>
+void search_n(index_t const & index, queries_t && queries, search_scheme_t const & search_scheme, size_t n, delegate_t && delegate, bool bestHit = false) {
+    size_t ct;
+    auto cb = [&](size_t qidx, auto cur, size_t e) {
+        if (cur.count() + ct > n) {
+            cur.len = n-ct;
+        }
+        ct += cur.count();
+        delegate(qidx, cur, e);
+        return ct == n;
+    };
+    auto internal_delegate = refine_callback<index_t>(cb);
+
+    auto search = Search{index, search_scheme, internal_delegate};
 
     for (size_t qidx{}; qidx < queries.size(); ++qidx) {
-        for (size_t i{0}; i < reordered_list.size(); ++i) {
-            auto& reordered     = reordered_list[i];
-            auto& search_scheme = search_schemes[i];
-            size_t ct{};
-            search_reordered(index, queries[qidx], search_scheme, reordered, [&] (auto cur, size_t e) {
-                if (cur.count() + ct > n) {
-                    cur.len = n-ct;
-                }
-                ct += cur.count();
-                delegate(qidx, cur, e);
-                return ct == n;
-            });
-            if (ct > 0) break;
-        }
+        ct = 0;
+        search.search(qidx, queries[qidx], bestHit);
     }
+}
+
+
+template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t>
+void search_best(index_t const & index, queries_t && queries, search_scheme_t const & search_scheme, delegate_t && delegate) {
+    return search(index, queries, search_scheme, delegate, true);
+}
+
+template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t>
+void search_best_n(index_t const & index, queries_t && queries, search_scheme_t const & search_scheme, size_t n, delegate_t && delegate) {
+    return search_n(index, std::forward<queries_t>(queries), search_scheme, n, std::forward<delegate_t>(delegate), true);
 }
 
 }
