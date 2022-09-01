@@ -15,6 +15,7 @@
 #include "SearchNg21V4.h"
 #include "SearchNg21V5.h"
 #include "SearchNg21V6.h"
+#include "SearchNg21V7.h"
 #include "SearchNg21ea.h"
 #include "SearchNg22.h"
 #include "SearchPseudo.h"
