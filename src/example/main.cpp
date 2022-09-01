@@ -197,6 +197,15 @@ int main(int argc, char const* const* argv) {
                     else if (algorithm == "ng21v3") search_ng21V3::search(index, mut_queries, search_scheme, res_cb);
                     else if (algorithm == "ng21v4") search_ng21V4::search(index, mut_queries, search_scheme, res_cb);
                     else if (algorithm == "ng21v5") search_ng21V5::search(index, mut_queries, search_scheme, res_cb);
+                    else if (algorithm == "ng21v6") {
+                        if (config.mode == Config::Mode::All) {
+                            if (config.maxHitsPerQuery == 0) search_ng21V6::search(index, mut_queries, search_scheme, res_cb);
+                            else                             search_ng21V6::search_n(index, mut_queries, search_scheme, config.maxHitsPerQuery, res_cb);
+                        } else if (config.mode == Config::Mode::BestHits) {
+                            if (config.maxHitsPerQuery == 0) search_ng21V6::search_best(index, mut_queries, search_schemes, res_cb);
+                            else                             search_ng21V6::search_best_n(index, mut_queries, search_schemes, config.maxHitsPerQuery, res_cb);
+                        }
+                    }
                     else if (algorithm == "ng22") search_ng22::search(index, mut_queries, search_scheme, res_cb2);
                     else if (algorithm == "noerror") search_no_errors::search(index, mut_queries, [&](size_t queryId, auto cursor) {
                         res_cb(queryId, cursor, 0);
