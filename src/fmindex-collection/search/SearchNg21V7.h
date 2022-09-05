@@ -6,8 +6,8 @@
 #include <cstddef>
 
 /**
- * like search_ng21V6
- * but using two queues
+ * like search_ng21V6 (with abort flag)
+ * but using two buffers
  */
 namespace fmindex_collection {
 namespace search_ng21V7 {
@@ -45,7 +45,6 @@ struct Search {
 
     struct Buffer {
         std::vector<QueueEntry> current{};
-        std::vector<QueueEntry> next{};
         std::vector<QueueEntry> after{};
     };
 
@@ -83,52 +82,38 @@ struct Search {
         searches = std::move(reordered);
     }
 
-    template <typename query_t>
-    void search(size_t _qidx, query_t const& query, bool bestHit = false) {
+    template <typename query_t, typename bestHit_t>
+    void search(size_t _qidx, query_t const& query, bestHit_t bestHit = false) {
         qidx = _qidx;
         abort = {};
         ct = 0;
+        buffer.current.clear();
+        buffer.after.clear();
+
         // initialize search schemes
         for (size_t j{0}; j < searches.size(); ++j) {
             auto& search = searches[j];
             for (size_t k {0}; k < search.size(); ++k) {
                 search[k].rank = query[search_scheme[j].pi[k]];
             }
+            search_next<'M', 'M'>(search, cursor_t{index}, 0, 0, 0);
         }
 
-        // initialize buffers
-        for (size_t i{0}; i < searches.size(); ++i) {
-            auto entry = QueueEntry {
-                .scheme   = searches[i],
-                .cursor   = cursor_t{index},
-                .pos      = 0,
-                .lastRank = 0,
-                .func     = &Search::search_next<'M', 'M'>,
-            };
-            buffer.after.emplace_back(entry);
-        }
-
-        // performe searches
-        size_t e{};
-        do {
+        // perform searches
+        size_t e{1};
+        while(!buffer.after.empty()) {
             std::swap(buffer.after, buffer.current);
             buffer.after.clear();
-            while (!buffer.current.empty()) {
-                for (auto const& q : buffer.current) {
-                    (this->*q.func)(q.scheme, q.cursor, e, q.pos, q.lastRank);
-                    if (abort) return;
-                }
-                std::swap(buffer.current, buffer.next);
-                buffer.next.clear();
+            for (auto const& q : buffer.current) {
+                (this->*q.func)(q.scheme, q.cursor, e, q.pos, q.lastRank);
+                if (abort) return;
             }
             if (bestHit and ct > 0) {
-                buffer.after.clear();
                 break;
             }
             e += 1;
-        } while(!buffer.after.empty());
+        }
     }
-
 
     template <bool Right>
     static auto extend(cursor_t const& cur, uint8_t symb) noexcept {
@@ -150,6 +135,10 @@ struct Search {
 
     template <char LInfo, char RInfo>
     void search_next(std::vector<Block<size_t>> const& search, cursor_t const& cur, size_t e, size_t pos, size_t lastRank) {
+        if (cur.count() == 0) {
+            return;
+        }
+
         if (pos == search.size()) {
             if constexpr ((LInfo == 'M' or LInfo == 'I') and (RInfo == 'M' or RInfo == 'I')) {
                 ct += cur.count();
@@ -194,14 +183,17 @@ struct Search {
         if (mismatchAllowed) {
             auto cursors = extend<Right>(cur);
 
-            if (matchAllowed) {
-                buffer.next.emplace_back(search, cursors[symb], pos+1, symb, &Search::search_next<OnMatchL, OnMatchR>);
+            if (matchAllowed and cursors[symb].count()) {
+                search_next<OnMatchL, OnMatchR>(search, cursors[symb], e, pos+1, symb);
             }
 
-            for (uint8_t i{1}; i < Sigma; ++i) {
-                if (i == symb) continue;
-                if (cursors[i].count() == 0) continue;
-
+            for (uint8_t i{1}; i < symb; ++i) {
+                if constexpr (Deletion) {
+                    buffer.after.emplace_back(search, cursors[i], pos, i, &Search::search_next<OnDeletionL, OnDeletionR>); // deletion occured in query
+                }
+                buffer.after.emplace_back(search, cursors[i], pos+1, i, &Search::search_next<OnSubstituteL, OnSubstituteR>); // as substitute
+            }
+            for (auto i{symb+1}; i < Sigma; ++i) {
                 if constexpr (Deletion) {
                     buffer.after.emplace_back(search, cursors[i], pos, i, &Search::search_next<OnDeletionL, OnDeletionR>); // deletion occured in query
                 }
@@ -214,7 +206,7 @@ struct Search {
         } else if (matchAllowed) {
             auto newCur = extend<Right>(cur, symb);
             if (newCur.count()) {
-                buffer.next.emplace_back(search, newCur, pos+1, symb, &Search::search_next<OnMatchL, OnMatchR>);
+                search_next<OnMatchL, OnMatchR>(search, newCur, e, pos+1, symb);
             }
         }
     }
@@ -236,8 +228,8 @@ auto refine_callback(delegate_t const& delegate) {
     };
 }
 
-template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t>
-void search(index_t const & index, queries_t && queries, search_scheme_t const & search_scheme, delegate_t && delegate, bool bestHit = false) {
+template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t, typename bestHit_t = std::false_type>
+void search(index_t const & index, queries_t && queries, search_scheme_t const & search_scheme, delegate_t && delegate, bestHit_t bestHit = {}) {
     auto internal_delegate = refine_callback<index_t>(delegate);
 
     auto search = Search{index, search_scheme, internal_delegate};
@@ -247,8 +239,8 @@ void search(index_t const & index, queries_t && queries, search_scheme_t const &
 }
 
 
-template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t>
-void search_n(index_t const & index, queries_t && queries, search_scheme_t const & search_scheme, size_t n, delegate_t && delegate, bool bestHit = false) {
+template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t, typename bestHit_t = std::false_type>
+void search_n(index_t const & index, queries_t && queries, search_scheme_t const & search_scheme, size_t n, delegate_t && delegate, bestHit_t bestHit = {}) {
     size_t ct;
     auto cb = [&](size_t qidx, auto cur, size_t e) {
         if (cur.count() + ct > n) {
@@ -271,12 +263,12 @@ void search_n(index_t const & index, queries_t && queries, search_scheme_t const
 
 template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t>
 void search_best(index_t const & index, queries_t && queries, search_scheme_t const & search_scheme, delegate_t && delegate) {
-    return search(index, queries, search_scheme, delegate, true);
+    return search(index, queries, search_scheme, delegate, std::true_type{});
 }
 
 template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t>
 void search_best_n(index_t const & index, queries_t && queries, search_scheme_t const & search_scheme, size_t n, delegate_t && delegate) {
-    return search_n(index, std::forward<queries_t>(queries), search_scheme, n, std::forward<delegate_t>(delegate), true);
+    return search_n(index, std::forward<queries_t>(queries), search_scheme, n, std::forward<delegate_t>(delegate), std::true_type{});
 }
 
 }

@@ -142,7 +142,6 @@ int main(int argc, char const* const* argv) {
                             auto oss = iter->second(j, j, 0, 0); //!TODO last two parameters of second are not being used
                             auto ess = search_schemes::expand(oss, len);
                             auto dss = search_schemes::expandDynamic(oss, len, 4, 3'000'000'000); //!TODO use correct Sigma and text size
-                            fmt::print("ss diff: {} to {}, using dyn: {}\n", search_schemes::expectedNodeCount(ess, 4, 3'000'000'000), search_schemes::expectedNodeCount(dss, 4, 3'000'000'000), config.generator_dyn);
                             if (!config.generator_dyn) {
                                 return ess;
                             } else {
