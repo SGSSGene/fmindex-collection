@@ -25,9 +25,3 @@ if (FMC_USE_SDSL)
         ${CMAKE_CURRENT_SOURCE_DIR}/../../lib/sdsl-lite/include
     )
 endif()
-
-if (FMC_USE_ROBUST_SERIALIZATION)
-    target_compile_definitions(${PROJECT_NAME} INTERFACE -DFMC_SERIALIZATION_VERSION=1)
-else()
-    target_compile_definitions(${PROJECT_NAME} INTERFACE -DFMC_SERIALIZATION_VERSION=0)
-endif()

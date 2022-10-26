@@ -254,22 +254,12 @@ struct Bitvector {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        int32_t version = FMC_SERIALIZATION_VERSION;
-        ar(version);
-        if (version == 0) {
-            auto l1 = blocks.size();
-            auto l2 = superBlocks.size();
-            ar(l1, l2);
-            blocks.resize(l1);
-            superBlocks.resize(l2);
-            ar(cereal::binary_data(blocks.data(), l1 * sizeof(Block)),
-               cereal::binary_data(superBlocks.data(), l2 * sizeof(std::array<uint64_t, TSigma>)),
-               C);
-        } else if (version == 1) {
-            ar(blocks, superBlocks, C);
-        } else {
-            throw std::runtime_error("unknown index format version " + std::to_string(version));
-        }
+        auto l = blocks.size();
+        ar(l);
+        blocks.resize(l);
+        ar(cereal::binary_data(blocks.data(), l * sizeof(Block)),
+           superBlocks,
+           C);
     }
 };
 

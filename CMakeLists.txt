@@ -16,7 +16,6 @@ endif ()
 project(fmindex-collection)
 
 option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${ROOT_PROJECT})
-option(FMC_USE_ROBUST_SERIALIZATION "Activates robostness serialization against 32bit vs 64bit and little vs big endianes" OFF)
 
 add_subdirectory(src/fmindex-collection)
 add_subdirectory(src/search_schemes)
