@@ -5,6 +5,7 @@
 #include "BitvectorCompact.h"
 #include "cereal_tag.h"
 
+#include <cereal/archives/binary.hpp>
 #include <cmath>
 #include <numeric>
 #include <optional>
@@ -113,7 +114,19 @@ struct CSA {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(ssa, bv, samplingRate, bitsForPosition, bitPositionMask);
+        int32_t version = FMC_SERIALIZATION_VERSION;
+        ar(version);
+        if (version == 0) {
+            size_t l = ssa.size();
+            ar(l);
+            ssa.resize(l);
+            ar(cereal::binary_data(ssa.data(), l * sizeof(uint64_t)), bv, samplingRate, bitsForPosition, bitPositionMask);
+        } else if (version == 1) {
+            ar(ssa, bv, samplingRate, bitsForPosition, bitPositionMask);
+        } else {
+            throw std::runtime_error("unknown index format version " + std::to_string(version));
+        }
+
     }
 };
 

@@ -17,10 +17,17 @@ target_link_libraries(${PROJECT_NAME}
     INTERFACE
 )
 
+
 if (FMC_USE_SDSL)
     target_compile_definitions(${PROJECT_NAME} INTERFACE -DFMC_USE_SDSL)
     target_include_directories(${PROJECT_NAME}
         SYSTEM INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/../../lib/sdsl-lite/include
     )
+endif()
+
+if (FMC_USE_ROBUST_SERIALIZATION)
+    target_compile_definitions(${PROJECT_NAME} INTERFACE -DFMC_SERIALIZATION_VERSION=1)
+else()
+    target_compile_definitions(${PROJECT_NAME} INTERFACE -DFMC_SERIALIZATION_VERSION=0)
 endif()

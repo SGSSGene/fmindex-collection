@@ -5,6 +5,7 @@
 #include <array>
 #include <bitset>
 #include <cassert>
+#include <cereal/archives/binary.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -100,7 +101,19 @@ struct BitvectorCompact {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(superblocks);
+        int32_t version = FMC_SERIALIZATION_VERSION;
+        ar(version);
+        if (version == 0) {
+            size_t l = superblocks.size();
+            ar(l);
+            superblocks.resize(l);
+            ar(cereal::binary_data(superblocks.data(), l * sizeof(Superblock)));
+        } else if (version == 1) {
+            ar(superblocks);
+        } else {
+            throw std::runtime_error("unknown index format version " + std::to_string(version));
+        }
+
     }
 };
 

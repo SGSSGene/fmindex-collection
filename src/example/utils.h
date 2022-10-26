@@ -94,6 +94,7 @@ auto loadQueries(std::string path, bool reverse) {
 
 template <size_t Sigma, typename CSA, template <size_t> typename Table>
 auto loadIndex(std::string path) {
+    auto sw = StopWatch{};
     auto indexPath = path + "." + Table<Sigma>::extension() + ".index";
     if (!std::filesystem::exists(indexPath)) {
         auto [ref, refInfo] = loadQueries<Sigma>(path, false);
@@ -108,6 +109,7 @@ auto loadIndex(std::string path) {
         auto archive = cereal::BinaryInputArchive{ifs};
         auto index = fmindex_collection::BiFMIndex<Table<Sigma>>{fmindex_collection::cereal_tag{}};
         archive(index);
+        std::cout << "loading took " << sw.peek() << "s\n";
         return index;
     }
 }
