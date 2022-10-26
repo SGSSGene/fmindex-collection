@@ -5,7 +5,6 @@
 #include "BitvectorCompact.h"
 #include "cereal_tag.h"
 
-#include <cereal/archives/binary.hpp>
 #include <cmath>
 #include <numeric>
 #include <optional>

@@ -6,7 +6,9 @@
 #include <array>
 #include <bitset>
 #include <cassert>
+#if __has_include(<cereal/archives/binary.hpp>)
 #include <cereal/archives/binary.hpp>
+#endif
 #include <cstdint>
 #include <vector>
 
@@ -252,6 +254,7 @@ struct Bitvector {
         return rank + superBlocks[superBlockId][symb] + C[symb];
     }
 
+#if __has_include(<cereal/archives/binary.hpp>)
     template <typename Archive>
     void serialize(Archive& ar) {
         auto l = blocks.size();
@@ -261,6 +264,7 @@ struct Bitvector {
            superBlocks,
            C);
     }
+#endif
 };
 
 

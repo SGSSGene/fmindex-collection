@@ -5,7 +5,9 @@
 #include <array>
 #include <bitset>
 #include <cassert>
+#if __has_include(<cereal/archives/binary.hpp>)
 #include <cereal/archives/binary.hpp>
+#endif
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -99,6 +101,7 @@ struct BitvectorCompact {
 
     BitvectorCompact(cereal_tag) {}
 
+#if __has_include(<cereal/archives/binary.hpp>)
     template <typename Archive>
     void serialize(Archive& ar) {
         size_t l = superblocks.size();
@@ -106,6 +109,7 @@ struct BitvectorCompact {
         superblocks.resize(l);
         ar(cereal::binary_data(superblocks.data(), l * sizeof(Superblock)));
     }
+#endif
 };
 
 }
