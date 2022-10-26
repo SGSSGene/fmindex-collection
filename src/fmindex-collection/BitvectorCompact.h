@@ -14,9 +14,9 @@ namespace fmindex_collection {
 
 struct BitvectorCompact {
     struct Superblock {
-        uint64_t superBlockEntry{};
-        std::array<uint8_t, 4>  blocks{};
-        std::array<uint64_t, 4> bits{};
+        uint64_t superBlockEntry;
+        std::array<uint8_t, 4>  blocks;
+        std::array<uint64_t, 4> bits;
 
         uint64_t rank(size_t idx) const noexcept {
             assert(idx < 256);
@@ -71,13 +71,13 @@ struct BitvectorCompact {
     template <typename CB>
     BitvectorCompact(size_t length, CB cb) {
         superblocks.reserve(length/256+1);
-        superblocks.emplace_back();
+        superblocks.emplace_back(Superblock{});
         uint64_t sblock_acc{};
         uint16_t block_acc{};
 
         for (size_t size{1}; size <= length; ++size) {
             if (size % 256 == 0) { // new super block + new block
-                superblocks.emplace_back();
+                superblocks.emplace_back(Superblock{});
                 superblocks.back().superBlockEntry = sblock_acc;
                 block_acc = 0;
             } else if (size % 64 == 0) { // new block
