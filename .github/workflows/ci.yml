@@ -25,6 +25,7 @@ jobs:
       matrix:
         osname: ["MacOS 11", "Ubuntu 22.04"]
         compiler: ["gcc12 (c++20)", "gcc11 (c++20)", "gcc10 (c++20)", "gcc12 (c++20, Debug)"]
+
         include:
           - osname: "Ubuntu 22.04"
             os: ubuntu-22.04
@@ -54,37 +55,54 @@ jobs:
             build_type: Debug
 
     steps:
-      - name: Checkout TDL
+      - name: Checkout Repository
         uses: actions/checkout@v3
         with:
           path: fmc
           fetch-depth: 1
 
-      - name: Install Tools
+      - name: Install Tools on Mac
         run: |
+          touch ${HOME}/.activate_brew
           brew update
-          brew install fmt boost cmake gcc@10 gcc gcc@12
+          brew install --force-bottle fmt boost cmake gcc@10 gcc@11 gcc@12 pkg-config
+        if: matrix.osname == 'MacOS 11'
+
+      - name: Install Tools on Ubuntu
+        run: |
+          NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ${HOME}/.activate_brew
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          sudo apt-get update -y
+          sudo apt-get install -y build-essential
+          brew install --force-bottle fmt boost cmake gcc@10 gcc@11 gcc@12 pkg-config
+          ${{ matrix.cxx }} --version
+        if: matrix.osname == 'Ubuntu 22.04'
 
       - name: Tool versions
         run: |
-          env cmake --version
-          env ${{ matrix.cxx }} --version
+          source ${HOME}/.activate_brew
+          cmake --version
+          ${{ matrix.cxx }} --version
 
       - name: Configure tests
         env:
           CXX: ${{ matrix.cxx }}
           CC: ${{ matrix.cc }}
         run: |
+          source ${HOME}/.activate_brew
           mkdir fmc-build
           cd fmc-build
           cmake ../fmc -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_flags }}
 
       - name: Build tests
         run: |
+          source ${HOME}/.activate_brew
           cd fmc-build
           make -k -j2
 
       - name: Run tests
         run: |
+          source ${HOME}/.activate_brew
           cd fmc-build
           ctest . -j2 --output-on-failure
