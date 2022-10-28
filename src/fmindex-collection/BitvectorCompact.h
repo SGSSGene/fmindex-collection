@@ -101,15 +101,21 @@ struct BitvectorCompact {
 
     BitvectorCompact(cereal_tag) {}
 
-#if __has_include(<cereal/archives/binary.hpp>)
     template <typename Archive>
     void serialize(Archive& ar) {
-        size_t l = superblocks.size();
-        ar(l);
-        superblocks.resize(l);
-        ar(cereal::binary_data(superblocks.data(), l * sizeof(Superblock)));
-    }
+#if __has_include(<cereal/archives/binary.hpp>)
+        if constexpr (std::same_as<Archive, cereal::BinaryOutputArchive>
+                        || std::same_as<Archive, cereal::BinaryInputArchive>) {
+            auto l = superblocks.size();
+            ar(l);
+            superblocks.resize(l);
+            ar(cereal::binary_data(superblocks.data(), l * sizeof(Superblock)));
+        } else
 #endif
+        {
+            ar(superblocks);
+        }
+    }
 };
 
 }

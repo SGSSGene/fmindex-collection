@@ -254,17 +254,23 @@ struct Bitvector {
         return rank + superBlocks[superBlockId][symb] + C[symb];
     }
 
-#if __has_include(<cereal/archives/binary.hpp>)
     template <typename Archive>
     void serialize(Archive& ar) {
-        auto l = blocks.size();
-        ar(l);
-        blocks.resize(l);
-        ar(cereal::binary_data(blocks.data(), l * sizeof(Block)),
-           superBlocks,
-           C);
-    }
+#if __has_include(<cereal/archives/binary.hpp>)
+        if constexpr (std::same_as<Archive, cereal::BinaryOutputArchive>
+                        || std::same_as<Archive, cereal::BinaryInputArchive>) {
+            auto l = blocks.size();
+            ar(l);
+            blocks.resize(l);
+            ar(cereal::binary_data(blocks.data(), l * sizeof(Block)),
+               superBlocks,
+               C);
+        } else
 #endif
+        {
+            ar(blocks, superBlocks, C);
+        }
+    }
 };
 
 
