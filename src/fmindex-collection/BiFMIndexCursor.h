@@ -12,17 +12,15 @@ struct BiFMIndexCursor {
     static constexpr size_t Sigma    = Index::Sigma;
     static constexpr bool   Reversed = false;
 
-    Index const* index;
+    Index const* index{};
     size_t lb;
     size_t lbRev;
-    size_t len;
-    BiFMIndexCursor()
-        : index{nullptr}
-    {}
-    BiFMIndexCursor(Index const& index)
+    size_t len{};
+    BiFMIndexCursor() noexcept = default;
+    BiFMIndexCursor(Index const& index) noexcept
         : BiFMIndexCursor{index, 0, 0, index.size()}
     {}
-    BiFMIndexCursor(Index const& index, size_t lb, size_t lbRev, size_t len)
+    BiFMIndexCursor(Index const& index, size_t lb, size_t lbRev, size_t len) noexcept
         : index{&index}
         , lb{lb}
         , lbRev{lbRev}

@@ -12,7 +12,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CMAKE_VERSION: 3.23.2
   TZ: Europe/Berlin
 
 jobs:
@@ -21,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         osname: ["MacOS 11", "Ubuntu 22.04"]
         compiler: ["gcc12 (c++20)", "gcc11 (c++20)", "gcc10 (c++20)", "gcc12 (c++20, Debug)"]
@@ -30,29 +29,38 @@ jobs:
           - osname: "Ubuntu 22.04"
             os: ubuntu-22.04
             cmake_flags: ""
+            threads: 2
+
           - osname: "MacOS 11"
             os: macos-11
             cmake_flags: "-DFMC_USE_SDSL=NO"
+            threads: 3
 
           - compiler: "gcc12 (c++20)"
             cxx: "g++-12"
             cc: "gcc-12"
             build_type: Release
+            brew_pkgs: gcc@12
 
           - compiler: "gcc11 (c++20)"
             cxx: "g++-11"
             cc: "gcc-11"
             build_type: Release
+            brew_pkgs: gcc@11
+
 
           - compiler: "gcc10 (c++20)"
             cxx: "g++-10"
             cc: "gcc-10"
             build_type: Release
+            brew_pkgs: gcc@10
 
           - compiler: "gcc12 (c++20, Debug)"
             cxx: "g++-12"
             cc: "gcc-12"
             build_type: Debug
+            brew_pkgs: gcc@12
+
 
     steps:
       - name: Checkout Repository
@@ -65,7 +73,7 @@ jobs:
         run: |
           touch ${HOME}/.activate_brew
           brew update
-          brew install --force-bottle fmt boost cmake gcc@10 gcc@11 gcc@12 pkg-config
+          brew install --force-bottle fmt boost cmake ${{ matrix.brew_pkgs }} pkg-config
         if: matrix.osname == 'MacOS 11'
 
       - name: Install Tools on Ubuntu
@@ -75,7 +83,7 @@ jobs:
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           sudo apt-get update -y
           sudo apt-get install -y build-essential
-          brew install --force-bottle fmt boost cmake gcc@10 gcc@11 gcc@12 pkg-config
+          brew install --force-bottle fmt boost cmake ${{ matrix.brew_pkgs }} pkg-config
           ${{ matrix.cxx }} --version
         if: matrix.osname == 'Ubuntu 22.04'
 
@@ -105,4 +113,4 @@ jobs:
         run: |
           source ${HOME}/.activate_brew
           cd fmc-build
-          ctest . -j2 --output-on-failure
+          ctest . -j ${{ matrix.threads }} --output-on-failure

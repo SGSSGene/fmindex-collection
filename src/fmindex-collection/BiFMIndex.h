@@ -52,13 +52,12 @@ public:
      * \param _input a list of sequences
      * \param samplingRate rate of the sampling
      */
-    BiFMIndex(std::vector<std::vector<uint8_t>> _input, size_t samplingRate)
+    BiFMIndex(Sequences auto const& _input, size_t samplingRate)
         : occ{cereal_tag{}}
         , occRev{cereal_tag{}}
         , csa{cereal_tag{}}
     {
         auto [totalSize, inputText, inputSizes] = createSequences(_input);
-        decltype(_input){}.swap(_input); // input memory can be deleted
 
         // create BurrowsWheelerTransform and CompressedSuffixArray
         auto [bwt, csa] = [&] () {

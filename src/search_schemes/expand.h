@@ -2,6 +2,7 @@
 
 #include "Scheme.h"
 #include "isValid.h"
+#include "expectedNodeCount.h"
 
 #include <algorithm>
 #include <cassert>
@@ -53,8 +54,8 @@ inline bool isExpandable(Search s, size_t newLen) {
     return true;
 }
 
-inline auto expandPI(std::vector<size_t> const& pi, size_t _newLen) -> std::vector<size_t> {
-    auto counts = expandCount(pi.size(), _newLen);
+
+inline auto expandPI(std::vector<size_t> const& pi, std::vector<size_t> counts) -> std::vector<size_t> {
     auto starts = std::vector<size_t>(pi.size(), 0);
     for (size_t i{1}; i < pi.size(); ++i) {
         starts[i] = starts[i-1] + counts[i-1];
@@ -86,10 +87,14 @@ inline auto expandPI(std::vector<size_t> const& pi, size_t _newLen) -> std::vect
     return nums;
 }
 
-inline auto expandLowerBound(std::vector<size_t> const& pi, std::vector<size_t> bound, size_t _newLen) -> std::vector<size_t> {
+inline auto expandPI(std::vector<size_t> const& pi, size_t _newLen) -> std::vector<size_t> {
+    auto counts = expandCount(pi.size(), _newLen);
+    return expandPI(pi, counts);
+}
+
+inline auto expandLowerBound(std::vector<size_t> const& pi, std::vector<size_t> bound, std::vector<size_t> counts) -> std::vector<size_t> {
     auto expandedBound = std::vector<size_t>{};
 
-    auto counts = expandCount(pi.size(), _newLen);
     for (size_t i{0}; i < pi.size(); ++i) {
         auto count = counts[pi[i]];
         while(count > 1) {
@@ -105,10 +110,14 @@ inline auto expandLowerBound(std::vector<size_t> const& pi, std::vector<size_t> 
     return expandedBound;
 }
 
-inline auto expandUpperBound(std::vector<size_t> const& pi, std::vector<size_t> bound, size_t _newLen) -> std::vector<size_t> {
+inline auto expandLowerBound(std::vector<size_t> const& pi, std::vector<size_t> bound, size_t _newLen) -> std::vector<size_t> {
+    auto counts = expandCount(pi.size(), _newLen);
+    return expandLowerBound(pi, bound, counts);
+}
+
+inline auto expandUpperBound(std::vector<size_t> const& pi, std::vector<size_t> bound, std::vector<size_t> counts) -> std::vector<size_t> {
     auto expandedBound = std::vector<size_t>{};
 
-    auto counts = expandCount(pi.size(), _newLen);
     for (size_t i{0}; i < pi.size(); ++i) {
         auto count = counts[pi[i]];
         while (count --> 0) {
@@ -117,6 +126,13 @@ inline auto expandUpperBound(std::vector<size_t> const& pi, std::vector<size_t> 
     }
     return expandedBound;
 }
+
+
+inline auto expandUpperBound(std::vector<size_t> const& pi, std::vector<size_t> bound, size_t _newLen) -> std::vector<size_t> {
+    auto counts = expandCount(pi.size(), _newLen);
+    return expandUpperBound(pi, bound, counts);
+}
+
 
 
 inline auto expand(Search s, size_t newLen) -> std::optional<Search> {
@@ -138,6 +154,52 @@ inline auto expand(Scheme ss, size_t newLen) -> Scheme {
         }
     }
     return r;
+}
+
+/** special expand function, that is given how every part should be expanded
+ */
+inline auto expand(Search s, std::vector<size_t> parts) -> std::optional<Search> {
+    auto r = Search{};
+    r.pi = expandPI(s.pi, parts);
+    r.l  = expandLowerBound(s.pi, s.l, parts);
+    r.u  = expandUpperBound(s.pi, s.u, parts);
+    if (not isValid(r)) {
+        return std::nullopt;
+    }
+    return {r};
+}
+inline auto expand(Scheme ss, std::vector<size_t> parts) -> Scheme {
+    auto r = Scheme{};
+    for (auto const& s : ss) {
+        auto o = expand(s, parts);
+        if (o) {
+            r.push_back(*o);
+        }
+    }
+    return r;
+}
+
+inline auto expandDynamic(Scheme ss, size_t _newLen, size_t sigma, size_t N) -> Scheme {
+    auto additionalPos = _newLen - ss[0].pi.size();
+    auto counts = std::vector<size_t>(ss[0].pi.size(), 1);
+
+    for (size_t i{0}; i<additionalPos; ++i) {
+        double bestVal = std::numeric_limits<double>::max();
+        size_t bestPos = 0;
+        for (size_t j{0}; j < ss[0].pi.size(); ++j) {
+            counts[j] += 1;
+            auto ess = expand(ss, counts);
+            counts[j] -= 1;
+            auto f = expectedNodeCountEdit(ess, sigma, N);
+            if (f < bestVal) {
+                bestVal = f;
+                bestPos = j;
+            }
+        }
+        counts[bestPos] += 1;
+    }
+
+    return expand(ss, counts);
 }
 
 }

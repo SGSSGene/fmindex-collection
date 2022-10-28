@@ -2,6 +2,7 @@
 
 #include "cereal_tag.h"
 
+#include <cstdint>
 #include <optional>
 #include <vector>
 

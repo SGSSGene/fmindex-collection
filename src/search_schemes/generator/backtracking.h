@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../Scheme.h"
+
+#include <cassert>
 #include <numeric>
 
 

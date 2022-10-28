@@ -7,6 +7,7 @@
 #include "cereal_tag.h"
 
 #include <algorithm>
+#include <cmath>
 #include <optional>
 #include <tuple>
 

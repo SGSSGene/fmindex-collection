@@ -6,11 +6,11 @@
 #include <cstddef>
 
 /**
- * like search_ng14
- * but it is ignoring certain constellation with InDels and Merges
+ * like search_ng21
+ * but using a abort flag instead of return values
  */
 namespace fmindex_collection {
-namespace search_ng21 {
+namespace search_ng21V6 {
 
 enum class Dir : uint8_t { Left, Right };
 template <typename T>
@@ -32,19 +32,19 @@ struct Search {
     search_scheme_t const& search;
     delegate_t const& delegate;
 
+    using ReturnValue = std::decay_t<decltype(delegate(std::declval<cursor_t>(), 0))>;
+    ReturnValue abort{};
+
     Search(index_t const& _index, search_scheme_t const& _search,  delegate_t const& _delegate)
         : index     {_index}
         , search    {_search}
         , delegate  {_delegate}
-    {}
-
-    bool run() {
+    {
         auto cur       = cursor_t{index};
         auto blockIter = search.begin();
 
-        return search_next<'M', 'M'>(cur, 0, blockIter, 0);
+        search_next<'M', 'M'>(cur, 0, blockIter, 0);
     }
-
 
     template <bool Right>
     static auto extend(cursor_t const& cur, uint8_t symb) noexcept {
@@ -65,28 +65,29 @@ struct Search {
 
 
     template <char LInfo, char RInfo>
-    bool search_next(cursor_t const& cur, size_t e, BlockIter blockIter, size_t lastRank) const {
+    void search_next(cursor_t const& cur, size_t e, BlockIter blockIter, size_t lastRank) {
         if (cur.count() == 0) {
-            return false;
+            return;
         }
 
         if (blockIter == end(search)) {
             if constexpr ((LInfo == 'M' or LInfo == 'I') and (RInfo == 'M' or RInfo == 'I')) {
-                return delegate(cur, e);
+                abort = delegate(cur, e);
+                return;
             }
-            return false;
+            return;
         }
         if (blockIter->dir == Dir::Right) {
             cur.prefetchRight();
-            return search_next_dir<LInfo, RInfo, true>(cur, e, blockIter, lastRank);
+            search_next_dir<LInfo, RInfo, true>(cur, e, blockIter, lastRank);
         } else {
             cur.prefetchLeft();
-            return search_next_dir<LInfo, RInfo, false>(cur, e, blockIter, lastRank);
+            search_next_dir<LInfo, RInfo, false>(cur, e, blockIter, lastRank);
         }
     }
 
     template <char LInfo, char RInfo, bool Right>
-    bool search_next_dir(cursor_t const& cur, size_t e, BlockIter blockIter, size_t lastRank) const {
+    void search_next_dir(cursor_t const& cur, size_t e, BlockIter blockIter, size_t lastRank) {
         static constexpr char TInfo = Right ? RInfo : LInfo;
 
         constexpr bool Deletion     = TInfo == 'M' or TInfo == 'D';
@@ -113,43 +114,42 @@ struct Search {
 
             if (matchAllowed) {
                 auto newCur = cursors[symb];
-                bool f = search_next<OnMatchL, OnMatchR>(newCur, e, blockIter+1, symb);
-                if (f) return true;
+                search_next<OnMatchL, OnMatchR>(newCur, e, blockIter+1, symb);
+                if (abort) return;
             }
 
             for (uint8_t i{1}; i < symb; ++i) {
                 auto newCur = cursors[i];
 
                 if constexpr (Deletion) {
-                    bool f = search_next<OnDeletionL, OnDeletionR>(newCur, e+1, blockIter, i); // deletion occurred in query
-                    if (f) return true;
+                    search_next<OnDeletionL, OnDeletionR>(newCur, e+1, blockIter, i); // deletion occurred in query
+                    if (abort) return;
                 }
-                bool f = search_next<OnSubstituteL, OnSubstituteR>(newCur, e+1, blockIter+1, i); // as substitution
-                if (f) return true;
+                search_next<OnSubstituteL, OnSubstituteR>(newCur, e+1, blockIter+1, i); // as substitution
+                if (abort) return;
             }
 
             for (uint8_t i(symb+1); i < Sigma; ++i) {
                 auto newCur = cursors[i];
 
                 if constexpr (Deletion) {
-                    bool f = search_next<OnDeletionL, OnDeletionR>(newCur, e+1, blockIter, i); // deletion occurred in query
-                    if (f) return true;
+                    search_next<OnDeletionL, OnDeletionR>(newCur, e+1, blockIter, i); // deletion occurred in query
+                    if (abort) return;
                 }
-                bool f = search_next<OnSubstituteL, OnSubstituteR>(newCur, e+1, blockIter+1, i); // as substitution
-                if (f) return true;
+                search_next<OnSubstituteL, OnSubstituteR>(newCur, e+1, blockIter+1, i); // as substitution
+                if (abort) return;
             }
 
 
             if constexpr (Insertion) {
-                bool f = search_next<OnInsertionL, OnInsertionR>(cur, e+1, blockIter+1, lastRank); // insertion occurred in query
-                if (f) return true;
+                search_next<OnInsertionL, OnInsertionR>(cur, e+1, blockIter+1, lastRank); // insertion occurred in query
+                if (abort) return;
             }
         } else if (matchAllowed) {
             auto newCur = extend<Right>(cur, symb);
-            bool f = search_next<OnMatchL, OnMatchR>(newCur, e, blockIter+1, symb);
-            if (f) return true;
+            search_next<OnMatchL, OnMatchR>(newCur, e, blockIter+1, symb);
+            if (abort) return;
         }
-        return false;
     }
 };
 
@@ -176,8 +176,8 @@ void search_reordered(index_t const& index, query_t&& query, search_scheme_t con
         for (size_t k {0}; k < search.size(); ++k) {
             search[k].rank = query[search_scheme[j].pi[k]];
         }
-        bool f = Search{index, search, internal_delegate}.run();
-        if (f) {
+        auto abort = Search{index, search, internal_delegate}.abort;
+        if (abort) {
             return;
         }
     }

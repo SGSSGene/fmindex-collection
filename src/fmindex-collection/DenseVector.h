@@ -1,8 +1,11 @@
 #pragma once
 
-#include <vector>
+#include "cereal_tag.h"
+
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 namespace fmindex_collection {
 

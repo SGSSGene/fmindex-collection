@@ -81,7 +81,7 @@ inline auto pigeon_opt(size_t minK, size_t K) -> Scheme {
         // set upper bound
         s.u.push_back(0);
         for (size_t j{i}; j > 0; --j) {
-            s.u.push_back(std::min(K, K-j+1));
+            s.u.push_back(K-j+1);
         }
         for (size_t j{i+1}; j < N; ++j) {
             s.u.push_back(K);
@@ -97,5 +97,4 @@ inline auto pigeon_opt(size_t minK, size_t K) -> Scheme {
 
     return res;
 }
-
 }

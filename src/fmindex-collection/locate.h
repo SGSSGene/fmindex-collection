@@ -1,6 +1,8 @@
 #pragma once
 
 #include <optional>
+#include <tuple>
+#include <vector>
 
 namespace fmindex_collection {
 
@@ -18,19 +20,34 @@ struct LocateLinear {
             pos += 1;
             return *this;
         }
-        auto operator!=(iter const& other) {
-            return pos != other.pos;
+        auto operator!=(size_t _end) const {
+            return pos != _end;
         }
     };
+    //! same as iter, but for reversed text fm index
+    struct rev_iter : iter {
+        size_t depth;
+
+        auto operator*() const -> std::tuple<size_t, size_t> {
+            auto [subjNo, subjOffset] = iter::index.locate(iter::pos);
+            return {subjNo, subjOffset - depth};
+        }
+    };
+
 
     index_t const& index;
     cursor_t cursor;
 
     friend auto begin(LocateLinear const& locate) {
-        return iter{locate.index, locate.cursor.lb};
+        // Check if it is the reversed cursor
+        if constexpr (requires(cursor_t c) {{c.query_length()} -> std::same_as<size_t>; }) {
+            return rev_iter{locate.index, locate.cursor.lb, locate.cursor.depth};
+        } else {
+            return iter{locate.index, locate.cursor.lb};
+        }
     }
     friend auto end(LocateLinear const& locate) {
-        return iter{locate.index, locate.cursor.lb + locate.cursor.len};
+        return locate.cursor.lb + locate.cursor.len;
     }
 };
 

@@ -1,7 +1,13 @@
 #pragma once
 
-#include <array>
+#include "../BiFMIndexCursor.h"
+
+#include <cstddef>
+#include <cstdint>
 #include <deque>
+#include <functional>
+#include <vector>
+
 
 /**
  * like search_ng21 but with alignment string

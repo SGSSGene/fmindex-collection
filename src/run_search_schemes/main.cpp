@@ -1,0 +1,65 @@
+#include <fmt/format.h>
+#include <search_schemes/generator/all.h>
+#include <search_schemes/nodeCount.h>
+#include <search_schemes/expectedNodeCount.h>
+#include <search_schemes/expand.h>
+#include <search_schemes/isComplete.h>
+
+int main(int argc, char** argv) {
+    if (argc != 4) {
+        fmt::print("generators: ");
+        for (auto const& [key, val] : search_schemes::generator::all) {
+            fmt::print("{}, ", key);
+        }
+        fmt::print("\n");
+        fmt::print("call:\n");
+        fmt::print("{} <len> <K> <gen>\n", argv[0]);
+        return 0;
+    }
+
+    auto len = std::stod(argv[1]);
+    auto K   = std::stod(argv[2]);
+    auto gen = argv[3];
+    {
+        auto oss = search_schemes::generator::all.at(gen)(0, K, 0, 0);
+        if (oss.size() == 0) return 0;
+
+//        for (auto s : oss) {
+//            fmt::print("{}\n", fmt::join(s.pi, " "));
+//            fmt::print("{}\n", fmt::join(s.l, " "));
+//            fmt::print("{}\n\n", fmt::join(s.u, " "));
+//        }
+//        fmt::print("\n");
+
+        auto ss = search_schemes::expand(oss, len);
+
+        auto nc = [&](auto ss) {
+            return search_schemes::expectedNodeCount(ss, 4, 3'000'000'000);
+        };
+        auto nce = [&](auto ss) {
+            return search_schemes::expectedNodeCountEdit(ss, 4, 3'000'000'000);
+        };
+        auto dss = search_schemes::expandDynamic(oss, len, 4, 3'000'000'000);
+
+
+//        fmt::print("ess:\n");
+//        for (auto s : ss) {
+//            fmt::print("{}\n", fmt::join(s.pi, " "));
+//            fmt::print("{}\n", fmt::join(s.l, " "));
+//            fmt::print("{}\n\n", fmt::join(s.u, " "));
+//        }
+//        fmt::print("\ndss:\n");
+//        for (auto s : dss) {
+//            fmt::print("{}\n", fmt::join(s.pi, " "));
+//            fmt::print("{}\n", fmt::join(s.l, " "));
+//            fmt::print("{}\n\n", fmt::join(s.u, " "));
+//        }
+
+
+        auto valid = [&](auto ss) {
+            return isValid(ss)/* and isComplete(ss, 0, K)*/;
+        };
+
+        fmt::print ("{:14}: {} ham/edit {:10.0f}/{:10.0f} → {:10.0f}/{:10.0f} ({}, {})\n", gen, K, nc(ss), nce(ss), nc(dss), nce(dss), valid(ss), valid(dss));
+    }
+}

@@ -9,25 +9,21 @@ struct FMIndexCursor {
     static constexpr size_t Sigma    = Index::Sigma;
     static constexpr bool   Reversed = false;
 
-    Index const* index;
+    Index const* index{};
     size_t lb;
-    size_t len;
+    size_t len{};
 
-    FMIndexCursor()
-        : index{nullptr}
-    {}
+    FMIndexCursor() noexcept = default;
 
-    FMIndexCursor(Index const& index)
+    FMIndexCursor(Index const& index) noexcept
         : FMIndexCursor{index, 0, index.size()}
     {}
 
-    FMIndexCursor(Index const& index, size_t lb, size_t len)
+    FMIndexCursor(Index const& index, size_t lb, size_t len) noexcept
         : index{&index}
         , lb{lb}
         , len{len}
     {}
-    FMIndexCursor(FMIndexCursor const&) = default;
-    auto operator=(FMIndexCursor const&) -> FMIndexCursor& = default;
 
     auto extendLeft(uint8_t symb) const -> FMIndexCursor {
         size_t newLb  = index->occ.rank(lb, symb);

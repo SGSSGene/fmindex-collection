@@ -17,14 +17,13 @@ project(fmindex-collection)
 
 option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${ROOT_PROJECT})
 
-find_package (Boost)
-find_package (fmt)
-
 add_subdirectory(src/fmindex-collection)
 add_subdirectory(src/search_schemes)
 add_subdirectory(src/libsaispp)
 
 if (${ROOT_PROJECT})
+    find_package (fmt REQUIRED)
+
     add_subdirectory(lib/Catch2)
 
     enable_testing()
@@ -40,14 +39,12 @@ if (${ROOT_PROJECT})
 
     target_include_directories(example
         SYSTEM PRIVATE
-        ${Boost_INCLUDE_DIRS}
         "${CMAKE_CURRENT_LIST_DIR}/lib/cereal/include"
     )
     target_link_libraries(example
         PRIVATE
         fmindex-collection
         search_schemes
-        ${Boost_LIBRARIES}
         fmt::fmt-header-only
     )
 
@@ -58,14 +55,23 @@ if (${ROOT_PROJECT})
     )
     target_include_directories(easyExample
         SYSTEM PRIVATE
-        ${Boost_INCLUDE_DIRS}
         "${CMAKE_CURRENT_LIST_DIR}/lib/cereal/include"
     )
     target_link_libraries(easyExample
         PRIVATE
         fmindex-collection
         search_schemes
-        ${Boost_LIBRARIES}
         fmt::fmt-header-only
     )
+
+    add_executable(run_search_schemes
+        src/run_search_schemes/main.cpp
+    )
+
+    target_link_libraries(run_search_schemes
+        PRIVATE
+        search_schemes
+        fmt::fmt-header-only
+    )
+
 endif()
