@@ -145,8 +145,10 @@ void visitAllTables(CB cb) {
     cb(std::type_identity<fmindex_collection::occtable::interleavedPrefix::OccTable<Sigma>>{});
     cb(std::type_identity<fmindex_collection::occtable::interleavedWavelet::OccTable<Sigma>>{});
     cb(std::type_identity<fmindex_collection::occtable::naive::OccTable<Sigma>>{});
+#ifdef FMC_USE_SDSL
     cb(std::type_identity<fmindex_collection::occtable::sdsl_wt_bldc::OccTable<Sigma>>{});
     cb(std::type_identity<fmindex_collection::occtable::sdsl_wt_epr::OccTable<Sigma>>{});
+#endif
     cb(std::type_identity<fmindex_collection::occtable::wavelet::OccTable<Sigma>>{});
 }
 
