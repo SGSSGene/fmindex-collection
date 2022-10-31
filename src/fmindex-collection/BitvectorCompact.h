@@ -10,6 +10,7 @@
 #endif
 #include <cstddef>
 #include <cstdint>
+#include <stdexcept>
 #include <vector>
 
 namespace fmindex_collection {
@@ -103,17 +104,34 @@ struct BitvectorCompact {
 
     template <typename Archive>
     void serialize(Archive& ar) {
+        // 0 version: slow path
+        // 1 version: binary path (fast)
+        auto version = []() {
 #if __has_include(<cereal/archives/binary.hpp>)
-        if constexpr (std::same_as<Archive, cereal::BinaryOutputArchive>
-                        || std::same_as<Archive, cereal::BinaryInputArchive>) {
-            auto l = superblocks.size();
-            ar(l);
-            superblocks.resize(l);
-            ar(cereal::binary_data(superblocks.data(), l * sizeof(Superblock)));
-        } else
+            if constexpr (std::same_as<Archive, cereal::BinaryOutputArchive>
+                            || std::same_as<Archive, cereal::BinaryInputArchive>) {
+                return 1;
+            }
 #endif
-        {
+            return 0;
+        }();
+        ar(version);
+
+        if (version == 0) {
             ar(superblocks);
+        } else if (version == 1) {
+#if __has_include(<cereal/archives/binary.hpp>)
+            if constexpr (std::same_as<Archive, cereal::BinaryOutputArchive>
+                            || std::same_as<Archive, cereal::BinaryInputArchive>) {
+                auto l = superblocks.size();
+                ar(l);
+                superblocks.resize(l);
+                ar(cereal::binary_data(superblocks.data(), l * sizeof(Superblock)));
+            } else
+#endif
+            throw std::runtime_error("fmindex-collection - BitvectorCompact was created with binary data, but this is not available in this app");
+        } else {
+            throw std::runtime_error("fmindex-collection - BitvectorCompact was created with legacy format - not readable by this app");
         }
     }
 };

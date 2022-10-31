@@ -10,6 +10,7 @@
 #include <cereal/archives/binary.hpp>
 #endif
 #include <cstdint>
+#include <stdexcept>
 #include <vector>
 
 
@@ -256,20 +257,38 @@ struct Bitvector {
 
     template <typename Archive>
     void serialize(Archive& ar) {
+        // 0 version: slow path
+        // 1 version: binary path (fast)
+        auto version = []() {
 #if __has_include(<cereal/archives/binary.hpp>)
-        if constexpr (std::same_as<Archive, cereal::BinaryOutputArchive>
-                        || std::same_as<Archive, cereal::BinaryInputArchive>) {
-            auto l = blocks.size();
-            ar(l);
-            blocks.resize(l);
-            ar(cereal::binary_data(blocks.data(), l * sizeof(Block)),
-               superBlocks,
-               C);
-        } else
+            if constexpr (std::same_as<Archive, cereal::BinaryOutputArchive>
+                            || std::same_as<Archive, cereal::BinaryInputArchive>) {
+                return 1;
+            }
 #endif
-        {
+            return 0;
+        }();
+        ar(version);
+
+        if (version == 0) {
             ar(blocks, superBlocks, C);
+        } else if (version == 1) {
+#if __has_include(<cereal/archives/binary.hpp>)
+            if constexpr (std::same_as<Archive, cereal::BinaryOutputArchive>
+                            || std::same_as<Archive, cereal::BinaryInputArchive>) {
+                auto l = blocks.size();
+                ar(l);
+                blocks.resize(l);
+                ar(cereal::binary_data(blocks.data(), l * sizeof(Block)),
+                   superBlocks,
+                   C);
+            } else
+#endif
+            throw std::runtime_error("fmindex-collection - InterleavedEPRV2 was created with binary data, but this is not available in this app");
+        } else {
+            throw std::runtime_error("fmindex-collection - InterleavedEPRV2 was created with legacy format - not readable by this app");
         }
+
     }
 };
 
