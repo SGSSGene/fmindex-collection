@@ -10,6 +10,7 @@
 #include <cereal/archives/binary.hpp>
 #endif
 #include <cstdint>
+#include <cstring>
 #include <stdexcept>
 #include <vector>
 
@@ -147,7 +148,11 @@ struct Bitvector {
 
     template <typename CB>
     Bitvector(uint64_t length, CB cb) {
-        blocks.reserve(length/64+2);
+        // Next three lines are a reserve call, with zero initialization
+        // This is required, so padding bytes will also be zero
+        blocks.resize(length/64+2);
+        memset((void*)blocks.data(), 0, blocks.size() * sizeof(Block));
+        blocks.resize(0);
 
         std::array<uint64_t, TSigma> sblock_acc{0};
         std::array<block_t, TSigma> block_acc{0};
