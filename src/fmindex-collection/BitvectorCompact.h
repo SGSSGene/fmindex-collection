@@ -10,6 +10,7 @@
 #endif
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <stdexcept>
 #include <vector>
 
@@ -73,7 +74,12 @@ struct BitvectorCompact {
 
     template <typename CB>
     BitvectorCompact(size_t length, CB cb) {
-        superblocks.reserve(length/256+1);
+        // Next three lines are a reserve call, with zero initialization
+        // This is required, so padding bytes will also be zero
+        superblocks.resize(length/256+1);
+        memset((void*)superblocks.data(), 0, superblocks.size() * sizeof(Superblock));
+        superblocks.resize(0);
+
         superblocks.emplace_back(Superblock{});
         uint64_t sblock_acc{};
         uint16_t block_acc{};
