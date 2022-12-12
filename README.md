@@ -14,13 +14,24 @@ Searching with a bidirectional index consist out of different parts:
 Currently following structures are available and they all fulfill the "OccTable" concept.
 - Naive - storing the occ table in std::vector<size_t> tables, needs O(|Σ|·n·sizeof(size_t)) space. (144GB for the human genome)
 - Bitvector - using bitvector for each table O(|Σ| · n · 2/8). (4.5GB for human genome)
+- InterleavedBitvector-8bit - using bitvectors, but interleaving the bitvectors of different occ columns
+- InterleavedBitvector-16bit - using bitvectors, but interleaving the bitvectors of different occ columns
+- InterleavedBitvector-32bit - using bitvectors, but interleaving the bitvectors of different occ columns
 - BitvectorPrefix - like bitvector, but using to compute the internal prefix ranks (9GB for human genome)
 - Wavelet - Using the wavelet tree structure, needs O(log|Σ| · n · 2/8) (2GB for human genome)
+- InterleavedWavelet
+- InterleavedWavelet32
+- InterleavedPrefix
 - Sdsl_wt_bldc - Using the wavelet tree structure implemented in the sdsl library
-- Compact - using Interleaved Bitvectors, using uint32_t as block size
-- CompactAligned - same as Compact, but the blocks are also memory aligned
-- Compact2 - using Interleaved Bitvectors, using uint16_t as block size
-- Compact2Aligned - same as Compact2, but the blocks are also memory aligned
+- Sdsl_wt_epr - Using the wavelet tree structure implemented in the sdsl library
+- InterLeavedEPR
+- InterleavedEPRV2 - This is recomended for speed
+- EPRV3
+- EPRV4
+- EPRV5
+- DenseEPRV6 - This is recommended for compactnes
+
+see [OccTables](doc/OccTables.png) for more details on their structure
 
 ## Compressed Suffix Array
 Currently only one implementation exists
