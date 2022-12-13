@@ -1,41 +1,48 @@
 # FMIndex-Collection
-Data structures to implement, improve and compare bidirectional fm indices.
+
+This Repository implements data structures and algorithms that involve (bidirectional) fm indices and searching.
 FMIndex structures can be used to search through huge data.
 Example: The human genome consist of around 3 billion base pairs, which can be indexed into a data structure of the size of 6GB (including fmindex and compressed suffix array). This can be searched with thousands of queries per second.
 
-# Data structures
+# Data structures and Algorithms
 Searching with a bidirectional index consist out of different parts:
-1. The Occurrence Table (Data structure of the bidirectional index)
-2. Compressed Suffix Array (Data structure to map the entries of the index into the actual position of the original text)
-3. search algorithm - there are many ways to search, edit distance, hamming distance or using search schemes
-4. Search scheme generator - The currently best performing search algorithms are using search schemes, these need to be generated.
+1. The **Occurrence Table** - Data structure of the bidirectional index
+2. (Compressed) **Suffix Array** - Data structure to map the entries of the index into the actual position of the original text
+3. **FMIndex** and **BiFMIndex** - Data structure that aggregate Occurence Table, Suffix Array and the C array into one container.
+3. **Search algorithm** - there are many ways to search, edit distance, hamming distance or using search schemes
+4. **Search scheme generator** - The currently best performing search algorithms are using search schemes, these need to be generated.
 
 ## OccTables (Occurrence Tables)
-Currently following structures are available and they all fulfill the "OccTable" concept.
-- Naive - storing the occ table in std::vector<size_t> tables, needs O(|Σ|·n·sizeof(size_t)) space. (144GB for the human genome)
-- Bitvector - using bitvector for each table O(|Σ| · n · 2/8). (4.5GB for human genome)
-- InterleavedBitvector-8bit - using bitvectors, but interleaving the bitvectors of different occ columns
-- InterleavedBitvector-16bit - using bitvectors, but interleaving the bitvectors of different occ columns
-- InterleavedBitvector-32bit - using bitvectors, but interleaving the bitvectors of different occ columns
-- BitvectorPrefix - like bitvector, but using to compute the internal prefix ranks (9GB for human genome)
-- Wavelet - Using the wavelet tree structure, needs O(log|Σ| · n · 2/8) (2GB for human genome)
-- InterleavedWavelet
-- InterleavedWavelet32
-- InterleavedPrefix
-- Sdsl_wt_bldc - Using the wavelet tree structure implemented in the sdsl library
-- Sdsl_wt_epr - Using the wavelet tree structure implemented in the sdsl library
-- InterLeavedEPR
-- InterleavedEPRV2 - This is recomended for speed
-- EPRV3
-- EPRV4
-- EPRV5
-- DenseEPRV6 - This is recommended for compactnes
+Currently, following structures are available and they all fulfill the "OccTable" concept. All are located in the namespace ``fmindex_collection::occtable``;
+| Name                         | Type                                       | Description |
+| ------------------           | -------------------------------------      | ----------- |
+| **Naive**                    | `naive::OccTable<uint64_t>`                | storing the occ table in std::vector<size_t> tables, needs O(|Σ|·n·sizeof(size_t)) space. (144GB for the human genome)|
+| **Bitvector**                | `bitvector::OccTable<uint64_t>`            | using bitvector for each table O(|Σ| · n · 2/8). (4.5GB for human genome) |
+| **Interleaved-8**            | `interleaved8::OccTable<uint64_t>`         | using bitvectors, but interleaving the bitvectors of different occ columns |
+| **Interleaved-16**           | `interleaved16::OccTable<uint64_t>`        | using bitvectors, but interleaving the bitvectors of different occ columns |
+| **Interleaved-32**           | `interleaved32::OccTable<uint64_t>`        | using bitvectors, but interleaving the bitvectors of different occ columns |
+| **Prefix**                   | `bitvectorPrefix::OccTable<uint64_t>`      | like bitvector, but using to compute the internal prefix ranks (9GB for human genome) |
+| **Wavelet Trees**            | `wavelet::OccTable<uint64_t>`              | Using the wavelet tree structure, needs O(log|Σ| · n · 2/8) (2GB for human genome) |
+| **Interleaved Wavelets**     | `interleavedWavelet::OccTable<uint64_t>`   |  |
+| **Interleaved Wavelets-32**  | `interleavedWavelet32::OccTable<uint64_t>` |  |
+| **Interleaved Prefix**       | `interleavedPrefix::OccTable<uint64_t>`    |  |
+| **SDSL Wavelets**            | `sdsl_wt_bldc::OccTable<uint64_t>`         | Wavelets Trees based on the SDSL implementation |
+| **SDSL EPR**                 | `sdsl_wt_epr::OccTable<uint64_t>`          | EPR Dictionary based on the SDSL implementation |
+| **Interleaved EPR**          | `interleavedEPR::OccTable<uint64_t>`       | EPR implementation with interleaved occ tables |
+| **Interleaved EPR - V2**     | `interleavedEPR::OccTable<uint64_t>`       | similar to **Interleaved EPR**, but with a different encoding on bit level |
+| **EPRV3-8**                  | `epr8V3::OccTable<uint64_t>`               | similar to **Interleaved EPR V2**, but not using interleaved bitvectors, 8bit blocks |
+| **EPRV3-16**                 | `epr16V3::OccTable<uint64_t>`              | similar to **Interleaved EPR V2**, but not using interleaved bitvectors, 16bit blocks |
+| **EPRV3-32**                 | `epr32V3::OccTable<uint64_t>`              | similar to **Interleaved EPR V2**, but not using interleaved bitvectors, 32bit blocks |
+| **EPRV4**                    | `eprV4::OccTable<uint64_t>`                | similar to **Interleaved EPR V3**, but using 8bit, 16bit, 32bit and 64bit level blocks |
+| **EPRV5**                    | `eprV5::OccTable<uint64_t>`                | similar to **Interleaved EPR V3**, but using 8bit, 16bit, and 64 bit level blocks  |
+| **DenseEPRV6**               | `eprV6::OccTable<uint64_t>`                | similar to **Interleaved EPR V3**, but using 8bit, 16bit, and l-bit level blocks, where l is the smallest possible block size  |
 
 see [OccTables](doc/OccTables.png) for more details on their structure
 
 ## Compressed Suffix Array
 Currently only one implementation exists
-- CSA - the compressed suffix array is compressed on an suffix array based sampling.
+- **CSA** - the compressed suffix array is compressed on an suffix array based sampling.
+
 
 
 ## Search Algorithms
@@ -61,3 +68,4 @@ These generators will generate search scheme based on principles or methods
 - zeroOnesZero_opt - same as above, but merging certain searches
 - optimum - the optimum search schemes, as they are provided in the seqan3 library
 - bestKnown - mhm, I don't remember where I got these from
+
