@@ -46,15 +46,19 @@ Currently only one implementation exists
 
 
 ## Search Algorithms
-- SearchNoErrors - takes a list of queries and returns the result cursors
-- search_pseudo - finds all solutions that correspond to a different alignment.
-- search_ng12 - optimized by removing certain insert/substitution/deletion combinations
-- search_ng14 - same as search_ng12 but with small optimizations
-- search_ng15 - same as search_ng14 but search direction is predetermined (small optimization)
-- search_ng16 - combines ng15 and ng20 into the fastest search with large allowed errors
-- search_ng20 - using an banded alignment matrix (only works with backtracking search schemes)
-- search_ng21 - similar to search_ng14 but with optimizations also leaving out certain merge combination if different search path exists
-- search_ng22 - same as search_ng22 but actually doesn't do a search, but an alignment
+Search function are all located in the `fmindex_collection` namespace.
+| Function                                                   | Description |
+| -------------------------------------                      | ----------- |
+| `search_no_errors::search(index_t, query_t, cb_t)`         | searches for a perfect match |
+| `search_one_error::search(index_t, query_t, cb_t)`         | search for a match with exactly one error, applying hamming distance|
+| `search_pseudo::search(index_t, query_t, scheme_t, cb_t)`  | finds all alignments. uses a search scheme for efficient searching |
+| `search_ng12::search(index_t, query_t, scheme_t, cb_t)`    | optimized by removing certain insert/substitution/deletion combinations |
+| `search_ng14::search(index_t, query_t, scheme_t, cb_t)`    | same as search_ng12 but with small optimizations |
+| `search_ng15::search(index_t, query_t, scheme_t, cb_t)`    | same as search_ng14 but search direction is predetermined (small optimization) |
+| `search_ng16::search(index_t, query_t, scheme_t, cb_t)`    | combines ng15 and ng20 into the fastest search with large allowed errors (similar to columba) |
+| `search_ng20::search(index_t, query_t, scheme_t, cb_t)`    | using an banded alignment matrix (only works with backtracking search schemes) |
+| `search_ng21::search(index_t, query_t, scheme_t, cb_t)`    | similar to search_ng14 but with optimizations also leaving out certain merge combination if different search path exists |
+| `search_ng22::search(index_t, query_t, scheme_t, cb_t)`    | same as search_ng21 but actually doesn't do a search, but an alignment |
 
 ## Search Scheme generator
 These generators will generate search scheme based on principles or methods
