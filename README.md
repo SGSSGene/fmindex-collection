@@ -61,15 +61,19 @@ Search function are all located in the `fmindex_collection` namespace.
 | `search_ng22::search(index_t, query_t, scheme_t, cb_t)`    | same as search_ng21 but actually doesn't do a search, but an alignment |
 
 ## Search Scheme generator
-These generators will generate search scheme based on principles or methods
-- Backtracking - represents the standard backtracking with errors algorithm
-- Kianfar - lists the schemes published by kianfar
-- kucherov - lists the schemes published by kucherov
-- pigeon_triv - generates schemes based on the pigeon hole principle
-- pigeon_opt - same as pigeon_triv but with optimizations by merging certain searches
-- suffix_filter - generates based on the suffix filter algorithm
-- zeroOnesZero_triv - generates based on the 01*0 lossless seeds paper
-- zeroOnesZero_opt - same as above, but merging certain searches
-- optimum - the optimum search schemes, as they are provided in the seqan3 library
-- bestKnown - mhm, I don't remember where I got these from
+These generators will generate search scheme based on principles or methods. These function are being
+found under the namespace of `search_schemes::generator`. To make them usable for the search algorithm also the function `expand` has to be called on them first.
+| Function                        | Description |
+| -----------------------------   | ----------- |
+| `backtracking(N, minK, K)`      | represents the standard backtracking with errors algorithm |
+| `kianfar(K)`                    | lists the schemes published by kianfar |
+| `kucherov(N, K)`                | lists the schemes published by kucherov |
+| `pigeon_trivial(minK, K)`       | generates schemes based on the pigeon hole principle |
+| `pigeon_opt(minK, K)`           | same as pigeon_trivial but with optimizations by merging certain searches |
+| `suffix_filter(N, minK, K)`     | generates based on the suffix filter algorithm |
+| `zeroOnesZero_trivial(minK, K)` | generates based on the 01\*0 lossless seeds paper |
+| `zeroOnesZero_opt(minK, K)`     | same as above, but merging certain searches |
+| `h2(N, minK, K)`                | a custom heuristic to create a search scheme |
+| `optimum(minK, K)`              | the optimum search schemes, as they are provided in the seqan3 library |
+| `bestKnown(N, minK, K)`         | mhm, I don't remember where I got these from |
 
