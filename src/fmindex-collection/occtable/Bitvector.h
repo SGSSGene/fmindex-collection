@@ -83,8 +83,8 @@ auto construct_bitvectors(uint64_t length, CB cb) -> std::tuple<std::array<Bitve
             }
         }
 
-        auto blockId      = (size >>  6) % 6;
-        auto bitId        = size &  63;
+        auto blockId      = size / 64;;
+        auto bitId        = size & 63;
 
         auto symb = cb(size-1);
         auto& bits = bv[symb].bits[blockId];
