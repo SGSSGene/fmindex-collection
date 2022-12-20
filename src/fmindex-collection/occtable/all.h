@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Bitvector.h"
 #include "CompactBitvector.h"
 #include "CompactBitvectorPrefix.h"
 #include "InterleavedBitvector.h"

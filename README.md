@@ -17,7 +17,8 @@ Currently, following structures are available and they all fulfill the "OccTable
 | Name                         | Type                                         | Description |
 | ------------------           | -------------------------------------        | ----------- |
 | **Naive**                    | `naive::OccTable<uint64_t>`                  | storing the occ table in std::vector<size_t> tables, needs O(|Σ|·n·sizeof(size_t)) space. (144GB for the human genome)|
-| **CompactBitvector**         | `compactBitvector::OccTable<uint64_t>`       | using bitvector for each table O(|Σ| · n · 2/8). (4.5GB for human genome) |
+| **Bitvector**                | `bitvector::OccTable<uint64_t>`              | using bitvector for each table O(|Σ| · n · 2/8). (4.5GB for human genome) |
+| **CompactBitvector**         | `compactBitvector::OccTable<uint64_t>`       | using bitvector for each table, superblocks, blocks and bits are interleaved,  O(|Σ| · n · 2/8). (4.5GB for human genome) |
 | **CompactBitvectorPrefix**   | `compactBitvectorPrefix::OccTable<uint64_t>` | similar to **CompactBitvector** but has additional bitvector that counts directly for prefix occurences. |
 | **Interleaved-8**            | `interleaved8::OccTable<uint64_t>`           | using bitvectors, but interleaving the bitvectors of different occ columns |
 | **Interleaved-16**           | `interleaved16::OccTable<uint64_t>`          | using bitvectors, but interleaving the bitvectors of different occ columns |

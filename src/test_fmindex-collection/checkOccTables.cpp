@@ -3,6 +3,7 @@
 
 
 TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]",
+    fmindex_collection::occtable::bitvector::OccTable<256>,
     fmindex_collection::occtable::compactBitvector::OccTable<256>,
     fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
     fmindex_collection::occtable::interleaved8::OccTable<256>,
@@ -261,6 +262,7 @@ TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]",
 
 
 TEMPLATE_TEST_CASE("check occ table construction on text longer than 256 characters", "[OccTable]",
+    fmindex_collection::occtable::bitvector::OccTable<256>,
     fmindex_collection::occtable::compactBitvector::OccTable<256>,
     fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
     fmindex_collection::occtable::interleaved8::OccTable<256>,

@@ -6,6 +6,7 @@
 #include <catch2/catch.hpp>
 
 TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]",
+    fmindex_collection::occtable::bitvector::OccTable<256>,
     fmindex_collection::occtable::compactBitvector::OccTable<256>,
     fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
     fmindex_collection::occtable::interleaved8::OccTable<256>,
@@ -63,6 +64,7 @@ TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]",
 
 }
 TEMPLATE_TEST_CASE("searching with collection and PseudoSearch", "[collection]",
+    fmindex_collection::occtable::bitvector::OccTable<256>,
     fmindex_collection::occtable::compactBitvector::OccTable<256>,
     fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
     fmindex_collection::occtable::interleaved8::OccTable<256>,

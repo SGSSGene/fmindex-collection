@@ -14,35 +14,29 @@ namespace fmindex_collection {
 namespace occtable {
 namespace bitvector {
 
-struct alignas(64) Superblock {
-    uint64_t superBlockEntry{};
-    uint64_t blockEntries{};
-    std::array<uint64_t, 6> bits{};
+struct Bitvector {
+    std::vector<uint64_t> superBlockEntry;
+    std::vector<uint8_t>  blockEntries;
+    std::vector<uint64_t> bits;
 
     uint64_t rank(uint64_t idx) const noexcept {
-        assert(idx < 384);
+        auto superblockId = idx / 256;
+        auto blockId      = idx / 64;
+        auto bitId        = idx & 63;
 
-        auto blockId = idx >> 6;
-        auto block = 0b111111111ul & (blockEntries >> (blockId * 9));
-        auto keep = (idx & 63);
-        auto maskedBits = bits[blockId] << (63-keep);
-        auto ct = std::bitset<64>{maskedBits}.count();
+        auto block = bits[blockId] << (63-bitId);
 
-        auto total = superBlockEntry + block + ct;
-        return total;
+        auto c = superBlockEntry[superblockId] + blockEntries[blockId]
+            + std::bitset<64>{block}.count();
+        return c;
     }
 
     bool value(uint64_t idx) const noexcept {
-        assert(idx < 384);
+        idx += 1;
 
-        auto blockId = idx >> 6;
-        auto bitId = idx & 63;
+        auto blockId      = idx / 64;
+        auto bitId        = idx & 63;
         return bits[blockId] & (1ul << bitId);
-    }
-
-    void setBlock(uint64_t blockId, uint64_t value) {
-        blockEntries = blockEntries & ~uint64_t{0b111111111ul << blockId*9};
-        blockEntries = blockEntries | uint64_t{value << blockId*9};
     }
 
     template <typename Archive>
@@ -51,54 +45,35 @@ struct alignas(64) Superblock {
     }
 };
 
-struct Bitvector {
-    std::vector<Superblock> superblocks{};
-
-    uint64_t rank(uint64_t idx) const noexcept {
-        auto superblockId = idx / 384;
-        auto bitId        = idx % 384;
-        return superblocks[superblockId].rank(bitId);
-    }
-
-    bool value(uint64_t idx) const noexcept {
-        idx += 1;
-        auto superblockId = idx / 384;
-        auto bitId        = idx % 384;
-        return superblocks[superblockId].value(bitId);
-    }
-
-    uint64_t memoryUsage() const {
-        return superblocks.size() * sizeof(superblocks.back());
-    }
-
-    template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(superblocks);
-    }
-};
-
 template <uint64_t TSigma, typename CB>
 auto construct_bitvectors(uint64_t length, CB cb) -> std::tuple<std::array<Bitvector, TSigma>, std::array<uint64_t, TSigma+1>> {
     std::array<Bitvector, TSigma> bv;
 
     for (uint64_t j{0}; j < TSigma; ++j) {
-        bv[j].superblocks.reserve(length/384+1);
-        bv[j].superblocks.emplace_back();
+        bv[j].superBlockEntry.reserve(length/256+1);
+        bv[j].blockEntries.reserve(length/64+1);
+        bv[j].bits.reserve(length/64+1);
+
+        bv[j].superBlockEntry.emplace_back();
+        bv[j].blockEntries.emplace_back();
+        bv[j].bits.emplace_back();
     }
 
     std::array<uint64_t, TSigma> sblock_acc{0};
-    std::array<uint16_t, TSigma> block_acc{0};
+    std::array<uint8_t, TSigma> block_acc{0};
 
     for (uint64_t size{1}; size <= length; ++size) {
-        if (size % 384 == 0) { // new super block + new block
+        if (size % 256 == 0) { // new super block + new block
             for (uint64_t j{0}; j < TSigma; ++j) {
-                bv[j].superblocks.emplace_back();
-                bv[j].superblocks.back().superBlockEntry = sblock_acc[j];
+                bv[j].superBlockEntry.emplace_back(sblock_acc[j]);
+                bv[j].blockEntries.emplace_back();
+                bv[j].bits.emplace_back();
                 block_acc[j] = 0;
             }
         } else if (size % 64 == 0) { // new block
             for (uint64_t j{0}; j < TSigma; ++j) {
-                bv[j].superblocks.back().setBlock((size % 384) / 64, block_acc[j]);
+                bv[j].blockEntries.emplace_back(block_acc[j]);
+                bv[j].bits.emplace_back();
             }
         }
 
@@ -106,7 +81,7 @@ auto construct_bitvectors(uint64_t length, CB cb) -> std::tuple<std::array<Bitve
         auto bitId        = size &  63;
 
         auto symb = cb(size-1);
-        auto& bits = bv[symb].superblocks.back().bits[blockId];
+        auto& bits = bv[symb].bits[blockId];
         bits = bits | (1ul << bitId);
 
         block_acc[symb]  += 1;
@@ -130,10 +105,10 @@ struct OccTable {
     std::array<uint64_t, Sigma+1> C;
 
     static uint64_t expectedMemoryUsage(uint64_t length) {
-        uint64_t blockSize   = std::max(alignof(Superblock), sizeof(Superblock));
+        uint64_t blockSize   = 256+8*4+64;
 
         uint64_t C           = sizeof(uint64_t) * (Sigma+1);
-        uint64_t blocks      = blockSize        * (length+1) / 384 * Sigma;
+        uint64_t blocks      = blockSize        * (length+1) / 256 * Sigma;
         return C + blocks;
     }
 

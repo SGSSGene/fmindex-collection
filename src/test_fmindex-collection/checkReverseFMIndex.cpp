@@ -4,6 +4,7 @@
 
 
 TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]",
+    fmindex_collection::occtable::bitvector::OccTable<256>,
     fmindex_collection::occtable::compactBitvector::OccTable<256>,
     fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
     fmindex_collection::occtable::interleaved8::OccTable<256>,
