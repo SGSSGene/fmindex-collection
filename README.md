@@ -23,7 +23,6 @@ Currently, following structures are available and they all fulfill the "OccTable
 | **Interleaved-8**            | `interleaved8::OccTable<uint64_t>`           | using bitvectors, but interleaving the bitvectors of different occ columns |
 | **Interleaved-16**           | `interleaved16::OccTable<uint64_t>`          | using bitvectors, but interleaving the bitvectors of different occ columns |
 | **Interleaved-32**           | `interleaved32::OccTable<uint64_t>`          | using bitvectors, but interleaving the bitvectors of different occ columns |
-| **Prefix**                   | `bitvectorPrefix::OccTable<uint64_t>`        | like bitvector, but using to compute the internal prefix ranks (9GB for human genome) |
 | **Wavelet Trees**            | `wavelet::OccTable<uint64_t>`                | Using the wavelet tree structure, needs O(log|Σ| · n · 2/8) (2GB for human genome) |
 | **Interleaved Wavelets**     | `interleavedWavelet::OccTable<uint64_t>`     |  |
 | **Interleaved Wavelets-32**  | `interleavedWavelet32::OccTable<uint64_t>`   |  |

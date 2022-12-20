@@ -19,6 +19,12 @@ struct Bitvector {
     std::vector<uint8_t>  blockEntries;
     std::vector<uint64_t> bits;
 
+    size_t memoryUsage() const {
+        return superBlockEntry.size() * 64
+        + blockEntries.size() * 8
+        + bits.size() * 64;
+    }
+
     uint64_t rank(uint64_t idx) const noexcept {
         auto superblockId = idx / 256;
         auto blockId      = idx / 64;
