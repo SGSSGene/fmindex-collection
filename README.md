@@ -38,6 +38,40 @@ Currently, following structures are available and they all fulfill the "OccTable
 | **EPRV5**                    | `eprV5::OccTable<uint64_t>`                  | similar to **Interleaved EPR V3**, but using 8bit, 16bit, and 64 bit level blocks  |
 | **DenseEPRV6**               | `eprV6::OccTable<uint64_t>`                  | similar to **Interleaved EPR V3**, but using 8bit, 16bit, and l-bit level blocks, where l is the smallest possible block size  |
 
+
+### Memory requirements for ~103Mega Basepair and 16x suffix array sampling, in bidirectional index
+| Name                             | 103MB | bits |
+|----------------------------------|-------|------|
+| **Bitvector**                    | 256MB | 19.9 |
+| **CompactBitvector**             | 251MB | 19.5 |
+| **CompactBitvectorPrefix**       | 425MB | 40.8 |
+| **Interleaved-8**                | 266MB | 20.7 |
+| **Interleaved-16**               | 260MB | 20.2 |
+| **Interleaved-32**               | 286MB | 22.2 |
+| **Wavelet Trees**                | 181MB | 14.1 |
+| **Interleaved Wavelets**         | 234MB | 18.2 |
+| **Interleaved Wavelets-32**      |       |      |
+| **Interleaved Prefix**           |       |      |
+| **SDSL Wavelets**                | 150MB | 11.7 |
+| **SDSL Wavelets** - Dense        | 123MB |  9.6 |
+| **SDSL EPR**                     | 295MB | 22.9 |
+| **Interleaved EPR-8**            | 270MB | 21.0 |
+| **Interleaved EPR-16**           | 315MB | 24.5 |
+| **Interleaved EPR-32**           | 400MB | 31.1 |
+| **Interleaved EPRV2-8**          | 214MB | 16.6 |
+| **Interleaved EPRV2-16**         | 207MB | 16.1 |
+| **Interleaved EPRV2-16** - Dense | 179MB | 13.9 |
+| **Interleaved EPRV2-32**         | 233MB | 18.1 |
+| **EPRV3-8**                      | 205MB | 15.9 |
+| **EPRV3-16**                     | 188MB | 14.6 |
+| **EPRV3-32**                     | 220MB | 17.1 |
+| **EPRV4**                        | 180MB | 14.0 |
+| **EPRV5**                        | 181MB | 14.1 |
+| **DenseEPRV6**                   | 180MB | 14.0 |
+| **DenseEPRV6** - Dense           | 150MB | 11.7 |
+
+
+
 see [OccTables](doc/OccTables.png) for more details on their structure
 
 ## Compressed Suffix Array
