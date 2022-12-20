@@ -5,8 +5,8 @@
 
 
 TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]",
-    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::bitvectorPrefix::OccTable<256>,
+    fmindex_collection::occtable::compactBitvector::OccTable<256>,
+    fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
     fmindex_collection::occtable::interleaved8::OccTable<256>,
     fmindex_collection::occtable::interleaved16::OccTable<256>,
     fmindex_collection::occtable::interleaved32::OccTable<256>,
@@ -122,8 +122,8 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]",
 }
 
 TEMPLATE_TEST_CASE("checking dense bidirectional fm index on longer text (more than 256 chars)", "[DenseBiFMIndex]",
-    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::bitvectorPrefix::OccTable<256>,
+    fmindex_collection::occtable::compactBitvector::OccTable<256>,
+    fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
     fmindex_collection::occtable::interleaved8::OccTable<256>,
     fmindex_collection::occtable::interleaved16::OccTable<256>,
     fmindex_collection::occtable::interleaved32::OccTable<256>,

@@ -14,28 +14,29 @@ Searching with a bidirectional index consist out of different parts:
 
 ## OccTables (Occurrence Tables)
 Currently, following structures are available and they all fulfill the "OccTable" concept. All are located in the namespace ``fmindex_collection::occtable``;
-| Name                         | Type                                       | Description |
-| ------------------           | -------------------------------------      | ----------- |
-| **Naive**                    | `naive::OccTable<uint64_t>`                | storing the occ table in std::vector<size_t> tables, needs O(|Σ|·n·sizeof(size_t)) space. (144GB for the human genome)|
-| **Bitvector**                | `bitvector::OccTable<uint64_t>`            | using bitvector for each table O(|Σ| · n · 2/8). (4.5GB for human genome) |
-| **Interleaved-8**            | `interleaved8::OccTable<uint64_t>`         | using bitvectors, but interleaving the bitvectors of different occ columns |
-| **Interleaved-16**           | `interleaved16::OccTable<uint64_t>`        | using bitvectors, but interleaving the bitvectors of different occ columns |
-| **Interleaved-32**           | `interleaved32::OccTable<uint64_t>`        | using bitvectors, but interleaving the bitvectors of different occ columns |
-| **Prefix**                   | `bitvectorPrefix::OccTable<uint64_t>`      | like bitvector, but using to compute the internal prefix ranks (9GB for human genome) |
-| **Wavelet Trees**            | `wavelet::OccTable<uint64_t>`              | Using the wavelet tree structure, needs O(log|Σ| · n · 2/8) (2GB for human genome) |
-| **Interleaved Wavelets**     | `interleavedWavelet::OccTable<uint64_t>`   |  |
-| **Interleaved Wavelets-32**  | `interleavedWavelet32::OccTable<uint64_t>` |  |
-| **Interleaved Prefix**       | `interleavedPrefix::OccTable<uint64_t>`    |  |
-| **SDSL Wavelets**            | `sdsl_wt_bldc::OccTable<uint64_t>`         | Wavelets Trees based on the SDSL implementation |
-| **SDSL EPR**                 | `sdsl_wt_epr::OccTable<uint64_t>`          | EPR Dictionary based on the SDSL implementation |
-| **Interleaved EPR**          | `interleavedEPR::OccTable<uint64_t>`       | EPR implementation with interleaved occ tables |
-| **Interleaved EPR - V2**     | `interleavedEPR::OccTable<uint64_t>`       | similar to **Interleaved EPR**, but with a different encoding on bit level |
-| **EPRV3-8**                  | `epr8V3::OccTable<uint64_t>`               | similar to **Interleaved EPR V2**, but not using interleaved bitvectors, 8bit blocks |
-| **EPRV3-16**                 | `epr16V3::OccTable<uint64_t>`              | similar to **Interleaved EPR V2**, but not using interleaved bitvectors, 16bit blocks |
-| **EPRV3-32**                 | `epr32V3::OccTable<uint64_t>`              | similar to **Interleaved EPR V2**, but not using interleaved bitvectors, 32bit blocks |
-| **EPRV4**                    | `eprV4::OccTable<uint64_t>`                | similar to **Interleaved EPR V3**, but using 8bit, 16bit, 32bit and 64bit level blocks |
-| **EPRV5**                    | `eprV5::OccTable<uint64_t>`                | similar to **Interleaved EPR V3**, but using 8bit, 16bit, and 64 bit level blocks  |
-| **DenseEPRV6**               | `eprV6::OccTable<uint64_t>`                | similar to **Interleaved EPR V3**, but using 8bit, 16bit, and l-bit level blocks, where l is the smallest possible block size  |
+| Name                         | Type                                         | Description |
+| ------------------           | -------------------------------------        | ----------- |
+| **Naive**                    | `naive::OccTable<uint64_t>`                  | storing the occ table in std::vector<size_t> tables, needs O(|Σ|·n·sizeof(size_t)) space. (144GB for the human genome)|
+| **CompactBitvector**         | `compactBitvector::OccTable<uint64_t>`       | using bitvector for each table O(|Σ| · n · 2/8). (4.5GB for human genome) |
+| **CompactBitvectorPrefix**   | `compactBitvectorPrefix::OccTable<uint64_t>` | similar to **CompactBitvector** but has additional bitvector that counts directly for prefix occurences. |
+| **Interleaved-8**            | `interleaved8::OccTable<uint64_t>`           | using bitvectors, but interleaving the bitvectors of different occ columns |
+| **Interleaved-16**           | `interleaved16::OccTable<uint64_t>`          | using bitvectors, but interleaving the bitvectors of different occ columns |
+| **Interleaved-32**           | `interleaved32::OccTable<uint64_t>`          | using bitvectors, but interleaving the bitvectors of different occ columns |
+| **Prefix**                   | `bitvectorPrefix::OccTable<uint64_t>`        | like bitvector, but using to compute the internal prefix ranks (9GB for human genome) |
+| **Wavelet Trees**            | `wavelet::OccTable<uint64_t>`                | Using the wavelet tree structure, needs O(log|Σ| · n · 2/8) (2GB for human genome) |
+| **Interleaved Wavelets**     | `interleavedWavelet::OccTable<uint64_t>`     |  |
+| **Interleaved Wavelets-32**  | `interleavedWavelet32::OccTable<uint64_t>`   |  |
+| **Interleaved Prefix**       | `interleavedPrefix::OccTable<uint64_t>`      |  |
+| **SDSL Wavelets**            | `sdsl_wt_bldc::OccTable<uint64_t>`           | Wavelets Trees based on the SDSL implementation |
+| **SDSL EPR**                 | `sdsl_wt_epr::OccTable<uint64_t>`            | EPR Dictionary based on the SDSL implementation |
+| **Interleaved EPR**          | `interleavedEPR::OccTable<uint64_t>`         | EPR implementation with interleaved occ tables |
+| **Interleaved EPR - V2**     | `interleavedEPR::OccTable<uint64_t>`         | similar to **Interleaved EPR**, but with a different encoding on bit level |
+| **EPRV3-8**                  | `epr8V3::OccTable<uint64_t>`                 | similar to **Interleaved EPR V2**, but not using interleaved bitvectors, 8bit blocks |
+| **EPRV3-16**                 | `epr16V3::OccTable<uint64_t>`                | similar to **Interleaved EPR V2**, but not using interleaved bitvectors, 16bit blocks |
+| **EPRV3-32**                 | `epr32V3::OccTable<uint64_t>`                | similar to **Interleaved EPR V2**, but not using interleaved bitvectors, 32bit blocks |
+| **EPRV4**                    | `eprV4::OccTable<uint64_t>`                  | similar to **Interleaved EPR V3**, but using 8bit, 16bit, 32bit and 64bit level blocks |
+| **EPRV5**                    | `eprV5::OccTable<uint64_t>`                  | similar to **Interleaved EPR V3**, but using 8bit, 16bit, and 64 bit level blocks  |
+| **DenseEPRV6**               | `eprV6::OccTable<uint64_t>`                  | similar to **Interleaved EPR V3**, but using 8bit, 16bit, and l-bit level blocks, where l is the smallest possible block size  |
 
 see [OccTables](doc/OccTables.png) for more details on their structure
 

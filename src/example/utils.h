@@ -116,40 +116,40 @@ auto loadIndex(std::string path) {
 
 template <size_t Sigma, typename CB>
 void visitAllTables(CB cb) {
-    cb(std::type_identity<fmindex_collection::occtable::bitvector::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::bitvectorPrefix::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::eprV6::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::epr8V3::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::epr16V3::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::epr32V3::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::eprV4::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::eprV5::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleaved8::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleaved16::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleaved32::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleaved8Aligned::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleaved16Aligned::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleaved32Aligned::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR8::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR16::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR32::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR8Aligned::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR16Aligned::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR32Aligned::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR8V2::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR16V2::OccTable<Sigma>>{});
+//    cb(sTd::type_identity<fmindex_collection::occtable::bitvector::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::bitvectorPrefix::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::eprV6::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::epr8V3::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::epr16V3::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::epr32V3::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::eprV4::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::eprV5::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleaved8::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleaved16::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleaved32::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleaved8Aligned::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleaved16Aligned::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleaved32Aligned::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR8::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR16::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR32::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR8Aligned::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR16Aligned::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR32Aligned::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR8V2::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR16V2::OccTable<Sigma>>{});
     cb(std::type_identity<fmindex_collection::occtable::interleavedEPR32V2::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleavedPrefix::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::interleavedWavelet::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::naive::OccTable<Sigma>>{});
-#ifdef FMC_USE_SDSL
-    cb(std::type_identity<fmindex_collection::occtable::sdsl_wt_bldc::OccTable<Sigma>>{});
-    cb(std::type_identity<fmindex_collection::occtable::sdsl_wt_epr::OccTable<Sigma>>{});
-#endif
-    cb(std::type_identity<fmindex_collection::occtable::wavelet::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleavedPrefix::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::interleavedWavelet::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::naive::OccTable<Sigma>>{});
+//#ifdef FMC_USE_SDSL
+//    cb(std::type_identity<fmindex_collection::occtable::sdsl_wt_bldc::OccTable<Sigma>>{});
+//    cb(std::type_identity<fmindex_collection::occtable::sdsl_wt_epr::OccTable<Sigma>>{});
+//#endif
+//    cb(std::type_identity<fmindex_collection::occtable::wavelet::OccTable<Sigma>>{});
 }
 
 

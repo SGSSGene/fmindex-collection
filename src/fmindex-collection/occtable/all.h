@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Bitvector.h"
-#include "BitvectorPrefix.h"
+#include "CompactBitvector.h"
+#include "CompactBitvectorPrefix.h"
 #include "InterleavedBitvector.h"
 #include "InterleavedPrefix.h"
 #include "InterleavedWavelet.h"
