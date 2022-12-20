@@ -30,7 +30,7 @@ Currently, following structures are available and they all fulfill the "OccTable
 | **SDSL Wavelets**            | `sdsl_wt_bldc::OccTable<uint64_t>`           | Wavelets Trees based on the SDSL implementation |
 | **SDSL EPR**                 | `sdsl_wt_epr::OccTable<uint64_t>`            | EPR Dictionary based on the SDSL implementation |
 | **Interleaved EPR**          | `interleavedEPR::OccTable<uint64_t>`         | EPR implementation with interleaved occ tables |
-| **Interleaved EPR - V2**     | `interleavedEPR::OccTable<uint64_t>`         | similar to **Interleaved EPR**, but with a different encoding on bit level |
+| **Interleaved EPRV2**        | `interleavedEPR::OccTable<uint64_t>`         | similar to **Interleaved EPR**, but with a different encoding on bit level |
 | **EPRV3-8**                  | `epr8V3::OccTable<uint64_t>`                 | similar to **Interleaved EPR V2**, but not using interleaved bitvectors, 8bit blocks |
 | **EPRV3-16**                 | `epr16V3::OccTable<uint64_t>`                | similar to **Interleaved EPR V2**, but not using interleaved bitvectors, 16bit blocks |
 | **EPRV3-32**                 | `epr32V3::OccTable<uint64_t>`                | similar to **Interleaved EPR V2**, but not using interleaved bitvectors, 32bit blocks |
