@@ -175,6 +175,7 @@ void visitAllTables(CB cb) {
     cb(std::type_identity<fmindex_collection::occtable::eprV4::OccTable<Sigma>>{});
     cb(std::type_identity<fmindex_collection::occtable::eprV5::OccTable<Sigma>>{});
     cb(std::type_identity<fmindex_collection::occtable::eprV6::OccTable<Sigma>>{});
+    cb(std::type_identity<fmindex_collection::occtable::interleavedEPRV7::OccTable<Sigma>>{});
 }
 
 
