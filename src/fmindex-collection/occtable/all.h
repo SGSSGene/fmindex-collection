@@ -13,6 +13,7 @@
 #include "EPRV4.h"
 #include "EPRV5.h"
 #include "DenseEPRV6.h"
+#include "InterleavedEPRV7.h"
 #include "Naive.h"
 #include "Wavelet.h"
 
