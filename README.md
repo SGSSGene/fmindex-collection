@@ -40,6 +40,8 @@ Currently, following structures are available and they all fulfill the "OccTable
 
 
 ### Memory requirements for ~103Mega Basepair and 16x suffix array sampling, in bidirectional index
+The suffix array requires roughly 52MB of memory, and the dense suffix array requires roughly 22MB of memory.
+
 | Name                             | 103MB  |  bits |
 |----------------------------------|--------|-------|
 | **Naive**                        | 8411MB | 653.3 |
@@ -70,10 +72,11 @@ Currently, following structures are available and they all fulfill the "OccTable
 | **EPRV5**                        |  181MB |  14.1 |
 | **DenseEPRV6**                   |  180MB |  14.0 |
 | **DenseEPRV6** - Dense           |  150MB |  11.7 |
-
-
+| **DenseEPRV7**                   |  180MB |  14.0 |
 
 see [OccTables](doc/OccTables.png) for more details on their structure
+
+
 
 ## Compressed Suffix Array
 Currently only one implementation exists
