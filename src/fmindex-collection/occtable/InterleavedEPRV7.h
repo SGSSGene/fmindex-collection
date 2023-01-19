@@ -40,9 +40,10 @@ struct Bitvector {
     // next full power of 2
     static constexpr auto bvct  = pow(2, bitct);
 
-    struct InBits {
-        std::array<uint8_t, TSigma> level0{};
+
+    struct  __attribute__((__packed__)) InBits {
         std::array<uint64_t, bitct> bits{};
+        std::array<uint8_t, TSigma> level0{};
 
         uint64_t rank(uint64_t idx, uint64_t symb) const {
             assert(idx < 64);
@@ -125,7 +126,15 @@ struct Bitvector {
 
         template <typename Archive>
         void serialize(Archive& ar) {
-            ar(bits, level0);
+            //!TODO this can be done for sure in a smarter way
+            auto bits_unpacked   = bits;
+            auto level0_unpacked = level0;
+
+            ar(bits_unpacked, level0_unpacked);
+
+            bits   = bits_unpacked;
+            level0 = level0_unpacked;
+
         }
     };
 
@@ -138,7 +147,6 @@ struct Bitvector {
     using BlockL1 = std::array<blockL1_t, TSigma>;
 
     std::vector<InBits> bits;
-//    std::vector<BlockL0> level0;
     std::vector<BlockL1> level1;
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
 
@@ -148,7 +156,6 @@ struct Bitvector {
     template <typename CB>
     Bitvector(uint64_t length, CB cb) {
         level1.reserve(length/(1ul<<level1_size)+2);
-        //level0.reserve(length/64+2);
         bits.reserve(length/64+2);
 
         std::array<blockL0_t, TSigma> blockL0_acc{0};
@@ -160,20 +167,16 @@ struct Bitvector {
             if (size % (1ul<<level1_size) == 0) { // new l3 block
                 superBlocks.emplace_back(sblock_acc);
                 level1.emplace_back();
-                //level0.emplace_back();
                 bits.emplace_back();
                 blockL0_acc = {};
                 blockL1_acc = {};
             } else if (size % (1ul<<level0_size) == 0) { // new l1 block
                 level1.emplace_back(blockL1_acc);
-                //level0.emplace_back();
                 bits.emplace_back();
 
                 blockL0_acc = {};
             } else if (size % 64 == 0) { // new l0 block
-                //level0.emplace_back();
                 bits.emplace_back();
-                //level0.back() = blockL0_acc;
                 bits.back().level0 = blockL0_acc;
             }
             auto level0Id     = size >>  6;
@@ -201,7 +204,6 @@ struct Bitvector {
 
     uint64_t memoryUsage() const {
         return    bits.size() * sizeof(bits.back())
-//                + level0.size() * sizeof(level0.back())
                 + level1.size() * sizeof(level1.back())
                 + superBlocks.size() * sizeof(superBlocks.back())
                 + sizeof(C);
@@ -209,13 +211,12 @@ struct Bitvector {
 
     void prefetch(uint64_t idx) const {
 //        auto level0Id     = idx >>  6;
-        auto level1Id     = idx >> level0_size;
-        auto superBlockId = idx >> level1_size;
+//        auto level1Id     = idx >> level0_size;
+//        auto superBlockId = idx >> level1_size;
 
-        __builtin_prefetch(reinterpret_cast<void const*>(&level1[level1Id]), 0, 0);
-//        __builtin_prefetch(reinterpret_cast<void const*>(&level0[level0Id]), 0, 0);
-        __builtin_prefetch(reinterpret_cast<void const*>(&bits[level1Id]), 0, 0);
-        __builtin_prefetch(reinterpret_cast<void const*>(&superBlocks[superBlockId]), 0, 0);
+//        __builtin_prefetch(reinterpret_cast<void const*>(&level1[level1Id]), 0, 0);
+//        __builtin_prefetch(reinterpret_cast<void const*>(&bits[level1Id]), 0, 0);
+//        __builtin_prefetch(reinterpret_cast<void const*>(&superBlocks[superBlockId]), 0, 0);
     }
 
     uint64_t rank(uint64_t idx, uint64_t symb) const {
@@ -241,9 +242,7 @@ struct Bitvector {
         auto bitId        = idx &  63;
         uint64_t a={};
         for (uint64_t i{0}; i<= symb; ++i) {
-            a +=   /*level0[level0Id][i]*/
-                 + level1[level1Id][i]
-                 + superBlocks[superBlockId][i];
+            a += level1[level1Id][i] + superBlocks[superBlockId][i];
 
         }
         return bits[level0Id].prefix_rank(bitId, symb) + a;
@@ -260,7 +259,6 @@ struct Bitvector {
         auto res = std::array<uint64_t, TSigma>{};
         for (uint64_t symb{0}; symb < TSigma; ++symb) {
             res[symb] =   bits[level0Id].rank(bitId, symb)
-                        /*+ level0[level0Id][symb]*/
                         + level1[level1Id][symb]
                         + superBlocks[superBlockId][symb]
                         + C[symb];
@@ -279,15 +277,13 @@ struct Bitvector {
         std::array<uint64_t, TSigma> prs;
         auto rs = bits[level0Id].all_ranks(bitId);
 
-        rs[0] +=   /*level0[level0Id][0]*/
-                 + level1[level1Id][0]
+        rs[0] +=   level1[level1Id][0]
                  + superBlocks[superBlockId][0]
                  + C[0];
 
         prs[0] = rs[0];
         for (uint64_t symb{1}; symb < TSigma; ++symb) {
-            auto a =   /*level0[level0Id][symb]
-                     + */level1[level1Id][symb]
+            auto a =   level1[level1Id][symb]
                      + superBlocks[superBlockId][symb];
 
             prs[symb] = prs[symb-1] + rs[symb] + a;
@@ -312,7 +308,6 @@ struct Bitvector {
 
         auto [rank, symb] = bits[level0Id].rank_symbol(bitId);
         return    rank
-                /*+ level0[level0Id][symb]*/
                 + level1[level1Id][symb]
                 + superBlocks[superBlockId][symb]
                 + C[symb];
