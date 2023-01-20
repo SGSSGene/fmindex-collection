@@ -32,7 +32,7 @@ constexpr inline uint64_t pow(uint64_t b, uint64_t y) {
 }
 
 
-template <uint64_t TSigma, uint64_t TAlignment, typename block_t>
+template <uint64_t TSigma, typename block_t>
 struct Bitvector {
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
@@ -142,100 +142,6 @@ struct Bitvector {
     std::vector<Block> blocks_;
     std::vector<InBits> bits;
 
-/*    struct alignas(TAlignment) Block {
-        std::array<block_t, TSigma> blocks{};
-        std::array<uint64_t, bitct> bits{};
-
-        void prefetch() const {
-            __builtin_prefetch(reinterpret_cast<void const*>(&blocks), 0, 0);
-//            __builtin_prefetch((const void*)(&bits), 0, 0);
-        }
-
-        uint64_t rank(uint64_t idx, uint64_t symb) const {
-            assert(idx >= 0 && idx < 64);
-            auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>) {
-                return bits[I] ^ -((~symb>>I)&1);
-            };
-            auto mask = [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
-                return (f(std::integer_sequence<uint64_t, Is>{})&...);
-            }(std::make_integer_sequence<uint64_t, bitct>{});
-
-            auto bitset = std::bitset<64>(mask) << (64-idx);
-            return blocks[symb] + bitset.count();
-        }
-
-        uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
-            auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>, uint64_t _symb) {
-                return bits[I] ^ -((~_symb>>I)&1);
-            };
-            uint64_t mask{};
-
-            for (uint64_t i{0}; i <= symb; ++i) {
-                mask |= [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
-                    return (f(std::integer_sequence<uint64_t, Is>{}, i)&...);
-                }(std::make_integer_sequence<uint64_t, bitct>{});
-            }
-
-            auto bitset = std::bitset<64>(mask) << (64-idx);
-            auto ct = bitset.count();
-
-            for (uint64_t i{0}; i <= symb; ++i) {
-                ct += blocks[i];
-            }
-            return ct;
-        }
-
-        auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
-            assert(idx >= 0 && idx < 64);
-
-            std::array<uint64_t, TSigma> rs{0};
-
-            auto f = [&]<uint64_t I>(uint64_t symb, std::integer_sequence<uint64_t, I>) {
-                return bits[I] ^ -((~symb>>I)&1);
-            };
-
-            for (uint64_t i{0}; i < TSigma; ++i) {
-                auto mask = [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
-                    return (f(i, std::integer_sequence<uint64_t, Is>{})&...);
-                }(std::make_integer_sequence<uint64_t, bitct>{});
-                rs[i] = (std::bitset<64>(mask) << (64 - idx)).count() + blocks[i];
-            }
-            return rs;
-        }
-
-        uint64_t symbol(uint64_t idx) const {
-            uint64_t symb{};
-            for (uint64_t i{bitct}; i > 0; --i) {
-                auto b = (bits[i-1] >> idx) & 1;
-                symb = (symb<<1) | b;
-            }
-            return symb;
-        }
-
-        auto rank_symbol(uint64_t idx) const -> std::tuple<uint64_t, uint64_t> {
-            assert(idx >= 0 && idx < 64);
-
-            uint64_t symb{};
-            uint64_t mask{};
-            auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>) {
-                auto b = (bits[I] >> idx) & 1;
-                mask |= bits[I] ^ -b;
-                symb |= b << I;
-            };
-            [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
-                (f(std::integer_sequence<uint64_t, Is>{}) ,...);
-            }(std::make_integer_sequence<uint64_t, bitct>{});
-
-            auto bitset = std::bitset<64>{~mask} << (64-idx);
-
-            return {blocks[symb] + bitset.count(), symb};
-        }
-
-        template <typename Archive>
-        void serialize(Archive& ar) {
-            ar(blocks, bits);
-        }
-    };*/
 
     static constexpr uint64_t block_size = sizeof(block_t) * 8;
 
@@ -382,15 +288,15 @@ struct Bitvector {
 };
 
 
-template <uint64_t TSigma, typename block_t, uint64_t TAlignment>
+template <uint64_t TSigma, typename block_t>
 struct OccTable {
     using TLengthType = uint64_t;
     static constexpr uint64_t Sigma = TSigma;
 
-    Bitvector<Sigma, TAlignment, block_t> bitvector;
+    Bitvector<Sigma, block_t> bitvector;
 
     static uint64_t expectedMemoryUsage(uint64_t length) {
-        using Block = typename Bitvector<TSigma, TAlignment, block_t>::Block;
+        using Block = typename Bitvector<TSigma, block_t>::Block;
         auto blockSize = std::max(alignof(Block), sizeof(Block));
 
         uint64_t C           = sizeof(uint64_t) * (Sigma+1);
@@ -453,7 +359,7 @@ struct OccTable {
 }
 namespace epr8V3 {
 template <uint64_t TSigma>
-struct OccTable : eprV3_impl::OccTable<TSigma, uint8_t, 1> {
+struct OccTable : eprV3_impl::OccTable<TSigma, uint8_t> {
     static auto name() -> std::string {
         return "EPRV3 (8bit)";
     }
@@ -466,7 +372,7 @@ static_assert(checkOccTable<OccTable>);
 }
 namespace epr16V3 {
 template <uint64_t TSigma>
-struct OccTable : eprV3_impl::OccTable<TSigma, uint16_t, 1> {
+struct OccTable : eprV3_impl::OccTable<TSigma, uint16_t> {
     static auto name() -> std::string {
         return "EPRV3 (16bit)";
     }
@@ -479,7 +385,7 @@ static_assert(checkOccTable<OccTable>);
 }
 namespace epr32V3 {
 template <uint64_t TSigma>
-struct OccTable : eprV3_impl::OccTable<TSigma, uint32_t, 1> {
+struct OccTable : eprV3_impl::OccTable<TSigma, uint32_t> {
     static auto name() -> std::string {
         return "EPRV3 (32bit)";
     }
