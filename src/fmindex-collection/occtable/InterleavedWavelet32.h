@@ -74,7 +74,7 @@ struct Bitvector {
                 auto d1 = uint32_t((bits << (64-l2)).count());
 
                 if (bit == 0) {
-                    s = s;
+                    //s = s;
                     l2 = l2 - d1;
                     l1 = l1 - c1;
                 } else {
@@ -102,7 +102,7 @@ struct Bitvector {
                 auto c0 = l1 - c1;
                 auto d0 = l2 - d1;
                 if (bit == 0) {
-                    s = s;
+                    //s = s;
                     l2 = d0;
                     l1 = c0;
                 } else {
