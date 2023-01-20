@@ -2,11 +2,12 @@
 
 #include "concepts.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <numeric>
 #include <libsaispp/sais.hpp>
+#include <numeric>
 #include <span>
 #include <stdexcept>
 #include <tuple>

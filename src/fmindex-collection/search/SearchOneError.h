@@ -113,18 +113,21 @@ struct Search {
         }
         delegate(cur, 1);
     }
-
-
 };
 
+#if __clang__ // broken clang 15, lets hope they catch on
 template <typename index_t, Sequence query_t, typename delegate_t>
-void search(index_t const& index, query_t&& query, delegate_t&& delegate) {
+Search(index_t const&, query_t const&, delegate_t const&) -> Search<index_t, query_t, delegate_t>;
+#endif
+
+template <typename index_t, Sequence query_t, typename delegate_t>
+void search(index_t const& index, query_t const& query, delegate_t&& delegate) {
     auto u = Search{index, query, delegate};
     u.search();
 }
 
 template <typename index_t, Sequences queries_t, typename delegate_t>
-void search(index_t const& index, queries_t&& queries, delegate_t&& delegate) {
+void search(index_t const& index, queries_t const& queries, delegate_t&& delegate) {
     for (size_t qidx{0}; qidx < queries.size(); ++qidx) {
         auto u = Search{index, queries[qidx], [&](auto cursor, auto error) {
             delegate(qidx, cursor, error);

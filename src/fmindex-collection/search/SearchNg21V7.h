@@ -187,15 +187,34 @@ struct Search {
                 search_next<OnMatchL, OnMatchR>(search, cursors[symb], e, pos+1, symb);
             }
 
+#if __clang__
             for (uint8_t i{1}; i < symb; ++i) {
                 if constexpr (Deletion) {
-                    buffer.after.emplace_back(search, cursors[i], pos, i, &Search::search_next<OnDeletionL, OnDeletionR>); // deletion occured in query
+                    buffer.after.push_back(QueueEntry{search, cursors[i], pos, i, &Search::search_next<OnDeletionL, OnDeletionR>}); // deletion occurred in query
+                }
+                buffer.after.push_back(QueueEntry{search, cursors[i], pos+1, i, &Search::search_next<OnSubstituteL, OnSubstituteR>}); // as substitute
+            }
+            for (auto i{symb+1}; i < Sigma; ++i) {
+                if constexpr (Deletion) {
+                    buffer.after.push_back(QueueEntry{search, cursors[i], pos, i, &Search::search_next<OnDeletionL, OnDeletionR>}); // deletion occurred in query
+                }
+                buffer.after.push_back(QueueEntry{search, cursors[i], pos+1, i, &Search::search_next<OnSubstituteL, OnSubstituteR>}); // as substitute
+            }
+
+            if constexpr (Insertion) {
+                buffer.after.push_back(QueueEntry{search, cur, pos+1, lastRank, &Search::search_next<OnInsertionL, OnInsertionR>}); // insertion occurred in query
+            }
+
+#else
+            for (uint8_t i{1}; i < symb; ++i) {
+                if constexpr (Deletion) {
+                    buffer.after.emplace_back(search, cursors[i], pos, i, &Search::search_next<OnDeletionL, OnDeletionR>); // deletion occurred in query
                 }
                 buffer.after.emplace_back(search, cursors[i], pos+1, i, &Search::search_next<OnSubstituteL, OnSubstituteR>); // as substitute
             }
             for (auto i{symb+1}; i < Sigma; ++i) {
                 if constexpr (Deletion) {
-                    buffer.after.emplace_back(search, cursors[i], pos, i, &Search::search_next<OnDeletionL, OnDeletionR>); // deletion occured in query
+                    buffer.after.emplace_back(search, cursors[i], pos, i, &Search::search_next<OnDeletionL, OnDeletionR>); // deletion occurred in query
                 }
                 buffer.after.emplace_back(search, cursors[i], pos+1, i, &Search::search_next<OnSubstituteL, OnSubstituteR>); // as substitute
             }
@@ -203,6 +222,7 @@ struct Search {
             if constexpr (Insertion) {
                 buffer.after.emplace_back(search, cur, pos+1, lastRank, &Search::search_next<OnInsertionL, OnInsertionR>); // insertion occurred in query
             }
+#endif
         } else if (matchAllowed) {
             auto newCur = extend<Right>(cur, symb);
             if (newCur.count()) {
