@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         osname: ["MacOS 11", "Ubuntu 22.04"]
-        compiler: ["gcc12 (c++20)", "gcc11 (c++20)", "gcc10 (c++20)", "gcc12 (c++20, Debug)"]
+        compiler: ["gcc12 (c++20)", "gcc11 (c++20)", "gcc10 (c++20)", "gcc12 (c++20, Debug)", "clang14"]
 
         include:
           - osname: "Ubuntu 22.04"
@@ -48,7 +48,6 @@ jobs:
             build_type: Release
             brew_pkgs: gcc@11
 
-
           - compiler: "gcc10 (c++20)"
             cxx: "g++-10"
             cc: "gcc-10"
@@ -61,6 +60,11 @@ jobs:
             build_type: Debug
             brew_pkgs: gcc@12
 
+          - compiler: "clang14"
+            cxx: "clang++-14"
+            cc: "clang-14"
+            build_type: Release
+            brew_pkgs: llvm@14
 
     steps:
       - name: Checkout Repository
