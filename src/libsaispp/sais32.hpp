@@ -7718,7 +7718,7 @@ inline void* create_ctx_omp(int32_t threads) {
 * @param ctx The libsais context (can be NULL).
 */
 inline void libsais_free_ctx(void* ctx) {
-    return libsais_free_ctx(ctx);
+    return detail::libsais_free_ctx(ctx);
 }
 
 /**
