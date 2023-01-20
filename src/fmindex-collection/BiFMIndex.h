@@ -69,7 +69,7 @@ public:
         }();
 
         // create BurrowsWheelerTransform on reversed text
-        auto bwtRev = [&, &inputText=inputText, &inputSizes=inputSizes]() {
+        auto bwtRev = [&, &inputText=inputText]() {
             std::reverse(begin(inputText), end(inputText));
             auto saRev  = createSA(inputText);
             auto bwtRev = createBWT(inputText, saRev);

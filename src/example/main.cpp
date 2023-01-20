@@ -73,7 +73,7 @@ int main(int argc, char const* const* argv) {
     }
 
 
-    visitAllTables<Sigma>([&]<template <size_t> typename Table>(std::type_identity<Table<Sigma>>) {
+    visitAllTables<Sigma>([&, &queries=queries]<template <size_t> typename Table>(std::type_identity<Table<Sigma>>) {
         std::string name = Table<Sigma>::extension();
         if (config.extensions.count(name) == 0) return;
 
@@ -235,7 +235,7 @@ int main(int argc, char const* const* argv) {
                     }
                 } else if (algorithm == "pseudo_fmtree") {
                     for (auto const& [queryId, cursor, e] : resultCursors) {
-                        locateFMTree<16>(index, cursor, [&](size_t seqId, size_t pos) {
+                        locateFMTree<16>(index, cursor, [&, &queryId=queryId, &e=e](size_t seqId, size_t pos) {
                             results.emplace_back(queryId, seqId, pos, e);
                         });
                         resultCt += cursor.len;
