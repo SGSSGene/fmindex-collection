@@ -47,7 +47,13 @@ auto createSequences(Sequences auto const& _input, bool reverse=false) -> std::t
             inputText.resize(inputText.size() + l.size());
             std::copy_backward(begin(l), end(l), end(inputText));
         } else {
+//!TODO hack for clang, broken in clang 15
+#if __clang__
+            auto l2 = l;
+            std::ranges::reverse(l2);
+#else
             auto l2 = std::views::reverse(l);
+#endif
             inputText.insert(end(inputText), begin(l2), end(l2));
         }
         inputText.emplace_back(0);

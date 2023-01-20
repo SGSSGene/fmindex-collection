@@ -69,7 +69,7 @@ auto generateBWT(size_t len) -> std::tuple<std::vector<uint8_t>, std::vector<uin
     }();
     auto bwtRev = [&]() {
         std::vector<int64_t> sa;
-        std::reverse(text.begin(), text.end());
+        std::ranges::reverse(text);
         sa.resize(text.size());
         auto error = libsais64::constructSA(reinterpret_cast<uint8_t const*>(text.data()), sa.data(), text.size(), 0, nullptr);
         if (error != 0) {

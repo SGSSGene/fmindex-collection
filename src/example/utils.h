@@ -60,7 +60,7 @@ auto loadQueries(std::string path, bool reverse) {
                 if (*ptr == '>' || (ptr+1) == (b.data() + b.size())) {
                     queries.push_back(query);
                     if (reverse) {
-                        std::reverse(query.begin(), query.end());
+                        std::ranges::reverse(query);
                         for (auto& c : query) {
                             if (c == 1) c = 4;
                             else if (c == 2) c = 3;
