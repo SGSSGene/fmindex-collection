@@ -32,7 +32,7 @@ constexpr inline uint64_t pow(uint64_t b, uint64_t y) {
 }
 
 
-template <uint64_t TSigma, uint64_t TAlignment>
+template <uint64_t TSigma>
 struct Bitvector {
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
@@ -346,15 +346,15 @@ struct Bitvector {
 };
 
 
-template <uint64_t TSigma, uint64_t TAlignment>
+template <uint64_t TSigma>
 struct OccTable {
     using TLengthType = uint64_t;
     static constexpr uint64_t Sigma = TSigma;
 
-    Bitvector<Sigma, TAlignment> bitvector;
+    Bitvector<Sigma> bitvector;
 
     static uint64_t expectedMemoryUsage(uint64_t length) {
-        using Block = typename Bitvector<TSigma, TAlignment>::BlockL1;
+        using Block = typename Bitvector<TSigma>::BlockL1;
         auto blockSize = std::max(alignof(Block), sizeof(Block));
 
         uint64_t C           = sizeof(uint64_t) * (Sigma+1);
@@ -417,7 +417,7 @@ struct OccTable {
 
 namespace eprV5 {
 template <uint64_t TSigma>
-struct OccTable : eprV5_impl::OccTable<TSigma, 1> {
+struct OccTable : eprV5_impl::OccTable<TSigma> {
     static auto name() -> std::string {
         return "EPR V5";
     }
