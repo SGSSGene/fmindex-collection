@@ -42,39 +42,55 @@ Currently, following structures are available and they all fulfill the "OccTable
 ### Memory requirements for ~103Mega Basepair and 16x suffix array sampling, in bidirectional index
 The suffix array requires roughly 52MB of memory, and the dense suffix array requires roughly 22MB of memory.
 
-| Name                             | 103MB  |  bits |
-|----------------------------------|--------|-------|
-| **Naive**                        | 8411MB | 653.3 |
-| **Bitvector**                    |  256MB |  19.9 |
-| **CompactBitvector**             |  251MB |  19.5 |
-| **CompactBitvectorPrefix**       |  425MB |  40.8 |
-| **Interleaved-8**                |  266MB |  20.7 |
-| **Interleaved-16**               |  260MB |  20.2 |
-| **Interleaved-32**               |  286MB |  22.2 |
-| **Wavelet Trees**                |  181MB |  14.1 |
-| **Interleaved Wavelets**         |  234MB |  18.2 |
-| **Interleaved Wavelets-32**      |        |       |
-| **Interleaved Prefix**           |        |       |
-| **SDSL Wavelets**                |  150MB |  11.7 |
-| **SDSL Wavelets** - Dense        |  123MB |   9.6 |
-| **SDSL EPR**                     |  295MB |  22.9 |
-| **Interleaved EPR-8**            |  270MB |  21.0 |
-| **Interleaved EPR-16**           |  315MB |  24.5 |
-| **Interleaved EPR-32**           |  400MB |  31.1 |
-| **Interleaved EPRV2-8**          |  214MB |  16.6 |
-| **Interleaved EPRV2-16**         |  207MB |  16.1 |
-| **Interleaved EPRV2-16** - Dense |  179MB |  13.9 |
-| **Interleaved EPRV2-32**         |  233MB |  18.1 |
-| **EPRV3-8**                      |  205MB |  15.9 |
-| **EPRV3-16**                     |  188MB |  14.6 |
-| **EPRV3-32**                     |  220MB |  17.1 |
-| **EPRV4**                        |  180MB |  14.0 |
-| **EPRV5**                        |  181MB |  14.1 |
-| **DenseEPRV6**                   |  180MB |  14.0 |
-| **DenseEPRV6** - Dense           |  150MB |  11.7 |
-| **DenseEPRV7**                   |  180MB |  14.0 |
+| Name                             |  bits | bits - dense |
+|----------------------------------|-------|--------------|
+| **Naive**                        | 653.3 |              |
+| **Bitvector**                    |  19.9 |              |
+| **CompactBitvector**             |  19.5 |              |
+| **CompactBitvectorPrefix**       |  40.8 |              |
+| **Interleaved-8**                |  20.7 |              |
+| **Interleaved-16**               |  20.2 |              |
+| **Interleaved-32**               |  22.2 |              |
+| **Wavelet Trees**                |  14.1 |              |
+| **Interleaved Wavelets**         |  18.2 |              |
+| **Interleaved Wavelets-32**      |       |              |
+| **Interleaved Prefix**           |       |              |
+| **SDSL Wavelets**                |  11.7 | 9.6          |
+| **SDSL EPR**                     |  22.9 |              |
+| **Interleaved EPR-8**            |  21.0 |              |
+| **Interleaved EPR-16**           |  24.5 |              |
+| **Interleaved EPR-32**           |  31.1 |              |
+| **Interleaved EPRV2-8**          |  16.6 |              |
+| **Interleaved EPRV2-16**         |  16.1 | 13.9         |
+| **Interleaved EPRV2-32**         |  18.1 |              |
+| **EPRV3-8**                      |  15.9 |              |
+| **EPRV3-16**                     |  14.6 |              |
+| **EPRV3-32**                     |  17.1 |              |
+| **EPRV4**                        |  14.0 |              |
+| **EPRV5**                        |  14.1 |              |
+| **DenseEPRV6**                   |  14.0 | 11.7         |
+| **EPRV7**                        |  14.0 |              |
 
 see [OccTables](doc/OccTables.png) for more details on their structure
+
+### Runtimes
+This is run over the first 1GB of the humangenome. Applied a search with k=3 editdistance, using the ng12, applying 40'000queries (inkluding reverse complements) each length of 100 base pairs.
+
+| Name                             | bits   | runtime in s |
+|----------------------------------|--------|--------------|
+| **Naive**                        | 653.3  |              |
+| **Bitvector**                    | 19.9   | 2.78         |
+| **CompactBitvector**             | 19.5   | 2.5          |
+| **Interleaved-16**               | 20.2   | 1.36         |
+| **Wavelet Trees**                | 14.1   | 4.6          |
+| **SDSL Wavelets**                | 11.7   | 5.95         |
+| **SDSL EPR**                     | 22.9   | 3.52         |
+| **Interleaved EPR-16**           | 24.5   | 1.71         |
+| **Interleaved EPRV2-16**         | 16.1   | 1.5          |
+| **EPRV5**                        | 14.1   | 1.77         |
+| **DenseEPRV6**                   | 14.0   | 2.06         |
+| **EPRV7**                        | 14.0   | 1.67         |
+
 
 
 
