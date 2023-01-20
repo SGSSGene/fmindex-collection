@@ -215,7 +215,7 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
             lastDir = dir;
             search2.back().emplace_back(Block{size_t{s.pi[i]}, size_t{s.l[i]}, size_t{s.u[i]}});
         }
-        search_scheme2.emplace_back(move(search2));
+        search_scheme2.emplace_back(std::move(search2));
     }
 
     using Cursor = BiFMIndexCursor<index_t>;
