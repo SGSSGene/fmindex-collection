@@ -51,6 +51,12 @@ struct LocateLinear {
     }
 };
 
+//!TODO remove as soon as clang supports auto deduction guides (not the case in clang 15
+#if __clang__
+    template <typename index_t, typename cursor_t>
+    LocateLinear(index_t const&, cursor_t) -> LocateLinear<index_t, cursor_t>;
+#endif
+
 template <typename index_t, typename cursor_t>
 struct LocateFMTree {
     std::vector<std::tuple<size_t, size_t>> positions;
