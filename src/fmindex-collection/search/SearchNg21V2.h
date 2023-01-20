@@ -22,7 +22,7 @@ struct Search {
     query_t const& query;
     delegate_t const& delegate;
 
-    Search(index_t const& _index, search_scheme_t const& _search, query_t _query, delegate_t const& _delegate)
+    Search(index_t const& _index, search_scheme_t const& _search, query_t const& _query, delegate_t const& _delegate)
         : index     {_index}
         , search    {_search}
         , query     {_query}

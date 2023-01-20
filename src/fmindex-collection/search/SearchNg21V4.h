@@ -25,7 +25,7 @@ struct Search {
     size_t e{};
     size_t pos{};
 
-    Search(index_t const& _index, search_scheme_t const& _search, query_t _query, delegate_t const& _delegate)
+    Search(index_t const& _index, search_scheme_t const& _search, query_t const& _query, delegate_t const& _delegate)
         : index     {_index}
         , search    {_search}
         , query     {_query}
