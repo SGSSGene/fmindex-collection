@@ -60,7 +60,7 @@ public:
         auto [totalSize, inputText, inputSizes] = createSequences(_input);
 
         // create BurrowsWheelerTransform and CompressedSuffixArray
-        auto [bwt, csa] = [&] () {
+        auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
             auto sa  = createSA(inputText);
             auto bwt = createBWT(inputText, sa);
             auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
@@ -69,7 +69,7 @@ public:
         }();
 
         // create BurrowsWheelerTransform on reversed text
-        auto bwtRev = [&]() {
+        auto bwtRev = [&, &inputText=inputText, &inputSizes=inputSizes]() {
             std::reverse(begin(inputText), end(inputText));
             auto saRev  = createSA(inputText);
             auto bwtRev = createBWT(inputText, saRev);

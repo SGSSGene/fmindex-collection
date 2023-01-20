@@ -35,7 +35,7 @@ struct FMIndex {
     {
         auto [totalSize, inputText, inputSizes] = createSequences(_input);
 
-        auto [bwt, csa] = [&] () {
+        auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
             auto sa  = createSA(inputText);
             auto bwt = createBWT(inputText, sa);
             auto csa = CSA{std::move(sa), samplingRate, inputSizes};
