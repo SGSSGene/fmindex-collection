@@ -66,6 +66,10 @@ jobs:
             build_type: Release
             brew_pkgs: llvm@14
 
+        exclude:
+          - osname: "MacOS 11"
+            compiler: "clang14"
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
