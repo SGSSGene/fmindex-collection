@@ -9,6 +9,7 @@
 #include <bitset>
 #include <cassert>
 #include <cstdint>
+#include <span>
 #include <vector>
 
 
@@ -111,14 +112,13 @@ struct Bitvector {
     std::array<uint64_t, TSigma+1> C;
 
 
-    template <typename CB>
-    Bitvector(uint64_t length, CB cb) {
-        blocks.reserve(length/64+2);
+    Bitvector(std::span<uint8_t const> _bwt) {
+        blocks.reserve(_bwt.size()/64+2);
 
         std::array<uint64_t, TSigma> sblock_acc{0};
         std::array<block_t, TSigma> block_acc{0};
 
-        for (uint64_t size{0}; size < length; ++size) {
+        for (uint64_t size{0}; size < _bwt.size(); ++size) {
             if (size % block_size == 0) { // new super block + new block
                 superBlocks.emplace_back(sblock_acc);
                 blocks.emplace_back();
@@ -130,7 +130,7 @@ struct Bitvector {
             auto blockId      = size / letterFit;
             auto bitId        = size % letterFit;
 
-            uint64_t symb = cb(size);
+            uint64_t symb = _bwt[size];
             blocks[blockId].inBlock |= symb << (bitct * bitId);
 
             block_acc[symb] += 1;
@@ -259,11 +259,14 @@ struct OccTable {
         return C + blocks + superblocks;
     }
 
-    OccTable(std::vector<uint8_t> const& _bwt)
-        : bitvector(_bwt.size(), [&](uint64_t i) -> uint8_t {
-            return _bwt[i];
-        })
+    OccTable(std::span<uint8_t const> _bwt)
+        : bitvector(_bwt)
     {}
+    //!TODO this c'tor must go
+    OccTable(std::vector<uint8_t> const& _bwt)
+        : bitvector(std::span{_bwt})
+    {}
+
 
     OccTable(cereal_tag)
         : bitvector(cereal_tag{})
