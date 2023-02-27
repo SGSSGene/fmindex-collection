@@ -5,6 +5,7 @@
 #include "BitvectorCompact.h"
 #include "cereal_tag.h"
 
+#include <algorithm>
 #include <cmath>
 #include <numeric>
 #include <optional>
@@ -40,7 +41,7 @@ struct CSA {
     CSA(std::vector<int64_t> const& sa, size_t _samplingRate, std::vector<size_t> const& _inputSizes, bool reverse=false)
         : samplingRate{_samplingRate}
     {
-        size_t bitsForSeqId = std::max(1ul, size_t(std::ceil(std::log2(_inputSizes.size()))));
+        size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
         assert(bitsForSeqId < 64);
 
         bitsForPosition = 64 - bitsForSeqId;
