@@ -1,12 +1,12 @@
 #include "utils.h"
 #include "argp.h"
 
-#include <fmindex-collection/search/all.h>
+#include <cstdio>
 #include <fmindex-collection/locate.h>
-#include <search_schemes/generator/all.h>
-#include <search_schemes/expand.h>
-
+#include <fmindex-collection/search/all.h>
 #include <fmt/format.h>
+#include <search_schemes/expand.h>
+#include <search_schemes/generator/all.h>
 #include <unordered_set>
 
 using namespace fmindex_collection;
