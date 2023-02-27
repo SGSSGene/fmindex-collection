@@ -4,6 +4,7 @@
 #include "random.h"
 
 #include <fmindex-collection/occtable/concepts.h>
+#include <fmindex-collection/utils.h>
 
 #include <array>
 #include <cassert>
@@ -17,7 +18,6 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include <libsaispp/sais.hpp>
 
 
 
@@ -55,27 +55,15 @@ auto generateBWT(size_t len) -> std::tuple<std::vector<uint8_t>, std::vector<uin
     std::cout << "text generation: "<< time_generation << "s\n";
 
     auto bwt = [&]() {
-        std::vector<int64_t> sa;
-        sa.resize(text.size());
-        auto error = libsais64::constructSA(reinterpret_cast<uint8_t const*>(text.data()), sa.data(), text.size(), 0, nullptr);
-        if (error != 0) {
-            throw std::runtime_error("some error while creating the suffix array");
-        }
-
+        auto sa = fmindex_collection::createSA({reinterpret_cast<uint8_t const*>(text.data()), text.size()});
         auto time_saconstruction = watch.reset();
         std::cout << "sa - construction time: "<< time_saconstruction << "s\n";
 
         return construct_bwt_from_sa(sa, text);
     }();
     auto bwtRev = [&]() {
-        std::vector<int64_t> sa;
         std::ranges::reverse(text);
-        sa.resize(text.size());
-        auto error = libsais64::constructSA(reinterpret_cast<uint8_t const*>(text.data()), sa.data(), text.size(), 0, nullptr);
-        if (error != 0) {
-            throw std::runtime_error("some error while creating the suffix array");
-        }
-
+        auto sa = fmindex_collection::createSA({reinterpret_cast<uint8_t const*>(text.data()), text.size()});
         auto time_saconstruction = watch.reset();
         std::cout << "sa - rev construction time: "<< time_saconstruction << "s\n";
 

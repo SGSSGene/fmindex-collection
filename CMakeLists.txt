@@ -19,7 +19,9 @@ option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${ROOT_PROJ
 
 add_subdirectory(src/fmindex-collection)
 add_subdirectory(src/search_schemes)
-add_subdirectory(src/libsaispp)
+
+add_library(libsais lib/libsais/src/libsais.c lib/libsais/src/libsais16.c lib/libsais/src/libsais64.c)
+target_include_directories(libsais PUBLIC lib/libsais/src)
 
 if (${ROOT_PROJECT})
     find_package (fmt REQUIRED)
@@ -29,7 +31,6 @@ if (${ROOT_PROJECT})
     enable_testing()
     add_subdirectory(src/test_fmindex-collection)
     add_subdirectory(src/test_search_schemes)
-    add_subdirectory(src/test_libsaispp)
 
     # example executable
     add_executable(example
