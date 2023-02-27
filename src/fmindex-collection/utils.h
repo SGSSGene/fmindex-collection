@@ -6,7 +6,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <libsaispp/sais.hpp>
+#include <libsais64.h>
 #include <numeric>
 #include <span>
 #include <stdexcept>
@@ -15,8 +15,16 @@
 
 namespace fmindex_collection {
 
-inline auto createSA(std::vector<uint8_t> const& input) -> std::vector<int64_t> {
-    return libsais::constructSA64(input);
+inline auto createSA(std::span<uint8_t const> input) -> std::vector<int64_t> {
+    auto sa = std::vector<int64_t>(input.size());
+#if _OPENMP
+    auto r = libsais64_omp(input.data(), sa.data(), input.size(), 0, nullptr, 1);
+#else
+    auto r = libsais64(input.data(), sa.data(), input.size(), 0, nullptr);
+#endif
+
+    if (r != 0) { throw std::runtime_error("something went wrong constructing the SA"); }
+    return sa;
 }
 
 

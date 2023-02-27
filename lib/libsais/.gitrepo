@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/IlyaGrebnov/libsais.git
+	branch = master
+	commit = c0b2bba165ae759fcc034d8f22d973cea8d7329c
+	parent = 0dde5bf08088eefcee8e17071afcb56b5e1aa5e9
+	method = merge
+	cmdver = 0.4.3
