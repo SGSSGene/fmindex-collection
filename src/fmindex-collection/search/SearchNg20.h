@@ -57,7 +57,7 @@ public:
         auto start = [&] () {
 //            return row;
             if (row < maxErrors) {
-                return 0ul;
+                return size_t{0};
             } else {
                 return row - maxErrors;
             }
