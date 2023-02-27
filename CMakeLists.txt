@@ -17,7 +17,11 @@ endif ()
 
 project(fmindex-collection)
 
-option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${ROOT_PROJECT})
+if(NOT WIN32)
+    option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${ROOT_PROJECT})
+else()
+    option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" OFF)
+endif()
 
 add_subdirectory(src/fmindex-collection)
 add_subdirectory(src/search_schemes)
