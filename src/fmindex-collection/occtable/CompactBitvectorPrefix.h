@@ -7,6 +7,7 @@
 #include <bitset>
 #include <cassert>
 #include <cstdint>
+#include <span>
 #include <tuple>
 #include <vector>
 
@@ -78,10 +79,12 @@ struct Bitvector {
 };
 
 
-template <uint64_t TSigma, typename CB>
-auto construct_bitvectors(uint64_t length, CB cb) -> std::tuple<std::array<Bitvector, TSigma>, std::array<Bitvector, TSigma>, std::array<uint64_t, TSigma+1>> {
+template <uint64_t TSigma>
+auto construct_bitvectors(std::span<uint8_t const> bwt) -> std::tuple<std::array<Bitvector, TSigma>, std::array<Bitvector, TSigma>, std::array<uint64_t, TSigma+1>> {
     std::array<Bitvector, TSigma> bv1;
     std::array<Bitvector, TSigma> bv2;
+
+    auto length = bwt.size();
 
 
     for (uint64_t j{0}; j < TSigma; ++j) {
@@ -120,7 +123,7 @@ auto construct_bitvectors(uint64_t length, CB cb) -> std::tuple<std::array<Bitve
         auto bitId        = size &  63;
 
         { // update rank
-            auto symb = cb(size-1);
+            auto symb = bwt[size-1];
             auto& bits = bv1[symb].superblocks.back().bits[blockId];
             bits = bits | (1ul << bitId);
 
@@ -128,7 +131,7 @@ auto construct_bitvectors(uint64_t length, CB cb) -> std::tuple<std::array<Bitve
             sblock_acc[symb] += 1;
         }
         { // update prefix rank
-            auto symb = cb(size-1);
+            auto symb = bwt[size-1];
             for (uint64_t j{symb}; j < TSigma; ++j) {
                 auto& bits = bv2[j].superblocks.back().bits[blockId];
                 bits = bits | (1ul << bitId);
@@ -166,10 +169,8 @@ struct OccTable {
     }
 
 
-    OccTable(std::vector<uint8_t> const& _bwt) {
-        std::tie(bitvector1, bitvector2, C) = construct_bitvectors<Sigma>(_bwt.size(), [&](uint64_t i) -> uint8_t {
-            return _bwt[i];
-        });
+    OccTable(std::span<uint8_t const> _bwt) {
+        std::tie(bitvector1, bitvector2, C) = construct_bitvectors<Sigma>(_bwt);
     }
 
     OccTable(cereal_tag) {}

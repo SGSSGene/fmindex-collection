@@ -3,12 +3,14 @@
 #include "../DenseVector.h"
 #include "../builtins.h"
 #include "concepts.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <array>
 #include <bitset>
 #include <cstdint>
 #include <cmath>
+#include <span>
 #include <vector>
 
 
@@ -16,29 +18,11 @@ namespace fmindex_collection {
 namespace occtable {
 namespace eprV6_impl {
 
-// counts how many bits are needed to represent the number y
-constexpr inline uint64_t bits_count(uint64_t y) {
-    if (y == 0) return 1;
-    uint64_t i{0};
-    while (y != 0) {
-        y = y >> 1;
-        ++i;
-    }
-    return i;
-}
-
-// computes b to the power of y
-constexpr inline uint64_t pow(uint64_t b, uint64_t y) {
-    if (y == 0) return 1;
-    return pow(b, (y-1)) * b;
-}
-
-
 template <uint64_t TSigma>
 struct Bitvector {
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
-    static constexpr auto bitct = bits_count(TSigma-1);
+    static constexpr auto bitct = required_bits(TSigma-1);
     // next full power of 2
     static constexpr auto bvct  = pow(2, bitct);
 
@@ -142,10 +126,10 @@ struct Bitvector {
 
     std::array<uint64_t, TSigma+1> C;
 
-    template <typename CB>
-    Bitvector(uint64_t length, CB cb)
-        : superBlocks(std::max(uint64_t{1}, uint64_t(std::ceil(std::log2(length)))))
+    Bitvector(std::span<uint8_t const> _bwt)
+        : superBlocks(std::max(uint64_t{1}, uint64_t(std::ceil(std::log2(_bwt.size())))))
     {
+        auto const length = _bwt.size();
         level1.reserve(length/(1ul<<level1_size)+2);
         level0.reserve(length/64+2);
         bits.reserve(length/64+2);
@@ -179,7 +163,7 @@ struct Bitvector {
             auto level0Id     = size >>  6;
             auto bitId        = size &  63;
 
-            uint64_t symb = cb(size);
+            uint64_t symb = _bwt[size];
 
             for (uint64_t i{}; i < bitct; ++i) {
                 auto b = ((symb>>i)&1);
@@ -342,14 +326,12 @@ struct OccTable {
         return C + blocks + superblocks;
     }
 
-    OccTable(std::vector<uint8_t> const& _bwt)
-        : bitvector(_bwt.size(), [&](uint64_t i) -> uint8_t {
-            return _bwt[i];
-        })
+    OccTable(std::span<uint8_t const> _bwt)
+        : bitvector{_bwt}
     {}
 
     OccTable(cereal_tag)
-        : bitvector(cereal_tag{})
+        : bitvector{cereal_tag{}}
     {}
 
     uint64_t memoryUsage() const {
@@ -397,6 +379,7 @@ struct OccTable {
 namespace eprV6 {
 template <uint64_t TSigma>
 struct OccTable : eprV6_impl::OccTable<TSigma> {
+    using eprV6_impl::OccTable<TSigma>::OccTable;
     static auto name() -> std::string {
         return "EPR V6";
     }

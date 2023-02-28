@@ -38,7 +38,7 @@ TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]",
 
     auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
 
-    auto table = OccTable{text};
+    auto table = OccTable{std::span{text}};
 
     REQUIRE(table.size() == text.size());
 

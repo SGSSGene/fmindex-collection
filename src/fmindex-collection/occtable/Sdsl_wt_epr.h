@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <sdsl/construct.hpp>
 #include <sdsl/suffix_trees.hpp>
+#include <span>
 #include <vector>
 
 namespace fmindex_collection {
@@ -31,7 +32,8 @@ struct OccTable {
 
     std::array<uint64_t, Sigma+1> C{};
 
-    OccTable(std::vector<uint8_t> _bwt) {
+    OccTable(std::span<uint8_t const> in_bwt) {
+        auto _bwt = std::vector<uint8_t>{begin(in_bwt), end(in_bwt)};
         for (auto& c : _bwt) {
             c += 1;
         }

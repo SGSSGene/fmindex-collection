@@ -24,7 +24,7 @@ struct OccTable {
         return C + entries;
     }
 
-    OccTable(std::vector<uint8_t> const& _bwt) {
+    OccTable(std::span<uint8_t const> _bwt) {
         occ.reserve(_bwt.size()+1);
         occ.push_back(std::array<uint64_t, Sigma>{});
 

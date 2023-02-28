@@ -2,12 +2,14 @@
 
 #include "../builtins.h"
 #include "concepts.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <array>
 #include <bitset>
 #include <cassert>
 #include <cstdint>
+#include <span>
 #include <vector>
 
 
@@ -15,29 +17,11 @@ namespace fmindex_collection {
 namespace occtable {
 namespace interleavedEPR_impl {
 
-// counts how many bits are needed to represent the number y
-constexpr inline uint64_t bits_count(uint64_t y) {
-    if (y == 0) return 1;
-    uint64_t i{0};
-    while (y != 0) {
-        y = y >> 1;
-        ++i;
-    }
-    return i;
-}
-
-// computes b to the power of y
-constexpr inline uint64_t pow(uint64_t b, uint64_t y) {
-    if (y == 0) return 1;
-    return pow(b, (y-1)) * b;
-}
-
-
 template <uint64_t TSigma, uint64_t TAlignment, typename block_t>
 struct Bitvector {
 
-    // number of full length bitvectors needed `2^bitct ≥ TSigma`
-    static constexpr auto bitct = bits_count(TSigma-1);
+    // number of full length bit vectors needed `2^bitct ≥ TSigma`
+    static constexpr auto bitct = required_bits(TSigma-1);
     // next full power of 2
     static constexpr auto bvct  = pow(2, bitct);
 
@@ -80,7 +64,7 @@ struct Bitvector {
 
     struct alignas(TAlignment) Block {
         std::array<block_t, TSigma> blocks{};
-        uint64_t inBlock;
+        uint64_t inBlock{};
 
         void prefetch() const {
             __builtin_prefetch(reinterpret_cast<void const*>(&blocks), 0, 0);
@@ -128,31 +112,34 @@ struct Bitvector {
     std::array<uint64_t, TSigma+1> C;
 
 
-    template <typename CB>
-    Bitvector(uint64_t length, CB cb) {
-        blocks.reserve(length/64+2);
+    Bitvector(std::span<uint8_t const> _bwt) {
+        blocks.reserve(_bwt.size()/block_size+1);
 
-        std::array<uint64_t, TSigma> sblock_acc{0};
-        std::array<block_t, TSigma> block_acc{0};
+        auto sblock_acc = std::array<uint64_t, TSigma>{}; // accumulator for super blocks
+        auto block_acc  = std::array<block_t, TSigma>{};  // accumulator for blocks
 
-        for (uint64_t size{0}; size < length; ++size) {
-            if (size % block_size == 0) { // new super block + new block
-                superBlocks.emplace_back(sblock_acc);
-                blocks.emplace_back();
-                block_acc = {};
-            } else if (size % letterFit == 0) { // new block
+        for (uint64_t size{0}; size < _bwt.size();) {
+            superBlocks.emplace_back(sblock_acc);
+            block_acc = {};
+
+            for (uint64_t blockId{0}; blockId < block_size/letterFit and size < _bwt.size(); ++blockId) {
                 blocks.emplace_back();
                 blocks.back().blocks = block_acc;
+
+                for (uint64_t bitId{0}; bitId < letterFit and size < _bwt.size(); ++bitId, ++size) {
+
+                    uint64_t symb = _bwt[size];
+                    blocks.back().inBlock |= symb << (bitct * bitId);
+
+                    block_acc[symb] += 1;
+                    sblock_acc[symb] += 1;
+                }
             }
-            auto blockId      = size / letterFit;
-            auto bitId        = size % letterFit;
-
-            uint64_t symb = cb(size);
-            blocks[blockId].inBlock |= symb << (bitct * bitId);
-
-            block_acc[symb] += 1;
-            sblock_acc[symb] += 1;
         }
+        // For safety we add a new super block and block
+        superBlocks.emplace_back(sblock_acc);
+        blocks.emplace_back();
+        blocks.back().blocks = block_acc;
 
         C[0] = 0;
         for (uint64_t i{0}; i < TSigma; ++i) {
@@ -276,14 +263,12 @@ struct OccTable {
         return C + blocks + superblocks;
     }
 
-    OccTable(std::vector<uint8_t> const& _bwt)
-        : bitvector(_bwt.size(), [&](uint64_t i) -> uint8_t {
-            return _bwt[i];
-        })
+    OccTable(std::span<uint8_t const> _bwt)
+        : bitvector{_bwt}
     {}
 
     OccTable(cereal_tag)
-        : bitvector(cereal_tag{})
+        : bitvector{cereal_tag{}}
     {}
 
     uint64_t memoryUsage() const {
@@ -325,6 +310,7 @@ struct OccTable {
 namespace interleavedEPR8 {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 8> {
+    using interleavedEPR_impl::OccTable<TSigma, uint8_t, 8>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPR (8bit)";
     }
@@ -338,6 +324,8 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR16 {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 8> {
+    using interleavedEPR_impl::OccTable<TSigma, uint16_t, 8>::OccTable;
+
     static auto name() -> std::string {
         return "Interleaved EPR (16bit)";
     }
@@ -351,6 +339,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR32 {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint32_t, 8> {
+    using interleavedEPR_impl::OccTable<TSigma, uint32_t, 8>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPR (32bit)";
     }
@@ -364,6 +353,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR8Aligned {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 64> {
+    using interleavedEPR_impl::OccTable<TSigma, uint8_t, 64>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPR (8bit, aligned)";
     }
@@ -377,6 +367,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR16Aligned {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 64> {
+    using interleavedEPR_impl::OccTable<TSigma, uint16_t, 64>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPR (16bit, aligned)";
     }
@@ -390,6 +381,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR32Aligned {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint32_t, 64> {
+    using interleavedEPR_impl::OccTable<TSigma, uint32_t, 64>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPR (32bit, aligned)";
     }

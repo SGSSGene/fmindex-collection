@@ -2,32 +2,17 @@
 
 #include "../builtins.h"
 #include "concepts.h"
+#include "utils.h"
 
 #include <array>
 #include <bitset>
 #include <cstdint>
+#include <span>
 #include <vector>
 
 namespace fmindex_collection {
 namespace occtable {
 namespace interleavedWavelet32_detail {
-
-// counts how many bits are needed to represent the number y
-constexpr inline uint64_t bits_count(uint32_t y) {
-    if (y == 0) return 1;
-    uint32_t i{0};
-    while (y != 0) {
-        y = y >> 1;
-        ++i;
-    }
-    return i;
-}
-
-// computes b to the power of y
-constexpr inline uint32_t pow(uint32_t b, uint32_t y) {
-    if (y == 0) return 1;
-    return pow(b, (y-1)) * b;
-}
 
 /*
  * \param TSigma size of the alphabet
@@ -50,7 +35,7 @@ struct Bitvector {
     }
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
-    static constexpr auto bitct = bits_count(TSigma);
+    static constexpr auto bitct = required_bits(TSigma);
     // next full power of 2
     static constexpr auto bvct  = pow(2, bitct);
 
@@ -172,8 +157,8 @@ struct Bitvector {
     std::vector<Block> blocks;
     std::array<uint32_t, TSigma+1> C;
 
-    template <typename CB>
-    Bitvector(uint32_t length, CB cb) {
+    Bitvector(std::span<uint8_t const> _bwt) {
+        auto const length = _bwt.size();
         blocks.reserve(length/64+2);
 
         std::array<uint32_t, bvct> sblock_acc{0};
@@ -212,7 +197,7 @@ struct Bitvector {
                insertCount();
             }
 
-            auto symb = cb(size);
+            auto symb = _bwt[size];
             traverse_symb_bits(symb, [&](uint32_t id, uint32_t bit) {
                 waveletcount[id].push_back(bit);
             });
@@ -307,10 +292,8 @@ struct OccTable {
     }
 
 
-    OccTable(std::vector<uint8_t> const& _bwt)
-        : bitvector(_bwt.size(), [&](uint64_t i) -> uint8_t {
-            return _bwt[i];
-        })
+    OccTable(std::span<uint8_t const> _bwt)
+        : bitvector{_bwt}
         , size_{_bwt.size()}
     {}
 
@@ -365,6 +348,8 @@ struct OccTable {
 namespace interleavedWavelet32 {
 template <uint64_t Sigma>
 struct OccTable : interleavedWavelet32_detail::OccTable<Sigma, 8> {
+    using interleavedWavelet32_detail::OccTable<Sigma, 8>::OccTable;
+
     static auto name() -> std::string {
         return "Interleaved Wavelet (size: 32bit)";
     }
@@ -379,6 +364,8 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedWavelet32Aligned {
 template <uint64_t Sigma>
 struct OccTable : interleavedWavelet32_detail::OccTable<Sigma, 64> {
+    using interleavedWavelet32_detail::OccTable<Sigma, 64>::OccTable;
+
     static auto name() -> std::string {
         return "Interleaved Wavelet Aligned (size: 32bit)";
     }

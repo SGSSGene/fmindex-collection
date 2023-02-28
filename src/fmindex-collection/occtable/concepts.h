@@ -5,6 +5,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -16,7 +17,7 @@ namespace fmindex_collection {
  * Minimum requirements to function as an Occurrence Table (OccTable)
  */
 template<typename T, typename TLengthType = typename T::TLengthType>
-concept OccTable = requires(T t, std::vector<uint8_t> const& bwt, TLengthType idx, TLengthType symb) {
+concept OccTable = requires(T t, std::span<uint8_t const> bwt, TLengthType idx, TLengthType symb) {
     /** Every occtable has to be creatable by providing a bwt
      */
     { T{bwt} } -> std::same_as<T>;

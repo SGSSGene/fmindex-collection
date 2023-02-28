@@ -2,12 +2,14 @@
 
 #include "../builtins.h"
 #include "concepts.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <array>
 #include <bitset>
 #include <cassert>
 #include <cstdint>
+#include <span>
 #include <vector>
 
 
@@ -15,29 +17,11 @@ namespace fmindex_collection {
 namespace occtable {
 namespace eprV3_impl {
 
-// counts how many bits are needed to represent the number y
-constexpr inline uint64_t bits_count(uint64_t y) {
-    if (y == 0) return 1;
-    uint64_t i{0};
-    while (y != 0) {
-        y = y >> 1;
-        ++i;
-    }
-    return i;
-}
-
-// computes b to the power of y
-constexpr inline uint64_t pow(uint64_t b, uint64_t y) {
-    if (y == 0) return 1;
-    return pow(b, (y-1)) * b;
-}
-
-
 template <uint64_t TSigma, typename block_t>
 struct Bitvector {
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
-    static constexpr auto bitct = bits_count(TSigma-1);
+    static constexpr auto bitct = required_bits(TSigma-1);
     // next full power of 2
     static constexpr auto bvct  = pow(2, bitct);
 
@@ -140,50 +124,49 @@ struct Bitvector {
             ar(bits);
         }
     };
-    std::vector<Block> blocks_;
-    std::vector<InBits> bits;
-
 
     static constexpr uint64_t block_size = sizeof(block_t) * 8;
 
-//    std::vector<Block> blocks;
+    std::vector<InBits> bits;
+    std::vector<Block> blocks_;
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
     std::array<uint64_t, TSigma+1> C;
 
-    template <typename CB>
-    Bitvector(uint64_t length, CB cb) {
-        blocks_.reserve(length/64+2);
-        bits.reserve(length/64+2);
+    Bitvector(std::span<uint8_t const> _bwt) {
+        blocks_.reserve(_bwt.size()/block_size+1);
+        bits.reserve(_bwt.size()/block_size+1);
 
-        std::array<uint64_t, TSigma> sblock_acc{0};
-        std::array<block_t, TSigma> block_acc{0};
+        auto sblock_acc = std::array<uint64_t, TSigma>{}; // accumulator for super blocks
+        auto block_acc  = std::array<block_t, TSigma>{};  // accumulator for blocks
 
-        for (uint64_t size{0}; size < length; ++size) {
-            if (size % (1ul<<block_size) == 0) { // new super block + new block
-                superBlocks.emplace_back(sblock_acc);
+        for (uint64_t size{0}; size < _bwt.size();) {
+            superBlocks.emplace_back(sblock_acc);
+            block_acc = {};
+
+             for (uint64_t blockId{0}; blockId < (1ul<<block_size)/64 and size < _bwt.size(); ++blockId) {
                 blocks_.emplace_back();
-                bits.emplace_back();
-//                blocks.emplace_back();
-                block_acc = {};
-            } else if (size % 64 == 0) { // new block
-                blocks_.emplace_back();
-                bits.emplace_back();
                 blocks_.back().blocks = block_acc;
-//                blocks.emplace_back();
-//                blocks.back().blocks = block_acc;
-            }
-            auto blockId      = size >>  6;
-            auto bitId        = size &  63;
+                bits.emplace_back();
 
-            uint64_t symb = cb(size);
+                for (uint64_t bitId{0}; bitId < 64 and size < _bwt.size(); ++bitId, ++size) {
 
-            for (uint64_t i{}; i < bitct; ++i) {
-                auto b = ((symb>>i)&1);
-                bits[blockId].bits[i] |= (b << bitId);
+                    uint64_t symb = _bwt[size];
+
+                    for (uint64_t i{}; i < bitct; ++i) {
+                        auto b = ((symb>>i)&1);
+                        bits.back().bits[i] |= (b << bitId);
+                    }
+
+                    block_acc[symb] += 1;
+                    sblock_acc[symb] += 1;
+                }
             }
-            block_acc[symb] += 1;
-            sblock_acc[symb] += 1;
         }
+        // For safety we add a new super block and block
+        superBlocks.emplace_back(sblock_acc);
+        blocks_.emplace_back();
+        blocks_.back().blocks = block_acc;
+        bits.emplace_back();
 
         C[0] = 0;
         for (uint64_t i{0}; i < TSigma; ++i) {
@@ -306,14 +289,12 @@ struct OccTable {
         return C + blocks + superblocks;
     }
 
-    OccTable(std::vector<uint8_t> const& _bwt)
-        : bitvector(_bwt.size(), [&](uint64_t i) -> uint8_t {
-            return _bwt[i];
-        })
+    OccTable(std::span<uint8_t const> _bwt)
+        : bitvector{_bwt}
     {}
 
     OccTable(cereal_tag)
-        : bitvector(cereal_tag{})
+        : bitvector{cereal_tag{}}
     {}
 
     uint64_t memoryUsage() const {
@@ -361,6 +342,7 @@ struct OccTable {
 namespace epr8V3 {
 template <uint64_t TSigma>
 struct OccTable : eprV3_impl::OccTable<TSigma, uint8_t> {
+    using eprV3_impl::OccTable<TSigma, uint8_t>::OccTable;
     static auto name() -> std::string {
         return "EPRV3 (8bit)";
     }
@@ -374,6 +356,7 @@ static_assert(checkOccTable<OccTable>);
 namespace epr16V3 {
 template <uint64_t TSigma>
 struct OccTable : eprV3_impl::OccTable<TSigma, uint16_t> {
+    using eprV3_impl::OccTable<TSigma, uint16_t>::OccTable;
     static auto name() -> std::string {
         return "EPRV3 (16bit)";
     }
@@ -387,6 +370,7 @@ static_assert(checkOccTable<OccTable>);
 namespace epr32V3 {
 template <uint64_t TSigma>
 struct OccTable : eprV3_impl::OccTable<TSigma, uint32_t> {
+    using eprV3_impl::OccTable<TSigma, uint32_t>::OccTable;
     static auto name() -> std::string {
         return "EPRV3 (32bit)";
     }

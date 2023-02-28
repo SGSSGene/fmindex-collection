@@ -6,6 +6,7 @@
 #include <array>
 #include <bitset>
 #include <cstdint>
+#include <span>
 #include <vector>
 
 namespace fmindex_collection {
@@ -87,8 +88,9 @@ struct Bitvector {
     }
 };
 
-template <uint64_t TSigma, typename CB>
-Bitvector<TSigma> construct_bitvector(uint64_t length, CB cb) {
+template <uint64_t TSigma>
+Bitvector<TSigma> construct_bitvector(std::span<uint8_t const> _bwt) {
+    auto const length = _bwt.size();
     Bitvector<TSigma> bitvector;
     bitvector.blocks.reserve(length/64+2);
 
@@ -112,7 +114,7 @@ Bitvector<TSigma> construct_bitvector(uint64_t length, CB cb) {
         auto blockId      = size >>  6;
         auto bitId        = size &  63;
 
-        auto start = cb(size-1);
+        auto start = _bwt[size-1];
         for (uint64_t symb{start}; symb < TSigma; ++symb) {
             auto& bits = bv.blocks[blockId].bits[symb];
             bits = bits | (1ul << bitId);
@@ -145,10 +147,8 @@ struct OccTable {
         return C + blocks + superblocks;
     }
 
-    OccTable(std::vector<uint8_t> const& _bwt) {
-        bitvector = construct_bitvector<Sigma>(_bwt.size(), [&](uint64_t i) -> uint8_t {
-            return _bwt[i];
-        });
+    OccTable(std::span<uint8_t const> _bwt) {
+        bitvector = construct_bitvector<Sigma>(_bwt);
     }
 
     OccTable(cereal_tag) {}
