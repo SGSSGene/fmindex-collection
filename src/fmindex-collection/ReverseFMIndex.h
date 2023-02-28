@@ -20,7 +20,7 @@ struct ReverseFMIndex {
     Table  occ;
     TCSA   csa;
 
-    ReverseFMIndex(std::vector<uint8_t> const& bwt, TCSA _csa)
+    ReverseFMIndex(std::span<uint8_t const> bwt, TCSA _csa)
         : occ{bwt}
         , csa{std::move(_csa)}
     {}

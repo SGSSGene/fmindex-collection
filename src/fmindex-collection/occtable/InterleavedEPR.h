@@ -262,16 +262,11 @@ struct OccTable {
     }
 
     OccTable(std::span<uint8_t const> _bwt)
-        : bitvector(_bwt)
+        : bitvector{_bwt}
     {}
-    //!TODO this c'tor must go
-    OccTable(std::vector<uint8_t> const& _bwt)
-        : bitvector(std::span{_bwt})
-    {}
-
 
     OccTable(cereal_tag)
-        : bitvector(cereal_tag{})
+        : bitvector{cereal_tag{}}
     {}
 
     uint64_t memoryUsage() const {
@@ -313,6 +308,7 @@ struct OccTable {
 namespace interleavedEPR8 {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 8> {
+    using interleavedEPR_impl::OccTable<TSigma, uint8_t, 8>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPR (8bit)";
     }
@@ -326,6 +322,8 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR16 {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 8> {
+    using interleavedEPR_impl::OccTable<TSigma, uint16_t, 8>::OccTable;
+
     static auto name() -> std::string {
         return "Interleaved EPR (16bit)";
     }
@@ -339,6 +337,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR32 {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint32_t, 8> {
+    using interleavedEPR_impl::OccTable<TSigma, uint32_t, 8>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPR (32bit)";
     }
@@ -352,6 +351,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR8Aligned {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint8_t, 64> {
+    using interleavedEPR_impl::OccTable<TSigma, uint8_t, 64>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPR (8bit, aligned)";
     }
@@ -365,6 +365,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR16Aligned {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint16_t, 64> {
+    using interleavedEPR_impl::OccTable<TSigma, uint16_t, 64>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPR (16bit, aligned)";
     }
@@ -378,6 +379,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR32Aligned {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPR_impl::OccTable<TSigma, uint32_t, 64> {
+    using interleavedEPR_impl::OccTable<TSigma, uint32_t, 64>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPR (32bit, aligned)";
     }

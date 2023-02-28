@@ -16,7 +16,7 @@ struct FMIndex {
     CSA    csa;
 
 
-    FMIndex(std::vector<uint8_t> const& bwt, CSA _csa)
+    FMIndex(std::span<uint8_t const> bwt, CSA _csa)
         : occ{bwt}
         , csa{std::move(_csa)}
     {}

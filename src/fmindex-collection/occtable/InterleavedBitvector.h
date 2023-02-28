@@ -8,6 +8,7 @@ namespace occtable {
 namespace interleaved8 {
 template <uint64_t TSigma>
 struct OccTable : genericInterleaved::OccTable<TSigma, 8, uint8_t> {
+    using genericInterleaved::OccTable<TSigma, 8, uint8_t>::OccTable;
     static auto name() -> std::string {
         return "Interleaved 8bit";
     }
@@ -22,6 +23,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleaved16 {
 template <uint64_t TSigma>
 struct OccTable : genericInterleaved::OccTable<TSigma, 8, uint16_t> {
+    using genericInterleaved::OccTable<TSigma, 8, uint16_t>::OccTable;
     static auto name() -> std::string {
         return "Interleaved 16bit";
     }
@@ -36,6 +38,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleaved32 {
 template <uint64_t TSigma>
 struct OccTable : genericInterleaved::OccTable<TSigma, 8, uint32_t> {
+    using genericInterleaved::OccTable<TSigma, 8, uint32_t>::OccTable;
     static auto name() -> std::string {
         return "Interleaved 32bit";
     }
@@ -50,6 +53,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleaved8Aligned {
 template <uint64_t TSigma>
 struct OccTable : genericInterleaved::OccTable<TSigma, 64, uint8_t> {
+    using genericInterleaved::OccTable<TSigma, 64, uint8_t>::OccTable;
     static auto name() -> std::string {
         return "Aligned Interleaved 8bit";
     }
@@ -64,6 +68,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleaved16Aligned {
 template <uint64_t TSigma>
 struct OccTable : genericInterleaved::OccTable<TSigma, 64, uint16_t> {
+    using genericInterleaved::OccTable<TSigma, 64, uint16_t>::OccTable;
     static auto name() -> std::string {
         return "Aligned Interleaved 16bit";
     }
@@ -78,6 +83,8 @@ static_assert(checkOccTable<OccTable>);
 namespace interleaved32Aligned {
 template <uint64_t TSigma>
 struct OccTable : genericInterleaved::OccTable<TSigma, 64, uint32_t> {
+    using genericInterleaved::OccTable<TSigma, 64, uint32_t>::OccTable;
+
     static auto name() -> std::string {
         return "Aligned Interleaved 32bit";
     }

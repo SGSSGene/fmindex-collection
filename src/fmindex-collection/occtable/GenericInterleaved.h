@@ -7,6 +7,7 @@
 #include <array>
 #include <bitset>
 #include <cstdint>
+#include <span>
 #include <vector>
 
 /**
@@ -73,8 +74,8 @@ struct Bitvector {
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
     std::array<uint64_t, TSigma+1> C;
 
-    template <typename CB>
-    Bitvector(uint64_t length, CB cb) {
+    Bitvector(std::span<uint8_t const> bwt) {
+        auto length = bwt.size();
         blocks.reserve(length/64+2);
 
         blocks.emplace_back();
@@ -95,7 +96,7 @@ struct Bitvector {
             auto blockId      = size >>  6;
             auto bitId        = size &  63;
 
-            auto symb = cb(size-1);
+            auto symb = bwt[size-1];
 
             auto& bits = blocks[blockId].bits[symb];
             bits = bits | (1ul << bitId);
@@ -210,14 +211,12 @@ struct OccTable {
         return C + blocks + superblocks;
     }
 
-    OccTable(std::vector<uint8_t> const& _bwt)
-        : bitvector(_bwt.size(), [&](uint64_t i) -> uint8_t {
-            return _bwt[i];
-        })
+    OccTable(std::span<uint8_t const> _bwt)
+        : bitvector{_bwt}
     {}
 
     OccTable(cereal_tag)
-        : bitvector(cereal_tag{})
+        : bitvector{cereal_tag{}}
     {}
 
     uint64_t memoryUsage() const {

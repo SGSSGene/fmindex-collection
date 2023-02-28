@@ -19,7 +19,7 @@ struct BiFMIndex {
     TCSA   csa;
 
 //private:
-    BiFMIndex(std::vector<uint8_t> const& bwt, std::vector<uint8_t> const& bwtRev, TCSA _csa)
+    BiFMIndex(std::span<uint8_t const> bwt, std::vector<uint8_t> const& bwtRev, TCSA _csa)
         : occ{bwt}
         , occRev{bwtRev}
         , csa{std::move(_csa)}

@@ -7,6 +7,7 @@
 #include <bitset>
 #include <cassert>
 #include <cstdint>
+#include <span>
 #include <tuple>
 #include <vector>
 
@@ -77,11 +78,13 @@ struct Bitvector {
     }
 };
 
-template <uint64_t TSigma, typename CB>
-auto construct_bitvectors(uint64_t length, CB cb) -> std::tuple<std::array<Bitvector, pow(2, required_bits(TSigma))>, std::array<uint64_t, TSigma+1>> {
+template <uint64_t TSigma>
+auto construct_bitvectors(std::span<uint8_t const> bwt) -> std::tuple<std::array<Bitvector, pow(2, required_bits(TSigma))>, std::array<uint64_t, TSigma+1>> {
     constexpr auto bits = required_bits(TSigma);
     constexpr auto bvct = pow(2, bits);
     std::array<Bitvector, bvct> bv;
+
+    auto length = bwt.size();
 
     auto which_bv = [](uint64_t symb, auto cb) {
         uint64_t id{0};
@@ -98,7 +101,7 @@ auto construct_bitvectors(uint64_t length, CB cb) -> std::tuple<std::array<Bitve
 
     std::array<uint64_t, TSigma> symb_count{};
     for (uint64_t size{0}; size < length; ++size) {
-        auto symb = cb(size);
+        auto symb = bwt[size];
         symb_count[symb] += 1;
     }
 
@@ -143,7 +146,7 @@ auto construct_bitvectors(uint64_t length, CB cb) -> std::tuple<std::array<Bitve
     };
 
     for (uint64_t size{1}; size <= length; ++size) {
-        auto symb = cb(size-1);
+        auto symb = bwt[size-1];
         which_bv(symb, [&](uint64_t id, uint64_t bit) {
             add_bv_bit(id, bit);
         });
@@ -176,10 +179,8 @@ struct OccTable {
         return C + blocks;
     }
 
-    OccTable(std::vector<uint8_t> const& _bwt) {
-        std::tie(bitvector, C) = construct_bitvectors<Sigma>(_bwt.size(), [&](uint64_t i) -> uint8_t {
-            return _bwt[i];
-        });
+    OccTable(std::span<uint8_t const> _bwt) {
+        std::tie(bitvector, C) = construct_bitvectors<Sigma>(_bwt);
     }
 
     OccTable(cereal_tag) {}

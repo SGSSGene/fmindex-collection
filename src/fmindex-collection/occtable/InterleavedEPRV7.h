@@ -9,6 +9,7 @@
 #include <bitset>
 #include <cassert>
 #include <cstdint>
+#include <span>
 #include <vector>
 
 
@@ -140,8 +141,8 @@ struct Bitvector {
 
     std::array<uint64_t, TSigma+1> C;
 
-    template <typename CB>
-    Bitvector(uint64_t length, CB cb) {
+    Bitvector(std::span<uint8_t const> _bwt) {
+        auto const length = _bwt.size();
         level1.reserve(length/(1ul<<level1_size)+2);
         bits.reserve(length/64+2);
 
@@ -169,7 +170,7 @@ struct Bitvector {
             auto level0Id     = size >>  6;
             auto bitId        = size &  63;
 
-            uint64_t symb = cb(size);
+            uint64_t symb = _bwt[size];
 
             for (uint64_t i{}; i < bitct; ++i) {
                 auto b = ((symb>>i)&1);
@@ -324,14 +325,12 @@ struct OccTable {
         return C + blocks + superblocks;
     }
 
-    OccTable(std::vector<uint8_t> const& _bwt)
-        : bitvector(_bwt.size(), [&](uint64_t i) -> uint8_t {
-            return _bwt[i];
-        })
+    OccTable(std::span<uint8_t const> _bwt)
+        : bitvector{_bwt}
     {}
 
     OccTable(cereal_tag)
-        : bitvector(cereal_tag{})
+        : bitvector{cereal_tag{}}
     {}
 
     uint64_t memoryUsage() const {
@@ -379,6 +378,7 @@ struct OccTable {
 namespace interleavedEPRV7 {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPRV7_impl::OccTable<TSigma> {
+    using interleavedEPRV7_impl::OccTable<TSigma>::OccTable;
     static auto name() -> std::string {
         return "EPR V7";
     }

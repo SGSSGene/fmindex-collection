@@ -8,6 +8,7 @@
 #include <array>
 #include <bitset>
 #include <cstdint>
+#include <span>
 #include <vector>
 
 namespace fmindex_collection {
@@ -159,8 +160,8 @@ struct Bitvector {
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
     std::array<uint64_t, TSigma+1> C;
 
-    template <typename CB>
-    Bitvector(uint64_t length, CB cb) {
+    Bitvector(std::span<uint8_t const> _bwt) {
+        auto const length = _bwt.size();
         blocks.reserve(length/64+2);
 
         std::array<uint64_t, bvct> sblock_acc{0};
@@ -205,7 +206,7 @@ struct Bitvector {
                insertCount();
             }
 
-            auto symb = cb(size);
+            auto symb = _bwt[size];
             traverse_symb_bits(symb, [&](uint64_t id, uint64_t bit) {
                 waveletcount[id].push_back(bit);
             });
@@ -307,10 +308,8 @@ struct OccTable {
     }
 
 
-    OccTable(std::vector<uint8_t> const& _bwt)
-        : bitvector(_bwt.size(), [&](uint64_t i) -> uint8_t {
-            return _bwt[i];
-        })
+    OccTable(std::span<uint8_t const> _bwt)
+        : bitvector{_bwt}
         , size_{_bwt.size()}
     {}
 
@@ -365,6 +364,8 @@ struct OccTable {
 namespace interleavedWavelet {
 template <uint64_t Sigma>
 struct OccTable : interleavedWavelet_detail::OccTable<Sigma, 8> {
+    using interleavedWavelet_detail::OccTable<Sigma, 8>::OccTable;
+
     static auto name() -> std::string {
         return "Interleaved Wavelet";
     }
@@ -379,6 +380,8 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedWaveletAligned {
 template <uint64_t Sigma>
 struct OccTable : interleavedWavelet_detail::OccTable<Sigma, 64> {
+    using interleavedWavelet_detail::OccTable<Sigma, 64>::OccTable;
+
     static auto name() -> std::string {
         return "Interleaved Wavelet Aligned";
     }

@@ -13,6 +13,7 @@
 #endif
 #include <cstdint>
 #include <cstring>
+#include <span>
 #include <stdexcept>
 #include <vector>
 
@@ -300,16 +301,13 @@ struct OccTable {
         uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ul << (sizeof(block_t) * 8));
         return C + blocks + superblocks;
     }
+
     OccTable(std::span<uint8_t const> _bwt)
-        : bitvector(_bwt)
-    {}
-    //!TODO this c'tor must go
-    OccTable(std::vector<uint8_t> const& _bwt)
-        : bitvector(std::span{_bwt})
+        : bitvector{_bwt}
     {}
 
     OccTable(cereal_tag)
-        : bitvector(cereal_tag{})
+        : bitvector{cereal_tag{}}
     {}
 
     uint64_t memoryUsage() const {
@@ -357,6 +355,7 @@ struct OccTable {
 namespace interleavedEPR8V2 {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint8_t, 8> {
+    using interleavedEPRV2_impl::OccTable<TSigma, uint8_t, 8>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPRV2 (8bit)";
     }
@@ -370,6 +369,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR16V2 {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint16_t, 8> {
+    using interleavedEPRV2_impl::OccTable<TSigma, uint16_t, 8>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPRV2 (16bit)";
     }
@@ -383,6 +383,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR32V2 {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint32_t, 8> {
+    using interleavedEPRV2_impl::OccTable<TSigma, uint32_t, 8>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPRV2 (32bit)";
     }
@@ -396,6 +397,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR8V2Aligned {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint8_t, 64> {
+    using interleavedEPRV2_impl::OccTable<TSigma, uint8_t, 64>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPRV2 (8bit, aligned)";
     }
@@ -409,6 +411,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR16V2Aligned {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint16_t, 64> {
+    using interleavedEPRV2_impl::OccTable<TSigma, uint16_t, 64>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPRV2 (16bit, aligned)";
     }
@@ -422,6 +425,7 @@ static_assert(checkOccTable<OccTable>);
 namespace interleavedEPR32V2Aligned {
 template <uint64_t TSigma>
 struct OccTable : interleavedEPRV2_impl::OccTable<TSigma, uint32_t, 64> {
+    using interleavedEPRV2_impl::OccTable<TSigma, uint32_t, 64>::OccTable;
     static auto name() -> std::string {
         return "Interleaved EPRV2 (32bit, aligned)";
     }

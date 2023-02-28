@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <cstring>
 #include <stdexcept>
+#include <span>
 #include <vector>
 
 namespace fmindex_collection {
