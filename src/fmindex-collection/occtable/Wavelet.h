@@ -1,6 +1,7 @@
 #pragma once
 
 #include "concepts.h"
+#include "utils.h"
 
 #include <array>
 #include <bitset>
@@ -12,20 +13,6 @@
 namespace fmindex_collection {
 namespace occtable {
 namespace wavelet {
-
-constexpr inline uint64_t bits_count(uint64_t y) {
-    if (y == 0) return 1;
-    uint64_t i{0};
-    while (y != 0) {
-        y = y >> 1;
-        ++i;
-    }
-    return i;
-}
-constexpr inline uint64_t pow(uint64_t b, uint64_t y) {
-    if (y == 0) return 1;
-    return pow(b, (y-1)) * b;
-}
 
 struct alignas(64) Superblock {
     uint64_t superBlockEntry{};
@@ -91,8 +78,8 @@ struct Bitvector {
 };
 
 template <uint64_t TSigma, typename CB>
-auto construct_bitvectors(uint64_t length, CB cb) -> std::tuple<std::array<Bitvector, pow(2, bits_count(TSigma))>, std::array<uint64_t, TSigma+1>> {
-    constexpr auto bits = bits_count(TSigma);
+auto construct_bitvectors(uint64_t length, CB cb) -> std::tuple<std::array<Bitvector, pow(2, required_bits(TSigma))>, std::array<uint64_t, TSigma+1>> {
+    constexpr auto bits = required_bits(TSigma);
     constexpr auto bvct = pow(2, bits);
     std::array<Bitvector, bvct> bv;
 
@@ -175,7 +162,7 @@ template <uint64_t TSigma>
 struct OccTable {
     using TLengthType = uint64_t;
     static constexpr uint64_t Sigma = TSigma;
-    static constexpr auto bits = bits_count(TSigma);
+    static constexpr auto bits = required_bits(TSigma);
     static constexpr auto bvct = pow(2, bits);
 
     std::array<Bitvector, bvct> bitvector;

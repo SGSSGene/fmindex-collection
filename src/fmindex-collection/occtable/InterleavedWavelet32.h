@@ -2,6 +2,7 @@
 
 #include "../builtins.h"
 #include "concepts.h"
+#include "utils.h"
 
 #include <array>
 #include <bitset>
@@ -11,23 +12,6 @@
 namespace fmindex_collection {
 namespace occtable {
 namespace interleavedWavelet32_detail {
-
-// counts how many bits are needed to represent the number y
-constexpr inline uint64_t bits_count(uint32_t y) {
-    if (y == 0) return 1;
-    uint32_t i{0};
-    while (y != 0) {
-        y = y >> 1;
-        ++i;
-    }
-    return i;
-}
-
-// computes b to the power of y
-constexpr inline uint32_t pow(uint32_t b, uint32_t y) {
-    if (y == 0) return 1;
-    return pow(b, (y-1)) * b;
-}
 
 /*
  * \param TSigma size of the alphabet
@@ -50,7 +34,7 @@ struct Bitvector {
     }
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
-    static constexpr auto bitct = bits_count(TSigma);
+    static constexpr auto bitct = required_bits(TSigma);
     // next full power of 2
     static constexpr auto bvct  = pow(2, bitct);
 

@@ -3,6 +3,7 @@
 #include "../DenseVector.h"
 #include "../builtins.h"
 #include "concepts.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <array>
@@ -16,29 +17,11 @@ namespace fmindex_collection {
 namespace occtable {
 namespace eprV6_impl {
 
-// counts how many bits are needed to represent the number y
-constexpr inline uint64_t bits_count(uint64_t y) {
-    if (y == 0) return 1;
-    uint64_t i{0};
-    while (y != 0) {
-        y = y >> 1;
-        ++i;
-    }
-    return i;
-}
-
-// computes b to the power of y
-constexpr inline uint64_t pow(uint64_t b, uint64_t y) {
-    if (y == 0) return 1;
-    return pow(b, (y-1)) * b;
-}
-
-
 template <uint64_t TSigma>
 struct Bitvector {
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
-    static constexpr auto bitct = bits_count(TSigma-1);
+    static constexpr auto bitct = required_bits(TSigma-1);
     // next full power of 2
     static constexpr auto bvct  = pow(2, bitct);
 
