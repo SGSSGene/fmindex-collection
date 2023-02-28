@@ -32,9 +32,31 @@ struct BiFMIndex {
         if (occ.size() != occRev.size()) {
             throw std::runtime_error("occ don't have the same size: " + std::to_string(occ.size()) + " " + std::to_string(occRev.size()));
         }
+        // compute last row
+        auto ct = std::array<uint64_t, Sigma>{};
+        for (auto v : bwt) {
+            ct[v] += 1;
+        }
+        for (size_t i{1}; i < ct.size(); ++i) {
+            ct[i] = ct[i-1] + ct[i];
+        }
+        // check last row is correct
         for (size_t sym{0}; sym < Sigma; ++sym) {
-            if (occ.rank(occ.size(), sym) != occRev.rank(occ.size(), sym)) {
-                throw std::runtime_error("wrong rank for the last entry");
+            if (occ.rank(occ.size(), sym) != ct[sym]) {
+                auto e = std::string{"Wrong rank for the last entry."}
+                    + " Got different values for forward index."
+                    + " sym: " + std::to_string(sym)
+                    + " got: " + std::to_string(occ.rank(occ.size(), sym))
+                    + " expected: " + std::to_string(ct[sym]);
+                throw std::runtime_error(e);
+            }
+            if (occRev.rank(occRev.size(), sym) != ct[sym]) {
+                auto e = std::string{"Wrong rank for the last entry."}
+                    + " Got different values for reverse index."
+                    + " sym: " + std::to_string(sym)
+                    + " got: " + std::to_string(occRev.rank(occRev.size(), sym))
+                    + " expected: " + std::to_string(ct[sym]);
+                throw std::runtime_error(e);
             }
         }
         if constexpr (requires(Table t) {{ t.hasValue(size_t{}) }; }) {

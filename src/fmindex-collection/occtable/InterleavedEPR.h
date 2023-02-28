@@ -113,29 +113,31 @@ struct Bitvector {
 
 
     Bitvector(std::span<uint8_t const> _bwt) {
-        blocks.reserve(_bwt.size()/64+2);
+        blocks.reserve(_bwt.size()/block_size);
 
-        std::array<uint64_t, TSigma> sblock_acc{0};
-        std::array<block_t, TSigma> block_acc{0};
+        auto sblock_acc = std::array<uint64_t, TSigma>{}; // accumulator for super blocks
+        auto block_acc  = std::array<block_t, TSigma>{};  // accumulator for blocks
 
-        for (uint64_t size{0}; size < _bwt.size(); ++size) {
-            if (size % block_size == 0) { // new super block + new block
-                superBlocks.emplace_back(sblock_acc);
-                blocks.emplace_back();
-                block_acc = {};
-            } else if (size % letterFit == 0) { // new block
-                blocks.emplace_back();
-                blocks.back().blocks = block_acc;
+        for (uint64_t size{0}; size < _bwt.size();) {
+            superBlocks.emplace_back(sblock_acc);
+            block_acc = {};
+
+            for (uint64_t blockId{0}; blockId < block_size/letterFit and size < _bwt.size(); ++blockId) {
+                blocks.emplace_back(block_acc);
+
+                for (uint64_t bitId{0}; bitId < letterFit and size < _bwt.size(); ++bitId, ++size) {
+
+                    uint64_t symb = _bwt[size];
+                    blocks.back().inBlock |= symb << (bitct * bitId);
+
+                    block_acc[symb] += 1;
+                    sblock_acc[symb] += 1;
+                }
             }
-            auto blockId      = size / letterFit;
-            auto bitId        = size % letterFit;
-
-            uint64_t symb = _bwt[size];
-            blocks[blockId].inBlock |= symb << (bitct * bitId);
-
-            block_acc[symb] += 1;
-            sblock_acc[symb] += 1;
         }
+        // For safety we add a new super block and block
+        superBlocks.emplace_back(sblock_acc);
+        blocks.emplace_back(block_acc);
 
         C[0] = 0;
         for (uint64_t i{0}; i < TSigma; ++i) {
