@@ -113,7 +113,7 @@ struct Bitvector {
 
 
     Bitvector(std::span<uint8_t const> _bwt) {
-        blocks.reserve(_bwt.size()/block_size);
+        blocks.reserve(_bwt.size()/block_size+1);
 
         auto sblock_acc = std::array<uint64_t, TSigma>{}; // accumulator for super blocks
         auto block_acc  = std::array<block_t, TSigma>{};  // accumulator for blocks

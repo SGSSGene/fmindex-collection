@@ -130,38 +130,40 @@ struct Bitvector {
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
     std::array<uint64_t, TSigma+1> C;
 
-    template <typename CB>
-    Bitvector(uint64_t length, CB cb) {
+    Bitvector(std::span<uint8_t const> _bwt) {
         // Next three lines are a reserve call, with zero initialization
         // This is required, so padding bytes will also be zero
-        blocks.resize(length/64+2);
+        blocks.resize(_bwt.size()/64+1);
         memset((void*)blocks.data(), 0, blocks.size() * sizeof(Block));
         blocks.resize(0);
 
-        std::array<uint64_t, TSigma> sblock_acc{0};
-        std::array<block_t, TSigma> block_acc{0};
+        auto sblock_acc = std::array<uint64_t, TSigma>{}; // accumulator for super blocks
+        auto block_acc  = std::array<block_t, TSigma>{};  // accumulator for blocks
 
-        for (uint64_t size{0}; size < length; ++size) {
-            if (size % (1ul<<block_size) == 0) { // new super block + new block
-                superBlocks.emplace_back(sblock_acc);
-                blocks.emplace_back(Block{});
-                block_acc = {};
-            } else if (size % 64 == 0) { // new block
-                blocks.emplace_back(Block{});
-                blocks.back().blocks = block_acc;
+        for (uint64_t size{0}; size < _bwt.size();) {
+            superBlocks.emplace_back(sblock_acc);
+            block_acc = {};
+
+            for (uint64_t blockId{0}; blockId < (1ul<<block_size)/64 and size < _bwt.size(); ++blockId) {
+                blocks.emplace_back(block_acc);
+
+                for (uint64_t bitId{0}; bitId < 64 and size < _bwt.size(); ++bitId, ++size) {
+
+                    uint64_t symb = _bwt[size];
+
+                    for (uint64_t i{}; i < bitct; ++i) {
+                        auto b = ((symb>>i)&1);
+                        blocks.back().bits[i] |= (b << bitId);
+                    }
+
+                    block_acc[symb] += 1;
+                    sblock_acc[symb] += 1;
+                }
             }
-            auto blockId      = size >>  6;
-            auto bitId        = size &  63;
-
-            uint64_t symb = cb(size);
-
-            for (uint64_t i{}; i < bitct; ++i) {
-                auto b = ((symb>>i)&1);
-                blocks[blockId].bits[i] |= (b << bitId);
-            }
-            block_acc[symb] += 1;
-            sblock_acc[symb] += 1;
         }
+        // For safety we add a new super block and block
+        superBlocks.emplace_back(sblock_acc);
+        blocks.emplace_back(block_acc);
 
         C[0] = 0;
         for (uint64_t i{0}; i < TSigma; ++i) {
@@ -298,11 +300,12 @@ struct OccTable {
         uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ul << (sizeof(block_t) * 8));
         return C + blocks + superblocks;
     }
-
+    OccTable(std::span<uint8_t const> _bwt)
+        : bitvector(_bwt)
+    {}
+    //!TODO this c'tor must go
     OccTable(std::vector<uint8_t> const& _bwt)
-        : bitvector(_bwt.size(), [&](uint64_t i) -> uint8_t {
-            return _bwt[i];
-        })
+        : bitvector(std::span{_bwt})
     {}
 
     OccTable(cereal_tag)
