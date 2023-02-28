@@ -197,19 +197,7 @@ struct Bitvector {
                 + sizeof(C);
     }
 
-    void prefetch(uint64_t idx) const {
-//        auto level0Id     = idx >>  6;
-//        auto level1Id     = idx >> level0_size;
-//        auto superBlockId = idx >> level1_size;
-
-//        __builtin_prefetch(reinterpret_cast<void const*>(&level1[level1Id]), 0, 0);
-//        __builtin_prefetch(reinterpret_cast<void const*>(&bits[level1Id]), 0, 0);
-//        __builtin_prefetch(reinterpret_cast<void const*>(&superBlocks[superBlockId]), 0, 0);
-    }
-
     uint64_t rank(uint64_t idx, uint64_t symb) const {
-        prefetch(idx);
-
         auto level0Id     = idx >>  6;
         auto level1Id     = idx >> level0_size;
         auto superBlockId = idx >> level1_size;
@@ -222,8 +210,6 @@ struct Bitvector {
     }
 
     uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
-        prefetch(idx);
-
         auto level0Id     = idx >>  6;
         auto level1Id     = idx >> level0_size;
         auto superBlockId = idx >> level1_size;
@@ -238,8 +224,6 @@ struct Bitvector {
 
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
-        prefetch(idx);
-
         auto level0Id     = idx >>  6;
         auto level1Id     = idx >> level0_size;
         auto superBlockId = idx >> level1_size;
@@ -255,8 +239,6 @@ struct Bitvector {
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
-        prefetch(idx);
-
         auto level0Id     = idx >>  6;
         auto level1Id     = idx >> level0_size;
         auto superBlockId = idx >> level1_size;
@@ -287,8 +269,6 @@ struct Bitvector {
     }
 
     uint64_t rank_symbol(uint64_t idx) const {
-        prefetch(idx);
-
         auto level0Id     = idx >>  6;
         auto level1Id     = idx >> level0_size;
         auto superBlockId = idx >> level1_size;
@@ -341,9 +321,7 @@ struct OccTable {
         return bitvector.C.back();
     }
 
-    auto prefetch(uint64_t idx) const {
-        bitvector.prefetch(idx);
-    }
+    auto prefetch(uint64_t) const {}
 
     uint64_t rank(uint64_t idx, uint64_t symb) const {
         return bitvector.rank(idx, symb);
