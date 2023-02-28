@@ -1,12 +1,12 @@
 #include "utils.h"
 #include "argp.h"
 
-#include <fmindex-collection/search/all.h>
+#include <cstdio>
 #include <fmindex-collection/locate.h>
-#include <search_schemes/generator/all.h>
-#include <search_schemes/expand.h>
-
+#include <fmindex-collection/search/all.h>
 #include <fmt/format.h>
+#include <search_schemes/expand.h>
+#include <search_schemes/generator/all.h>
 #include <unordered_set>
 
 using namespace fmindex_collection;
@@ -20,8 +20,8 @@ int main(int argc, char const* const* argv) {
 
     auto config = loadConfig(argc, argv);
     auto count = std::map<std::string, int>{};
-    visitAllTables<Sigma>([&]<template <size_t> typename Table>(std::type_identity<Table<Sigma>>) {
-        auto ext = Table<Sigma>::extension();
+    visitAllTables<Sigma>([&]<typename Table>() {
+        auto ext = Table::extension();
         count[ext] += 1;
         if (count.at(ext) != 1) {
             throw std::runtime_error("two different indices share the same file ending");
@@ -73,12 +73,12 @@ int main(int argc, char const* const* argv) {
     }
 
 
-    visitAllTables<Sigma>([&, &queries=queries]<template <size_t> typename Table>(std::type_identity<Table<Sigma>>) {
-        std::string name = Table<Sigma>::extension();
+    visitAllTables<Sigma>([&, &queries=queries]<typename Table>() {
+        std::string name = Table::extension();
         if (config.extensions.count(name) == 0) return;
 
-        if constexpr (OccTableMemoryUsage<Table<Sigma>>) {
-            size_t s = Table<Sigma>::expectedMemoryUsage(3'000'000'000ul);
+        if constexpr (OccTableMemoryUsage<Table>) {
+            size_t s = Table::expectedMemoryUsage(3'000'000'000ul);
             if (s > 1024*1024*1024*56ul) {
                 fmt::print("{} skipping, to much memory\n", name);
                 return;
@@ -86,7 +86,7 @@ int main(int argc, char const* const* argv) {
         }
         fmt::print("start loading {} ...", name);
         fflush(stdout);
-        auto index = loadDenseIndex<Sigma, CSA, Table>(config.indexPath);
+        auto index = loadDenseIndex<CSA, Table>(config.indexPath);
         fmt::print("done\n");
         for (auto const& algorithm : config.algorithms) {
             fmt::print("using algorithm {}\n", algorithm);
@@ -104,7 +104,7 @@ int main(int argc, char const* const* argv) {
 
 
             auto memory = [&] () -> size_t {
-                if constexpr (OccTableMemoryUsage<Table<Sigma>>) {
+                if constexpr (OccTableMemoryUsage<Table>) {
                     return index.memoryUsage();
                 } else {
                     return 0ul;
@@ -268,7 +268,7 @@ int main(int argc, char const* const* argv) {
                 fmt::print("{:15} {:3}: {:>10.3}s ({:>10.3}s+{:>10.3}s) {:>10.3}q/s - results: {:>10}/{:>10}/{:>10}/{:>10} - mem: {:>13}\n", name, k, time_search + time_locate, time_search, time_locate, mut_queries.size() / (time_search+time_locate), resultCt, results.size(), uniqueResults.size(), readIds.size(), memory);
                 {
                     if (!config.saveOutput.empty()) {
-                        auto ofs = fopen(config.saveOutput.c_str(), "w");
+                        auto ofs = fopen(config.saveOutput.string().c_str(), "w");
                         for (auto const& [queryId, seqId, pos, e] : results) {
 //                            auto const& qi = queryInfos[queryId];
                             fmt::print(ofs, "{} {} {}\n", queryId, seqId, pos);

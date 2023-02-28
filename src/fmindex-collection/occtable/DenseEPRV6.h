@@ -1,7 +1,8 @@
 #pragma once
 
-#include "concepts.h"
 #include "../DenseVector.h"
+#include "../builtins.h"
+#include "concepts.h"
 
 #include <algorithm>
 #include <array>

@@ -70,9 +70,9 @@ inline auto bestKnown(size_t N, size_t minK, size_t K) -> Scheme {
         };
     } else if (N == 5 and K == 4) {
         return {
-            {{0, 1, 2, 3, 4}, {0, 0, 0, 0, std::max(minK, 4ul)}, {0, 3, 3, 4, 4}},
-            {{1, 2, 3, 4, 0}, {0, 0, 0, 0, std::max(minK, 0ul)}, {2, 2, 3, 3, 4}},
-            {{4, 3, 2, 1, 0}, {0, 0, 0, 3, std::max(minK, 3ul)}, {0, 0, 4, 4, 4}}
+            {{0, 1, 2, 3, 4}, {0, 0, 0, 0, std::max(minK, size_t{4})}, {0, 3, 3, 4, 4}},
+            {{1, 2, 3, 4, 0}, {0, 0, 0, 0, std::max(minK, size_t{0})}, {2, 2, 3, 3, 4}},
+            {{4, 3, 2, 1, 0}, {0, 0, 0, 3, std::max(minK, size_t{3})}, {0, 0, 4, 4, 4}}
         };
     }
     return backtracking(N, minK, K);

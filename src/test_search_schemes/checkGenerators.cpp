@@ -44,9 +44,9 @@ TEST_CASE("check search scheme generator h2", "[isValid][h2]") {
     // Note N must be larger than maxK
     for (size_t N{1}; N < 20; ++N) { // Number of pieces
         INFO("N " << N);
-        for (size_t minK{0}; minK < std::min(N, 10ul); ++minK) {
+        for (size_t minK{0}; minK < std::min(N, size_t{10}); ++minK) {
             INFO("minK " << minK);
-            for (size_t maxK{minK}; maxK < std::min(N, 10ul); ++maxK) {
+            for (size_t maxK{minK}; maxK < std::min(N, size_t{10}); ++maxK) {
                 INFO("maxK " << maxK);
                 CHECK(ss::isValid(gen::h2(N, minK, maxK)));
             }
@@ -96,9 +96,9 @@ TEST_CASE("check search scheme generator suffixFilter", "[isValid][suffixFilter]
     // Note N must be larger than maxK
     for (size_t N{1}; N < 20; ++N) { // Number of pieces
         INFO("N " << N);
-        for (size_t minK{0}; minK < std::min(N, 10ul); ++minK) {
+        for (size_t minK{0}; minK < std::min(N, size_t{10}); ++minK) {
             INFO("minK " << minK);
-            for (size_t maxK{minK}; maxK < std::min(N, 10ul); ++maxK) {
+            for (size_t maxK{minK}; maxK < std::min(N, size_t{10}); ++maxK) {
                 INFO("maxK " << maxK);
                 CHECK(ss::isValid(gen::suffixFilter(N, minK, maxK)));
             }

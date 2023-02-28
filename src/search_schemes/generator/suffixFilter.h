@@ -25,7 +25,7 @@ inline auto suffixFilter(size_t N, size_t minK, size_t K) -> Scheme {
         // fill rest of pattern
         for (size_t j{n}; j > 0; --j) {
             s.pi.push_back(j-1);
-            s.l.push_back(std::min(K, 1ul));
+            s.l.push_back(std::min(K, size_t{1}));
             s.u.push_back(K);
         }
         res.push_back(s);

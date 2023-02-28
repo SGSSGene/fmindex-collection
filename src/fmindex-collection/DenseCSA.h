@@ -61,10 +61,10 @@ struct DenseCSA {
         , bv {cereal_tag{}}
         , samplingRate{_samplingRate}
     {
-        size_t bitsForSeqId = std::max(1ul, size_t(std::ceil(std::log2(_inputSizes.size()))));
+        size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
         assert(bitsForSeqId < 64);
         size_t largestText  = *std::max_element(begin(_inputSizes), end(_inputSizes));
-        size_t bitsForPos   = std::max(1ul, size_t(std::ceil(std::log2(largestText))));
+        size_t bitsForPos   = std::max(size_t{1}, size_t(std::ceil(std::log2(largestText))));
 
 
         auto bitStack = fmindex_collection::BitStack{};

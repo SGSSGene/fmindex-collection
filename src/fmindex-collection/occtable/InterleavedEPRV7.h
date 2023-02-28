@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../builtins.h"
 #include "concepts.h"
 
 #include <algorithm>
@@ -41,7 +42,8 @@ struct Bitvector {
     static constexpr auto bvct  = pow(2, bitct);
 
 
-    struct  __attribute__((__packed__)) InBits {
+    #pragma pack(push, 1)
+    struct InBits {
         std::array<uint64_t, bitct> bits{};
         std::array<uint8_t, TSigma> level0{};
 
@@ -137,6 +139,8 @@ struct Bitvector {
 
         }
     };
+    #pragma pack(pop)
+
 
     using blockL0_t = uint8_t;
     using blockL1_t = uint16_t;
