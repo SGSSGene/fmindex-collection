@@ -99,7 +99,7 @@ struct BitvectorCompact {
 
             if (cb(size-1)) {
                 auto& bits = superblocks.back().bits[blockId];
-                bits = bits | (1ul << bitId);
+                bits = bits | (1ull << bitId);
 
                 block_acc  += 1;
                 sblock_acc += 1;

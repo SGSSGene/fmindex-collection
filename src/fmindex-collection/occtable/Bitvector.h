@@ -43,7 +43,7 @@ struct Bitvector {
 
         auto blockId      = idx / 64;
         auto bitId        = idx & 63;
-        return bits[blockId] & (1ul << bitId);
+        return bits[blockId] & (1ull << bitId);
     }
 
     template <typename Archive>
@@ -91,7 +91,7 @@ auto construct_bitvectors(std::span<uint8_t const> bwt) -> std::tuple<std::array
 
         auto symb = bwt[size-1];
         auto& bits = bv[symb].bits[blockId];
-        bits = bits | (1ul << bitId);
+        bits = bits | (1ull << bitId);
 
         block_acc[symb]  += 1;
         sblock_acc[symb] += 1;

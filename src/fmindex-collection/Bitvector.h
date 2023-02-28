@@ -22,7 +22,7 @@ struct Bitvector {
             assert(idx < 384);
 
             auto blockId = idx >> 6;
-            auto block = 0b111111111ul & (blockEntries >> (blockId * 9));
+            auto block = 0b111111111ull & (blockEntries >> (blockId * 9));
             auto keep = (idx & 63);
             auto maskedBits = bits[blockId] << (63-keep);
             auto ct = std::bitset<64>{maskedBits}.count();
@@ -34,11 +34,11 @@ struct Bitvector {
         bool value(size_t idx) const noexcept {
             auto blockId = idx >> 6;
             auto bitNbr = idx & 63;
-            return (bits[blockId] & (1ul << bitNbr));
+            return (bits[blockId] & (1ull << bitNbr));
         }
 
         void setBlock(size_t blockId, size_t value) {
-            blockEntries = blockEntries & ~uint64_t{0b111111111ul << blockId*9};
+            blockEntries = blockEntries & ~uint64_t{0b111111111ull << blockId*9};
             blockEntries = blockEntries | uint64_t{value << blockId*9};
         }
 
@@ -90,7 +90,7 @@ struct Bitvector {
 
             if (cb(size-1)) {
                 auto& bits = superblocks.back().bits[blockId];
-                bits = bits | (1ul << bitId);
+                bits = bits | (1ull << bitId);
 
                 block_acc  += 1;
                 sblock_acc += 1;

@@ -143,7 +143,7 @@ struct Bitvector {
 
     Bitvector(std::span<uint8_t const> _bwt) {
         auto const length = _bwt.size();
-        level1.reserve(length/(1ul<<level1_size)+2);
+        level1.reserve(length/(1ull<<level1_size)+2);
         bits.reserve(length/64+2);
 
         std::array<blockL0_t, TSigma> blockL0_acc{0};
@@ -152,13 +152,13 @@ struct Bitvector {
 
 
         for (uint64_t size{0}; size < length; ++size) {
-            if (size % (1ul<<level1_size) == 0) { // new l3 block
+            if (size % (1ull<<level1_size) == 0) { // new l3 block
                 superBlocks.emplace_back(sblock_acc);
                 level1.emplace_back();
                 bits.emplace_back();
                 blockL0_acc = {};
                 blockL1_acc = {};
-            } else if (size % (1ul<<level0_size) == 0) { // new l1 block
+            } else if (size % (1ull<<level0_size) == 0) { // new l1 block
                 level1.emplace_back(blockL1_acc);
                 bits.emplace_back();
 
@@ -301,7 +301,7 @@ struct OccTable {
 
         uint64_t C           = sizeof(uint64_t) * (Sigma+1);
         uint64_t blocks      = blockSize        * (length+1) / 64;
-        uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ul << (sizeof(uint16_t) * 8));
+        uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ull << (sizeof(uint16_t) * 8));
         return C + blocks + superblocks;
     }
 

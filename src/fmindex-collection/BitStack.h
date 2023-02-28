@@ -26,7 +26,7 @@ struct BitStack {
     bool value(size_t idx) const {
         auto block  = idx / 8;
         auto bitNbr = idx % 8;
-        return (data[block] & (1ul << bitNbr));
+        return (data[block] & (1ull << bitNbr));
     }
 
     void append(std::vector<uint8_t>& buffer) const {

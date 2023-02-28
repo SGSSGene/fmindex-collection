@@ -52,7 +52,7 @@ struct Search {
                 auto nextCur = extend(cur);
                 for (size_t s{1}; s < Sigma; ++s) {
                     if (nextCur[s].empty()) continue;
-                    auto newErrorCount = errorCount + ((r!=s)?1ul:0ul);
+                    auto newErrorCount = errorCount + ((r!=s)?1ull:0ull);
                     if (newErrorCount < maxErrors) {
                         buffer2.emplace_back(nextCur[s], newErrorCount);
                     } else {
