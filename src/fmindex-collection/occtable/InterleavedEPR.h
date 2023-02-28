@@ -64,7 +64,7 @@ struct Bitvector {
 
     struct alignas(TAlignment) Block {
         std::array<block_t, TSigma> blocks{};
-        uint64_t inBlock;
+        uint64_t inBlock{};
 
         void prefetch() const {
             __builtin_prefetch(reinterpret_cast<void const*>(&blocks), 0, 0);
@@ -123,7 +123,8 @@ struct Bitvector {
             block_acc = {};
 
             for (uint64_t blockId{0}; blockId < block_size/letterFit and size < _bwt.size(); ++blockId) {
-                blocks.emplace_back(block_acc);
+                blocks.emplace_back();
+                blocks.back().blocks = block_acc;
 
                 for (uint64_t bitId{0}; bitId < letterFit and size < _bwt.size(); ++bitId, ++size) {
 
@@ -137,7 +138,8 @@ struct Bitvector {
         }
         // For safety we add a new super block and block
         superBlocks.emplace_back(sblock_acc);
-        blocks.emplace_back(block_acc);
+        blocks.emplace_back();
+        blocks.back().blocks = block_acc;
 
         C[0] = 0;
         for (uint64_t i{0}; i < TSigma; ++i) {

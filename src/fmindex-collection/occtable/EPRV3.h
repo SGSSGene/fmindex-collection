@@ -144,7 +144,8 @@ struct Bitvector {
             block_acc = {};
 
              for (uint64_t blockId{0}; blockId < (1ul<<block_size)/64 and size < _bwt.size(); ++blockId) {
-                blocks_.emplace_back(block_acc);
+                blocks_.emplace_back();
+                blocks_.back().blocks = block_acc;
                 bits.emplace_back();
 
                 for (uint64_t bitId{0}; bitId < 64 and size < _bwt.size(); ++bitId, ++size) {
@@ -163,7 +164,8 @@ struct Bitvector {
         }
         // For safety we add a new super block and block
         superBlocks.emplace_back(sblock_acc);
-        blocks_.emplace_back(block_acc);
+        blocks_.emplace_back();
+        blocks_.back().blocks = block_acc;
         bits.emplace_back();
 
         C[0] = 0;
