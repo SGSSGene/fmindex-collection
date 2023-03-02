@@ -32,7 +32,7 @@ struct Bitvector {
             auto bit = (symb & mask) != 0;
             cb(id, bit);
             id = id * 2 + 1 + bit;
-            mask = mask >> 1ul;
+            mask = mask >> 1ull;
         }
     }
 
@@ -184,7 +184,7 @@ struct Bitvector {
                     }
                 }
             }
-            if (blocks.size() % (1ul<<26) == 0) { // new super block + new block
+            if (blocks.size() % (1ull<<26) == 0) { // new super block + new block
                 superBlocks.emplace_back();
                 for (uint64_t j{0}; j < TSigma; ++j) {
                     superBlocks.back()[j] = sblock_acc[j];
@@ -303,7 +303,7 @@ struct OccTable {
 
         uint64_t C           = sizeof(uint64_t) * (Sigma+1);
         uint64_t blocks      = blockSize        * (length+1) / 64;
-        uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ul << 32);
+        uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ull << 32);
         return C + blocks + superblocks;
     }
 

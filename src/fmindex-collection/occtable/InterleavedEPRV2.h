@@ -145,7 +145,7 @@ struct Bitvector {
             superBlocks.emplace_back(sblock_acc);
             block_acc = {};
 
-            for (uint64_t blockId{0}; blockId < (1ul<<block_size)/64 and size < _bwt.size(); ++blockId) {
+            for (uint64_t blockId{0}; blockId < (1ull<<block_size)/64 and size < _bwt.size(); ++blockId) {
                 blocks.emplace_back();
                 blocks.back().blocks = block_acc;
 
@@ -300,7 +300,7 @@ struct OccTable {
 
         uint64_t C           = sizeof(uint64_t) * (Sigma+1);
         uint64_t blocks      = blockSize        * (length+1) / 64;
-        uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ul << (sizeof(block_t) * 8));
+        uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ull << (sizeof(block_t) * 8));
         return C + blocks + superblocks;
     }
 

@@ -78,8 +78,8 @@ int main(int argc, char const* const* argv) {
         if (config.extensions.count(name) == 0) return;
 
         if constexpr (OccTableMemoryUsage<Table>) {
-            size_t s = Table::expectedMemoryUsage(3'000'000'000ul);
-            if (s > 1024*1024*1024*56ul) {
+            size_t s = Table::expectedMemoryUsage(3'000'000'000ull);
+            if (s > 1024ull*1024*1024*56ull) {
                 fmt::print("{} skipping, to much memory\n", name);
                 return;
             }
@@ -107,7 +107,7 @@ int main(int argc, char const* const* argv) {
                 if constexpr (OccTableMemoryUsage<Table>) {
                     return index.memoryUsage();
                 } else {
-                    return 0ul;
+                    return 0ull;
                 }
             }();
             for (size_t k{config.minK}; k <= config.maxK; k = k + config.k_stepSize) {

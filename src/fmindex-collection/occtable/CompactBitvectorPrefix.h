@@ -24,7 +24,7 @@ struct alignas(64) Superblock {
         assert(idx < 384);
 
         auto blockId = idx >> 6;
-        auto block = 0b111111111ul & (blockEntries >> (blockId * 9));
+        auto block = 0b111111111ull & (blockEntries >> (blockId * 9));
         auto keep = (idx & 63);
         auto maskedBits = bits[blockId] << (63-keep);
         auto ct = std::bitset<64>{maskedBits}.count();
@@ -38,11 +38,11 @@ struct alignas(64) Superblock {
 
         auto blockId = idx >> 6;
         auto bitId = idx & 63;
-        return bits[blockId] & (1ul << bitId);
+        return bits[blockId] & (1ull << bitId);
     }
 
     void setBlock(uint64_t blockId, uint64_t value) {
-        blockEntries = blockEntries & ~uint64_t{0b111111111ul << blockId*9};
+        blockEntries = blockEntries & ~uint64_t{0b111111111ull << blockId*9};
         blockEntries = blockEntries | uint64_t{value << blockId*9};
     }
 
@@ -125,7 +125,7 @@ auto construct_bitvectors(std::span<uint8_t const> bwt) -> std::tuple<std::array
         { // update rank
             auto symb = bwt[size-1];
             auto& bits = bv1[symb].superblocks.back().bits[blockId];
-            bits = bits | (1ul << bitId);
+            bits = bits | (1ull << bitId);
 
             block_acc[symb]  += 1;
             sblock_acc[symb] += 1;
@@ -134,7 +134,7 @@ auto construct_bitvectors(std::span<uint8_t const> bwt) -> std::tuple<std::array
             auto symb = bwt[size-1];
             for (uint64_t j{symb}; j < TSigma; ++j) {
                 auto& bits = bv2[j].superblocks.back().bits[blockId];
-                bits = bits | (1ul << bitId);
+                bits = bits | (1ull << bitId);
 
                 block_acc2[j]  += 1;
                 sblock_acc2[j] += 1;

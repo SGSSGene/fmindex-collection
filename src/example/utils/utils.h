@@ -124,7 +124,7 @@ auto benchmarkTable(std::string name, T const& bwt) -> Result {
 
     result.expectedMemory = s;
 
-    if (s < 1024*1024*1024*8ul) {
+    if (s < 1024ull*1024*1024*8ull) {
         StopWatch watch;
         auto table = Table{bwt};
 
@@ -133,7 +133,7 @@ auto benchmarkTable(std::string name, T const& bwt) -> Result {
         { // benchmark V1
             xorshf96_reset();
             uint64_t a{};
-            for (size_t i{0}; i < 10'000'000; ++i) {
+            for (size_t i{0}; i < 10'000'000ull; ++i) {
                 auto symb = xorshf96() % Table::Sigma;
                 auto row = xorshf96() % table.size();
                 a += table.rank(row, symb);
@@ -144,7 +144,7 @@ auto benchmarkTable(std::string name, T const& bwt) -> Result {
         { // benchmark V2
             xorshf96_reset();
             size_t a = 0;
-            for (size_t i{0}; i < 10'000'000; ++i) {
+            for (size_t i{0}; i < 10'000'000ull; ++i) {
                 auto symb = xorshf96() % Table::Sigma;
                 auto row = xorshf96() % table.size();
                 a += table.prefix_rank(row, symb);

@@ -30,7 +30,7 @@ struct Bitvector {
             auto bit = (symb & mask) != 0;
             cb(id, bit);
             id = id * 2 + 1 + bit;
-            mask = mask >> 1ul;
+            mask = mask >> 1ull;
         }
     }
 
@@ -181,7 +181,7 @@ struct Bitvector {
                     }
                 }
             }
-            assert(blocks.size() <( 1ul<<26));
+            assert(blocks.size() <( 1ull<<26));
 
             blocks.emplace_back();
             for (uint32_t i{0}; i < TSigma; ++i) {

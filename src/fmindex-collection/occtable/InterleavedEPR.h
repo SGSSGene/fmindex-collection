@@ -30,7 +30,7 @@ struct Bitvector {
     static constexpr uint64_t maskEven = []() {
         uint64_t entries = 64 / bitct;
         auto result = uint64_t{0};
-        auto chunkMaskEven = uint64_t{(1ul << bitct)-1ul};
+        auto chunkMaskEven = uint64_t{(1ull << bitct)-1ull};
         for (uint64_t i{0}; i < entries; i += 2) {
             result = (result << (bitct*2)) | chunkMaskEven;
         }
@@ -75,11 +75,11 @@ struct Bitvector {
         uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
             assert(idx < 64 / bitct);
 
-            auto _inblock = inBlock;// & ((1ul<<(idx*bitct)) -1);
+            auto _inblock = inBlock;// & ((1ull<<(idx*bitct)) -1);
 
             auto te = ((rb[symb] - (_inblock & maskEven)) & bitMask) >> bitct;
             auto to = (rb[symb] - ((_inblock>>bitct) & maskEven)) & bitMask;
-            auto epr = (te | to) & ((1ul << (idx*bitct))-1ul);
+            auto epr = (te | to) & ((1ull << (idx*bitct))-1ull);
 
             auto ct = std::bitset<64>{epr}.count();
 
@@ -93,7 +93,7 @@ struct Bitvector {
         uint64_t symbol(uint64_t idx) const {
             assert(idx < 64 / bitct);
 
-            auto mask = uint64_t{(1ul<<bitct)-1ul};
+            auto mask = uint64_t{(1ull<<bitct)-1ull};
             uint64_t symb = (inBlock >> (idx*bitct)) & mask;
             return symb;
         }
@@ -105,7 +105,7 @@ struct Bitvector {
     };
 
     constexpr static uint64_t letterFit = 64 / bitct;
-    static constexpr uint64_t block_size = ((1ul<<(sizeof(block_t)*8)) / letterFit)*letterFit;
+    static constexpr uint64_t block_size = ((1ull<<(sizeof(block_t)*8)) / letterFit)*letterFit;
 
     std::vector<Block> blocks;
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
@@ -259,7 +259,7 @@ struct OccTable {
 
         uint64_t C           = sizeof(uint64_t) * (Sigma+1);
         uint64_t blocks      = blockSize        * (length+1) / 64;
-        uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ul << (sizeof(block_t) * 8));
+        uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ull << (sizeof(block_t) * 8));
         return C + blocks + superblocks;
     }
 

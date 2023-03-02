@@ -83,7 +83,7 @@ struct DenseCSA {
         size_t lastSamplingPos{};
 
         auto newLabels = std::vector<std::tuple<uint64_t, uint64_t>>{};
-        newLabels.resize(sa.size(), std::make_tuple(std::numeric_limits<uint64_t>::max(), 0ul));
+        newLabels.resize(sa.size(), std::make_tuple(std::numeric_limits<uint64_t>::max(), size_t{0}));
 
         for (size_t i{0}; i < newLabels.size(); ++i, ++subjPos) {
             while (subjPos >= *accIter) {

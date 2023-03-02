@@ -95,7 +95,7 @@ struct Search {
 
         if (mismatchAllowed) {
             auto cursors = std::array<cursor_t, Sigma>{};
-            for (size_t i{1ul}; i < Sigma; ++i) {
+            for (size_t i{1}; i < Sigma; ++i) {
                 if constexpr (Right) {
                     cursors[i] = cur.extendRight(i);
                 } else {

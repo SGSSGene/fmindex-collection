@@ -130,7 +130,7 @@ struct Bitvector {
         : superBlocks(std::max(uint64_t{1}, uint64_t(std::ceil(std::log2(_bwt.size())))))
     {
         auto const length = _bwt.size();
-        level1.reserve(length/(1ul<<level1_size)+2);
+        level1.reserve(length/(1ull<<level1_size)+2);
         level0.reserve(length/64+2);
         bits.reserve(length/64+2);
 
@@ -140,7 +140,7 @@ struct Bitvector {
 
 
         for (uint64_t size{0}; size < length; ++size) {
-            if (size % (1ul<<level1_size) == 0) { // new l3 block
+            if (size % (1ull<<level1_size) == 0) { // new l3 block
                 for (auto v : sblock_acc) {
                     superBlocks.push_back(v);
                 }
@@ -149,7 +149,7 @@ struct Bitvector {
                 bits.emplace_back();
                 blockL0_acc = {};
                 blockL1_acc = {};
-            } else if (size % (1ul<<level0_size) == 0) { // new l1 block
+            } else if (size % (1ull<<level0_size) == 0) { // new l1 block
                 level1.emplace_back(blockL1_acc);
                 level0.emplace_back();
                 bits.emplace_back();
@@ -322,7 +322,7 @@ struct OccTable {
 
         uint64_t C           = sizeof(uint64_t) * (Sigma+1);
         uint64_t blocks      = blockSize        * (length+1) / 64;
-        uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ul << (sizeof(uint16_t) * 8));
+        uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ull << (sizeof(uint16_t) * 8));
         return C + blocks + superblocks;
     }
 

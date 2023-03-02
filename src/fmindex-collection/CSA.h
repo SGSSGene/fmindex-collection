@@ -29,7 +29,7 @@ struct CSA {
         }}
         , samplingRate{_samplingRate}
         , bitsForPosition{_bitsForPosition}
-        , bitPositionMask{(1ul<<bitsForPosition)-1}
+        , bitPositionMask{(1ull<<bitsForPosition)-1}
     {}
     CSA(CSA const&) = delete;
     CSA(CSA&& _other) noexcept = default;
@@ -45,7 +45,7 @@ struct CSA {
         assert(bitsForSeqId < 64);
 
         bitsForPosition = 64 - bitsForSeqId;
-        bitPositionMask = (1ul<<bitsForPosition)-1;
+        bitPositionMask = (1ull<<bitsForPosition)-1;
 
 
         auto bitStack = fmindex_collection::BitStack{};

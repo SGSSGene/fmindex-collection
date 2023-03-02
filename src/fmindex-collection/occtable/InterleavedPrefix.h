@@ -36,7 +36,7 @@ struct Bitvector {
         }
 
         uint8_t symbol(uint8_t idx) const {
-            auto bit = (1ul << idx);
+            auto bit = (1ull << idx);
             for (uint64_t symb{0}; symb < TSigma-1; ++symb) {
                 if (bits[symb] & bit) {
                     return symb;
@@ -103,7 +103,7 @@ Bitvector<TSigma> construct_bitvector(std::span<uint8_t const> _bwt) {
     std::array<uint32_t, TSigma> block_acc{0};
 
     for (uint64_t size{1}; size <= length; ++size) {
-        if (size % (1ul<<32) == 0) { // new super block + new block
+        if (size % (1ull<<32) == 0) { // new super block + new block
             bv.superBlocks.emplace_back(sblock_acc);
             bv.blocks.emplace_back();
             block_acc = {};
@@ -117,7 +117,7 @@ Bitvector<TSigma> construct_bitvector(std::span<uint8_t const> _bwt) {
         auto start = _bwt[size-1];
         for (uint64_t symb{start}; symb < TSigma; ++symb) {
             auto& bits = bv.blocks[blockId].bits[symb];
-            bits = bits | (1ul << bitId);
+            bits = bits | (1ull << bitId);
             block_acc[symb] += 1;
             sblock_acc[symb] += 1;
         }
@@ -143,7 +143,7 @@ struct OccTable {
 
         uint64_t C           = sizeof(uint64_t) * (Sigma+1);
         uint64_t blocks      = blockSize        * (length+1) / 64;
-        uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ul << 32);
+        uint64_t superblocks = sizeof(uint64_t) * (length+1) / (1ull << 32);
         return C + blocks + superblocks;
     }
 

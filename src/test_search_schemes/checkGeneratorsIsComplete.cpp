@@ -17,9 +17,9 @@ namespace gen = ss::generator;
 TEST_CASE("check search scheme generator backtracking for completness", "[isComplete][backtracking]") {
     for (size_t N{1}; N < 10; ++N) { // Number of pieces
         INFO("N " << N);
-        for (size_t minK{0}; minK < 5ul; ++minK) {
+        for (size_t minK{0}; minK < 5ull; ++minK) {
             INFO("minK " << minK);
-            for (size_t maxK{minK}; maxK < 5ul; ++maxK) {
+            for (size_t maxK{minK}; maxK < 5ull; ++maxK) {
                 INFO("maxK " << maxK);
                 CHECK(ss::isComplete(gen::backtracking(N, minK, maxK), minK, maxK));
             }
@@ -30,9 +30,9 @@ TEST_CASE("check search scheme generator backtracking for completness", "[isComp
 TEST_CASE("check search scheme generator bestKnown for completness", "[isComplete][bestKnown]") {
     for (size_t N{1}; N < 10; ++N) { // Number of pieces
         INFO("N " << N);
-        for (size_t minK{0}; minK < 5ul; ++minK) {
+        for (size_t minK{0}; minK < 5ull; ++minK) {
             INFO("minK " << minK);
-            for (size_t maxK{minK}; maxK < 5ul; ++maxK) {
+            for (size_t maxK{minK}; maxK < 5ull; ++maxK) {
                 INFO("maxK " << maxK);
                 CHECK(ss::isComplete(gen::bestKnown(N, minK, maxK), minK, maxK));
             }
@@ -42,7 +42,7 @@ TEST_CASE("check search scheme generator bestKnown for completness", "[isComplet
 
 TEST_CASE("check search scheme generator h2 for completness", "[isComplete][h2]") {
     // Note N must be larger than maxK
-    for (size_t N{1}; N < 10; ++N) { // Number of pieces
+    for (size_t N{1}; N < 10ull; ++N) { // Number of pieces
         INFO("N " << N);
         for (size_t minK{0}; minK < std::min(N, size_t{5}); ++minK) {
             INFO("minK " << minK);
