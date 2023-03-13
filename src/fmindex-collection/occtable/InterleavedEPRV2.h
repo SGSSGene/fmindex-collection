@@ -22,17 +22,56 @@ namespace fmindex_collection {
 namespace occtable {
 namespace interleavedEPRV2_impl {
 
+
+template <size_t I, size_t N>
+auto requested_bit_for_symbol(uint64_t symb, std::array<uint64_t, N> const& bits) -> uint64_t {
+    // I bit of symb is symbol of interest
+    // 1. Detect inversed I bit
+    auto inversed_bit = (~symb>>I) & 1;
+    // 2. Expand 0 → 000...000    and 1 → 111...111
+    auto expanded_bit = - inversed_bit;
+    // 3. Return all bits that are not set as set in expanded_bit
+    return bits[I] ^ expanded_bit;
+}
+
+
+template <size_t N>
+auto bits_have_symbols(uint64_t symb, std::array<uint64_t, N> const& bits) -> uint64_t {
+    auto bits_set = [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
+        return (requested_bit_for_symbol<Is>(symb, bits)&...);
+    }(std::make_integer_sequence<uint64_t, N>{});
+    return bits_set;
+}
+
+template <size_t N>
+auto bits_have_symbols_or_less(uint64_t symb, std::array<uint64_t, N> const& bits) -> uint64_t {
+    size_t bit_set{};
+    for (uint64_t i{0}; i <= symb; ++i) {
+        bit_set |= bits_have_symbols(i, bits);
+    }
+    return bit_set;
+}
+
+
+template <size_t Sigma, size_t N>
+auto bits_have_symbols_or_less2(uint64_t symb, std::array<uint64_t, N> const& bits) -> uint64_t {
+    size_t bit_set{};
+    for (uint64_t i{0}; i < Sigma; ++i) {
+        bit_set |= bits_have_symbols(symb, bits) * (size_t)(i <= symb);
+    }
+    return bit_set;
+}
+
+
 template <uint64_t TSigma, uint64_t TAlignment, typename block_t>
 struct Bitvector {
 
-    // number of full length bitvectors needed `2^bitct ≥ TSigma`
-    static constexpr auto bitct = required_bits(TSigma-1);
-    // next full power of 2
-    static constexpr auto bvct  = pow(2, bitct);
+    // number of full length bitvectors needed `2^sigma_bits ≥ TSigma`
+    static constexpr auto sigma_bits = required_bits(TSigma-1);
 
     struct alignas(TAlignment) Block {
         std::array<block_t, TSigma> blocks{};
-        std::array<uint64_t, bitct> bits{};
+        std::array<uint64_t, sigma_bits> bits{};
 
         void prefetch() const {
             __builtin_prefetch(reinterpret_cast<void const*>(&blocks), 0, 0);
@@ -41,31 +80,16 @@ struct Bitvector {
 
         uint64_t rank(uint64_t idx, uint64_t symb) const {
             assert(idx < 64);
-            auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>) {
-                return bits[I] ^ -((~symb>>I)&1);
-            };
-            auto mask = [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
-                return (f(std::integer_sequence<uint64_t, Is>{})&...);
-            }(std::make_integer_sequence<uint64_t, bitct>{});
-
-            auto bitset = std::bitset<64>(mask) << (64-idx);
-            return blocks[symb] + bitset.count();
+            auto bits_set = bits_have_symbols(symb, bits);
+            auto bits_masked = std::bitset<64>(bits_set) << (64-idx);
+            return blocks[symb] + bits_masked.count();
         }
 
         uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
-            auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>, uint64_t _symb) {
-                return bits[I] ^ -((~_symb>>I)&1);
-            };
-            uint64_t mask{};
+            auto bits_set = bits_have_symbols_or_less(symb, bits);
 
-            for (uint64_t i{0}; i <= symb; ++i) {
-                mask |= [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
-                    return (f(std::integer_sequence<uint64_t, Is>{}, i)&...);
-                }(std::make_integer_sequence<uint64_t, bitct>{});
-            }
-
-            auto bitset = std::bitset<64>(mask) << (64-idx);
-            auto ct = bitset.count();
+            auto bits_masked = std::bitset<64>(bits_set) << (64-idx);
+            auto ct = bits_masked.count();
 
             for (uint64_t i{0}; i <= symb; ++i) {
                 ct += blocks[i];
@@ -76,24 +100,18 @@ struct Bitvector {
         auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
             assert(idx < 64);
 
-            std::array<uint64_t, TSigma> rs{0};
-
-            auto f = [&]<uint64_t I>(uint64_t symb, std::integer_sequence<uint64_t, I>) {
-                return bits[I] ^ -((~symb>>I)&1);
-            };
+            std::array<uint64_t, TSigma> rs;
 
             for (uint64_t i{0}; i < TSigma; ++i) {
-                auto mask = [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
-                    return (f(i, std::integer_sequence<uint64_t, Is>{})&...);
-                }(std::make_integer_sequence<uint64_t, bitct>{});
-                rs[i] = (std::bitset<64>(mask) << (64 - idx)).count() + blocks[i];
+                auto bits_set = bits_have_symbols(i, bits);
+                rs[i] = (std::bitset<64>(bits_set) << (64 - idx)).count() + blocks[i];
             }
             return rs;
         }
 
         uint64_t symbol(uint64_t idx) const {
             uint64_t symb{};
-            for (uint64_t i{bitct}; i > 0; --i) {
+            for (uint64_t i{sigma_bits}; i > 0; --i) {
                 auto b = (bits[i-1] >> idx) & 1;
                 symb = (symb<<1) | b;
             }
@@ -112,7 +130,7 @@ struct Bitvector {
             };
             [&]<auto ...Is>(std::integer_sequence<uint64_t, Is...>) {
                 (f(std::integer_sequence<uint64_t, Is>{}) ,...);
-            }(std::make_integer_sequence<uint64_t, bitct>{});
+            }(std::make_integer_sequence<uint64_t, sigma_bits>{});
 
             auto bitset = std::bitset<64>{~mask} << (64-idx);
 
@@ -153,7 +171,7 @@ struct Bitvector {
 
                     uint64_t symb = _bwt[size];
 
-                    for (uint64_t i{}; i < bitct; ++i) {
+                    for (uint64_t i{}; i < sigma_bits; ++i) {
                         auto b = ((symb>>i)&1);
                         blocks.back().bits[i] |= (b << bitId);
                     }
