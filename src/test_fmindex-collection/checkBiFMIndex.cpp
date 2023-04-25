@@ -1,43 +1,9 @@
-#include <fmindex-collection/occtable/all.h>
+#include "allTables.h"
+
 #include <fmindex-collection/BiFMIndex.h>
 #include <catch2/catch.hpp>
 
-
-TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
-    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
-    fmindex_collection::occtable::interleaved8::OccTable<256>,
-    fmindex_collection::occtable::interleaved16::OccTable<256>,
-    fmindex_collection::occtable::interleaved32::OccTable<256>,
-    fmindex_collection::occtable::interleaved8Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved16Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedPrefix::OccTable<256>,
-    fmindex_collection::occtable::wavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
-    fmindex_collection::occtable::epr8V3::OccTable<256>,
-    fmindex_collection::occtable::epr16V3::OccTable<256>,
-    fmindex_collection::occtable::epr32V3::OccTable<256>,
-    fmindex_collection::occtable::eprV4::OccTable<256>,
-    fmindex_collection::occtable::eprV5::OccTable<256>,
-    fmindex_collection::occtable::eprV6::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
-) {
+TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLTABLES) {
     using OccTable = TestType;
 
     auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
@@ -122,40 +88,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]",
     }
 }
 
-TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 256 chars)", "[BiFMIndex]",
-    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
-    fmindex_collection::occtable::interleaved8::OccTable<256>,
-    fmindex_collection::occtable::interleaved16::OccTable<256>,
-    fmindex_collection::occtable::interleaved32::OccTable<256>,
-    fmindex_collection::occtable::interleaved8Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved16Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedPrefix::OccTable<256>,
-    fmindex_collection::occtable::wavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
-    fmindex_collection::occtable::epr8V3::OccTable<256>,
-    fmindex_collection::occtable::epr16V3::OccTable<256>,
-    fmindex_collection::occtable::epr32V3::OccTable<256>,
-    fmindex_collection::occtable::eprV4::OccTable<256>,
-    fmindex_collection::occtable::eprV5::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
-) {
+TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 256 chars)", "[BiFMIndex]", ALLTABLES) {
     using OccTable = TestType;
 
     auto bwt    = std::vector<uint8_t>{'0', '4', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '4', '1', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '2', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1', '4', '4', '4', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '0', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '0', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '3', '4', '3', '3', '3', '4', '4', '4', '\0', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8' };

@@ -22,9 +22,6 @@ struct Bitvector {
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
     static constexpr auto bitct = required_bits(TSigma-1);
-    // next full power of 2
-    static constexpr auto bvct  = pow(2, bitct);
-
 
     #pragma pack(push, 1)
     struct InBits {
@@ -283,7 +280,7 @@ struct Bitvector {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(bits, /*level0,*/ level1, superBlocks, C);
+        ar(bits, level1, superBlocks, C);
     }
 };
 
@@ -367,8 +364,6 @@ struct OccTable : interleavedEPRV7_impl::OccTable<TSigma> {
 };
 static_assert(checkOccTable<OccTable>);
 }
-
-
 
 }
 }

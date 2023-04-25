@@ -1,34 +1,10 @@
-#include <fmindex-collection/occtable/all.h>
+#include "allTables.h"
+
 #include <fmindex-collection/search/Backtracking.h>
 #include <search_schemes/generator/all.h>
-
 #include <catch2/catch.hpp>
-TEMPLATE_TEST_CASE("searching with backtracking", "[search]",
-    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
-    fmindex_collection::occtable::interleaved8::OccTable<256>,
-    fmindex_collection::occtable::interleaved16::OccTable<256>,
-    fmindex_collection::occtable::interleaved32::OccTable<256>,
-    fmindex_collection::occtable::interleaved8Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved16Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedPrefix::OccTable<256>,
-    fmindex_collection::occtable::wavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
-) {
+
+TEMPLATE_TEST_CASE("searching with backtracking", "[search]", ALLTABLES) {
     using OccTable = TestType;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
@@ -60,32 +36,7 @@ TEMPLATE_TEST_CASE("searching with backtracking", "[search]",
     });
 
 }
-TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]",
-    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
-    fmindex_collection::occtable::interleaved8::OccTable<256>,
-    fmindex_collection::occtable::interleaved16::OccTable<256>,
-    fmindex_collection::occtable::interleaved32::OccTable<256>,
-    fmindex_collection::occtable::interleaved8Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved16Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedPrefix::OccTable<256>,
-    fmindex_collection::occtable::wavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
-) {
+TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]", ALLTABLES) {
     using OccTable = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
@@ -147,32 +98,7 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]",
     }
 }
 
-TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]",
-    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
-    fmindex_collection::occtable::interleaved8::OccTable<256>,
-    fmindex_collection::occtable::interleaved16::OccTable<256>,
-    fmindex_collection::occtable::interleaved32::OccTable<256>,
-    fmindex_collection::occtable::interleaved8Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved16Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedPrefix::OccTable<256>,
-    fmindex_collection::occtable::wavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
-) {
+TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]", ALLTABLES) {
     using OccTable = TestType;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
@@ -204,32 +130,7 @@ TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]",
     });
 
 }
-TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[collection]",
-    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
-    fmindex_collection::occtable::interleaved8::OccTable<256>,
-    fmindex_collection::occtable::interleaved16::OccTable<256>,
-    fmindex_collection::occtable::interleaved32::OccTable<256>,
-    fmindex_collection::occtable::interleaved8Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved16Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedPrefix::OccTable<256>,
-    fmindex_collection::occtable::wavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
-) {
+TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[collection]", ALLTABLES) {
     using OccTable = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
@@ -291,32 +192,7 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[
     }
 }
 
-TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]",
-    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
-    fmindex_collection::occtable::interleaved8::OccTable<256>,
-    fmindex_collection::occtable::interleaved16::OccTable<256>,
-    fmindex_collection::occtable::interleaved32::OccTable<256>,
-    fmindex_collection::occtable::interleaved8Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved16Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedPrefix::OccTable<256>,
-    fmindex_collection::occtable::wavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
-) {
+TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]", ALLTABLES) {
     using OccTable = TestType;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
@@ -348,32 +224,7 @@ TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]"
     });
 
 }
-TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMIndex", "[collection]",
-    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
-    fmindex_collection::occtable::interleaved8::OccTable<256>,
-    fmindex_collection::occtable::interleaved16::OccTable<256>,
-    fmindex_collection::occtable::interleaved32::OccTable<256>,
-    fmindex_collection::occtable::interleaved8Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved16Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedPrefix::OccTable<256>,
-    fmindex_collection::occtable::wavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
-) {
+TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMIndex", "[collection]", ALLTABLES) {
     using OccTable = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},

@@ -176,6 +176,8 @@ void visitAllTables(CB cb) {
     cb.template operator()<fmindex_collection::occtable::eprV5::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::eprV6::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::interleavedEPRV7::OccTable<Sigma>>();
+    cb.template operator()<fmindex_collection::occtable::interleavedEPRV7b::OccTable<Sigma>>();
+    cb.template operator()<fmindex_collection::occtable::eprV8::OccTable<Sigma>>();
 }
 
 
