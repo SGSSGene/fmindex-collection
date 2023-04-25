@@ -250,6 +250,9 @@ auto refine_callback(delegate_t const& delegate) {
 
 template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t, typename bestHit_t = std::false_type>
 void search(index_t const & index, queries_t && queries, search_scheme_t const & search_scheme, delegate_t && delegate, bestHit_t bestHit = {}) {
+    using cursor_t = select_cursor_t<index_t>;
+    static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
+
     auto internal_delegate = refine_callback<index_t>(delegate);
 
     auto search = Search{index, search_scheme, internal_delegate};
@@ -261,6 +264,9 @@ void search(index_t const & index, queries_t && queries, search_scheme_t const &
 
 template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t, typename bestHit_t = std::false_type>
 void search_n(index_t const & index, queries_t && queries, search_scheme_t const & search_scheme, size_t n, delegate_t && delegate, bestHit_t bestHit = {}) {
+    using cursor_t = select_cursor_t<index_t>;
+    static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
+
     size_t ct;
     auto cb = [&](size_t qidx, auto cur, size_t e) {
         if (cur.count() + ct > n) {

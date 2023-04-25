@@ -122,12 +122,18 @@ Search(index_t const&, query_t const&, delegate_t const&) -> Search<index_t, que
 
 template <typename index_t, Sequence query_t, typename delegate_t>
 void search(index_t const& index, query_t const& query, delegate_t&& delegate) {
+    using cursor_t = select_cursor_t<index_t>;
+    static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
+
     auto u = Search{index, query, delegate};
     u.search();
 }
 
 template <typename index_t, Sequences queries_t, typename delegate_t>
 void search(index_t const& index, queries_t const& queries, delegate_t&& delegate) {
+    using cursor_t = select_cursor_t<index_t>;
+    static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
+
     for (size_t qidx{0}; qidx < queries.size(); ++qidx) {
         auto u = Search{index, queries[qidx], [&](auto cursor, auto error) {
             delegate(qidx, cursor, error);

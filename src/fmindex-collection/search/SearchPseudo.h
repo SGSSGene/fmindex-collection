@@ -4,6 +4,7 @@
 
 #include "../BiFMIndexCursor.h"
 #include "../concepts.h"
+#include "SelectCursor.h"
 
 namespace fmindex_collection {
 namespace search_pseudo {
@@ -160,6 +161,9 @@ struct Search {
 template <bool EditDistance, typename index_t, Sequences queries_t, typename search_schemes_t, typename delegate_t>
 void search(index_t const & index, queries_t && queries, search_schemes_t const & search_scheme, delegate_t && delegate)
 {
+    using cursor_t = select_cursor_t<index_t>;
+    static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
+
     std::size_t qidx;
     auto internal_delegate = [&qidx, &delegate] (auto const & it, size_t e) {
         delegate(qidx, it, e);
@@ -174,6 +178,9 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 template <bool EditDistance, typename index_t, Sequence query_t, typename search_schemes_t, typename delegate_t>
 void search(index_t const & index, query_t && query, search_schemes_t const & search_scheme, delegate_t && delegate)
 {
+    using cursor_t = select_cursor_t<index_t>;
+    static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
+
     auto internal_delegate = [&delegate] (auto const & it, size_t e) {
         delegate(it, e);
     };

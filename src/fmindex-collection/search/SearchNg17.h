@@ -378,6 +378,9 @@ struct Search {
 template <typename index_t, typename queries_t, typename search_schemes_t, typename delegate_t>
 void search(index_t const & index, queries_t && queries, search_schemes_t const & search_scheme, delegate_t && delegate)
 {
+    using cursor_t = select_cursor_t<index_t>;
+    static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
+
     if (search_scheme.empty()) return;
 
     std::vector<std::vector<std::vector<Block>>> search_scheme2;
@@ -422,7 +425,6 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
     }
 
     using Cursor = BiFMIndexCursor<index_t>;
-
 
     using Callback = std::function<void(Cursor const&, size_t e)>;
     Callback sch;

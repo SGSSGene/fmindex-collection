@@ -85,8 +85,12 @@ struct Search {
 
 template <typename index_t, Sequence query_t, typename buffer_t, typename delegate_t>
 void search(index_t const& index, query_t const& query, size_t maxError, buffer_t& buffer1, buffer_t& buffer2, delegate_t&& delegate) {
-    auto u = Search{index, query, delegate, maxError, buffer1, buffer2};
-    u.search();
+    using cursor_t = select_cursor_t<index_t>;
+    if constexpr (not cursor_t::Reversed) {
+        Search{index, query, delegate, maxError, buffer1, buffer2}.search();
+    } else {
+        Search{index, query | std::views::reverse, delegate, maxError, buffer1, buffer2}.search();
+    }
 }
 
 }

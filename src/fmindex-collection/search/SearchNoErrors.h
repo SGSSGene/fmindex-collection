@@ -9,8 +9,8 @@ namespace fmindex_collection::search_no_errors {
 
 template <typename index_t, Sequence query_t, typename delegate_t>
 void search(index_t const & index, query_t && query, delegate_t && delegate) {
-
     using cursor_t = LeftBiFMIndexCursor<index_t>;
+    static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
 
     auto cur = cursor_t{index};
     for (size_t i{0}; i < query.size(); ++i) {

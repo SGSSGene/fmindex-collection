@@ -262,6 +262,9 @@ void search_best(index_t const & index, queries_t && queries, std::vector<search
 
 template <typename index_t, typename queries_t, typename search_scheme_t, typename delegate_t>
 void search_best_n(index_t const & index, queries_t && queries, std::vector<search_scheme_t> const & search_schemes, size_t n, delegate_t && delegate) {
+    using cursor_t = select_cursor_t<index_t>;
+    static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
+
     if (search_schemes.empty()) return;
 
     auto reordered_list = std::vector<decltype(prepare_reorder(search_schemes[0]))>{};
