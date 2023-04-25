@@ -1,36 +1,11 @@
-#include <fmindex-collection/occtable/all.h>
+#include "allTables.h"
+
 #include <fmindex-collection/BiFMIndex.h>
 #include <fmindex-collection/search/SearchPseudo.h>
 #include <search_schemes/generator/all.h>
-
 #include <catch2/catch.hpp>
 
-TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]",
-    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
-    fmindex_collection::occtable::interleaved8::OccTable<256>,
-    fmindex_collection::occtable::interleaved16::OccTable<256>,
-    fmindex_collection::occtable::interleaved32::OccTable<256>,
-    fmindex_collection::occtable::interleaved8Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved16Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedPrefix::OccTable<256>,
-    fmindex_collection::occtable::wavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
-) {
+TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]", ALLTABLES) {
     using OccTable = TestType;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
@@ -63,32 +38,7 @@ TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]",
     });
 
 }
-TEMPLATE_TEST_CASE("searching with collection and PseudoSearch", "[collection]",
-    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
-    fmindex_collection::occtable::interleaved8::OccTable<256>,
-    fmindex_collection::occtable::interleaved16::OccTable<256>,
-    fmindex_collection::occtable::interleaved32::OccTable<256>,
-    fmindex_collection::occtable::interleaved8Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved16Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedPrefix::OccTable<256>,
-    fmindex_collection::occtable::wavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
-) {
+TEMPLATE_TEST_CASE("searching with collection and PseudoSearch", "[collection]", ALLTABLES) {
     using OccTable = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},

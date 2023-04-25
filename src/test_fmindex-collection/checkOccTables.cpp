@@ -1,39 +1,8 @@
-#include <fmindex-collection/occtable/all.h>
+#include "allTables.h"
+
 #include <catch2/catch.hpp>
 
-
-TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]",
-    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
-    fmindex_collection::occtable::interleaved8::OccTable<256>,
-    fmindex_collection::occtable::interleaved16::OccTable<256>,
-    fmindex_collection::occtable::interleaved32::OccTable<256>,
-    fmindex_collection::occtable::interleaved8Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved16Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedPrefix::OccTable<256>,
-    fmindex_collection::occtable::wavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::epr8V3::OccTable<256>,
-    fmindex_collection::occtable::epr16V3::OccTable<256>,
-    fmindex_collection::occtable::epr32V3::OccTable<256>,
-    fmindex_collection::occtable::eprV4::OccTable<256>,
-    fmindex_collection::occtable::eprV5::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
-) {
+TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]", ALLTABLES) {
     using OccTable = TestType;
 
     auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
@@ -261,38 +230,7 @@ TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]",
 }
 
 
-TEMPLATE_TEST_CASE("check occ table construction on text longer than 256 characters", "[OccTable]",
-    fmindex_collection::occtable::bitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvector::OccTable<256>,
-    fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>,
-    fmindex_collection::occtable::interleaved8::OccTable<256>,
-    fmindex_collection::occtable::interleaved16::OccTable<256>,
-    fmindex_collection::occtable::interleaved32::OccTable<256>,
-    fmindex_collection::occtable::interleaved8Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved16Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleaved32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedPrefix::OccTable<256>,
-    fmindex_collection::occtable::wavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet::OccTable<256>,
-    fmindex_collection::occtable::interleavedWaveletAligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32::OccTable<256>,
-    fmindex_collection::occtable::interleavedWavelet32Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<256>,
-    fmindex_collection::occtable::epr8V3::OccTable<256>,
-    fmindex_collection::occtable::epr16V3::OccTable<256>,
-    fmindex_collection::occtable::epr32V3::OccTable<256>,
-    fmindex_collection::occtable::eprV4::OccTable<256>,
-    fmindex_collection::occtable::eprV5::OccTable<256>,
-    fmindex_collection::occtable::naive::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
-) {
+TEMPLATE_TEST_CASE("check occ table construction on text longer than 256 characters", "[OccTable]", ALLTABLES) {
     using OccTable = TestType;
 
    auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't',
