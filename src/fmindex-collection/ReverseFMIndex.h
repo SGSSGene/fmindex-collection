@@ -25,7 +25,7 @@ struct ReverseFMIndex {
         , csa{std::move(_csa)}
     {}
 
-    ReverseFMIndex(Sequences auto const& _input, size_t samplingRate)
+    ReverseFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr)
         : occ{cereal_tag{}}
         , csa{cereal_tag{}}
     {
@@ -33,7 +33,7 @@ struct ReverseFMIndex {
         auto [totalSize, inputText, inputSizes] = createSequences(_input, /*reverse*/ true);
 
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
-            auto sa  = createSA(inputText);
+            auto sa  = createSA(inputText, threadNbr);
             auto bwt = createBWT(inputText, sa);
             auto csa = TCSA{std::move(sa), samplingRate, inputSizes, /*reverse*/ true};
 

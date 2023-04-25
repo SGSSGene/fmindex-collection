@@ -94,12 +94,12 @@ auto loadQueries(std::string path, bool reverse) {
 }
 
 template <typename CSA, typename Table>
-auto loadIndex(std::string path) {
+auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr) {
     auto sw = StopWatch{};
     auto indexPath = path + "." + Table::extension() + ".index";
     if (!std::filesystem::exists(indexPath)) {
         auto [ref, refInfo] = loadQueries<Table::Sigma>(path, false);
-        auto index = fmindex_collection::BiFMIndex<Table>{ref, 16};
+        auto index = fmindex_collection::BiFMIndex<Table>{ref, samplingRate, threadNbr};
         // save index here
         auto ofs     = std::ofstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryOutputArchive{ofs};
@@ -116,12 +116,12 @@ auto loadIndex(std::string path) {
 }
 
 template <typename CSA, typename Table>
-auto loadDenseIndex(std::string path) {
+auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr) {
     auto sw = StopWatch{};
     auto indexPath = path + "." + Table::extension() + ".dense.index";
     if (!std::filesystem::exists(indexPath)) {
         auto [ref, refInfo] = loadQueries<Table::Sigma>(path, false);
-        auto index = fmindex_collection::BiFMIndex<Table, fmindex_collection::DenseCSA>{ref, 16};
+        auto index = fmindex_collection::BiFMIndex<Table, fmindex_collection::DenseCSA>{ref, samplingRate, threadNbr};
         // save index here
         auto ofs     = std::ofstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryOutputArchive{ofs};

@@ -21,22 +21,22 @@ struct FMIndex {
         , csa{std::move(_csa)}
     {}
 
-    FMIndex(std::vector<uint8_t> _input, size_t samplingRate)
+    FMIndex(std::vector<uint8_t> _input, size_t samplingRate, size_t threadNbr)
         : occ{cereal_tag{}}
         , csa{cereal_tag{}}
     {
         auto input = std::vector<std::vector<uint8_t>>{std::move(_input)};
-        *this = FMIndex{std::move(input), samplingRate};
+        *this = FMIndex{std::move(input), samplingRate, threadNbr};
     }
 
-    FMIndex(Sequences auto const& _input, size_t samplingRate)
+    FMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr)
         : occ{cereal_tag{}}
         , csa{cereal_tag{}}
     {
         auto [totalSize, inputText, inputSizes] = createSequences(_input);
 
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
-            auto sa  = createSA(inputText);
+            auto sa  = createSA(inputText, threadNbr);
             auto bwt = createBWT(inputText, sa);
             auto csa = CSA{std::move(sa), samplingRate, inputSizes};
 
