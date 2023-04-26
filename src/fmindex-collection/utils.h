@@ -17,9 +17,10 @@ namespace fmindex_collection {
 
 inline auto createSA(std::span<uint8_t const> input, size_t threadNbr) -> std::vector<int64_t> {
     auto sa = std::vector<int64_t>(input.size());
-#if defined(_OPENMP)
+#if LIBSAIS_OPENMP
     auto r = libsais64_omp(input.data(), sa.data(), input.size(), 0, nullptr, threadNbr);
 #else
+    (void)threadNbr; // Unused if no openmp is available
     auto r = libsais64(input.data(), sa.data(), input.size(), 0, nullptr);
 #endif
 
