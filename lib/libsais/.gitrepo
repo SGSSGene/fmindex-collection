@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/IlyaGrebnov/libsais.git
 	branch = master
-	commit = c0b2bba165ae759fcc034d8f22d973cea8d7329c
-	parent = 0dde5bf08088eefcee8e17071afcb56b5e1aa5e9
+	commit = 558fa82fbb2ed441212a69e58cbb12c51a5f9b7b
+	parent = 5545dca8bfa8573916dfa9a634422cb01880b52c
 	method = merge
-	cmdver = 0.4.3
+	cmdver = 0.4.5

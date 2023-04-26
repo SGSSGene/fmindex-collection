@@ -27,12 +27,11 @@ endif()
 
 find_package(OpenMP QUIET)
 
-add_library(libsais lib/libsais/src/libsais.c lib/libsais/src/libsais16.c lib/libsais/src/libsais64.c)
-target_include_directories(libsais PUBLIC lib/libsais/src)
 if (OpenMP_C_FOUND)
-    target_link_libraries(libsais OpenMP::OpenMP_C)
+    set(LIBSAIS_OPENMP TRUE)
 endif()
 
+add_subdirectory(lib/libsais)
 add_subdirectory(src/fmindex-collection)
 add_subdirectory(src/search_schemes)
 

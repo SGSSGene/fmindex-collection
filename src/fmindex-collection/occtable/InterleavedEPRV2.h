@@ -182,9 +182,9 @@ struct Bitvector {
             }
         }
         // For safety we add a new super block and block
-        superBlocks.emplace_back(sblock_acc);
+/*        superBlocks.emplace_back(sblock_acc);
         blocks.emplace_back();
-        blocks.back().blocks = block_acc;
+        blocks.back().blocks = block_acc;*/
 
         C[0] = 0;
         for (uint64_t i{0}; i < TSigma; ++i) {
