@@ -11,7 +11,7 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with buffers on a
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'B', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'C', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
 
-    auto index = fmindex_collection::ReverseFMIndex<OccTable>{input, 1};
+    auto index = fmindex_collection::ReverseFMIndex<OccTable>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     auto query = std::vector<uint8_t>{'A', 'C'};
     auto search_scheme = search_schemes::generator::backtracking(1, 0, 0);

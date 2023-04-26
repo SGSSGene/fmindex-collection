@@ -102,7 +102,7 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
         auto sa  = DenseVector{0, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
 
         auto text  = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable, fmindex_collection::DenseCSA>{std::vector<std::vector<uint8_t>>{text}, 1};
+        auto index = fmindex_collection::ReverseFMIndex<OccTable, fmindex_collection::DenseCSA>{std::vector<std::vector<uint8_t>>{text}, /*samplingRate*/1, /*threadNbr*/1};
 
         REQUIRE(bwt.size() == index.size());
         REQUIRE(sa.size() == index.size());
@@ -120,7 +120,7 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
         auto sa  = DenseVector{0, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
 
         auto text  = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable, fmindex_collection::DenseCSA>{std::vector<std::vector<uint8_t>>{text}, 2};
+        auto index = fmindex_collection::ReverseFMIndex<OccTable, fmindex_collection::DenseCSA>{std::vector<std::vector<uint8_t>>{text}, /*samplingRate*/2, /*threadNbr*/1};
 
         REQUIRE(bwt.size() == index.size());
         REQUIRE(sa.size() == index.size());

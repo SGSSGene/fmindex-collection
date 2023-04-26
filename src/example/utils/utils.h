@@ -55,7 +55,7 @@ auto generateBWT(size_t len) -> std::tuple<std::vector<uint8_t>, std::vector<uin
     std::cout << "text generation: "<< time_generation << "s\n";
 
     auto bwt = [&]() {
-        auto sa = fmindex_collection::createSA({reinterpret_cast<uint8_t const*>(text.data()), text.size()});
+        auto sa = fmindex_collection::createSA({reinterpret_cast<uint8_t const*>(text.data()), text.size()}, 1);
         auto time_saconstruction = watch.reset();
         std::cout << "sa - construction time: "<< time_saconstruction << "s\n";
 
@@ -63,7 +63,7 @@ auto generateBWT(size_t len) -> std::tuple<std::vector<uint8_t>, std::vector<uin
     }();
     auto bwtRev = [&]() {
         std::ranges::reverse(text);
-        auto sa = fmindex_collection::createSA({reinterpret_cast<uint8_t const*>(text.data()), text.size()});
+        auto sa = fmindex_collection::createSA({reinterpret_cast<uint8_t const*>(text.data()), text.size()}, 1);
         auto time_saconstruction = watch.reset();
         std::cout << "sa - rev construction time: "<< time_saconstruction << "s\n";
 

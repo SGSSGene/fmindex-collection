@@ -39,7 +39,7 @@ int main(int argc, char const* const* argv) {
     auto reference = std::vector<std::vector<uint8_t>>{{1, 3, 1, 4}, {2, 1, 4, 2, 3}};
     {
         std::cout << "\nBiFMIndex:\n";
-        auto index = BiFMIndex<Table<Sigma>>{reference, 16};
+        auto index = BiFMIndex<Table<Sigma>>{reference, /*samplingRate*/16, /*threadNbr*/1};
         auto queries = std::vector<std::vector<uint8_t>>{{1, 3}, {4, 2}};
 
         search_backtracking::search(index, queries, 0, [&](size_t queryId, auto cursor, size_t errors) {
@@ -53,7 +53,7 @@ int main(int argc, char const* const* argv) {
     }
     {
         std::cout << "\nFMIndex:\n";
-        auto index = FMIndex<Table<Sigma>>{reference, 16};
+        auto index = FMIndex<Table<Sigma>>{reference, /*samplingRate*/16, /*threadNbr*/1};
         auto queries = std::vector<std::vector<uint8_t>>{{1, 3}, {4, 2}};
 
         search_backtracking::search(index, queries, 0, [&](size_t queryId, auto cursor, size_t errors) {
@@ -68,7 +68,7 @@ int main(int argc, char const* const* argv) {
 
     {
         std::cout << "\nReverseFMIndex:\n";
-        auto index = ReverseFMIndex<Table<Sigma>>{reference, 16};
+        auto index = ReverseFMIndex<Table<Sigma>>{reference, /*samplingRate*/16, /*threadNbr*/1};
         auto queries = std::vector<std::vector<uint8_t>>{{3, 1}, {2, 4}};
         search_backtracking::search(index, queries, 0, [&](size_t queryId, auto cursor, size_t errors) {
             (void)errors;

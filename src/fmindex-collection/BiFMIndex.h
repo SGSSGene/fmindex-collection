@@ -74,7 +74,7 @@ public:
      * \param _input a list of sequences
      * \param samplingRate rate of the sampling
      */
-    BiFMIndex(Sequences auto const& _input, size_t samplingRate)
+    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr)
         : occ{cereal_tag{}}
         , occRev{cereal_tag{}}
         , csa{cereal_tag{}}
@@ -83,7 +83,7 @@ public:
 
         // create BurrowsWheelerTransform and CompressedSuffixArray
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
-            auto sa  = createSA(inputText);
+            auto sa  = createSA(inputText, threadNbr);
             auto bwt = createBWT(inputText, sa);
             auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
 
@@ -93,7 +93,7 @@ public:
         // create BurrowsWheelerTransform on reversed text
         auto bwtRev = [&, &inputText=inputText]() {
             std::ranges::reverse(inputText);
-            auto saRev  = createSA(inputText);
+            auto saRev  = createSA(inputText, threadNbr);
             auto bwtRev = createBWT(inputText, saRev);
             return bwtRev;
         }();
