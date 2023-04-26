@@ -17,6 +17,14 @@ target_link_libraries(${PROJECT_NAME}
     INTERFACE
     libsais
 )
+if (OpenMP_CXX_FOUND)
+    target_link_libraries(${PROJECT_NAME}
+        INTERFACE
+        OpenMP::OpenMP_CXX
+    )
+endif()
+
+
 
 
 if (FMC_USE_SDSL)

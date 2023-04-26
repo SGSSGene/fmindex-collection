@@ -25,11 +25,16 @@ else()
     option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" OFF)
 endif()
 
-add_subdirectory(src/fmindex-collection)
-add_subdirectory(src/search_schemes)
+find_package(OpenMP QUIET)
 
 add_library(libsais lib/libsais/src/libsais.c lib/libsais/src/libsais16.c lib/libsais/src/libsais64.c)
 target_include_directories(libsais PUBLIC lib/libsais/src)
+if (OpenMP_C_FOUND)
+    target_link_libraries(libsais OpenMP::OpenMP_C)
+endif()
+
+add_subdirectory(src/fmindex-collection)
+add_subdirectory(src/search_schemes)
 
 if (${ROOT_PROJECT})
     find_package (fmt REQUIRED)
