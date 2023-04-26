@@ -6,12 +6,13 @@ project(test_fmindex-collection)
 add_executable(${PROJECT_NAME}
     checkBiFMIndex.cpp
     checkDenseBiFMIndex.cpp
-    checkFMIndex.cpp
-    checkReverseFMIndex.cpp
     checkDenseReverseFMIndex.cpp
+    checkFMIndex.cpp
     checkOccTables.cpp
-    checkSearchPseudo.cpp
+    checkReverseFMIndex.cpp
+    checkReverseIndexSearch.cpp
     checkSearchBacktracking.cpp
+    checkSearchPseudo.cpp
     utils.cpp
     main.cpp
 )

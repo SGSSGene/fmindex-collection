@@ -7,9 +7,9 @@
 namespace fmindex_collection {
 
 /*
- * Same as the FMIndex, but build over the reverse text.
+ * Same as the FMIndex, but build internally over the reverse text.
  *
- * TODO: has some correctional features...
+ * This allows to have "extend_right" functionality instead of "extend_left".
  */
 template <OccTable Table, typename TCSA = CSA>
 struct ReverseFMIndex {
@@ -30,12 +30,12 @@ struct ReverseFMIndex {
         , csa{cereal_tag{}}
     {
 
-        auto [totalSize, inputText, inputSizes] = createSequences(_input, true);
+        auto [totalSize, inputText, inputSizes] = createSequences(_input, /*reverse*/ true);
 
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
             auto sa  = createSA(inputText);
             auto bwt = createBWT(inputText, sa);
-            auto csa = TCSA{std::move(sa), samplingRate, inputSizes, true};
+            auto csa = TCSA{std::move(sa), samplingRate, inputSizes, /*reverse*/ true};
 
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();

@@ -163,6 +163,9 @@ struct Search {
 template <typename index_t, typename queries_t, typename search_schemes_t, typename delegate_t>
 void search(index_t const & index, queries_t && queries, search_schemes_t const & search_scheme, delegate_t && delegate)
 {
+    using cursor_t = select_cursor_t<index_t>;
+    static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
+
     if (search_scheme.empty()) return;
     auto internal_delegate = [&delegate] (size_t qidx, auto const & it, size_t e) {
         delegate(qidx, it, e);

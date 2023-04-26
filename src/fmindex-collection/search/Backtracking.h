@@ -86,13 +86,15 @@ void search(index_t const& index, queries_t const& queries, size_t maxError, del
 }
 template <typename index_t, Sequence query_t, typename delegate_t>
 void search(index_t const& index, query_t const& query, size_t maxError, delegate_t const& delegate) {
+    using cursor_t = select_cursor_t<index_t>;
+    static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
+
     auto queries = std::array<query_t, 1>{query};
     auto u = Search{index, queries, [&](auto /*queryId*/, auto const& cursor, size_t errors) {
         delegate(cursor, errors);
     }, maxError};
     u.search();
 }
-
 
 }
 }

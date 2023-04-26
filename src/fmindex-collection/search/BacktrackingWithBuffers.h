@@ -82,11 +82,25 @@ struct Search {
         delegate(cur, maxErrors);
     }
 };
+#if __clang__ // !TODO broken clang 15, lets hope they catch on
+template <typename index_t, Sequence query_t, typename delegate_t>
+Search(index_t const&, query_t const&, delegate_t const&, size_t, auto&, auto&) -> Search<index_t, query_t, delegate_t>;
+#endif
 
 template <typename index_t, Sequence query_t, typename buffer_t, typename delegate_t>
 void search(index_t const& index, query_t const& query, size_t maxError, buffer_t& buffer1, buffer_t& buffer2, delegate_t&& delegate) {
-    auto u = Search{index, query, delegate, maxError, buffer1, buffer2};
-    u.search();
+    using cursor_t = select_cursor_t<index_t>;
+    if constexpr (not cursor_t::Reversed) {
+        Search{index, query, delegate, maxError, buffer1, buffer2}.search();
+    } else {
+        #if __clang__ and __clang_major__ < 16 //!TODO some workaround, this is very expensive
+            auto _query = query;
+            std::ranges::reverse(_query);
+            Search{index, _query, delegate, maxError, buffer1, buffer2}.search();
+        #else
+            Search{index, query | std::views::reverse, delegate, maxError, buffer1, buffer2}.search();
+        #endif
+    }
 }
 
 }
