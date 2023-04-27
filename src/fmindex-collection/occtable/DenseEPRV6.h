@@ -139,7 +139,7 @@ struct Bitvector {
         std::array<uint64_t, TSigma> sblock_acc{0};
 
 
-        for (uint64_t size{0}; size < length; ++size) {
+        for (uint64_t size{0}; size < length+1; ++size) {
             if (size % (1ull<<level1_size) == 0) { // new l3 block
                 for (auto v : sblock_acc) {
                     superBlocks.push_back(v);
@@ -156,10 +156,12 @@ struct Bitvector {
 
                 blockL0_acc = {};
             } else if (size % 64 == 0) { // new l0 block
-                level0.emplace_back();
+                level0.emplace_back(blockL0_acc);
                 bits.emplace_back();
-                level0.back() = blockL0_acc;
             }
+            // Abort, we only wanted to add a new block to the end, if required
+            if (size == length) continue;
+
             auto level0Id     = size >>  6;
             auto bitId        = size &  63;
 

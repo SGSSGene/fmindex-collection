@@ -136,7 +136,7 @@ struct Bitvector {
                 }
             }
         }
-        // For safety we add a new super block and block
+        // Add a new block, so we can access one row more than our bwt length (!TODO this might be more than required)
         superBlocks.emplace_back(sblock_acc);
         blocks.emplace_back();
         blocks.back().blocks = block_acc;

@@ -137,7 +137,7 @@ struct Bitvector {
         std::vector<uint64_t> sblock_acc(sigma, 0);
 
 
-        for (uint64_t size{0}; size < length; ++size) {
+        for (uint64_t size{0}; size < length+1; ++size) {
             if (size % (1ull<<level1_size) == 0) { // new l3 block
                 for (auto a : sblock_acc) {
                     superBlocks.emplace_back(a);
@@ -171,6 +171,9 @@ struct Bitvector {
 //                bits.emplace_back();
 //                level0.back() = blockL0_acc;
             }
+            // Abort, we only wanted to add a new block to the end, if required
+            if (size == length) continue;
+
             auto level0Id     = size >>  6;
             auto bitId        = size &  63;
 
