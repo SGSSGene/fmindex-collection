@@ -78,7 +78,8 @@ concept OccTable = requires(T t, std::span<uint8_t const> bwt, TLengthType idx, 
 
     /* Returns the symbol of the bwt at a certain position
      *
-     * \param idx must be in range of [0, Sigma)
+     * \param idx - row index
+     * \return - will be in range of [0, Sigma)
      */
     { t.symbol(idx) } -> std::same_as<TLengthType>;
 };

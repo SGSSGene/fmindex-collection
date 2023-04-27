@@ -1,6 +1,7 @@
 #include "allTables.h"
 
 #include <catch2/catch.hpp>
+#include <fmindex-collection/utils.h>
 
 TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]", ALLTABLES) {
     using OccTable = TestType;
@@ -229,6 +230,56 @@ TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]", ALLTABLES) {
     }
 }
 
+TEMPLATE_TEST_CASE("check if occ table is working for all lengths between 60 and 70", "[OccTable]", ALLTABLES) {
+    using OccTable = TestType;
+
+    INFO("OccTable " << typeid(OccTable).name());
+
+    for (size_t length{60}; length < 70; ++length) {
+        DYNAMIC_SECTION("check that symbol() call works with text length " << length) {
+            INFO("length=" << length)
+            auto text = std::vector<uint8_t>{97, 16, 93,  2, 12, 63, 73, 20, 84, 25, 79, 90, 67, 58, 49, 60, 77, 32, 14, 44, 34, 35, 36, 45,  1, 70,  6, 27, 74, 22, 61, 69, 42, 95, 99, 50, 47, 75,  4, 89, 56, 51, 39, 29, 11, 21, 26, 17, 30, 65, 59, 33, 18,  9, 76, 23, 78, 96, 10, 82, 31, 83, 37, 28, 68, 91, 46, 48, 88, 54,  5, 40,  7, 38, 72, 94, 19, 64, 87, 71, 52, 55,100, 92, 13, 62, 43, 80, 24, 57, 81,  8, 41, 15, 53, 85, 98,  3, 86, 66};
+            text.resize(length);
+            auto sa = fmindex_collection::createSA(text, 1);
+            auto bwt = fmindex_collection::createBWT(text, sa);
+            auto table = OccTable{bwt};
+            REQUIRE(table.size() == text.size());
+
+            for (size_t i{0}; i < text.size(); ++i) {
+                INFO("i=" << i);
+                CHECK(table.symbol(i) == text.at((sa[i]+text.size()-1) % text.size()));
+            }
+            std::array<size_t, 257> C{};
+            for (auto c : bwt) {
+                C[c+1] += 1;
+            }
+            for (size_t i{1}; i < C.size(); ++i) {
+                C[i] = C[i]+C[i-1];
+            }
+            // Access all ranks
+            for (size_t row{0}; row < table.size()+1; ++row) {
+                for (size_t symb{0}; symb < 256; ++symb) {
+                    INFO("row=" << row);
+                    INFO("symb=" << symb);
+                    // Accumulate symbol until row(without the row)
+                    size_t ct = C[symb];
+                    size_t prefix_ct{};
+                    for (size_t j{0}; j < row; ++j) {
+                        if (bwt[j] == symb) {
+                            ++ct;
+                        }
+                        if (bwt[j] <= symb) {
+                             ++prefix_ct;
+                        }
+                    }
+                    CHECK(table.rank(row, symb) == ct);
+                    CHECK(table.prefix_rank(row, symb) == prefix_ct);
+                }
+            }
+
+        }
+    }
+}
 
 TEMPLATE_TEST_CASE("check occ table construction on text longer than 256 characters", "[OccTable]", ALLTABLES) {
     using OccTable = TestType;
