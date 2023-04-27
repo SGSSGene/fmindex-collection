@@ -8,6 +8,8 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
     using OccTable = TestType;
     using DenseVector = fmindex_collection::DenseVector;
 
+    INFO("OccTable " << typeid(OccTable).name());
+
 
     auto bwt = std::vector<uint8_t>{'H', '\0', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
     auto sa  = DenseVector{0, 11, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};

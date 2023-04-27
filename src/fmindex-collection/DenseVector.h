@@ -100,7 +100,7 @@ struct DenseVector {
      */
     auto access(size_t i) const -> uint64_t {
         auto begin = i * bits;
-        auto end   = begin+bits;
+        auto end   = begin+bits-1; // The end is inclusive
         assert(begin == end || begin < bitCount);
         assert(end <= bitCount);
         assert(end >= begin);
@@ -111,7 +111,7 @@ struct DenseVector {
         auto startOffset = begin % 64;
 //        auto endOffset   = end % 64;
 
-        auto mask = (1ull<<(end-begin))-1ull;
+        auto mask = (1ull<<(end-begin+1ull))-1ull;
         if (startI == endI) {
             return (data[startI] >> startOffset) & mask;
         }
