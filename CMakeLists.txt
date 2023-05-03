@@ -28,7 +28,7 @@ endif()
 find_package(OpenMP QUIET)
 
 if (OpenMP_C_FOUND)
-    set(LIBSAIS_OPENMP TRUE)
+    option(LIBSAIS_USE_OPENMP "" ON)
 endif()
 
 add_subdirectory(lib/libsais)

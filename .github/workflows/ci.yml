@@ -81,7 +81,7 @@ jobs:
         run: |
           touch ${HOME}/.activate_brew
           brew update
-          brew install --force-bottle fmt boost cmake ${{ matrix.brew_pkgs }} pkg-config
+          brew install --force-bottle --overwrite fmt boost cmake ${{ matrix.brew_pkgs }} pkg-config
         if: matrix.osname == 'MacOS 11'
 
       - name: Install Tools on Ubuntu
