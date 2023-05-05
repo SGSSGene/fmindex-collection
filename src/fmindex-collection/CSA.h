@@ -38,7 +38,7 @@ struct CSA {
         : bv {cereal_tag{}}
     {}
 
-    CSA(std::span<int64_t const> sa, size_t _samplingRate, std::span<size_t const> _inputSizes, bool reverse=false)
+    CSA(std::span<int64_t const> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
         : samplingRate{_samplingRate}
     {
         size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
@@ -52,7 +52,8 @@ struct CSA {
         accInputSizes.reserve(_inputSizes.size()+1);
         accInputSizes.emplace_back(0);
         for (size_t i{0}; i < _inputSizes.size(); ++i) {
-            accInputSizes.emplace_back(accInputSizes.back() + _inputSizes[i]);
+            auto [len, delCt] = _inputSizes[i];
+            accInputSizes.emplace_back(accInputSizes.back() + len + delCt);
         }
 
         // Annotate text with labels, naming the correct sequence id
@@ -69,7 +70,7 @@ struct CSA {
         // Construct sampled suffix array
         auto bitStack = fmindex_collection::BitStack{};
         auto ssa = std::vector<uint64_t>{};
-        ssa.reserve(_inputSizes.size() / _samplingRate);
+        ssa.reserve(sa.size() / _samplingRate);
         for (size_t i{0}; i < sa.size(); ++i) {
             bool sample = (sa[i] % samplingRate) == 0;
             bitStack.push(sample);
@@ -77,7 +78,12 @@ struct CSA {
                 auto subjId  = labels[sa[i] / samplingRate];
                 auto subjPos = sa[i] - accInputSizes[subjId];
                 if (reverse) {
-                    subjPos = _inputSizes[subjId] - subjPos - 1;
+                    auto [len, delCt] = _inputSizes[subjId];
+                    if (subjPos < len) {
+                        subjPos = len - subjPos;
+                    } else {
+                        subjPos = len+1;
+                    }
                 }
                 ssa.emplace_back(subjPos | (subjId << bitsForPosition));
             }

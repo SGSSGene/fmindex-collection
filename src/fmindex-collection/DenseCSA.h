@@ -55,7 +55,7 @@ struct DenseCSA {
         , bv {cereal_tag{}}
     {}
 
-    DenseCSA(std::span<int64_t const> sa, size_t _samplingRate, std::span<size_t const> _inputSizes, bool reverse=false)
+    DenseCSA(std::span<int64_t const> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
         : ssaPos{cereal_tag{}}
         , ssaSeq{cereal_tag{}}
         , bv {cereal_tag{}}
@@ -63,15 +63,16 @@ struct DenseCSA {
     {
         size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
         assert(bitsForSeqId < 64);
-        size_t largestText  = *std::max_element(begin(_inputSizes), end(_inputSizes));
-        size_t bitsForPos   = std::max(size_t{1}, size_t(std::ceil(std::log2(largestText))));
 
+        size_t largestText{};
         // Generate accumulated input
         auto accInputSizes = std::vector<uint64_t>{};
         accInputSizes.reserve(_inputSizes.size()+1);
         accInputSizes.emplace_back(0);
         for (size_t i{0}; i < _inputSizes.size(); ++i) {
-            accInputSizes.emplace_back(accInputSizes.back() + _inputSizes[i]);
+            auto [len, delCt] = _inputSizes[i];
+            accInputSizes.emplace_back(accInputSizes.back() + len + delCt);
+            largestText = std::max(largestText, len);
         }
 
         // Annotate text with labels, naming the correct sequence id
@@ -86,6 +87,8 @@ struct DenseCSA {
         }
 
         // Construct sampled suffix array
+        size_t bitsForPos   = std::max(size_t{1}, size_t(std::ceil(std::log2(largestText))));
+
         auto bitStack = fmindex_collection::BitStack{};
         ssaPos = DenseVector(bitsForPos);
         ssaSeq = DenseVector(bitsForSeqId);
@@ -96,7 +99,12 @@ struct DenseCSA {
                 auto subjId  = labels[sa[i] / samplingRate];
                 auto subjPos = sa[i] - accInputSizes[subjId];
                 if (reverse) {
-                    subjPos = _inputSizes[subjId] - subjPos - 1;
+                    auto [len, delCt] = _inputSizes[subjId];
+                    if (subjPos < len) {
+                        subjPos = len - subjPos;
+                    } else {
+                        subjPos = len+1;
+                    }
                 }
                 ssaSeq.push_back(subjId);
                 ssaPos.push_back(subjPos);

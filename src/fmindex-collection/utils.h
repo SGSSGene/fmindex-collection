@@ -42,7 +42,7 @@ inline auto createBWT(std::span<uint8_t const> input, std::span<int64_t const> s
     return bwt;
 }
 
-auto createSequences(Sequences auto const& _input, int samplingRate, bool reverse=false) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<size_t>> {
+auto createSequences(Sequences auto const& _input, int samplingRate, bool reverse=false) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<std::tuple<size_t, size_t>>> {
     // compute total numbers of bytes of the text including delimiters "$"
     size_t totalSize{};
     for (auto const& l : _input) {
@@ -56,7 +56,7 @@ auto createSequences(Sequences auto const& _input, int samplingRate, bool revers
     inputText.reserve(totalSize);
 
     // list of sizes of the individual sequences
-    auto inputSizes = std::vector<size_t>{};
+    auto inputSizes = std::vector<std::tuple<size_t, size_t>>{};
     inputSizes.reserve(_input.size());
 
 
@@ -74,11 +74,11 @@ auto createSequences(Sequences auto const& _input, int samplingRate, bool revers
 #endif
             inputText.insert(end(inputText), begin(l2), end(l2));
         }
-        inputSizes.emplace_back(l.size()+1);
+        inputSizes.emplace_back(l.size(), 1);
         inputText.emplace_back(0);
 
         while (inputText.size() % samplingRate) {
-            inputSizes.back() += 1;
+            std::get<1>(inputSizes.back()) += 1;
             inputText.emplace_back(0);
         }
     }
