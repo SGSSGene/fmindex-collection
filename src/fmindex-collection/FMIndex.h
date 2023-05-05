@@ -33,7 +33,7 @@ struct FMIndex {
         : occ{cereal_tag{}}
         , csa{cereal_tag{}}
     {
-        auto [totalSize, inputText, inputSizes] = createSequences(_input);
+        auto [totalSize, inputText, inputSizes] = createSequences(_input, samplingRate);
 
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
             auto sa  = createSA(inputText, threadNbr);
