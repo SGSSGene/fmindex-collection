@@ -89,12 +89,10 @@ struct DenseCSA {
         // Construct sampled suffix array
         size_t bitsForPos   = std::max(size_t{1}, size_t(std::ceil(std::log2(largestText))));
 
-        auto bitStack = fmindex_collection::BitStack{};
         ssaPos = DenseVector(bitsForPos);
         ssaSeq = DenseVector(bitsForSeqId);
         for (size_t i{0}; i < sa.size(); ++i) {
             bool sample = (sa[i] % samplingRate) == 0;
-            bitStack.push(sample);
             if (sample) {
                 auto subjId  = labels[sa[i] / samplingRate];
                 auto subjPos = sa[i] - accInputSizes[subjId];
@@ -111,8 +109,8 @@ struct DenseCSA {
             }
         }
 
-        this->bv  = BitvectorCompact{bitStack.size, [&](size_t idx) {
-            return bitStack.value(idx);
+        this->bv  = BitvectorCompact{sa.size(), [&](size_t idx) {
+            return (sa[idx] % samplingRate) == 0;
         }};
     }
 

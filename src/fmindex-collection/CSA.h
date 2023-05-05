@@ -68,12 +68,10 @@ struct CSA {
         }
 
         // Construct sampled suffix array
-        auto bitStack = fmindex_collection::BitStack{};
         auto ssa = std::vector<uint64_t>{};
         ssa.reserve(sa.size() / _samplingRate);
         for (size_t i{0}; i < sa.size(); ++i) {
             bool sample = (sa[i] % samplingRate) == 0;
-            bitStack.push(sample);
             if (sample) {
                 auto subjId  = labels[sa[i] / samplingRate];
                 auto subjPos = sa[i] - accInputSizes[subjId];
@@ -89,8 +87,8 @@ struct CSA {
             }
         }
         this->ssa = std::move(ssa);
-        this->bv  = BitvectorCompact{bitStack.size, [&](size_t idx) {
-            return bitStack.value(idx);
+        this->bv  = BitvectorCompact{sa.size(), [&](size_t idx) {
+            return (sa[idx] % samplingRate) == 0;
         }};
     }
 
