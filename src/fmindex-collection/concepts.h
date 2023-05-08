@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <ranges>
 
 namespace fmindex_collection {
