@@ -126,7 +126,7 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
 
         REQUIRE(bwt.size() == index.size());
         REQUIRE(sa.size() == index.size());
-        for (size_t i{2}; i < sa.size(); ++i) {
+        for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
             INFO(sa[i]);
             if (index.occ.symbol(i) != 0) { // symbol 0 is not locatable in sampling above 1

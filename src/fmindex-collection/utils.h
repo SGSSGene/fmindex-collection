@@ -61,26 +61,26 @@ auto createSequences(Sequences auto const& _input, int samplingRate, bool revers
 
 
     for (auto const& l : _input) {
+        auto ls = l.size();
+        // number of delimiters ('$') which need to be added. It must be at least one, and it
+        // has to make sure the text will be a multiple of samplingRate
+        size_t delimCount = samplingRate - (ls % samplingRate);
+        inputText.resize(inputText.size() + ls + delimCount, 0);
+
         if (not reverse) {
-            inputText.resize(inputText.size() + l.size());
-            std::copy_backward(begin(l), end(l), end(inputText));
+            std::ranges::copy(l, end(inputText) - ls - delimCount);
         } else {
 //!TODO hack for clang, broken in clang 15
 #if __clang__
-            auto l2 = l;
+            auto l2 = std::vector<uint8_t>(l);
             std::ranges::reverse(l2);
 #else
             auto l2 = std::views::reverse(l);
 #endif
-            inputText.insert(end(inputText), begin(l2), end(l2));
+            std::ranges::copy(l2, end(inputText) - ls - delimCount);
         }
-        inputSizes.emplace_back(l.size(), 1);
-        inputText.emplace_back(0);
 
-        while (inputText.size() % samplingRate) {
-            std::get<1>(inputSizes.back()) += 1;
-            inputText.emplace_back(0);
-        }
+        inputSizes.emplace_back(l.size(), delimCount);
     }
     return {totalSize, inputText, inputSizes};
 }
