@@ -12,19 +12,20 @@
 #include <stdexcept>
 #include <tuple>
 #include <vector>
+#include <omp.h>
 
 namespace fmindex_collection {
 
-inline auto createSA(std::span<uint8_t const> input, size_t threadNbr) -> std::vector<int64_t> {
-    auto sa = std::vector<int64_t>(input.size());
+inline auto createSA(std::span<uint8_t const> input, size_t threadNbr) -> std::vector<uint64_t> {
+    auto sa = std::vector<uint64_t>(input.size());
     if (input.size() == 0) {
         return sa;
     }
 #if LIBSAIS_OPENMP
-    auto r = libsais64_omp(input.data(), sa.data(), input.size(), 0, nullptr, threadNbr);
+    auto r = libsais64_omp(input.data(), reinterpret_cast<int64_t*>(sa.data()), input.size(), 0, nullptr, threadNbr);
 #else
     (void)threadNbr; // Unused if no openmp is available
-    auto r = libsais64(input.data(), sa.data(), input.size(), 0, nullptr);
+    auto r = libsais64(input.data(), reinterpret_cast<int64_t*>(sa.data()), input.size(), 0, nullptr);
 #endif
 
     if (r != 0) { throw std::runtime_error("something went wrong constructing the SA"); }
@@ -32,7 +33,7 @@ inline auto createSA(std::span<uint8_t const> input, size_t threadNbr) -> std::v
 }
 
 
-inline auto createBWT(std::span<uint8_t const> input, std::span<int64_t const> sa) -> std::vector<uint8_t> {
+inline auto createBWT(std::span<uint8_t const> input, std::span<uint64_t const> sa) -> std::vector<uint8_t> {
     assert(input.size() == sa.size());
     auto bwt = std::vector<uint8_t>{};
     bwt.resize(input.size());

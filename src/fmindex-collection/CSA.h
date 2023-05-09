@@ -38,7 +38,7 @@ struct CSA {
         : bv {cereal_tag{}}
     {}
 
-    CSA(std::span<int64_t const> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
+    CSA(std::vector<uint64_t> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
         : samplingRate{_samplingRate}
     {
         size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
@@ -57,8 +57,7 @@ struct CSA {
         }
 
         // Construct sampled suffix array
-        auto ssa = std::vector<uint64_t>{};
-        ssa.reserve(sa.size() / _samplingRate);
+        size_t ssaI{}; // Index of the ssa that is inside of sa
         for (size_t i{0}; i < sa.size(); ++i) {
             bool sample = (sa[i] % samplingRate) == 0;
             if (sample) {
@@ -74,11 +73,13 @@ struct CSA {
                         subjPos = len+1;
                     }
                 }
-                ssa.emplace_back(subjPos | (subjId << bitsForPosition));
+                sa[ssaI] = subjPos | (subjId << bitsForPosition);
+                ++ssaI;
             }
         }
-        this->ssa = std::move(ssa);
-        this->bv  = BitvectorCompact{sa.size(), [&](size_t idx) {
+        sa.resize(ssaI);
+        ssa = std::move(sa);
+        bv  = BitvectorCompact{sa.size(), [&](size_t idx) {
             return (sa[idx] % samplingRate) == 0;
         }};
     }
