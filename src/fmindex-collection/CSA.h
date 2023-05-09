@@ -39,7 +39,10 @@ struct CSA {
     {}
 
     CSA(std::vector<uint64_t> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
-        : samplingRate{_samplingRate}
+        : bv {sa.size(), [&](size_t idx) {
+            return (sa[idx] % _samplingRate) == 0;
+        }}
+        , samplingRate{_samplingRate}
     {
         size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
         assert(bitsForSeqId < 64);
@@ -79,9 +82,6 @@ struct CSA {
         }
         sa.resize(ssaI);
         ssa = std::move(sa);
-        bv  = BitvectorCompact{sa.size(), [&](size_t idx) {
-            return (sa[idx] % samplingRate) == 0;
-        }};
     }
 
     auto operator=(CSA const&) -> CSA& = delete;
