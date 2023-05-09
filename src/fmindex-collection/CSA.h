@@ -38,7 +38,7 @@ struct CSA {
         : bv {cereal_tag{}}
     {}
 
-    CSA(std::vector<int64_t> const& sa, size_t _samplingRate, std::vector<size_t> const& _inputSizes, bool reverse=false)
+    CSA(std::span<int64_t const> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
         : samplingRate{_samplingRate}
     {
         size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
@@ -47,48 +47,48 @@ struct CSA {
         bitsForPosition = 64 - bitsForSeqId;
         bitPositionMask = (1ull<<bitsForPosition)-1;
 
-
-        auto bitStack = fmindex_collection::BitStack{};
-        auto ssa      = std::vector<uint64_t>{};
-        if (samplingRate > 0) {
-            ssa.reserve(sa.size() / samplingRate + 1 + _inputSizes.size());
+        // Generate accumulated input
+        auto accInputSizes = std::vector<uint64_t>{};
+        accInputSizes.reserve(_inputSizes.size()+1);
+        accInputSizes.emplace_back(0);
+        for (size_t i{0}; i < _inputSizes.size(); ++i) {
+            auto [len, delCt] = _inputSizes[i];
+            accInputSizes.emplace_back(accInputSizes.back() + len + delCt);
         }
 
-        auto newLabels = std::vector<uint64_t>{};
-        newLabels.resize(sa.size(), std::numeric_limits<uint64_t>::max());
+        // Annotate text with labels, naming the correct sequence id
+        auto labels = std::vector<uint64_t>{};
+        labels.reserve(sa.size() / samplingRate);
 
-        auto accIter = _inputSizes.begin();
-        size_t subjId{};
-        size_t subjPos{};
-
-        size_t lastSamplingPos{};
-        for (size_t i{0}; i < newLabels.size(); ++i, ++subjPos) {
-            while (subjPos >= *accIter) {
-                subjPos -= *accIter;
-                ++subjId;
-                ++accIter;
+        for (size_t i{0}, subjId{0}; i < sa.size(); i += samplingRate) {
+            while (i >= accInputSizes[subjId]) {
+                subjId += 1;
             }
-            bool sample = (samplingRate == 0) || ((i-lastSamplingPos) % samplingRate == 0) || (subjPos == 0);
-            if (sample) {
-                lastSamplingPos = i;
-                auto pos = subjPos;
-                if (reverse) {
-                    pos = _inputSizes[subjId] - pos -1;
-                }
-                newLabels[i] = pos | (subjId << bitsForPosition);
-            }
+            labels.emplace_back(subjId-1);
         }
 
+        // Construct sampled suffix array
+        auto ssa = std::vector<uint64_t>{};
+        ssa.reserve(sa.size() / _samplingRate);
         for (size_t i{0}; i < sa.size(); ++i) {
-            bool sample = newLabels[sa[i]] != std::numeric_limits<uint64_t>::max();
-            bitStack.push(sample);
+            bool sample = (sa[i] % samplingRate) == 0;
             if (sample) {
-                ssa.push_back(newLabels[sa[i]]);
+                auto subjId  = labels[sa[i] / samplingRate];
+                auto subjPos = sa[i] - accInputSizes[subjId];
+                if (reverse) {
+                    auto [len, delCt] = _inputSizes[subjId];
+                    if (subjPos < len) {
+                        subjPos = len - subjPos;
+                    } else {
+                        subjPos = len+1;
+                    }
+                }
+                ssa.emplace_back(subjPos | (subjId << bitsForPosition));
             }
         }
         this->ssa = std::move(ssa);
-        this->bv  = BitvectorCompact{bitStack.size, [&](size_t idx) {
-            return bitStack.value(idx);
+        this->bv  = BitvectorCompact{sa.size(), [&](size_t idx) {
+            return (sa[idx] % samplingRate) == 0;
         }};
     }
 

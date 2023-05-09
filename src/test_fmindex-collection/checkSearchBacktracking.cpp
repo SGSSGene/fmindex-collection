@@ -251,8 +251,8 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMInd
     });
 
     auto expected = std::vector<std::tuple<size_t, size_t>> {
-        std::make_tuple(1ull,  0ull),
-        std::make_tuple(0ull,  0ull),
+        std::make_tuple(1ull, 12ull),
+        std::make_tuple(0ull, 12ull),
         std::make_tuple(1ull,  1ull),
         std::make_tuple(0ull,  1ull),
         std::make_tuple(1ull,  2ull),
@@ -279,9 +279,11 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMInd
 
     for (size_t i{0}; i < expected.size(); ++i) {
         INFO(i);
-        auto [il, pl] = index.locate(i);
-        auto [ir, pr] = expected[i];
-        CHECK(il == ir);
-        CHECK(pl == pr);
+        if (index.occ.symbol(i) != 0) {
+            auto [il, pl] = index.locate(i);
+            auto [ir, pr] = expected[i];
+            CHECK(il == ir);
+            CHECK(pl == pr);
+        }
     }
 }

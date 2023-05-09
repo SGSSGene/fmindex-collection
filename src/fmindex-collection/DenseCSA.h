@@ -55,7 +55,7 @@ struct DenseCSA {
         , bv {cereal_tag{}}
     {}
 
-    DenseCSA(std::vector<int64_t> const& sa, size_t _samplingRate, std::vector<size_t> const& _inputSizes, bool reverse=false)
+    DenseCSA(std::span<int64_t const> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
         : ssaPos{cereal_tag{}}
         , ssaSeq{cereal_tag{}}
         , bv {cereal_tag{}}
@@ -63,58 +63,54 @@ struct DenseCSA {
     {
         size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
         assert(bitsForSeqId < 64);
-        size_t largestText  = *std::max_element(begin(_inputSizes), end(_inputSizes));
-        size_t bitsForPos   = std::max(size_t{1}, size_t(std::ceil(std::log2(largestText))));
 
-
-        auto bitStack = fmindex_collection::BitStack{};
-        auto ssa      = std::vector<uint64_t>{};
-        if (samplingRate > 0) {
-            ssa.reserve(sa.size() / samplingRate + 1 + _inputSizes.size());
+        size_t largestText{};
+        // Generate accumulated input
+        auto accInputSizes = std::vector<uint64_t>{};
+        accInputSizes.reserve(_inputSizes.size()+1);
+        accInputSizes.emplace_back(0);
+        for (size_t i{0}; i < _inputSizes.size(); ++i) {
+            auto [len, delCt] = _inputSizes[i];
+            accInputSizes.emplace_back(accInputSizes.back() + len + delCt);
+            largestText = std::max(largestText, len);
         }
+
+        // Annotate text with labels, naming the correct sequence id
+        auto labels = std::vector<uint64_t>{};
+        labels.reserve(sa.size() / samplingRate);
+
+        for (size_t i{0}, subjId{0}; i < sa.size(); i += samplingRate) {
+            while (i >= accInputSizes[subjId]) {
+                subjId += 1;
+            }
+            labels.emplace_back(subjId-1);
+        }
+
+        // Construct sampled suffix array
+        size_t bitsForPos   = std::max(size_t{1}, size_t(std::ceil(std::log2(largestText))));
 
         ssaPos = DenseVector(bitsForPos);
         ssaSeq = DenseVector(bitsForSeqId);
-
-        auto accIter = _inputSizes.begin();
-        size_t subjId{};
-        size_t subjPos{};
-
-        size_t lastSamplingPos{};
-
-        auto newLabels = std::vector<std::tuple<uint64_t, uint64_t>>{};
-        newLabels.resize(sa.size(), std::make_tuple(std::numeric_limits<uint64_t>::max(), size_t{0}));
-
-        for (size_t i{0}; i < newLabels.size(); ++i, ++subjPos) {
-            while (subjPos >= *accIter) {
-                subjPos -= *accIter;
-                ++subjId;
-                ++accIter;
-            }
-            bool sample = (samplingRate == 0) || ((i-lastSamplingPos) % samplingRate == 0) || (subjPos == 0);
-            if (sample) {
-                lastSamplingPos = i;
-                auto pos = subjPos;
-                if (reverse) {
-                    pos = _inputSizes[subjId] - pos -1;
-                }
-                newLabels[i] = {subjId, pos};
-            }
-        }
-
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto [subjId, subjPos] = newLabels[sa[i]];
-            bool sample = subjId != std::numeric_limits<uint64_t>::max();
-            bitStack.push(sample);
+            bool sample = (sa[i] % samplingRate) == 0;
             if (sample) {
+                auto subjId  = labels[sa[i] / samplingRate];
+                auto subjPos = sa[i] - accInputSizes[subjId];
+                if (reverse) {
+                    auto [len, delCt] = _inputSizes[subjId];
+                    if (subjPos < len) {
+                        subjPos = len - subjPos;
+                    } else {
+                        subjPos = len+1;
+                    }
+                }
                 ssaSeq.push_back(subjId);
                 ssaPos.push_back(subjPos);
             }
         }
 
-
-        this->bv  = BitvectorCompact{bitStack.size, [&](size_t idx) {
-            return bitStack.value(idx);
+        this->bv  = BitvectorCompact{sa.size(), [&](size_t idx) {
+            return (sa[idx] % samplingRate) == 0;
         }};
     }
 

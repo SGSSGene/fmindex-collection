@@ -30,7 +30,7 @@ struct ReverseFMIndex {
         , csa{cereal_tag{}}
     {
 
-        auto [totalSize, inputText, inputSizes] = createSequences(_input, /*reverse*/ true);
+        auto [totalSize, inputText, inputSizes] = createSequences(_input, samplingRate, /*reverse*/ true);
 
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
             auto sa  = createSA(inputText, threadNbr);

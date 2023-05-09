@@ -79,14 +79,13 @@ public:
         , occRev{cereal_tag{}}
         , csa{cereal_tag{}}
     {
-        auto [totalSize, inputText, inputSizes] = createSequences(_input);
+        auto [totalSize, inputText, inputSizes] = createSequences(_input, samplingRate);
 
         // create BurrowsWheelerTransform and CompressedSuffixArray
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
             auto sa  = createSA(inputText, threadNbr);
             auto bwt = createBWT(inputText, sa);
             auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
-
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();
 
