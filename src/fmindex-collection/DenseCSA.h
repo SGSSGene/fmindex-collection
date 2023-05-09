@@ -75,26 +75,19 @@ struct DenseCSA {
             largestText = std::max(largestText, len);
         }
 
-        // Annotate text with labels, naming the correct sequence id
-        auto labels = std::vector<uint64_t>{};
-        labels.reserve(sa.size() / samplingRate);
-
-        for (size_t i{0}, subjId{0}; i < sa.size(); i += samplingRate) {
-            while (i >= accInputSizes[subjId]) {
-                subjId += 1;
-            }
-            labels.emplace_back(subjId-1);
-        }
-
         // Construct sampled suffix array
         size_t bitsForPos   = std::max(size_t{1}, size_t(std::ceil(std::log2(largestText))));
 
         ssaPos = DenseVector(bitsForPos);
         ssaSeq = DenseVector(bitsForSeqId);
+        ssaPos.reserve(sa.size() / _samplingRate);
+        ssaSeq.reserve(sa.size() / _samplingRate);
         for (size_t i{0}; i < sa.size(); ++i) {
             bool sample = (sa[i] % samplingRate) == 0;
             if (sample) {
-                auto subjId  = labels[sa[i] / samplingRate];
+                // find subject id
+                auto iter = std::upper_bound(accInputSizes.begin(), accInputSizes.end(), sa[i]);
+                size_t subjId = std::distance(accInputSizes.begin(), iter) - 1;
                 auto subjPos = sa[i] - accInputSizes[subjId];
                 if (reverse) {
                     auto [len, delCt] = _inputSizes[subjId];
