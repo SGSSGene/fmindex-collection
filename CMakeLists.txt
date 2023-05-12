@@ -23,7 +23,7 @@ endif ()
 
 
 project(fmindex-collection LANGUAGES CXX
-                            DESCRIPTION "sahara -- Approximate Searches with search schemes and bidirectional fm indices")
+                            DESCRIPTION "fmindex-collection -- Datastructures and Algorithms for (Bi-)FMIndices and Approximate Pattern Matching")
 
 if(NOT WIN32)
     option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${ROOT_PROJECT})
