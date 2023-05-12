@@ -21,7 +21,7 @@
 
 
 
-inline auto construct_bwt_from_sa(std::vector<int64_t> const& sa, std::string_view const& text) -> std::vector<uint8_t> {
+inline auto construct_bwt_from_sa(std::vector<uint64_t> const& sa, std::string_view const& text) -> std::vector<uint8_t> {
     assert(sa.size() == text.size());
     std::vector<uint8_t> bwt;
     bwt.resize(text.size());

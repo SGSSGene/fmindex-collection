@@ -55,7 +55,7 @@ struct DenseCSA {
         , bv {cereal_tag{}}
     {}
 
-    DenseCSA(std::span<int64_t const> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
+    DenseCSA(std::span<uint64_t const> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
         : ssaPos{cereal_tag{}}
         , ssaSeq{cereal_tag{}}
         , bv {cereal_tag{}}
