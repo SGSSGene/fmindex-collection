@@ -4,6 +4,7 @@ project(fmindex-collection)
 
 # fmindex_collection library
 add_library(${PROJECT_NAME} INTERFACE)
+add_library(fmindex-collection::fmindex-collection ALIAS ${PROJECT_NAME})
 
 option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${ROOT_PROJECT})
 
@@ -16,6 +17,7 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     INTERFACE
     libsais
+    search_schemes::search_schemes
 )
 
 if (FMC_USE_SDSL)
