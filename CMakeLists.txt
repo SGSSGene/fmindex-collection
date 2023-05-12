@@ -1,4 +1,10 @@
-cmake_minimum_required (VERSION 3.8)
+# -----------------------------------------------------------------------------------------------------
+# Copyright (c) 2006-2023, Knut Reinert & Freie Universität Berlin
+# Copyright (c) 2016-2023, Knut Reinert & MPI für molekulare Genetik
+# This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+# shipped with this file.
+# -----------------------------------------------------------------------------------------------------
+cmake_minimum_required (VERSION 3.16)
 
 # check if this is the main project
 if (NOT DEFINED PROJECT_NAME)
@@ -16,8 +22,8 @@ else()
 endif ()
 
 
-
-project(fmindex-collection)
+project(fmindex-collection LANGUAGES CXX
+                            DESCRIPTION "fmindex-collection -- Datastructures and Algorithms for (Bi-)FMIndices and Approximate Pattern Matching")
 
 if(NOT WIN32)
     option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${ROOT_PROJECT})
@@ -26,17 +32,13 @@ else()
 endif()
 
 find_package(OpenMP QUIET)
+option(LIBSAIS_USE_OPENMP "" OpenMP_C_FOUND)
 
-if (OpenMP_C_FOUND)
-    option(LIBSAIS_USE_OPENMP "" ON)
-endif()
-
-add_subdirectory(lib/libsais)
-add_subdirectory(src/fmindex-collection)
-add_subdirectory(src/search_schemes)
+include(fmindex_collection-config.cmake)
 
 if (${ROOT_PROJECT})
     find_package (fmt REQUIRED)
+    find_package (cereal REQUIRED HINTS lib)
 
     add_subdirectory(lib/Catch2)
 
@@ -50,15 +52,12 @@ if (${ROOT_PROJECT})
         src/example/utils/utils.cpp
     )
 
-    target_include_directories(example
-        SYSTEM PRIVATE
-        "${CMAKE_CURRENT_LIST_DIR}/lib/cereal/include"
-    )
     target_link_libraries(example
         PRIVATE
         fmindex-collection
         search_schemes
         fmt::fmt-header-only
+        cereal::cereal
     )
 
 
@@ -66,15 +65,12 @@ if (${ROOT_PROJECT})
     add_executable(easyExample
         src/easyExample/main.cpp
     )
-    target_include_directories(easyExample
-        SYSTEM PRIVATE
-        "${CMAKE_CURRENT_LIST_DIR}/lib/cereal/include"
-    )
     target_link_libraries(easyExample
         PRIVATE
         fmindex-collection
         search_schemes
         fmt::fmt-header-only
+        cereal::cereal
     )
 
     add_executable(run_search_schemes

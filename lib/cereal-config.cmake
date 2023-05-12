@@ -4,22 +4,14 @@
 # This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
 # shipped with this file.
 # -----------------------------------------------------------------------------------------------------
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.12)
 
-project(test_search_schemes)
+if (TARGET cereal::cereal)
+    return()
+endif()
 
-# search scheme generator unittests
-add_executable(${PROJECT_NAME}
-    checkGenerators.cpp
-    checkGeneratorsIsComplete.cpp
-    expand.cpp
-    isComplete.cpp
-    isValid.cpp
-    main.cpp
-    nodeCount.cpp
+add_library(cereal INTERFACE)
+target_include_directories(cereal INTERFACE SYSTEM
+    ${CMAKE_CURRENT_LIST_DIR}/cereal/include
 )
-target_link_libraries(${PROJECT_NAME}
-    Catch2::Catch2
-    search_schemes
-)
-add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})
+add_library(cereal::cereal ALIAS cereal)
