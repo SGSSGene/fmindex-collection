@@ -12,7 +12,10 @@
 #include <stdexcept>
 #include <tuple>
 #include <vector>
-#include <omp.h>
+
+#if LIBSAIS_OPENMP
+#   include <omp.h>
+#endif
 
 namespace fmindex_collection {
 
