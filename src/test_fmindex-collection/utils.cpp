@@ -12,7 +12,7 @@
 
 TEST_CASE("check creation of suffix array", "[createSA]") {
     auto input    = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't', '\0', '\0'};
-    auto expected = std::vector<int64_t>{ 11, 10, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };
+    auto expected = std::vector<uint64_t>{ 11, 10, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };
 
     auto output = fmindex_collection::createSA(input, 1);
     CHECK(output == expected);

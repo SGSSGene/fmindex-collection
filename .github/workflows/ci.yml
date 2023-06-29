@@ -80,7 +80,7 @@ jobs:
       - name: Install Tools on Mac
         run: |
           touch ${HOME}/.activate_brew
-          brew update
+          brew update-reset
           brew install --force-bottle --overwrite fmt boost cmake ${{ matrix.brew_pkgs }} pkg-config
         if: matrix.osname == 'MacOS 11'
 
