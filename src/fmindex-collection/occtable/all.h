@@ -21,6 +21,7 @@
 #include "DenseEPRV6.h"
 #include "InterleavedEPRV7.h"
 #include "InterleavedEPRV7b.h"
+#include "InterleavedEPRV7_32.h"
 #include "EPRV8.h"
 #include "Naive.h"
 #include "Wavelet.h"

@@ -91,7 +91,7 @@ struct BiFMIndexCursor {
         }
     }
 
-    auto extendLeft(uint8_t symb) const -> BiFMIndexCursor {
+    auto extendLeft(size_t symb) const -> BiFMIndexCursor {
         assert(symb > 0);
         auto& occ = index->occ;
         size_t newLb    = occ.rank(lb, symb);
@@ -101,7 +101,7 @@ struct BiFMIndexCursor {
         newCursor.prefetchLeft();
         return newCursor;
     }
-    auto extendRight(uint8_t symb) const -> BiFMIndexCursor {
+    auto extendRight(size_t symb) const -> BiFMIndexCursor {
         assert(symb > 0);
         auto& occ = index->occRev;
         size_t newLb    = lb + occ.prefix_rank(lbRev+len, symb-1) - occ.prefix_rank(lbRev, symb-1);
@@ -166,7 +166,7 @@ struct LeftBiFMIndexCursor {
         return cursors;
     }
 
-    auto extendLeft(uint8_t symb) const -> LeftBiFMIndexCursor {
+    auto extendLeft(size_t symb) const -> LeftBiFMIndexCursor {
         assert(symb > 0);
         auto& occ = index->occ;
 
