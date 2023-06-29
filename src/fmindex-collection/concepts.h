@@ -34,4 +34,20 @@ auto constexpr add_sentinels = std::views::transform([] (auto seq) {
     return seq | add_sentinel;
 });
 
+template <typename T>
+concept Sequence_32  = std::ranges::sized_range<T>
+                    && std::ranges::random_access_range<T>
+                    && requires(T t) {
+                        {*t.begin()} -> std::common_with<uint32_t>;
+                    };
+
+
+template <typename T>
+concept Sequences_32 = std::ranges::sized_range<T>
+                    && std::ranges::random_access_range<T>
+                    && requires(T t) {
+                        {*t.begin()} -> Sequence_32;
+                    };
+
+
 }

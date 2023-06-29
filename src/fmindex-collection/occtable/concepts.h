@@ -22,8 +22,8 @@ namespace fmindex_collection {
 /*
  * Minimum requirements to function as an Occurrence Table (OccTable)
  */
-template<typename T, typename TLengthType = typename T::TLengthType>
-concept OccTable = requires(T t, std::span<uint8_t const> bwt, TLengthType idx, TLengthType symb) {
+template<typename T, typename SymbolType = uint8_t, typename TLengthType = typename T::TLengthType>
+concept OccTable = requires(T t, std::span<SymbolType const> bwt, TLengthType idx, TLengthType symb) {
     /** Every occtable has to be creatable by providing a bwt
      */
     { T{bwt} } -> std::same_as<T>;
@@ -90,12 +90,23 @@ concept OccTable = requires(T t, std::span<uint8_t const> bwt, TLengthType idx, 
     { t.symbol(idx) } -> std::same_as<TLengthType>;
 };
 
+template<typename T, typename TLengthType = typename T::TLengthType>
+concept OccTable_32 = OccTable<T, uint32_t, TLengthType>;
+
 template<template <auto> typename T>
 concept checkOccTable = /*OccTable<T<1>>
                      && OccTable<T<2>>
                      &&*/ OccTable<T<4>>
                      && OccTable<T<5>>
                      && OccTable<T<254>>;
+//                     && OccTable<T<256>>;
+//
+template<template <auto> typename T>
+concept checkOccTable_32 = /*OccTable<T<1>>
+                     && OccTable<T<2>>
+                     &&*/ OccTable_32<T<4>>
+                     && OccTable_32<T<5>>
+                     && OccTable_32<T<254>>;
 //                     && OccTable<T<256>>;
 
 

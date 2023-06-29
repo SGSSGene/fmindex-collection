@@ -53,7 +53,7 @@ struct Search {
 
 
     template <bool Right>
-    static auto extend(cursor_t const& cur, uint8_t symb) noexcept {
+    static auto extend(cursor_t const& cur, uint64_t symb) noexcept {
         if constexpr (Right) {
             return cur.extendRight(symb);
         } else {
@@ -123,7 +123,7 @@ struct Search {
                 if (f) return true;
             }
 
-            for (uint8_t i{1}; i < symb; ++i) {
+            for (uint64_t i{1}; i < symb; ++i) {
                 auto newCur = cursors[i];
 
                 if constexpr (Deletion) {
@@ -134,7 +134,7 @@ struct Search {
                 if (f) return true;
             }
 
-            for (uint8_t i(symb+1); i < Sigma; ++i) {
+            for (uint64_t i(symb+1); i < Sigma; ++i) {
                 auto newCur = cursors[i];
 
                 if constexpr (Deletion) {
