@@ -21,9 +21,9 @@ struct SelectIndexCursor<BiFMIndex<OccTable, TCSA>> {
     using cursor_t = BiFMIndexCursor<BiFMIndex<OccTable, TCSA>>;
 };
 
-template <typename OccTable>
-struct SelectIndexCursor<FMIndex<OccTable>> {
-    using cursor_t = FMIndexCursor<FMIndex<OccTable>>;
+template <typename OccTable, typename TCSA>
+struct SelectIndexCursor<FMIndex<OccTable, TCSA>> {
+    using cursor_t = FMIndexCursor<FMIndex<OccTable, TCSA>>;
 };
 
 template <typename OccTable, typename TCSA>
@@ -31,8 +31,23 @@ struct SelectIndexCursor<ReverseFMIndex<OccTable, TCSA>> {
     using cursor_t = ReverseFMIndexCursor<ReverseFMIndex<OccTable, TCSA>>;
 };
 
+template <typename Index>
+struct SelectLeftIndexCursor;
+
+template <typename OccTable, typename TCSA>
+struct SelectLeftIndexCursor<BiFMIndex<OccTable, TCSA>> {
+    using cursor_t = LeftBiFMIndexCursor<BiFMIndex<OccTable, TCSA>>;
+};
+
+template <typename OccTable, typename TCSA>
+struct SelectLeftIndexCursor<FMIndex<OccTable, TCSA>> {
+    using cursor_t = FMIndexCursor<FMIndex<OccTable, TCSA>>;
+};
 
 template <typename Index>
-using select_cursor_t = typename SelectIndexCursor<Index>::cursor_t;
+using select_cursor_t      = typename SelectIndexCursor<Index>::cursor_t;
+
+template <typename Index>
+using select_left_cursor_t = typename SelectLeftIndexCursor<Index>::cursor_t;
 
 }
