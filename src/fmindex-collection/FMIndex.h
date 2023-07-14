@@ -12,17 +12,16 @@
 
 namespace fmindex_collection {
 
-template <OccTable Table>
+template <OccTable Table, typename TCSA = CSA>
 struct FMIndex {
     static size_t constexpr Sigma = Table::Sigma;
 
     using TTable = Table;
 
     Table  occ;
-    CSA    csa;
+    TCSA   csa;
 
-
-    FMIndex(std::span<uint8_t const> bwt, CSA _csa)
+    FMIndex(std::span<uint8_t const> bwt, TCSA _csa)
         : occ{bwt}
         , csa{std::move(_csa)}
     {}
@@ -44,7 +43,7 @@ struct FMIndex {
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
             auto sa  = createSA(inputText, threadNbr);
             auto bwt = createBWT(inputText, sa);
-            auto csa = CSA{std::move(sa), samplingRate, inputSizes};
+            auto csa = TCSA{std::move(sa), samplingRate, inputSizes};
 
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();
