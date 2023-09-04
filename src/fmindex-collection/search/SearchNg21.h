@@ -31,7 +31,7 @@ template <typename index_t, typename search_scheme_t, typename delegate_t>
 struct Search {
     constexpr static size_t Sigma = index_t::Sigma;
 
-    using cursor_t = BiFMIndexCursor<index_t>;
+    using cursor_t = select_cursor_t<index_t>;
     using BlockIter = typename search_scheme_t::const_iterator;
 
     index_t const& index;
@@ -163,7 +163,7 @@ struct Search {
 
 template <typename index_t, typename query_t, typename search_scheme_t, typename search_scheme_reordered_t, typename delegate_t>
 void search_reordered(index_t const& index, query_t&& query, search_scheme_t const& search_scheme, search_scheme_reordered_t& reordered, delegate_t&& delegate) {
-    using cursor_t = BiFMIndexCursor<index_t>;
+    using cursor_t = select_cursor_t<index_t>;
     using R = std::decay_t<decltype(delegate(std::declval<cursor_t>(), 0))>;
 
     auto internal_delegate = [&]() {

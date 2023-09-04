@@ -8,6 +8,7 @@
 
 #include "../BiFMIndexCursor.h"
 #include "../FMIndexCursor.h"
+#include "../RBiFMIndexCursor.h"
 #include "../ReverseFMIndexCursor.h"
 
 
@@ -27,9 +28,15 @@ struct SelectIndexCursor<FMIndex<OccTable, TCSA>> {
 };
 
 template <typename OccTable, typename TCSA>
+struct SelectIndexCursor<RBiFMIndex<OccTable, TCSA>> {
+    using cursor_t = RBiFMIndexCursor<RBiFMIndex<OccTable, TCSA>>;
+};
+
+template <typename OccTable, typename TCSA>
 struct SelectIndexCursor<ReverseFMIndex<OccTable, TCSA>> {
     using cursor_t = ReverseFMIndexCursor<ReverseFMIndex<OccTable, TCSA>>;
 };
+
 
 template <typename Index>
 struct SelectLeftIndexCursor;
@@ -43,6 +50,12 @@ template <typename OccTable, typename TCSA>
 struct SelectLeftIndexCursor<FMIndex<OccTable, TCSA>> {
     using cursor_t = FMIndexCursor<FMIndex<OccTable, TCSA>>;
 };
+
+template <typename OccTable, typename TCSA>
+struct SelectLeftIndexCursor<RBiFMIndex<OccTable, TCSA>> {
+    using cursor_t = LeftRBiFMIndexCursor<RBiFMIndex<OccTable, TCSA>>;
+};
+
 
 template <typename Index>
 using select_cursor_t      = typename SelectIndexCursor<Index>::cursor_t;
