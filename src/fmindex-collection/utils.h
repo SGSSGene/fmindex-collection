@@ -98,6 +98,63 @@ auto createSequences(Sequences auto const& _input, int samplingRate, bool revers
     return {totalSize, inputText, inputSizes};
 }
 
+auto createSequencesAndReverse(Sequences auto const& _input, int samplingRate) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<std::tuple<size_t, size_t>>> {
+    // compute total numbers of bytes of the text including delimiters "$"
+    size_t totalSize{};
+    for (auto const& l : _input) {
+        auto textLen  = l.size();
+        auto delimLen = samplingRate - textLen % samplingRate; // Make sure it is always a multiple of samplingRate
+        totalSize += textLen + delimLen;
+    }
+    for (auto const& l : _input) {
+        auto textLen  = l.size();
+        auto delimLen = samplingRate - textLen % samplingRate; // Make sure it is always a multiple of samplingRate
+        totalSize += textLen + delimLen;
+    }
+
+    // our concatenated sequences with delimiters
+    auto inputText = std::vector<uint8_t>{};
+    inputText.reserve(totalSize);
+
+    // list of sizes of the individual sequences
+    auto inputSizes = std::vector<std::tuple<size_t, size_t>>{};
+    inputSizes.reserve(_input.size());
+
+    // add text
+    for (auto const& l : _input) {
+        auto ls = l.size();
+        inputText.insert(inputText.end(), begin(l), end(l));
+
+        // number of delimiters ('$') which need to be added. It must be at least one, and it
+        // has to make sure the text will be a multiple of samplingRate
+        size_t delimCount = samplingRate - (ls % samplingRate);
+
+        // fill with delimiters/zeros
+        inputText.resize(inputText.size() + delimCount);
+
+        inputSizes.emplace_back(ls, delimCount);
+    }
+
+    // add reversed text
+    for (auto const& l : _input) {
+        auto ls = l.size();
+        auto l2 = std::views::reverse(l);
+        inputText.insert(inputText.end(), begin(l2), end(l2));
+
+        // number of delimiters ('$') which need to be added. It must be at least one, and it
+        // has to make sure the text will be a multiple of samplingRate
+        size_t delimCount = samplingRate - (ls % samplingRate);
+
+        // fill with delimiters/zeros
+        inputText.resize(inputText.size() + delimCount);
+
+        inputSizes.emplace_back(ls, delimCount);
+    }
+
+    return {totalSize, inputText, inputSizes};
+}
+
+
 
 inline auto createSA_32(std::span<uint32_t const> input, size_t threadNbr) -> std::vector<int32_t> {
     auto sa = std::vector<int32_t>(input.size());

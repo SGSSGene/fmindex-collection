@@ -11,6 +11,8 @@
 #include "BiFMIndex.h"
 #include "BiFMIndex_32.h"
 #include "BiFMIndexCursor.h"
+#include "RBiFMIndex.h"
+#include "RBiFMIndexCursor.h"
 #include "ReverseFMIndex.h"
 #include "ReverseFMIndexCursor.h"
 #include "CSA.h"
