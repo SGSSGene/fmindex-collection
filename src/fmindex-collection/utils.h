@@ -106,7 +106,7 @@ auto createSequencesAndReverse(Sequences auto const& _input, int samplingRate) -
         auto delimLen = samplingRate - textLen % samplingRate; // Make sure it is always a multiple of samplingRate
         totalSize += textLen + delimLen;
     }
-    for (auto const& l : _input) {
+    for (auto const& l : std::views::reverse(_input)) {
         auto textLen  = l.size();
         auto delimLen = samplingRate - textLen % samplingRate; // Make sure it is always a multiple of samplingRate
         totalSize += textLen + delimLen;
@@ -136,7 +136,7 @@ auto createSequencesAndReverse(Sequences auto const& _input, int samplingRate) -
     }
 
     // add reversed text
-    for (auto const& l : _input) {
+    for (auto const& l : std::views::reverse(_input)) {
         auto ls = l.size();
         auto l2 = std::views::reverse(l);
         inputText.insert(inputText.end(), begin(l2), end(l2));
