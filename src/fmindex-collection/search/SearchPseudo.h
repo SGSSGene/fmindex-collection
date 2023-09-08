@@ -19,7 +19,7 @@ template <bool EditDistance, typename index_t, typename search_scheme_t, Sequenc
 struct Search {
     constexpr static size_t Sigma = index_t::Sigma;
 
-    using cursor_t = BiFMIndexCursor<index_t>;
+    using cursor_t = select_cursor_t<index_t>;
 
     index_t const& index;
 
