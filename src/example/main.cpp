@@ -128,8 +128,8 @@ int main(int argc, char const* const* argv) {
                     auto len = mut_queries[0].size();
                     auto oss = iter->second.generator(0, k, 0, 0); //!TODO last two parameters of second are not being used
                     auto ess = search_schemes::expand(oss, len);
-                    auto dss = search_schemes::expandDynamicExpected</*Edit=*/true>(oss, len, 4, 3'000'000'000); //!TODO use correct Sigma and text size
-                    fmt::print("ss diff: {} to {}, using dyn: {}\n", search_schemes::expectedNodeCount</*Edit=*/false>(ess, 4, 3'000'000'000), search_schemes::expectedNodeCount</*Edit=*/false>(dss, 4, 3'000'000'000), config.generator_dyn);
+                    auto dss = search_schemes::expandByWNC</*Edit=*/true>(oss, len, 4, 3'000'000'000); //!TODO use correct Sigma and text size
+                    fmt::print("ss diff: {} to {}, using dyn: {}\n", search_schemes::weightedNodeCount</*Edit=*/false>(ess, 4, 3'000'000'000), search_schemes::weightedNodeCount</*Edit=*/false>(dss, 4, 3'000'000'000), config.generator_dyn);
                     if (!config.generator_dyn) {
                         return ess;
                     } else {
@@ -147,7 +147,7 @@ int main(int argc, char const* const* argv) {
                             auto len = mut_queries[0].size();
                             auto oss = iter->second.generator(j, j, 0, 0); //!TODO last two parameters of second are not being used
                             auto ess = search_schemes::expand(oss, len);
-                            auto dss = search_schemes::expandDynamicExpected</*Edit=*/true>(oss, len, 4, 3'000'000'000); //!TODO use correct Sigma and text size
+                            auto dss = search_schemes::expandByWNC</*Edit=*/true>(oss, len, 4, 3'000'000'000); //!TODO use correct Sigma and text size
                             if (!config.generator_dyn) {
                                 return ess;
                             } else {

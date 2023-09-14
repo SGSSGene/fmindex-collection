@@ -5,11 +5,7 @@
 // shipped with this file.
 // -----------------------------------------------------------------------------------------------------
 #include <fmt/format.h>
-#include <search_schemes/generator/all.h>
-#include <search_schemes/nodeCount.h>
-#include <search_schemes/expectedNodeCount.h>
-#include <search_schemes/expand.h>
-#include <search_schemes/isComplete.h>
+#include <search_schemes/search_schemes.h>
 
 int main(int argc, char** argv) {
     if (argc != 4) {
@@ -40,12 +36,12 @@ int main(int argc, char** argv) {
         auto ss = search_schemes::expand(oss, len);
 
         auto nc = [&](auto ss) {
-            return search_schemes::expectedNodeCount</*Edit=*/false>(ss, 4, 3'000'000'000);
+            return search_schemes::weightedNodeCount</*Edit=*/false>(ss, 4, 3'000'000'000);
         };
         auto nce = [&](auto ss) {
-            return search_schemes::expectedNodeCount</*Edit=*/true>(ss, 4, 3'000'000'000);
+            return search_schemes::weightedNodeCount</*Edit=*/true>(ss, 4, 3'000'000'000);
         };
-        auto dss = search_schemes::expandDynamicExpected</*Edit=*/true>(oss, len, 4, 3'000'000'000);
+        auto dss = search_schemes::expandByWNC</*Edit=*/true>(oss, len, 4, 3'000'000'000);
 
 
 //        fmt::print("ess:\n");

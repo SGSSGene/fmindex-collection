@@ -22,7 +22,7 @@ namespace search_schemes {
  * \param N     size of the reference text, ~3'000'000'000 for hg
  */
 template <bool Edit>
-long double expectedNodeCount(Search s, size_t sigma, size_t N) {
+long double weightedNodeCount(Search s, size_t sigma, size_t N) {
     auto n_max = s.pi.size();
     auto e     = *std::max_element(begin(s.u), end(s.u));
 
@@ -65,9 +65,9 @@ long double expectedNodeCount(Search s, size_t sigma, size_t N) {
  * \param N     size of the reference text, ~3'000'000'000 for hg
  */
 template <bool Edit>
-long double expectedNodeCount(Scheme const& ss, size_t sigma, size_t N) {
+long double weightedNodeCount(Scheme const& ss, size_t sigma, size_t N) {
     return std::accumulate(begin(ss), end(ss), static_cast<long double>(0.), [&](long double v, auto const& s) {
-        return v + expectedNodeCount<Edit>(s, sigma, N);
+        return v + weightedNodeCount<Edit>(s, sigma, N);
     });
 }
 }

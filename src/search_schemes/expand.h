@@ -9,7 +9,7 @@
 #include "Scheme.h"
 #include "isValid.h"
 #include "nodeCount.h"
-#include "expectedNodeCount.h"
+#include "weightedNodeCount.h"
 
 #include <algorithm>
 #include <cassert>
@@ -188,7 +188,7 @@ inline auto expand(Scheme ss, std::vector<size_t> parts) -> Scheme {
 }
 
 template <bool Edit=false>
-auto expandDynamic(Scheme ss, size_t _newLen, size_t sigma) -> Scheme {
+auto expandByNC(Scheme ss, size_t _newLen, size_t sigma) -> Scheme {
     if (ss.size() == 0) return {};
     auto additionalPos = _newLen - ss[0].pi.size();
     auto counts = std::vector<size_t>(ss[0].pi.size(), 1);
@@ -213,7 +213,7 @@ auto expandDynamic(Scheme ss, size_t _newLen, size_t sigma) -> Scheme {
 }
 
 template <bool Edit=false>
-auto expandDynamicExpected(Scheme ss, size_t _newLen, size_t sigma, size_t N) -> Scheme {
+auto expandByWNC(Scheme ss, size_t _newLen, size_t sigma, size_t N) -> Scheme {
     if (ss.size() == 0) return {};
     auto additionalPos = _newLen - ss[0].pi.size();
     auto counts = std::vector<size_t>(ss[0].pi.size(), 1);
@@ -225,7 +225,7 @@ auto expandDynamicExpected(Scheme ss, size_t _newLen, size_t sigma, size_t N) ->
             counts[j] += 1;
             auto ess = expand(ss, counts);
             counts[j] -= 1;
-            auto f = expectedNodeCount<Edit>(ess, sigma, N);
+            auto f = weightedNodeCount<Edit>(ess, sigma, N);
             if (f < bestVal) {
                 bestVal = f;
                 bestPos = j;
