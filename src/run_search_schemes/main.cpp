@@ -40,10 +40,10 @@ int main(int argc, char** argv) {
         auto ss = search_schemes::expand(oss, len);
 
         auto nc = [&](auto ss) {
-            return search_schemes::expectedNodeCount(ss, 4, 3'000'000'000);
+            return search_schemes::expectedNodeCount</*Edit=*/false>(ss, 4, 3'000'000'000);
         };
         auto nce = [&](auto ss) {
-            return search_schemes::expectedNodeCountEdit(ss, 4, 3'000'000'000);
+            return search_schemes::expectedNodeCount</*Edit=*/true>(ss, 4, 3'000'000'000);
         };
         auto dss = search_schemes::expandDynamicExpected</*Edit=*/true>(oss, len, 4, 3'000'000'000);
 

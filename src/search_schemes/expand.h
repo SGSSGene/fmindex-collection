@@ -200,7 +200,7 @@ auto expandDynamic(Scheme ss, size_t _newLen, size_t sigma) -> Scheme {
             counts[j] += 1;
             auto ess = expand(ss, counts);
             counts[j] -= 1;
-            auto f = Edit?nodeCountEdit(ess, sigma):nodeCount(ess, sigma);
+            auto f = nodeCount<Edit>(ess, sigma);
             if (f < bestVal) {
                 bestVal = f;
                 bestPos = j;
@@ -225,7 +225,7 @@ auto expandDynamicExpected(Scheme ss, size_t _newLen, size_t sigma, size_t N) ->
             counts[j] += 1;
             auto ess = expand(ss, counts);
             counts[j] -= 1;
-            auto f = Edit?expectedNodeCountEdit(ess, sigma, N):expectedNodeCount(ess, sigma, N);
+            auto f = expectedNodeCount<Edit>(ess, sigma, N);
             if (f < bestVal) {
                 bestVal = f;
                 bestPos = j;
