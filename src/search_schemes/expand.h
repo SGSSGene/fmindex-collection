@@ -8,7 +8,8 @@
 
 #include "Scheme.h"
 #include "isValid.h"
-#include "expectedNodeCount.h"
+#include "nodeCount.h"
+#include "weightedNodeCount.h"
 
 #include <algorithm>
 #include <cassert>
@@ -174,6 +175,7 @@ inline auto expand(Search s, std::vector<size_t> parts) -> std::optional<Search>
     }
     return {r};
 }
+
 inline auto expand(Scheme ss, std::vector<size_t> parts) -> Scheme {
     auto r = Scheme{};
     for (auto const& s : ss) {
@@ -185,7 +187,9 @@ inline auto expand(Scheme ss, std::vector<size_t> parts) -> Scheme {
     return r;
 }
 
-inline auto expandDynamic(Scheme ss, size_t _newLen, size_t sigma, size_t N) -> Scheme {
+template <bool Edit=false>
+auto expandByNC(Scheme ss, size_t _newLen, size_t sigma) -> Scheme {
+    if (ss.size() == 0) return {};
     auto additionalPos = _newLen - ss[0].pi.size();
     auto counts = std::vector<size_t>(ss[0].pi.size(), 1);
 
@@ -196,7 +200,32 @@ inline auto expandDynamic(Scheme ss, size_t _newLen, size_t sigma, size_t N) -> 
             counts[j] += 1;
             auto ess = expand(ss, counts);
             counts[j] -= 1;
-            auto f = expectedNodeCountEdit(ess, sigma, N);
+            auto f = nodeCount<Edit>(ess, sigma);
+            if (f < bestVal) {
+                bestVal = f;
+                bestPos = j;
+            }
+        }
+        counts[bestPos] += 1;
+    }
+
+    return expand(ss, counts);
+}
+
+template <bool Edit=false>
+auto expandByWNC(Scheme ss, size_t _newLen, size_t sigma, size_t N) -> Scheme {
+    if (ss.size() == 0) return {};
+    auto additionalPos = _newLen - ss[0].pi.size();
+    auto counts = std::vector<size_t>(ss[0].pi.size(), 1);
+
+    for (size_t i{0}; i<additionalPos; ++i) {
+        double bestVal = std::numeric_limits<double>::max();
+        size_t bestPos = 0;
+        for (size_t j{0}; j < ss[0].pi.size(); ++j) {
+            counts[j] += 1;
+            auto ess = expand(ss, counts);
+            counts[j] -= 1;
+            auto f = weightedNodeCount<Edit>(ess, sigma, N);
             if (f < bestVal) {
                 bestVal = f;
                 bestPos = j;
