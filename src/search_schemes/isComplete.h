@@ -70,6 +70,7 @@ void generateErrorConfig(CB cb, size_t len, size_t minK, size_t maxK) {
  *
  */
 inline auto isComplete(Scheme const& ss, size_t minK, size_t maxK) -> bool {
+    if (ss.empty()) return false;
     bool complete{true};
     auto len = ss.at(0).pi.size();
     generateErrorConfig([&](ErrorConfig const& config) {

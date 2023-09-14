@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     auto K   = std::stod(argv[2]);
     auto gen = argv[3];
     {
-        auto oss = search_schemes::generator::all.at(gen)(0, K, 0, 0);
+        auto oss = search_schemes::generator::all.at(gen).generator(0, K, 0, 0);
         if (oss.size() == 0) return 0;
 
 //        for (auto s : oss) {
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
         auto nce = [&](auto ss) {
             return search_schemes::expectedNodeCountEdit(ss, 4, 3'000'000'000);
         };
-        auto dss = search_schemes::expandDynamic(oss, len, 4, 3'000'000'000);
+        auto dss = search_schemes::expandDynamicExpected</*Edit=*/true>(oss, len, 4, 3'000'000'000);
 
 
 //        fmt::print("ess:\n");
