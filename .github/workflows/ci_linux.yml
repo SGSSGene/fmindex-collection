@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
+# SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
+# SPDX-License-Identifier: CC0-1.0
+
+name: "Linux"
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+
+concurrency:
+  group: linux-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.compiler }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - gcc13-cpp20-release
+          - gcc12-cpp20-release
+          - gcc11-cpp20-release
+          - gcc13-cpp20-debug
+          - clang15-cpp20-release
+          - clang16-cpp20-release
+    steps:
+      - name: Standard IV-project testing
+        uses: iv-project/IVaction/linux-testing@v4
+        with:
+          compiler: ${{ matrix.compiler }}
+          threads: 2

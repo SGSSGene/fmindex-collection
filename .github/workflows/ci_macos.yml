@@ -1,0 +1,33 @@
+# SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
+# SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
+# SPDX-License-Identifier: CC0-1.0
+
+name: "MacOS"
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+
+concurrency:
+  group: macos-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.compiler }}
+    runs-on: macos-12
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - gcc13-cpp20-release
+    steps:
+      - name: Standard IV-project testing
+        uses: iv-project/IVaction/macos-testing@v4
+        with:
+          compiler: ${{ matrix.compiler }}
+          threads: 3
+          cmake_flags: "-DFMC_USE_SDSL=NO"

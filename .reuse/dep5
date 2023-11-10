@@ -1,0 +1,17 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+
+Files: lib/Catch2/*
+Copyright: Catch2 Authors
+License: BSL-1.0
+
+Files: lib/sdsl-lite/*
+Copyright: 2007-2014 Simon Gog
+License: GPL-3.0-only
+
+Files: lib/libsais/*
+Copyright: 2021-2022 Ilya Grebnov ilya.grebnov@gmail.com
+License: Apache-2.0
+
+Files: lib/cereal/*
+Copyright: 2013-2022, Randolph Voorhies, Shane Grant
+License: BSD-3-Clause
