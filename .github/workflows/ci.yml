@@ -1,12 +1,12 @@
 # SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 # SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 # SPDX-License-Identifier: CC0-1.0
-name: "Linux and MacOS"
+
+name: "Linux"
 
 on:
   push:
     branches:
-      # Push events to branches matching refs/heads/master
       - 'main'
   pull_request:
 
@@ -14,96 +14,25 @@ concurrency:
   group: ${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-env:
-  TZ: Europe/Berlin
-
 jobs:
   build:
-    name: ${{ matrix.os }} / ${{ matrix.compiler }}
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 120
+    name: ${{ matrix.compiler }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        osname: ["Ubuntu 22.04"]
-        compiler: ["gcc13 (c++20)", "gcc12 (c++20)", "gcc11 (c++20)", "gcc13 (c++20, Debug)", "clang14"]
-
-        include:
-          - osname: "Ubuntu 22.04"
-            os: ubuntu-22.04
-            cmake_flags: ""
-            threads: 2
-
-          - compiler: "gcc13 (c++20)"
-            cxx: "g++-13"
-            cc: "gcc-13"
-            build_type: Release
-            brew_pkgs: gcc@13
-
-          - compiler: "gcc12 (c++20)"
-            cxx: "g++-12"
-            cc: "gcc-12"
-            build_type: Release
-            brew_pkgs: gcc@12
-
-          - compiler: "gcc11 (c++20)"
-            cxx: "g++-11"
-            cc: "gcc-11"
-            build_type: Release
-            brew_pkgs: gcc@11
-
-          - compiler: "gcc13 (c++20, Debug)"
-            cxx: "g++-13"
-            cc: "gcc-13"
-            build_type: Debug
-            brew_pkgs: gcc@13
-
-          - compiler: "clang14"
-            cxx: "clang++-14"
-            cc: "clang-14"
-            build_type: Release
-            brew_pkgs: llvm@14
+        compiler:
+          - "gcc13-cpp20-release"
+          - "gcc12-cpp20-release"
+          - "gcc11-cpp20-release"
+          - "gcc13-cpp20-debug"
+          - "clang15-cpp20-release"
+          - "clang16-cpp20-release"
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Standard IV-project testing
+        uses: iv-project/IVaction/linux-testing@v3
         with:
-          path: fmc
-          fetch-depth: 1
-
-      - name: Install Tools on Ubuntu
-        run: |
-          NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ${HOME}/.activate_brew
-          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-          sudo apt-get update -y
-          sudo apt-get install -y build-essential
-          brew install --force-bottle fmt boost cmake ${{ matrix.brew_pkgs }} pkg-config
-          ${{ matrix.cxx }} --version
-
-      - name: Tool versions
-        run: |
-          source ${HOME}/.activate_brew
-          cmake --version
-          ${{ matrix.cxx }} --version
-
-      - name: Configure tests
-        env:
-          CXX: ${{ matrix.cxx }}
-          CC: ${{ matrix.cc }}
-        run: |
-          source ${HOME}/.activate_brew
-          mkdir fmc-build
-          cd fmc-build
-          cmake ../fmc -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_flags }}
-
-      - name: Build tests
-        run: |
-          source ${HOME}/.activate_brew
-          cd fmc-build
-          make -k -j2
-
-      - name: Run tests
-        run: |
-          source ${HOME}/.activate_brew
-          cd fmc-build
-          ctest . -j ${{ matrix.threads }} --output-on-failure
+          name: linux-${{ matrix.compiler }}
+          compiler: ${{ matrix.compiler }}
+          threads: 2
