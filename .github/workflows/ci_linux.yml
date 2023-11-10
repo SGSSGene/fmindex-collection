@@ -16,22 +16,22 @@ concurrency:
 
 jobs:
   build:
-    name: linux-${{ matrix.compiler }}
+    name: ${{ matrix.compiler }}
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         compiler:
-          - "gcc13-cpp20-release"
-          - "gcc12-cpp20-release"
-          - "gcc11-cpp20-release"
-          - "gcc13-cpp20-debug"
-          - "clang15-cpp20-release"
-          - "clang16-cpp20-release"
+          - gcc13-cpp20-release
+          - gcc12-cpp20-release
+          - gcc11-cpp20-release
+          - gcc13-cpp20-debug
+          - clang15-cpp20-release
+          - clang16-cpp20-release
     steps:
       - name: Standard IV-project testing
-        uses: iv-project/IVaction/linux-testing@feat/simpler_ci
+        uses: iv-project/IVaction/linux-testing@feat/macos-testing
         with:
           compiler: ${{ matrix.compiler }}
           threads: 2
