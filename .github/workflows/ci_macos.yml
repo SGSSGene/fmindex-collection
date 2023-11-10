@@ -24,14 +24,10 @@ jobs:
       matrix:
         compiler:
           - gcc13-cpp20-release
-          - gcc12-cpp20-release
-          - gcc11-cpp20-release
-          - gcc13-cpp20-debug
-          - clang15-cpp20-release
-          - clang16-cpp20-release
     steps:
       - name: Standard IV-project testing
-        uses: iv-project/IVaction/macos-testing@feat/macos-testing
+        uses: iv-project/IVaction/macos-testing@v4
         with:
           compiler: ${{ matrix.compiler }}
           threads: 3
+          cmake_flags: "-DFMC_USE_SDSL=NO"

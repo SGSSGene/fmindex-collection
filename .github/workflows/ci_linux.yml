@@ -31,7 +31,7 @@ jobs:
           - clang16-cpp20-release
     steps:
       - name: Standard IV-project testing
-        uses: iv-project/IVaction/linux-testing@feat/macos-testing
+        uses: iv-project/IVaction/linux-testing@v4
         with:
           compiler: ${{ matrix.compiler }}
           threads: 2
