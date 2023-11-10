@@ -11,12 +11,12 @@ on:
   pull_request:
 
 concurrency:
-  group: ${{ github.event.pull_request.number || github.ref }}
+  group: linux-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
-    name: ${{ matrix.compiler }}
+    name: linux-${{ matrix.compiler }}
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     strategy:
@@ -31,8 +31,7 @@ jobs:
           - "clang16-cpp20-release"
     steps:
       - name: Standard IV-project testing
-        uses: iv-project/IVaction/linux-testing@v3
+        uses: iv-project/IVaction/linux-testing@feat/simpler_ci
         with:
-          name: linux-${{ matrix.compiler }}
           compiler: ${{ matrix.compiler }}
           threads: 2
