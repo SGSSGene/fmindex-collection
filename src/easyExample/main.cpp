@@ -8,9 +8,10 @@
 #include <search_schemes/expand.h>
 
 #include <cereal/archives/binary.hpp>
-#include <fmt/format.h>
-#include <unordered_set>
 #include <filesystem>
+#include <fmt/format.h>
+#include <fstream>
+#include <unordered_set>
 
 using namespace fmindex_collection;
 
