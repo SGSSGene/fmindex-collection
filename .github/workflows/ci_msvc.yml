@@ -20,4 +20,4 @@ jobs:
     timeout-minutes: 120
     steps:
       - name: Standard IV-project testing
-        uses: iv-project/IVaction/msvc-testing@v6
+        uses: iv-project/IVaction/msvc-testing@v6.2
