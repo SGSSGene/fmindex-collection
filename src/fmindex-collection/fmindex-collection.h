@@ -13,4 +13,5 @@
 #include "ReverseFMIndex.h"
 #include "ReverseFMIndexCursor.h"
 #include "CSA.h"
+#include "VariableFMIndex.h"
 #include "occtable/all.h"
