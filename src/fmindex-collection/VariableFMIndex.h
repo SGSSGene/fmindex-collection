@@ -26,6 +26,8 @@ struct VariableFMIndex {
 
     std::variant<std::monostate, Index4, Index5, Index16> index;
 
+    VariableFMIndex() = default;
+
     VariableFMIndex(std::vector<std::string> const& _reference, size_t samplingRate, size_t threadNbr) {
         charToRankMapping.fill(255);
 
@@ -39,8 +41,8 @@ struct VariableFMIndex {
         // 2. iterate over each entry and give them a uniq rank
         for (auto& c : charToRankMapping) {
             if (c == 0) {
-                c = Sigma;
                 Sigma += 1;
+                c = Sigma;
             }
         }
 
@@ -99,6 +101,46 @@ struct VariableFMIndex {
             }
         }, index);
         return result;
+    }
+
+    template <typename Archive>
+    void save(Archive& ar) const {
+        ar(size_t{1}); // Version 1
+        ar(Sigma);
+        ar(charToRankMapping);
+        ar(size_t{index.index()});
+        std::visit([&]<typename I>(I const& index) {
+            if constexpr (std::same_as<I, std::monostate>) {
+                return;
+            } else {
+                ar(index);
+            }
+        }, index);
+    }
+
+    template <typename Archive>
+    void load(Archive& ar) {
+        size_t version;
+        ar(version);
+        if (version == 1) {
+            ar(Sigma);
+            ar(charToRankMapping);
+            size_t idx;
+            ar(idx);
+            if (idx == 1) index.emplace<Index4>(cereal_tag{});
+            else if (idx == 2) index.emplace<Index5>(cereal_tag{});
+            else if (idx == 3) index.emplace<Index16>(cereal_tag{});
+            else throw std::runtime_error{"unknown index"};
+            std::visit([&]<typename I>(I& index) {
+                if constexpr (std::same_as<I, std::monostate>) {
+                    return;
+                } else {
+                    ar(index);
+                }
+            }, index);
+        } else {
+            throw std::runtime_error{"unknown format"};
+        }
     }
 };
 
