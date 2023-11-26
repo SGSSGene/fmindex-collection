@@ -11,6 +11,7 @@
 #include <array>
 #include <bitset>
 #include <cassert>
+#include <cmath>
 #include <cstdint>
 #include <span>
 #include <vector>

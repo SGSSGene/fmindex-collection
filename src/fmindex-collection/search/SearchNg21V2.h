@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../BiFMIndexCursor.h"
+#include "SelectCursor.h"
 
 #include <array>
 #include <cstddef>

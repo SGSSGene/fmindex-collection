@@ -87,4 +87,6 @@ if (${ROOT_PROJECT})
         fmt::fmt-header-only
     )
 
+    add_subdirectory(src/test_header)
+
 endif()
