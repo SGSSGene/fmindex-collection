@@ -19,10 +19,13 @@ if (FMC_USE_SDSL)
       NAME sdsl-lite
       GITHUB_REPOSITORY xxsds/sdsl-lite
       GIT_TAG 206a5f725ee54e892d7cf5f17e77aad4cfb31a62
-      OPTIONS
-        "HAS_SDSL_CEREAL 1"
-      EXCLUDE_FROM_ALL TRUE
+      DOWNLOAD_ONLY TRUE
     )
+    if(sdsl-lite_ADDED)
+        add_library(sdsl-lite INTERFACE IMPORTED)
+        target_include_directories(sdsl-lite INTERFACE "${sdsl-lite_SOURCE_DIR}/include")
+        add_library(sdsl-lite::sdsl-lite ALIAS sdsl-lite)
+    endif()
 endif()
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/search_schemes ${CMAKE_CURRENT_BINARY_DIR}/search_schemes)

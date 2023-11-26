@@ -26,8 +26,5 @@ target_link_libraries(${PROJECT_NAME}
 
 if (FMC_USE_SDSL)
     target_compile_definitions(${PROJECT_NAME} INTERFACE -DFMC_USE_SDSL)
-    target_include_directories(${PROJECT_NAME}
-        INTERFACE
-        ${sdsl_SOURCE_DIR}/include
-    )
+    target_link_libraries(${PROJECT_NAME} INTERFACE sdsl-lite::sdsl-lite)
 endif()
