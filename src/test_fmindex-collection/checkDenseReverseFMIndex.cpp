@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "allTables.h"
 
-#include <fmindex-collection/ReverseFMIndex.h>
+#include <catch2/catch_all.hpp>
 #include <fmindex-collection/DenseCSA.h>
-#include <catch2/catch.hpp>
+#include <fmindex-collection/ReverseFMIndex.h>
 
 TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", ALLTABLES) {
     using OccTable = TestType;

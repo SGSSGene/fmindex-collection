@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "allTables.h"
 
+#include <catch2/catch_all.hpp>
 #include <fmindex-collection/ReverseFMIndex.h>
 #include <fmindex-collection/search/BacktrackingWithBuffers.h>
 #include <search_schemes/generator/all.h>
-#include <catch2/catch.hpp>
 
 TEMPLATE_TEST_CASE("searching with collection and backtracking with buffers on a reversed fmindex", "[collection][search][reverse]", ALLTABLES) {
     using OccTable = TestType;

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "allTables.h"
 
+#include <catch2/catch_all.hpp>
 #include <fmindex-collection/ReverseFMIndex.h>
-#include <catch2/catch.hpp>
 
 TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]", ALLTABLES) {
     using OccTable = TestType;
