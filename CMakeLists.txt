@@ -35,7 +35,12 @@ include(fmindex_collection-config.cmake)
 if (${ROOT_PROJECT})
     CPMaddPackage("gh:fmtlib/fmt#10.1.1")
     CPMaddPackage("gh:catchorg/Catch2#v3.4.0")
-    CPMaddPackage("gh:USCiLab/cereal#v1.3.2")
+    CPMaddPackage(NAME cereal
+        GITHUB_REPOSITORY USCiLab/cereal
+        GIT_TAG v1.3.2
+        OPTIONS
+            "SKIP_PERFORMANCE_COMPARISON ON"
+    )
 
     enable_testing()
     add_subdirectory(src/test_fmindex-collection)

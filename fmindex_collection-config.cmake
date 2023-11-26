@@ -5,6 +5,7 @@ cmake_minimum_required (VERSION 3.12)
 if (TARGET fmindex-collection::fmindex-collection)
     return()
 endif()
+
 CPMAddPackage(
   NAME libsais
   GITHUB_REPOSITORY IlyaGrebnov/libsais
@@ -19,7 +20,6 @@ if (FMC_USE_SDSL)
       GITHUB_REPOSITORY xxsds/sdsl-lite
       GIT_TAG 206a5f725ee54e892d7cf5f17e77aad4cfb31a62
       OPTIONS
-        "SKIP_PERFORMANCE_COMPARISON ON"
         "HAS_SDSL_CEREAL 1"
     )
 endif()
