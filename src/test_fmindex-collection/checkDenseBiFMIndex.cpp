@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "allTables.h"
 
+#include <catch2/catch_all.hpp>
 #include <fmindex-collection/BiFMIndex.h>
 #include <fmindex-collection/DenseCSA.h>
-#include <catch2/catch.hpp>
 
 
 TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", ALLTABLES) {

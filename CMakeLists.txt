@@ -29,15 +29,22 @@ else()
 endif()
 
 find_package(OpenMP QUIET)
-option(LIBSAIS_USE_OPENMP "" OpenMP_C_FOUND)
-
+include(cmake/CPM.cmake)
 include(fmindex_collection-config.cmake)
 
 if (${ROOT_PROJECT})
-    find_package (fmt REQUIRED)
-    find_package (cereal REQUIRED HINTS lib)
-
-    add_subdirectory(lib/Catch2)
+    CPMaddPackage("gh:fmtlib/fmt#10.1.1")
+    CPMaddPackage("gh:catchorg/Catch2#v3.4.0")
+    CPMaddPackage(NAME cereal
+        GITHUB_REPOSITORY USCiLab/cereal
+        GIT_TAG v1.3.2
+        OPTIONS
+            "SKIP_PERFORMANCE_COMPARISON ON"
+            "BUILD_SANDBOX OFF"
+            "BUILD_DOC OFF"
+            "WITH_WERROR OFF"
+        EXCLUDE_FROM_ALL TRUE
+    )
 
     enable_testing()
     add_subdirectory(src/test_fmindex-collection)

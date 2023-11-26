@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include <search_schemes/nodeCount.h>
+#include <catch2/catch_all.hpp>
 #include <search_schemes/expand.h>
 #include <search_schemes/generator/backtracking.h>
-#include <catch2/catch.hpp>
+#include <search_schemes/nodeCount.h>
 
 namespace ss = search_schemes;
 namespace gen = ss::generator;

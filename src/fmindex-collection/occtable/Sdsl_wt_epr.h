@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <sdsl/construct.hpp>
 #include <sdsl/suffix_trees.hpp>
+#include <sdsl/wt_epr.hpp>
 #include <span>
 #include <vector>
 

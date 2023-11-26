@@ -21,12 +21,10 @@ target_link_libraries(${PROJECT_NAME}
     INTERFACE
     libsais
     search_schemes::search_schemes
+    cereal::cereal
 )
 
 if (FMC_USE_SDSL)
     target_compile_definitions(${PROJECT_NAME} INTERFACE -DFMC_USE_SDSL)
-    target_include_directories(${PROJECT_NAME}
-        SYSTEM INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../lib/sdsl-lite/include
-    )
+    target_link_libraries(${PROJECT_NAME} INTERFACE sdsl-lite::sdsl-lite)
 endif()

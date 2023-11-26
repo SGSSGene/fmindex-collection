@@ -17,10 +17,9 @@ add_executable(${PROJECT_NAME}
     checkSearchBacktracking.cpp
     checkSearchPseudo.cpp
     utils.cpp
-    main.cpp
 )
 target_link_libraries(${PROJECT_NAME}
-    Catch2::Catch2
+    Catch2::Catch2WithMain
     fmindex-collection
 )
 

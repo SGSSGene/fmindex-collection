@@ -12,11 +12,10 @@ add_executable(${PROJECT_NAME}
     expand.cpp
     isComplete.cpp
     isValid.cpp
-    main.cpp
     nodeCount.cpp
 )
 target_link_libraries(${PROJECT_NAME}
-    Catch2::Catch2
+    Catch2::Catch2WithMain
     search_schemes
 )
 add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})

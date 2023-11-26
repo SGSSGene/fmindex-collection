@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "allTables.h"
 
+#include <catch2/catch_all.hpp>
 #include <fmindex-collection/BiFMIndex.h>
 #include <fmindex-collection/search/SearchPseudo.h>
 #include <search_schemes/generator/all.h>
-#include <catch2/catch.hpp>
 
 TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]", ALLTABLES) {
     using OccTable = TestType;
