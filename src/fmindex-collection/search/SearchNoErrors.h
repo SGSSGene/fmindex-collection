@@ -5,7 +5,7 @@
 
 #include "../concepts.h"
 
-#include "../BiFMIndexCursor.h"
+#include "SelectCursor.h"
 
 
 namespace fmindex_collection::search_no_errors {

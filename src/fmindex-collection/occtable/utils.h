@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+
 namespace fmindex_collection {
 namespace occtable {
 
