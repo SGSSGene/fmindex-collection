@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#ifdef FMC_USE_SDSL
+
 #include "concepts.h"
 
 #include <array>
@@ -109,3 +111,4 @@ static_assert(checkOccTable<OccTable>);
 }
 }
 }
+#endif
