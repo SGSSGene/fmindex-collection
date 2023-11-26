@@ -9,6 +9,7 @@
 
 #include <array>
 #include <bitset>
+#include <cassert>
 #include <cstdint>
 #include <span>
 #include <vector>
