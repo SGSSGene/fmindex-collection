@@ -21,6 +21,7 @@ if (FMC_USE_SDSL)
       GIT_TAG 206a5f725ee54e892d7cf5f17e77aad4cfb31a62
       OPTIONS
         "HAS_SDSL_CEREAL 1"
+      EXCLUDE_FROM_ALL TRUE
     )
 endif()
 

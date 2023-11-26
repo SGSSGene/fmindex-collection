@@ -43,6 +43,7 @@ if (${ROOT_PROJECT})
             "BUILD_SANDBOX OFF"
             "BUILD_DOC OFF"
             "WITH_WERROR OFF"
+        EXCLUDE_FROM_ALL TRUE
     )
 
     enable_testing()
