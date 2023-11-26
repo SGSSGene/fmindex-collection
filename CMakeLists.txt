@@ -40,6 +40,9 @@ if (${ROOT_PROJECT})
         GIT_TAG v1.3.2
         OPTIONS
             "SKIP_PERFORMANCE_COMPARISON ON"
+            "BUILD_SANDBOX OFF"
+            "BUILD_DOC OFF"
+            "WITH_WERROR OFF"
     )
 
     enable_testing()
