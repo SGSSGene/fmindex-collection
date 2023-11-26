@@ -29,7 +29,6 @@ else()
 endif()
 
 find_package(OpenMP QUIET)
-option(LIBSAIS_USE_OPENMP "" OpenMP_C_FOUND)
 include(cmake/CPM.cmake)
 include(fmindex_collection-config.cmake)
 
