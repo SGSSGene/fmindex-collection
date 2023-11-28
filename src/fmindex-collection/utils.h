@@ -154,12 +154,13 @@ auto createSequencesAndReverse(Sequences auto const& _input, int samplingRate) -
 
 
 inline auto createSA_32(std::span<uint32_t const> input, size_t threadNbr) -> std::vector<int32_t> {
+    //!TODO call to libsais_int_omp seems not correct
     auto sa = std::vector<int32_t>(input.size());
     if (input.size() == 0) {
         return sa;
     }
 #if LIBSAIS_OPENMP
-    auto r = libsais_int_omp((int32_t*)input.data(), sa.data(), input.size(), 0, nullptr, threadNbr);
+    auto r = libsais_int_omp((int32_t*)input.data(), sa.data(), input.size(), 65536, 0, threadNbr);
 #else
     (void)threadNbr; // Unused if no openmp is available
     auto r = libsais_int((int32_t*)input.data(), sa.data(), input.size(), 65536, 0);

@@ -4,7 +4,6 @@
 #pragma once
 
 #include "../concepts.h"
-
 #include "SelectCursor.h"
 
 

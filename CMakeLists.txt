@@ -58,8 +58,7 @@ if (${ROOT_PROJECT})
 
     target_link_libraries(example
         PRIVATE
-        fmindex-collection
-        search_schemes
+        fmindex-collection::fmindex-collection
         fmt::fmt-header-only
         cereal::cereal
     )
@@ -71,8 +70,7 @@ if (${ROOT_PROJECT})
     )
     target_link_libraries(easyExample
         PRIVATE
-        fmindex-collection
-        search_schemes
+        fmindex-collection::fmindex-collection
         fmt::fmt-header-only
         cereal::cereal
     )
