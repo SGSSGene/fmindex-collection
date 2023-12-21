@@ -20,7 +20,7 @@ namespace fmindex_collection {
  * Minimum requirements to function as an Occurrence Table (OccTable)
  */
 template<typename T, typename SymbolType = uint8_t, typename TLengthType = typename T::TLengthType>
-concept OccTable = requires(T t, std::span<SymbolType const> bwt, TLengthType idx, TLengthType symb) {
+concept OccTable = requires(T t, std::span<SymbolType const> bwt, TLengthType idx, SymbolType symb) {
     /** Every occtable has to be creatable by providing a bwt
      */
     { T{bwt} } -> std::same_as<T>;
@@ -84,7 +84,8 @@ concept OccTable = requires(T t, std::span<SymbolType const> bwt, TLengthType id
      * \param idx - row index
      * \return - will be in range of [0, Sigma)
      */
-    { t.symbol(idx) } -> std::same_as<TLengthType>;
+    //!TODO should not be equal to TLengthType
+//    { t.symbol(idx) } -> (std::same_as<SymbolType> || std::same_as<TLengthType>);
 };
 
 template<typename T, typename TLengthType = typename T::TLengthType>

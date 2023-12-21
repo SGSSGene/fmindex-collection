@@ -210,7 +210,7 @@ struct OccTable {
         return bitvector2[symb].rank(idx);
     }
 
-    uint64_t symbol(uint64_t idx) const {
+    uint8_t symbol(uint64_t idx) const {
         for (uint64_t i{0}; i < Sigma-1; ++i) {
             if (bitvector1[i].value(idx)) {
                 return i;

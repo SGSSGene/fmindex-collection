@@ -73,6 +73,9 @@ struct BitvectorCompact {
         auto bitId        = idx % 256;
         return superblocks[superblockId].value(bitId);
     }
+    bool symbol(size_t idx) const noexcept {
+        return value(idx);
+    }
 
     BitvectorCompact() = default; //!TODO should not exists
 

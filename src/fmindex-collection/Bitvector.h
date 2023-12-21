@@ -53,16 +53,14 @@ struct Bitvector {
 
 
     std::vector<Superblock> superblocks{};
+    size_t totalSize;
 
     size_t memoryUsage() const {
         return sizeof(superblocks) + superblocks.size() * sizeof(superblocks.back());
     }
 
-
-    uint64_t rank(size_t idx) const noexcept {
-        auto superblockId = idx / 384;
-        auto bitId        = idx % 384;
-        return superblocks[superblockId].rank(bitId);
+    size_t size() const noexcept {
+        return totalSize;
     }
 
     bool value(size_t idx) const noexcept {
@@ -72,8 +70,16 @@ struct Bitvector {
         return superblocks[superblockId].value(bitId);
     }
 
+    uint64_t rank(size_t idx) const noexcept {
+        auto superblockId = idx / 384;
+        auto bitId        = idx % 384;
+        return superblocks[superblockId].rank(bitId);
+    }
+
+
     template <typename CB>
     Bitvector(size_t length, CB cb) {
+        totalSize = length;
         superblocks.reserve(length/384+1);
         superblocks.emplace_back();
         uint64_t sblock_acc{};
@@ -101,11 +107,16 @@ struct Bitvector {
         }
     }
 
+    Bitvector() {}
     Bitvector(cereal_tag) {}
+    Bitvector(Bitvector const&) = default;
+    Bitvector(Bitvector&&) noexcept = default;
+    auto operator=(Bitvector const&) -> Bitvector& = default;
+    auto operator=(Bitvector&&) noexcept -> Bitvector& = default;
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(superblocks);
+        ar(superblocks, totalSize);
     }
 };
 
