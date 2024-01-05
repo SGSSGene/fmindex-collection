@@ -8,6 +8,8 @@
 
 TEMPLATE_TEST_CASE("check if rank on the symbol vectors is working", "[SymbolVector]", ALLSYMBOLVECTORS) {
     using Vector = TestType;
+    INFO(typeid(Vector).name());
+
     auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
 
     auto vec = Vector{std::span{text}};
@@ -233,6 +235,7 @@ TEMPLATE_TEST_CASE("check if rank on the symbol vectors is working", "[SymbolVec
 
 TEMPLATE_TEST_CASE("check symbol vectors construction on text longer than 256 characters", "[SymbolVector]", ALLSYMBOLVECTORS) {
     using Vector = TestType;
+    INFO(typeid(Vector).name());
 
     auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't',
                                      'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',

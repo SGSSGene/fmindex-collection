@@ -85,6 +85,7 @@ struct Bitvector {
                 block_acc = 0;
             } else if (size % 64 == 0) { // new block
                 blocks.emplace_back(block_acc);
+                bits.emplace_back();
             }
 
             auto bitId        = size % 64;

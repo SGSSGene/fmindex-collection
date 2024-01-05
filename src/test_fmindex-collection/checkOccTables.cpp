@@ -7,6 +7,7 @@
 #include <fmindex-collection/utils.h>
 TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]", ALLTABLES) {
     using OccTable = TestType;
+    INFO(typeid(OccTable).name());
     auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
 
     auto table = OccTable{std::span{text}};
@@ -286,37 +287,37 @@ TEMPLATE_TEST_CASE("check if occ table is working for all lengths between 60 and
 TEMPLATE_TEST_CASE("check occ table construction on text longer than 256 characters", "[OccTable]", ALLTABLES) {
     using OccTable = TestType;
 
-   auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    };
+    auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     };
 
     auto table = OccTable{text};
 
