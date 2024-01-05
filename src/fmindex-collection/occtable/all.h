@@ -23,7 +23,7 @@
 #include "EPRV8.h"
 #include "RLEBwt.h"
 #include "rRLEBwt.h"
-#include "Naive.h"
+//#include "Naive.h"
 //#include "Wavelet.h"
 //#include "Sdsl_wt_bldc.h"
 //#include "Sdsl_wt_epr.h"

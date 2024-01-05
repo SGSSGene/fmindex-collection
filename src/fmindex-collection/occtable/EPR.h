@@ -19,6 +19,10 @@ namespace fmindex_collection::occtable {
  */
 
 template <uint64_t TSigma>
+using Naive = GenericOccTable<rankvector::Naive<TSigma>, "Naive", "n">;
+static_assert(checkOccTable<Naive>);
+
+template <uint64_t TSigma>
 using Bitvector = GenericOccTable<rankvector::MultiBitvector<TSigma, fmindex_collection::bitvector::Bitvector>, "bitvector", "bv">;
 static_assert(checkOccTable<Bitvector>);
 
