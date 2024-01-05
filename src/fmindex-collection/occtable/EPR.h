@@ -30,6 +30,30 @@ template <uint64_t TSigma>
 using CompactBitvector4Blocks = GenericOccTable<rankvector::MultiBitvector<TSigma, fmindex_collection::bitvector::CompactBitvector4Blocks>, "compact bitvector 4 blocks", "cbv4">;
 static_assert(checkOccTable<CompactBitvector4Blocks>);
 
+template <uint64_t TSigma>
+using Interleaved_8 = GenericOccTable<rankvector::InterleavedBitvector8<TSigma>, "interleaved 8", "i8">;
+static_assert(checkOccTable<Interleaved_8>);
+
+template <uint64_t TSigma>
+using Interleaved_16 = GenericOccTable<rankvector::InterleavedBitvector16<TSigma>, "interleaved 16", "i16">;
+static_assert(checkOccTable<Interleaved_16>);
+
+template <uint64_t TSigma>
+using Interleaved_32 = GenericOccTable<rankvector::InterleavedBitvector32<TSigma>, "interleaved 32", "i32">;
+static_assert(checkOccTable<Interleaved_32>);
+
+template <uint64_t TSigma>
+using Interleaved_8Aligned = GenericOccTable<rankvector::InterleavedBitvector8Aligned<TSigma>, "interleaved 8", "i8">;
+static_assert(checkOccTable<Interleaved_8Aligned>);
+
+template <uint64_t TSigma>
+using Interleaved_16Aligned = GenericOccTable<rankvector::InterleavedBitvector16Aligned<TSigma>, "interleaved 16", "i16">;
+static_assert(checkOccTable<Interleaved_16Aligned>);
+
+template <uint64_t TSigma>
+using Interleaved_32Aligned = GenericOccTable<rankvector::InterleavedBitvector32Aligned<TSigma>, "interleaved 32", "i32">;
+static_assert(checkOccTable<Interleaved_32Aligned>);
+
 
 template <uint64_t TSigma>
 using Epr_8 = GenericOccTable<rankvector::InterleavedEPR8<TSigma>, "Epr (8bit)", "epr_8">;

@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "Bitvector.h"
-#include "CompactBitvector.h"
-#include "CompactBitvectorPrefix.h"
-#include "InterleavedBitvector.h"
+//#include "Bitvector.h"
+//#include "CompactBitvector.h"
+//#include "CompactBitvectorPrefix.h"
+//#include "InterleavedBitvector.h"
 #include "InterleavedPrefix.h"
 #include "InterleavedWavelet.h"
 #include "InterleavedWavelet32.h"

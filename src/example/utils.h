@@ -148,7 +148,7 @@ void visitAllTables(CB cb) {
     cb.template operator()<fmindex_collection::occtable::compactBitvector::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::compactBitvectorPrefix::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::interleaved8::OccTable<Sigma>>();*/
-    cb.template operator()<fmindex_collection::occtable::interleaved16::OccTable<Sigma>>();
+    cb.template operator()<fmindex_collection::occtable::Interleaved_16<Sigma>>();
 /*    cb.template operator()<fmindex_collection::occtable::interleaved32::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::interleaved8Aligned::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::interleaved16Aligned::OccTable<Sigma>>();

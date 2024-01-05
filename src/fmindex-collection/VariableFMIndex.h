@@ -6,6 +6,7 @@
 #include "FMIndex.h"
 #include "locate.h"
 #include "occtable/all.h"
+#include "rankvector/InterleavedBitvector.h"
 #include "search/SearchNoErrors.h"
 
 #include <variant>
@@ -20,9 +21,12 @@ struct VariableFMIndex {
 
     std::array<uint8_t, 256> charToRankMapping{};
 
-    using Index4 = FMIndex<occtable::interleaved16::OccTable<5>>;
-    using Index5 = FMIndex<occtable::interleaved16::OccTable<6>>;
-    using Index16 = FMIndex<occtable::interleaved16::OccTable<17>>;
+    template <size_t Sigma>
+    using OccTable = occtable::Interleaved_16<Sigma>;
+
+    using Index4  = FMIndex<OccTable<5>>;
+    using Index5  = FMIndex<OccTable<6>>;
+    using Index16 = FMIndex<OccTable<17>>;
 
     std::variant<std::monostate, Index4, Index5, Index16> index;
 

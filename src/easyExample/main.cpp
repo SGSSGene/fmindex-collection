@@ -18,7 +18,7 @@ using namespace fmindex_collection;
 constexpr size_t Sigma = 5;
 
 template <size_t Sigma>
-using Table = occtable::interleaved16::OccTable<Sigma>;
+using Table = occtable::Interleaved_16<Sigma>;
 
 template <typename Index>
 void saveIndex(Index const& _index, std::filesystem::path _fileName) {

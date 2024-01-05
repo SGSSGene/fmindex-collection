@@ -46,6 +46,12 @@
     fmindex_collection::occtable::Bitvector<256>, \
     fmindex_collection::occtable::CompactBitvector<256>, \
     fmindex_collection::occtable::CompactBitvector4Blocks<256>, \
+    fmindex_collection::occtable::Interleaved_8<256>, \
+    fmindex_collection::occtable::Interleaved_16<256>, \
+    fmindex_collection::occtable::Interleaved_32<256>, \
+    fmindex_collection::occtable::Interleaved_8Aligned<256>, \
+    fmindex_collection::occtable::Interleaved_16Aligned<256>, \
+    fmindex_collection::occtable::Interleaved_32Aligned<256>, \
     fmindex_collection::occtable::Epr_8<256>, \
     fmindex_collection::occtable::Epr_16<256>, \
     fmindex_collection::occtable::Epr_32<256>, \
