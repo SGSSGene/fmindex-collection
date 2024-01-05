@@ -27,87 +27,61 @@ namespace bitvector {
  *   For 384bits, we need 512bits, or 1.333bits to save a single bit
  */
 struct Bitvector {
-    struct Superblock {
-        uint64_t superBlockEntry{};
-        uint64_t blockEntries{};
-        std::array<uint64_t, 6> bits{};
-
-        uint64_t rank(size_t idx) const noexcept {
-            assert(idx < 384);
-
-            auto blockId = idx >> 6;
-            auto block = 0b111111111ull & (blockEntries >> (blockId * 9));
-            auto keep = (idx & 63);
-            auto maskedBits = bits[blockId] << (63-keep);
-            auto ct = std::bitset<64>{maskedBits}.count();
-
-            auto total = superBlockEntry + block + ct;
-            return total;
-        }
-
-        bool value(size_t idx) const noexcept {
-            auto blockId = idx >> 6;
-            auto bitNbr = idx & 63;
-            return (bits[blockId] & (1ull << bitNbr));
-        }
-
-        void setBlock(size_t blockId, size_t value) {
-            blockEntries = blockEntries & ~uint64_t{0b111111111ull << blockId*9};
-            blockEntries = blockEntries | uint64_t{value << blockId*9};
-        }
-
-        template <typename Archive>
-        void serialize(Archive& ar) {
-            ar(superBlockEntry, blockEntries, bits);
-        }
-    };
-    std::vector<Superblock> superblocks{};
+    std::vector<uint64_t> superblocks;
+    std::vector<uint8_t>  blocks;
+    std::vector<uint64_t> bits;
     size_t totalSize;
-
-    size_t memoryUsage() const {
-        return sizeof(superblocks) + superblocks.size() * sizeof(superblocks.back());
-    }
 
     size_t size() const noexcept {
         return totalSize;
     }
 
     bool symbol(size_t idx) const noexcept {
-        idx += 1;
-        auto superblockId = idx / 384;
-        auto bitId        = idx % 384;
-        return superblocks[superblockId].value(bitId);
+        auto bitId        = idx % 64;
+        auto blockId      = idx / 64;
+        auto bit = (bits[blockId] >> bitId) & 1;
+        return bit;
     }
 
     uint64_t rank(size_t idx) const noexcept {
-        auto superblockId = idx / 384;
-        auto bitId        = idx % 384;
-        return superblocks[superblockId].rank(bitId);
+        auto bitId        = idx % 64;
+        auto blockId      = idx / 64;
+        auto superblockId = blockId / 4;
+
+        auto maskedBits = (bits[blockId] << (63 - bitId));
+        auto bitcount   = std::bitset<64>{maskedBits}.count();
+
+        return superblocks[superblockId]
+                + blocks[blockId]
+                + bitcount;
     }
 
     template <typename CB>
     Bitvector(size_t length, CB cb) {
         totalSize = length;
-        superblocks.reserve(length/384+1);
-        superblocks.emplace_back();
+        superblocks.reserve(length/(64*4) + 1);
+        blocks.reserve(length/64 + 1);
+        bits.reserve(length/64 + 1);
+
         uint64_t sblock_acc{};
         uint16_t block_acc{};
 
-        for (size_t size{1}; size <= length; ++size) {
-            if (size % 384 == 0) { // new super block + new block
-                superblocks.emplace_back();
-                superblocks.back().superBlockEntry = sblock_acc;
+        for (size_t size{0}; size < length; ++size) {
+            if (size % 256 == 0) { // new super block + new block
+                superblocks.emplace_back(sblock_acc);
+                blocks.emplace_back();
+                bits.emplace_back();
                 block_acc = 0;
             } else if (size % 64 == 0) { // new block
-                superblocks.back().setBlock((size % 384) / 64, block_acc);
+                blocks.emplace_back(block_acc);
             }
 
-            auto blockId      = (size >>  6) % 6;
-            auto bitId        = size &  63;
+            auto bitId        = size % 64;
+            auto blockId      = size / 64;
 
-            if (cb(size-1)) {
-                auto& bits = superblocks.back().bits[blockId];
-                bits = bits | (1ull << bitId);
+            if (cb(size)) {
+                auto& tbits = bits[blockId];
+                tbits = tbits | (1ull << bitId);
 
                 block_acc  += 1;
                 sblock_acc += 1;

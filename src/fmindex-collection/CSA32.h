@@ -43,8 +43,7 @@ struct CSA32 {
 
 
     size_t memoryUsage() const {
-        return sizeof(ssa) + ssa.size() * sizeof(ssa.back())
-            + bv.memoryUsage();
+        return sizeof(ssa) + ssa.size() * sizeof(ssa.back());
     }
 
     auto value(size_t idx) const -> std::optional<uint64_t> {
