@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../builtins.h"
-#include "../BitvectorCompact.h"
+#include "../bitvector/CompactBitvector.h"
 #include "Naive.h"
 #include "concepts.h"
 
@@ -25,7 +25,7 @@ namespace rankvector {
 
 template <uint64_t TSigma, size_t encodingBlockSize, typename RankVector = Naive<TSigma>, typename RecRankVector = Naive<TSigma>>
 struct RLE {
-    using BitVector  = BitvectorCompact;
+    using BitVector  = bitvector::CompactBitvector;
     static constexpr uint64_t Sigma = TSigma;
 
 //    size_t        encodingBlockSize;
@@ -37,7 +37,7 @@ struct RLE {
 //        : encodingBlockSize{_encodingBlockSize}
         : bitvector1{cereal_tag{}}
         , bitvector2{cereal_tag{}}
-        , partition{cereal_tag{}} {
+        , partition{} {
 
         assert(encodingBlockSize > 1);
         auto symbols1     = std::vector<uint8_t>{};
@@ -71,7 +71,7 @@ struct RLE {
 
         bitvector1 = RankVector{symbols1};
         bitvector2 = RecRankVector{symbols2};
-        partition  = BitvectorCompact(partitionSym.size(), [&](size_t i) {
+        partition  = BitVector(partitionSym.size(), [&](size_t i) {
             return partitionSym[i];
         });
     }
@@ -80,7 +80,6 @@ struct RLE {
         //: encodingBlockSize{0}
         : bitvector1{cereal_tag{}}
         , bitvector2{cereal_tag{}}
-        , partition{cereal_tag{}}
     {}
 
     uint64_t size() const {

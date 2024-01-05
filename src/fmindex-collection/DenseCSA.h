@@ -4,8 +4,8 @@
 #pragma once
 
 #include "BitStack.h"
-#include "Bitvector.h"
-#include "BitvectorCompact.h"
+#include "bitvector/Bitvector.h"
+#include "bitvector/CompactBitvector.h"
 #include "DenseVector.h"
 #include "cereal_tag.h"
 
@@ -17,9 +17,9 @@
 namespace fmindex_collection {
 
 struct DenseCSA {
-    DenseVector ssaPos;     // sampled suffix array - position inside the sequence
-    DenseVector ssaSeq;     // sampled suffix array  - sequence id
-    BitvectorCompact bv;    // indicates if and which entry the sa → ssa
+    DenseVector ssaPos;             // sampled suffix array - position inside the sequence
+    DenseVector ssaSeq;             // sampled suffix array  - sequence id
+    bitvector::CompactBitvector bv; // indicates if and which entry the sa → ssa
     size_t samplingRate;    // distance between two samples (inside one sequence)
 
     DenseCSA(DenseVector _ssaPos, DenseVector _ssaSeq, BitStack const& bitstack, size_t _samplingRate)
@@ -55,13 +55,11 @@ struct DenseCSA {
     DenseCSA(cereal_tag)
         : ssaPos{cereal_tag{}}
         , ssaSeq{cereal_tag{}}
-        , bv {cereal_tag{}}
     {}
 
     DenseCSA(std::span<uint64_t const> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
         : ssaPos{cereal_tag{}}
         , ssaSeq{cereal_tag{}}
-        , bv {cereal_tag{}}
         , samplingRate{_samplingRate}
     {
         size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
@@ -105,7 +103,7 @@ struct DenseCSA {
             }
         }
 
-        this->bv  = BitvectorCompact{sa.size(), [&](size_t idx) {
+        this->bv  = bitvector::CompactBitvector{sa.size(), [&](size_t idx) {
             return (sa[idx] % samplingRate) == 0;
         }};
     }
@@ -115,11 +113,11 @@ struct DenseCSA {
     auto operator=(DenseCSA&& _other) noexcept -> DenseCSA& = default;
 
     size_t memoryUsage() const {
-        return (ssaPos.bit_size() + ssaSeq.bit_size()) / 8 + bv.memoryUsage();
+        return (ssaPos.bit_size() + ssaSeq.bit_size()) / 8;
     }
 
     auto value(size_t idx) const -> std::optional<std::tuple<uint64_t, uint64_t>> {
-        if (!bv.value(idx)) {
+        if (!bv.symbol(idx)) {
             return std::nullopt;
         }
         auto rank = bv.rank(idx);

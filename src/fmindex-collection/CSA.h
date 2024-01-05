@@ -4,8 +4,8 @@
 #pragma once
 
 #include "BitStack.h"
-#include "Bitvector.h"
-#include "BitvectorCompact.h"
+#include "bitvector/Bitvector.h"
+#include "bitvector/CompactBitvector.h"
 #include "cereal_tag.h"
 
 #include <algorithm>
@@ -19,7 +19,7 @@ namespace fmindex_collection {
 
 struct CSA {
     std::vector<uint64_t> ssa;
-    BitvectorCompact bv;
+    bitvector::CompactBitvector bv;
     size_t samplingRate;    // distance between two samples (inside one sequence)
     size_t bitsForPosition; // bits reserved for position
     size_t bitPositionMask;
@@ -38,7 +38,6 @@ struct CSA {
     CSA(CSA&& _other) noexcept = default;
 
     CSA(cereal_tag)
-        : bv {cereal_tag{}}
     {}
 
     CSA(std::vector<uint64_t> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
@@ -91,12 +90,11 @@ struct CSA {
     auto operator=(CSA&& _other) noexcept -> CSA& = default;
 
     size_t memoryUsage() const {
-        return sizeof(ssa) + ssa.size() * sizeof(ssa.back())
-            + bv.memoryUsage();
+        return sizeof(ssa) + ssa.size() * sizeof(ssa.back());
     }
 
     auto value(size_t idx) const -> std::optional<std::tuple<uint64_t, uint64_t>> {
-        if (!bv.value(idx)) {
+        if (!bv.symbol(idx)) {
             return std::nullopt;
         }
         auto v = ssa[bv.rank(idx)];

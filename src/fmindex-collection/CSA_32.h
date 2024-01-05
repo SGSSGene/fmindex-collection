@@ -4,8 +4,8 @@
 #pragma once
 
 #include "BitStack.h"
-#include "Bitvector.h"
-#include "BitvectorCompact.h"
+#include "bitvector/Bitvector.h"
+#include "bitvector/CompactBitvector.h"
 #include "cereal_tag.h"
 
 #include <algorithm>
@@ -19,7 +19,7 @@ namespace fmindex_collection {
 
 struct CSA_32 {
     std::vector<uint32_t> ssa;
-    BitvectorCompact bv;
+    bitvector::CompactBitvector bv;
     size_t samplingRate;    // distance between two samples (inside one sequence)
     size_t bitsForPosition; // bits reserved for position
     size_t bitPositionMask;
@@ -38,7 +38,6 @@ struct CSA_32 {
     CSA_32(CSA_32&& _other) noexcept = default;
 
     CSA_32(cereal_tag)
-        : bv {cereal_tag{}}
     {}
 
     CSA_32(std::span<int32_t const> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
@@ -90,7 +89,7 @@ struct CSA_32 {
             }
         }
         this->ssa = std::move(ssa);
-        this->bv  = BitvectorCompact{sa.size(), [&](size_t idx) {
+        this->bv  = bitvector::CompactBitvector{sa.size(), [&](size_t idx) {
             return (sa[idx] % samplingRate) == 0;
         }};
     }
@@ -100,12 +99,11 @@ struct CSA_32 {
     auto operator=(CSA_32&& _other) noexcept -> CSA_32& = default;
 
     size_t memoryUsage() const {
-        return sizeof(ssa) + ssa.size() * sizeof(ssa.back())
-            + bv.memoryUsage();
+        return sizeof(ssa) + ssa.size() * sizeof(ssa.back());
     }
 
     auto value(size_t idx) const -> std::optional<std::tuple<uint64_t, uint64_t>> {
-        if (!bv.value(idx)) {
+        if (!bv.symbol(idx)) {
             return std::nullopt;
         }
         auto v = ssa[bv.rank(idx)];
