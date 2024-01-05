@@ -267,6 +267,7 @@ TEMPLATE_TEST_CASE("check symbol vectors construction on text longer than 256 ch
                                      'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
                                      'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
                                      'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
                                     };
 
     auto vector = Vector{text};
@@ -281,12 +282,21 @@ TEMPLATE_TEST_CASE("check symbol vectors construction on text longer than 256 ch
     }
     CHECK(Vector::Sigma >= 128);
 
+    auto countRank = [&](size_t idx, uint8_t sym) {
+        size_t acc{};
+        for (size_t i{0}; i < idx; ++i) {
+            acc = acc + (text[i] == sym);
+        }
+        return acc;
+    };
+
     SECTION("check all_ranks() is equal to prefix_rank() and rank()") {
-        for (size_t idx{0}; idx < vector.size(); ++idx) {
+        for (size_t idx{0}; idx <= vector.size(); ++idx) {
             auto [rank, prefix] = vector.all_ranks_and_prefix_ranks(idx);
             for (size_t symb{1}; symb < Vector::Sigma; ++symb) {
                 INFO(idx);
                 INFO(symb);
+                CHECK(countRank(idx, symb) == rank[symb]);
                 CHECK(rank[symb] == vector.rank(idx, symb));
                 CHECK(prefix[symb] == vector.prefix_rank(idx, symb));
             }

@@ -16,8 +16,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 
 /* Implements the concept `SymbolVector`
  *
@@ -209,7 +208,7 @@ struct Wavelet {
     }
 
     uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
-        auto which_bv = [](uint8_t symb, auto cb) {
+        auto which_bv = [](size_t symb, auto cb) {
             uint64_t id{0};
             uint64_t factor{1};
             uint64_t mask = 1u << (bits-1);
@@ -263,5 +262,4 @@ struct Wavelet {
 
 static_assert(checkSymbolVector<Wavelet>);
 
-}
 }
