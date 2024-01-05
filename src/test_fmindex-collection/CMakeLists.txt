@@ -8,6 +8,7 @@ project(test_fmindex-collection)
 # fmindex-collectionunittests
 add_executable(${PROJECT_NAME}
     checkBiFMIndex.cpp
+    checkBitvector.cpp
     checkDenseBiFMIndex.cpp
     checkDenseReverseFMIndex.cpp
     checkFMIndex.cpp

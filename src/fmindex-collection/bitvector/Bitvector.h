@@ -13,18 +13,16 @@
 #include <span>
 #include <vector>
 
-namespace fmindex_collection {
-namespace bitvector {
+namespace fmindex_collection::bitvector {
 
 /**
  * Bitvector with interleaved superblocks, blocks and bits
  *
- * - Each group consist of 384bits, divided into 6 blocks.
- * - Each block uses 9bits to represents a value (6*9bits = 54bits).
- *   The last 10bits are padding bits, not used for any thing.
+ * - Each group consist of 256bits, divided into 4 blocks.
+ * - Each block uses 8bits to represents a value (4*8bits = 32bits).
  * - Superblock consist of a single 64bit number
  *
- *   For 384bits, we need 512bits, or 1.333bits to save a single bit
+ *   For 256bits, we need 352bits, or 1.375bits to save a single bit
  */
 struct Bitvector {
     std::vector<uint64_t> superblocks;
@@ -37,6 +35,7 @@ struct Bitvector {
     }
 
     bool symbol(size_t idx) const noexcept {
+        idx += 1;
         auto bitId        = idx % 64;
         auto blockId      = idx / 64;
         auto bit = (bits[blockId] >> bitId) & 1;
@@ -56,6 +55,13 @@ struct Bitvector {
                 + bitcount;
     }
 
+    Bitvector(std::span<uint8_t const> _text)
+        : Bitvector{_text.size(), [&](size_t i) {
+            return _text[i] != 0;
+        }}
+    {}
+
+
     template <typename CB>
     Bitvector(size_t length, CB cb) {
         totalSize = length;
@@ -63,10 +69,15 @@ struct Bitvector {
         blocks.reserve(length/64 + 1);
         bits.reserve(length/64 + 1);
 
+        superblocks.emplace_back();
+        blocks.emplace_back();
+        bits.emplace_back();
+
+
         uint64_t sblock_acc{};
         uint16_t block_acc{};
 
-        for (size_t size{0}; size < length; ++size) {
+        for (size_t size{1}; size <= length; ++size) {
             if (size % 256 == 0) { // new super block + new block
                 superblocks.emplace_back(sblock_acc);
                 blocks.emplace_back();
@@ -79,7 +90,7 @@ struct Bitvector {
             auto bitId        = size % 64;
             auto blockId      = size / 64;
 
-            if (cb(size)) {
+            if (cb(size-1)) {
                 auto& tbits = bits[blockId];
                 tbits = tbits | (1ull << bitId);
 
@@ -103,5 +114,4 @@ struct Bitvector {
 
 static_assert(BitVector_c<Bitvector>);
 
-}
 }

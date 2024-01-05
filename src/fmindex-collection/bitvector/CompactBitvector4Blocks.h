@@ -16,7 +16,7 @@
 #include <span>
 #include <vector>
 
-namespace fmindex_collection {
+namespace fmindex_collection::bitvector {
 
 /**
  * CompactBitvector with interleaved superblocks, blocks and bits
@@ -60,23 +60,19 @@ struct CompactBitvector4Blocks {
         }
     };
 
+    size_t totalLength;
     std::vector<Superblock> superblocks{};
 
-    bool symbol(size_t idx) const noexcept {
-        idx += 1;
-        auto superblockId = idx >> 8;
-        auto bitId        = idx % 256;
-        return superblocks[superblockId].value(bitId);
-    }
-
-    uint64_t rank(size_t idx) const noexcept {
-        auto superblockId = idx >> 8;
-        auto bitId        = idx % 256;
-        return superblocks[superblockId].rank(bitId);
-    }
+    CompactBitvector4Blocks(std::span<uint8_t const> _text)
+        : CompactBitvector4Blocks{_text.size(), [&](size_t i) {
+            return _text[i] != 0;
+        }}
+    {}
 
     template <typename CB>
     CompactBitvector4Blocks(size_t length, CB cb) {
+        totalLength = length;
+
         // Next three lines are a reserve call, with zero initialization
         // This is required, so padding bytes will also be zero
         superblocks.resize(length/256+1);
@@ -114,6 +110,24 @@ struct CompactBitvector4Blocks {
     CompactBitvector4Blocks(CompactBitvector4Blocks&&) noexcept = default;
     auto operator=(CompactBitvector4Blocks const&) -> CompactBitvector4Blocks& = default;
     auto operator=(CompactBitvector4Blocks&&) noexcept -> CompactBitvector4Blocks& = default;
+
+
+    size_t size() const noexcept {
+        return totalLength;
+    }
+
+    bool symbol(size_t idx) const noexcept {
+        idx += 1;
+        auto superblockId = idx >> 8;
+        auto bitId        = idx % 256;
+        return superblocks[superblockId].value(bitId);
+    }
+
+    uint64_t rank(size_t idx) const noexcept {
+        auto superblockId = idx >> 8;
+        auto bitId        = idx % 256;
+        return superblocks[superblockId].rank(bitId);
+    }
 
 
     template <typename Archive>

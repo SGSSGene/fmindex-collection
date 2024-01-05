@@ -9,8 +9,7 @@
 #include <cassert>
 #include <vector>
 
-namespace fmindex_collection {
-namespace bitvector {
+namespace fmindex_collection::bitvector {
 
 /**
  * CompactBitvector with interleaved superblocks, blocks and bits
@@ -65,6 +64,12 @@ struct CompactBitvector {
 
     std::vector<Superblock> superblocks{};
     size_t                  totalLength;
+
+    CompactBitvector(std::span<uint8_t const> _text)
+        : CompactBitvector{_text.size(), [&](size_t i) {
+            return _text[i] != 0;
+        }}
+    {}
 
     template <typename CB>
     CompactBitvector(size_t length, CB cb) {
@@ -135,5 +140,4 @@ struct CompactBitvector {
 
 static_assert(BitVector_c<CompactBitvector>);
 
-}
 }
