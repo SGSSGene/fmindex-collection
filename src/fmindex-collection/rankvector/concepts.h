@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#include "../bitvector/concepts.h"
+
 #include <array>
 #include <cstddef>
 #include <cstdint>

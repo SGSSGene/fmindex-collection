@@ -9,8 +9,6 @@
 
 namespace fmindex_collection::occtable {
 /*!TODO Still needs a few more occtables translated:
- *  - CompactBitvector
- *  - CompactBitvector4Blocks
  *  - rlebwt
  *
  *  - compactBitvectorPrefix
@@ -21,16 +19,16 @@ namespace fmindex_collection::occtable {
  */
 
 template <uint64_t TSigma>
-using Bitvector = GenericOccTable<rankvector::MultiBitvector<TSigma, Bitvector>, "bitvector", "bv">;
+using Bitvector = GenericOccTable<rankvector::MultiBitvector<TSigma, fmindex_collection::bitvector::Bitvector>, "bitvector", "bv">;
 static_assert(checkOccTable<Bitvector>);
 
-/*template <uint64_t TSigma>
-using CompactBitvector = GenericOccTable<rankvector::MultiBitvector<TSigma, rankvector::CompactBitvector>, "compact bitvector", "cbv">;
+template <uint64_t TSigma>
+using CompactBitvector = GenericOccTable<rankvector::MultiBitvector<TSigma, fmindex_collection::bitvector::CompactBitvector>, "compact bitvector", "cbv">;
 static_assert(checkOccTable<CompactBitvector>);
 
 template <uint64_t TSigma>
-using CompactBitvector4Blocks = GenericOccTable<rankvector::MultiBitvector<TSigma, rankvector::CompactBitvector4Blocks>, "compact bitvector 4 blocks", "cbv4">;
-static_assert(checkOccTable<CompactBitvector4Blocks>);*/
+using CompactBitvector4Blocks = GenericOccTable<rankvector::MultiBitvector<TSigma, fmindex_collection::bitvector::CompactBitvector4Blocks>, "compact bitvector 4 blocks", "cbv4">;
+static_assert(checkOccTable<CompactBitvector4Blocks>);
 
 
 template <uint64_t TSigma>

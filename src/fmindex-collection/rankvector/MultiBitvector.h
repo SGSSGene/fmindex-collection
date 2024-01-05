@@ -3,21 +3,22 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../Bitvector.h"
+#include "../bitvector/Bitvector.h"
 #include "concepts.h"
 #include "utils.h"
 
 #include <bitset>
 #include <vector>
 
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 
-template <uint64_t TSigma, typename Bitvector>
+template <uint64_t TSigma, BitVector_c Bitvector = bitvector::Bitvector>
 struct MultiBitvector {
     static constexpr uint64_t Sigma = TSigma;
 
     std::array<Bitvector, TSigma> bitvectors{};
+
+    MultiBitvector() = default;
 
     MultiBitvector(std::span<uint8_t const> _symbols) {
         for (size_t sym{0}; sym < Sigma; ++sym) {
@@ -30,8 +31,10 @@ struct MultiBitvector {
     MultiBitvector(cereal_tag) {}
 
     void prefetch(size_t idx) const {
-        for (auto const& bv : bitvectors) {
-            bv.prefetch(idx);
+        if constexpr (requires() { {bitvectors[0].prefetch(idx)}; }) {
+            for (auto const& bv : bitvectors) {
+                bv.prefetch(idx);
+            }
         }
     }
 
@@ -85,9 +88,8 @@ struct MultiBitvector {
 };
 
 template <uint64_t TSigma>
-using MultiBitvector_Bitvector = MultiBitvector<TSigma, Bitvector>;
+using MultiBitvector_Bitvector = MultiBitvector<TSigma, bitvector::Bitvector>;
 
 static_assert(checkSymbolVector<MultiBitvector_Bitvector>);
 
-}
 }

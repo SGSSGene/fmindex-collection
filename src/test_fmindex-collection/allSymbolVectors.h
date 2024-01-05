@@ -3,11 +3,14 @@
 // SPDX-License-Identifier: CC0-1.0
 #pragma once
 
+#include <fmindex-collection/bitvector/bitvector.h>
 #include <fmindex-collection/rankvector/rankvector.h>
 
 #define ALLSYMBOLVECTORS \
     fmindex_collection::rankvector::Naive<256>, \
-    fmindex_collection::rankvector::MultiBitvector_Bitvector<256>, \
+    (fmindex_collection::rankvector::MultiBitvector<256, fmindex_collection::bitvector::Bitvector>), \
+    (fmindex_collection::rankvector::MultiBitvector<256, fmindex_collection::bitvector::CompactBitvector>), \
+    (fmindex_collection::rankvector::MultiBitvector<256, fmindex_collection::bitvector::CompactBitvector4Blocks>), \
     fmindex_collection::rankvector::InterleavedBitvector8<256>, \
     fmindex_collection::rankvector::InterleavedBitvector16<256>, \
     fmindex_collection::rankvector::InterleavedBitvector32<256>, \
@@ -37,6 +40,7 @@
     fmindex_collection::rankvector::Wavelet<256>, \
     fmindex_collection::rankvector::RLEInstance<256>, \
     fmindex_collection::rankvector::Sdsl_wt_bldc<256>
+
 
 //!wt_epr is not working as expected
 //    fmindex_collection::rankvector::Sdsl_wt_epr<255>,

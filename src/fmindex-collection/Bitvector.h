@@ -6,8 +6,8 @@
 #include "bitvector/Bitvector.h"
 
 
-namespace fmindex_collection {
-
-using Bitvector = bitvector::Bitvector;
-
-}
+//namespace fmindex_collection {
+//
+//using Bitvector = bitvector::Bitvector;
+//
+//}

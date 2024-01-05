@@ -4,7 +4,7 @@
 #pragma once
 
 #include "BitStack.h"
-#include "Bitvector.h"
+#include "bitvector/Bitvector.h"
 #include "cereal_tag.h"
 
 #include <optional>
@@ -13,7 +13,7 @@ namespace fmindex_collection {
 
 struct CSA32 {
     std::vector<uint32_t> ssa;
-    Bitvector bv;
+    bitvector::Bitvector bv;
 
     CSA32(std::vector<uint64_t> const& _ssa, BitStack const& bitstack)
         : bv{bitstack.size, [&](size_t idx) {

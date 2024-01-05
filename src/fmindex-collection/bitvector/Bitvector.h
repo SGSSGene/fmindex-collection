@@ -30,30 +30,9 @@ struct Bitvector {
     std::vector<uint64_t> bits;
     size_t totalSize;
 
-    size_t size() const noexcept {
-        return totalSize;
-    }
-
-    bool symbol(size_t idx) const noexcept {
-        idx += 1;
-        auto bitId        = idx % 64;
-        auto blockId      = idx / 64;
-        auto bit = (bits[blockId] >> bitId) & 1;
-        return bit;
-    }
-
-    uint64_t rank(size_t idx) const noexcept {
-        auto bitId        = idx % 64;
-        auto blockId      = idx / 64;
-        auto superblockId = blockId / 4;
-
-        auto maskedBits = (bits[blockId] << (63 - bitId));
-        auto bitcount   = std::bitset<64>{maskedBits}.count();
-
-        return superblocks[superblockId]
-                + blocks[blockId]
-                + bitcount;
-    }
+    Bitvector() = default;
+    Bitvector(Bitvector const&) = default;
+    Bitvector(Bitvector&&) noexcept = default;
 
     Bitvector(std::span<uint8_t const> _text)
         : Bitvector{_text.size(), [&](size_t i) {
@@ -101,15 +80,39 @@ struct Bitvector {
         }
     }
 
-    Bitvector() {}
-    Bitvector(Bitvector const&) = default;
-    Bitvector(Bitvector&&) noexcept = default;
     auto operator=(Bitvector const&) -> Bitvector& = default;
     auto operator=(Bitvector&&) noexcept -> Bitvector& = default;
 
+    size_t size() const noexcept {
+        return totalSize;
+    }
+
+    bool symbol(size_t idx) const noexcept {
+        idx += 1;
+        auto bitId        = idx % 64;
+        auto blockId      = idx / 64;
+        auto bit = (bits[blockId] >> bitId) & 1;
+        return bit;
+    }
+
+    uint64_t rank(size_t idx) const noexcept {
+        auto bitId        = idx % 64;
+        auto blockId      = idx / 64;
+        auto superblockId = blockId / 4;
+
+        auto maskedBits = (bits[blockId] << (63 - bitId));
+        auto bitcount   = std::bitset<64>{maskedBits}.count();
+
+        return superblocks[superblockId]
+                + blocks[blockId]
+                + bitcount;
+    }
+
+
+
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(superblocks, totalSize);
+        ar(superblocks, blocks, bits, totalSize);
     }
 };
 

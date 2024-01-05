@@ -44,7 +44,8 @@
 #define ALLTABLES \
     fmindex_collection::occtable::Naive<256>, \
     fmindex_collection::occtable::Bitvector<256>, \
-    fmindex_collection::occtable::bitvector::OccTable<256>, \
+    fmindex_collection::occtable::CompactBitvector<256>, \
+    fmindex_collection::occtable::CompactBitvector4Blocks<256>, \
     fmindex_collection::occtable::Epr_8<256>, \
     fmindex_collection::occtable::Epr_16<256>, \
     fmindex_collection::occtable::Epr_32<256>, \
