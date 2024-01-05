@@ -3,11 +3,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "bitvector/Bitvector.h"
-
-
-namespace fmindex_collection {
-
-using Bitvector = bitvector::Bitvector;
-
-}
+#include "Bitvector.h"
+#include "CompactBitvector.h"
+#include "CompactBitvector4Blocks.h"

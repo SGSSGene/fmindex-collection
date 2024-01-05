@@ -49,7 +49,7 @@ struct CSA32 {
     }
 
     auto value(size_t idx) const -> std::optional<uint64_t> {
-        if (!bv.value(idx)) {
+        if (!bv.symbol(idx)) {
             return std::nullopt;
         }
         return {ssa[bv.rank(idx)]};

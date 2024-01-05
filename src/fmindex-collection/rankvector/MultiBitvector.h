@@ -41,7 +41,7 @@ struct MultiBitvector {
 
     uint8_t symbol(size_t idx) const {
         for (size_t sym{0}; sym < Sigma; ++sym) {
-            if (bitvectors[sym].value(idx)) {
+            if (bitvectors[sym].symbol(idx)) {
                 return sym;
             }
         }
