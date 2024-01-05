@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "cereal_tag.h"
-
 #include <array>
 #include <bitset>
 #include <cassert>
@@ -20,6 +18,15 @@
 
 namespace fmindex_collection {
 
+/**
+ * CompactBitvector with interleaved superblocks, blocks and bits
+ *
+ * - Each group consist of 256bits, divided into 4 blocks.
+ * - Each block uses 8bits to represents a value (4*8bits = 32bits).
+ * - Superblock consist of a single 64bit number
+ *
+ *   For 256bits, we need 352bits, or 1.375bits to save a single bit
+ */
 struct CompactBitvector4Blocks {
     struct Superblock {
         uint64_t superBlockEntry;
@@ -101,8 +108,6 @@ struct CompactBitvector4Blocks {
             }
         }
     }
-
-    CompactBitvector4Blocks(cereal_tag) {}
 
     CompactBitvector4Blocks() {}
     CompactBitvector4Blocks(CompactBitvector4Blocks const&) = default;

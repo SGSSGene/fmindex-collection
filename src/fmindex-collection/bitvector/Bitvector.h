@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../cereal_tag.h"
 #include "concepts.h"
 
 #include <array>
@@ -17,6 +16,16 @@
 namespace fmindex_collection {
 namespace bitvector {
 
+/**
+ * Bitvector with interleaved superblocks, blocks and bits
+ *
+ * - Each group consist of 384bits, divided into 6 blocks.
+ * - Each block uses 9bits to represents a value (6*9bits = 54bits).
+ *   The last 10bits are padding bits, not used for any thing.
+ * - Superblock consist of a single 64bit number
+ *
+ *   For 384bits, we need 512bits, or 1.333bits to save a single bit
+ */
 struct Bitvector {
     struct Superblock {
         uint64_t superBlockEntry{};
@@ -107,7 +116,6 @@ struct Bitvector {
     }
 
     Bitvector() {}
-    Bitvector(cereal_tag) {}
     Bitvector(Bitvector const&) = default;
     Bitvector(Bitvector&&) noexcept = default;
     auto operator=(Bitvector const&) -> Bitvector& = default;

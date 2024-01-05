@@ -20,10 +20,10 @@ concept BitVector_c = requires(T t, std::span<uint8_t const> symbols, size_t idx
      */
     { T{size_t{}, [](size_t) { return false; }} } -> std::same_as<T>;
 
-    /** Every BitVector has a C'Tor that accept cereal_tag{}.
-     * This constructor is used during deserialization
-     **/
-    { T{cereal_tag{}} } -> std::same_as<T>;
+//    /** Every BitVector has a C'Tor that accept cereal_tag{}.
+//     * This constructor is used during deserialization
+//     **/
+//    { T{cereal_tag{}} } -> std::same_as<T>;
 
     /** Default constructible **/
     { T{} } -> std::same_as<T>;

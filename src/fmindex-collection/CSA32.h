@@ -32,7 +32,6 @@ struct CSA32 {
 
 
     CSA32(cereal_tag)
-        : bv {cereal_tag{}}
     {}
 
     auto operator=(CSA32 const&) -> CSA32& = delete;

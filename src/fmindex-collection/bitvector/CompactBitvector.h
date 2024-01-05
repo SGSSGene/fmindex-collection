@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../cereal_tag.h"
 #include "concepts.h"
 
 #include <bitset>
@@ -13,6 +12,16 @@
 namespace fmindex_collection {
 namespace bitvector {
 
+/**
+ * CompactBitvector with interleaved superblocks, blocks and bits
+ *
+ * - Each group consist of 384bits, divided into 6 blocks.
+ * - Each block uses 9bits to represents a value (6*9bits = 54bits).
+ *   The last 10bits are padding bits, not used for any thing.
+ * - Superblock consist of a single 64bit number
+ *
+ *   For 384bits, we need 512bits, or 1.333bits to save a single bit
+ */
 struct CompactBitvector {
     struct alignas(64) Superblock {
         uint64_t superBlockEntry{};
@@ -84,14 +93,12 @@ struct CompactBitvector {
             if (sym) {
                 auto& bits = superblocks.back().bits[blockId];
                 bits = bits | (1ull << bitId);
-            }
 
-            block_acc  += 1;
-            sblock_acc += 1;
+                block_acc  += 1;
+                sblock_acc += 1;
+            }
         }
     }
-
-    CompactBitvector(cereal_tag) {}
 
     CompactBitvector() {}
     CompactBitvector(CompactBitvector const&) = default;
