@@ -146,9 +146,29 @@ template <uint64_t TSigma>
 using InterleavedWavelet = GenericOccTable<rankvector::InterleavedWavelet<TSigma>, "Interleaved Wavelet", "iw">;
 static_assert(checkOccTable<InterleavedWavelet>);
 
+/**
+ * A runlength encoded bwt, see unpublished paper
+ *
+ */
 template <uint64_t TSigma>
-using Wavelet = GenericOccTable<rankvector::Wavelet<TSigma>, "Wavelet", "w">;
-static_assert(checkOccTable<Wavelet>);
+using RuntimeLengthEncoded2 = GenericOccTable<rankvector::RLE<TSigma, 2>, "runtime length encoded 2", "rle2">;
+static_assert(checkOccTable<RuntimeLengthEncoded2>);
+
+template <uint64_t TSigma>
+using RuntimeLengthEncoded3 = GenericOccTable<rankvector::RLE<TSigma, 3>, "runtime length encoded 3", "rle3">;
+static_assert(checkOccTable<RuntimeLengthEncoded3>);
+
+template <uint64_t TSigma>
+using RuntimeLengthEncoded4 = GenericOccTable<rankvector::RLE<TSigma, 4>, "runtime length encoded 4", "rle4">;
+static_assert(checkOccTable<RuntimeLengthEncoded4>);
+
+/**
+ * A run length encoded bwt, see unpublished paper, but with recursive bitvectors
+ *
+ */
+//template <uint64_t TSigma>
+//using RecursiveRuntimeLengthEncodedD2 = GenericOccTable<rankvector::rRLE<TSigma, 2>, "runtime length encoded, depth 2", "rrle2">;
+//static_assert(checkOccTable<RuntimeLengthEncoded2>);
 
 template <uint64_t TSigma>
 using Sdsl_wt_bldc = GenericOccTable<rankvector::Sdsl_wt_bldc<TSigma>, "SDSL wt_bldc", "sdsl_wt_bldc">;

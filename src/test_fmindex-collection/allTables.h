@@ -74,6 +74,8 @@
     fmindex_collection::occtable::InterleavedWavelet<256>, \
     fmindex_collection::occtable::Wavelet<256>, \
     fmindex_collection::occtable::Sdsl_wt_bldc<256>, \
-    fmindex_collection::occtable::rlebwt::OccTable<256>, \
+    fmindex_collection::occtable::RuntimeLengthEncoded2<256>, \
+    fmindex_collection::occtable::RuntimeLengthEncoded3<256>, \
+    fmindex_collection::occtable::RuntimeLengthEncoded4<256>, \
     fmindex_collection::occtable::rrlebwt::OccTable<256>
 

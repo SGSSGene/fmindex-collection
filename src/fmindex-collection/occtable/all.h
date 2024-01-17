@@ -21,7 +21,7 @@
 //#include "InterleavedEPRV7b.h"
 //#include "InterleavedEPRV7_32.h"
 #include "EPRV8.h"
-#include "RLEBwt.h"
+//#include "RLEBwt.h"
 #include "rRLEBwt.h"
 //#include "Naive.h"
 //#include "Wavelet.h"
