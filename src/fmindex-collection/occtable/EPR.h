@@ -139,6 +139,10 @@ using EprV7 = GenericOccTable<rankvector::InterleavedEPRV7<TSigma>, "EPRV7", "ep
 static_assert(checkOccTable<EprV7>);
 
 template <uint64_t TSigma>
+using Wavelet = GenericOccTable<rankvector::Wavelet<TSigma>, "Wavelet", "w">;
+static_assert(checkOccTable<Wavelet>);
+
+template <uint64_t TSigma>
 using InterleavedWavelet = GenericOccTable<rankvector::InterleavedWavelet<TSigma>, "Interleaved Wavelet", "iw">;
 static_assert(checkOccTable<InterleavedWavelet>);
 
