@@ -170,10 +170,18 @@ struct RLE {
 };
 
 template <size_t TSigma> using RLEInstance = RLE<TSigma, 4>;
-
-
 static_assert(checkSymbolVector<RLEInstance>);
 
+template <uint64_t TSigma, size_t encodingBlockSize, typename RankVector = Naive<TSigma>, size_t depth = 0>
+struct rRLE : RLE<TSigma, encodingBlockSize, RankVector, rRLE<TSigma, encodingBlockSize, RankVector, depth-1>>
+{};
+
+template <uint64_t TSigma, size_t encodingBlockSize, typename RankVector>
+struct rRLE<TSigma, encodingBlockSize, RankVector, 0> : RLE<TSigma, encodingBlockSize, RankVector, RankVector>
+{};
+
+template <size_t TSigma> using rRLEInstance = rRLE<TSigma, 2, Naive<TSigma>, 2>;
+static_assert(checkSymbolVector<rRLEInstance>);
 
 }
 }

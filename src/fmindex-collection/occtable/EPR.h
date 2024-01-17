@@ -9,8 +9,8 @@
 
 namespace fmindex_collection::occtable {
 /*!TODO Still needs a few more occtables translated:
- *  - rlebwt
  *
+ *  Nice to have, but removed at some point
  *  - compactBitvectorPrefix
  *  - InterleavedPrefix
  *  - sdsl_wt_epr
@@ -166,9 +166,9 @@ static_assert(checkOccTable<RuntimeLengthEncoded4>);
  * A run length encoded bwt, see unpublished paper, but with recursive bitvectors
  *
  */
-//template <uint64_t TSigma>
-//using RecursiveRuntimeLengthEncodedD2 = GenericOccTable<rankvector::rRLE<TSigma, 2>, "runtime length encoded, depth 2", "rrle2">;
-//static_assert(checkOccTable<RuntimeLengthEncoded2>);
+template <uint64_t TSigma>
+using RecursiveRuntimeLengthEncodedD2 = GenericOccTable<rankvector::rRLE<TSigma, 2>, "runtime length encoded, depth 2", "rrle2">;
+static_assert(checkOccTable<RecursiveRuntimeLengthEncodedD2>);
 
 template <uint64_t TSigma>
 using Sdsl_wt_bldc = GenericOccTable<rankvector::Sdsl_wt_bldc<TSigma>, "SDSL wt_bldc", "sdsl_wt_bldc">;

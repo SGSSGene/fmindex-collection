@@ -6,7 +6,7 @@
 #include <fmindex-collection/occtable/all.h>
 
 /*#define ALLTABLES \
-    fmindex_collection::occtable::bitvector::OccTable<256>, \
+%    fmindex_collection::occtable::bitvector::OccTable<256>, \
 %    fmindex_collection::occtable::compactBitvector::OccTable<256>, \
     fmindex_collection::occtable::compactBitvectorPrefix::OccTable<256>, \
 %    fmindex_collection::occtable::interleaved8::OccTable<256>, \
@@ -36,10 +36,11 @@
 %    fmindex_collection::occtable::eprV4::OccTable<256>, \
 %    fmindex_collection::occtable::eprV5::OccTable<256>, \
 %    fmindex_collection::occtable::eprV6::OccTable<256>, \
-    fmindex_collection::occtable::rlebwt::OccTable<256>, \
+%    fmindex_collection::occtable::rlebwt::OccTable<256>, \
 %    fmindex_collection::occtable::naive::OccTable<256>
-%//    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
-//    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>*/
+%    fmindex_collection::occtable::sdsl_wt_bldc::OccTable<256>
+    fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
+*/
 
 #define ALLTABLES \
     fmindex_collection::occtable::Naive<256>, \
@@ -77,5 +78,5 @@
     fmindex_collection::occtable::RuntimeLengthEncoded2<256>, \
     fmindex_collection::occtable::RuntimeLengthEncoded3<256>, \
     fmindex_collection::occtable::RuntimeLengthEncoded4<256>, \
-    fmindex_collection::occtable::rrlebwt::OccTable<256>
+    fmindex_collection::occtable::RecursiveRuntimeLengthEncodedD2<256>
 
