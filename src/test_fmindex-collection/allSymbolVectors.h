@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: CC0-1.0
 #pragma once
 
-#include <fmindex-collection/bitvector/bitvector.h>
+#include <fmindex-collection/bitvector/all.h>
 #include <fmindex-collection/rankvector/rankvector.h>
 
 #define ALLSYMBOLVECTORS \

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../rankvector/rankvector.h"
-#include "../bitvector/bitvector.h"
+#include "../bitvector/all.h"
 #include "GenericOccTable.h"
 
 namespace fmindex_collection::occtable {
