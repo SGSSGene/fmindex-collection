@@ -13,7 +13,7 @@
 namespace fmindex_collection {
 namespace rankvector {
 
-template <uint64_t TSigma>
+template <size_t TSigma>
 struct DenseEPRV6 {
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
@@ -105,7 +105,7 @@ struct DenseEPRV6 {
         }
     };
 
-    static constexpr uint64_t Sigma = TSigma;
+    static constexpr size_t Sigma = TSigma;
 
     using blockL0_t = uint8_t;
     using blockL1_t = uint16_t;

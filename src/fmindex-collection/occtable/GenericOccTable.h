@@ -37,8 +37,7 @@ struct StringLiteral {
 
 template <SymbolVector Vector, StringLiteral Name, StringLiteral Extension>
 struct GenericOccTable {
-    static constexpr uint64_t Sigma = Vector::Sigma;
-    using                     TLengthType = size_t;
+    static constexpr size_t Sigma = Vector::Sigma;
 
     Vector                    vector;
     std::array<size_t, Sigma> C{};
@@ -59,7 +58,7 @@ struct GenericOccTable {
         vector.prefetch();
     }
 
-    uint64_t size() const {
+    size_t size() const {
         return vector.size();
     }
 

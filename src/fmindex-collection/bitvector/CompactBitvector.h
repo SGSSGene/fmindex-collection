@@ -59,8 +59,7 @@ struct CompactBitvector {
         }
     };
 
-    using TLengthType = uint64_t;
-    static constexpr uint64_t Sigma = 2;
+    static constexpr size_t Sigma = 2;
 
     std::vector<Superblock> superblocks{};
     size_t                  totalLength;

@@ -22,9 +22,9 @@ namespace fmindex_collection::rankvector {
  *
  * \param TSigma size of the alphabet
  */
-template <uint64_t TSigma>
+template <size_t TSigma>
 struct Wavelet {
-    static constexpr uint64_t Sigma = TSigma;
+    static constexpr size_t Sigma = TSigma;
 
     struct alignas(64) Superblock {
         uint64_t superBlockEntry{};

@@ -18,7 +18,7 @@ template <typename T, typename SymbolType = uint8_t>
 concept SymbolVector = requires(T t, std::span<SymbolType const> symbols, uint64_t idx, SymbolType symb) {
     /* Compile time variable indicating the number of symbols (including the delimiter)
      */
-    { decltype(T::Sigma){} } -> std::same_as<uint64_t>;
+    { decltype(T::Sigma){} } -> std::same_as<size_t>;
 
     /** Every RankVector can be constructed via some type of string similar thing
      */

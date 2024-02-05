@@ -23,9 +23,9 @@ namespace rankvector {
  *
  * \param TSigma size of the alphabet
  */
-template <uint64_t TSigma>
+template <size_t TSigma>
 struct InterleavedWavelet {
-    static constexpr uint64_t Sigma = TSigma;
+    static constexpr size_t Sigma = TSigma;
 
     /** traverse the bits of symb
      */

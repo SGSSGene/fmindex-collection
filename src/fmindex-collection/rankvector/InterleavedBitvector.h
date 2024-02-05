@@ -11,7 +11,7 @@
 namespace fmindex_collection {
 namespace rankvector {
 
-template<uint64_t TSigma, uint64_t TAlignment, typename block_t>
+template <size_t TSigma, uint64_t TAlignment, typename block_t>
 struct InterleavedBitvector {
     struct alignas(TAlignment) Block {
         std::array<block_t, TSigma> blocks{};
@@ -53,8 +53,7 @@ struct InterleavedBitvector {
         }
     };
 
-    using TLengthType = uint64_t;
-    static constexpr uint64_t Sigma = TSigma;
+    static constexpr size_t Sigma = TSigma;
 
     static constexpr uint64_t block_size = sizeof(block_t) * 8;
 

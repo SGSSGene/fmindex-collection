@@ -82,7 +82,7 @@ struct Bitvector {
 };
 
 
-template <uint64_t TSigma>
+template <size_t TSigma>
 auto construct_bitvectors(std::span<uint8_t const> bwt) -> std::tuple<std::array<Bitvector, TSigma>, std::array<Bitvector, TSigma>, std::array<uint64_t, TSigma+1>> {
     std::array<Bitvector, TSigma> bv1;
     std::array<Bitvector, TSigma> bv2;
@@ -154,10 +154,9 @@ auto construct_bitvectors(std::span<uint8_t const> bwt) -> std::tuple<std::array
     return {std::move(bv1), std::move(bv2), C};
 }
 
-template <uint64_t TSigma>
+template <size_t TSigma>
 struct OccTable {
-    using TLengthType = uint64_t;
-    static constexpr uint64_t Sigma = TSigma;
+    static constexpr size_t Sigma = TSigma;
 
     std::array<Bitvector, Sigma> bitvector1;
     std::array<Bitvector, Sigma> bitvector2;
@@ -197,7 +196,7 @@ struct OccTable {
         return memory;
     }
 
-    uint64_t size() const {
+    size_t size() const {
         return C.back();
     }
 

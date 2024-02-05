@@ -22,7 +22,6 @@ namespace rankvector {
 
 template <size_t TSigma>
 struct Sdsl_wt_bldc {
-    using TLengthType = uint64_t;
     static constexpr size_t Sigma = TSigma;
 
     using sdsl_wt_index_type =

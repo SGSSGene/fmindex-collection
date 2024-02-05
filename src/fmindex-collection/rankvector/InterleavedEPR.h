@@ -13,10 +13,10 @@
 namespace fmindex_collection {
 namespace rankvector {
 
-template <uint64_t TSigma, uint64_t TAlignment, typename block_t>
+template <size_t TSigma, uint64_t TAlignment, typename block_t>
 struct InterleavedEPR {
     static_assert(TSigma > 0, "Alphabet has to have at least 1 letter");
-    static constexpr uint64_t Sigma = TSigma;
+    static constexpr size_t Sigma = TSigma;
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
     static constexpr auto bitct = required_bits(TSigma-1);

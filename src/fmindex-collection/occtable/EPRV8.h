@@ -323,10 +323,9 @@ struct Bitvector {
 };
 
 
-template <uint64_t TSigma>
+template <size_t TSigma>
 struct OccTable {
-    using TLengthType = uint64_t;
-    static constexpr uint64_t Sigma = TSigma;
+    static constexpr size_t Sigma = TSigma;
 
     Bitvector bitvector;
 
@@ -343,7 +342,7 @@ struct OccTable {
         return bitvector.memoryUsage() + sizeof(OccTable);
     }
 
-    uint64_t size() const {
+    size_t size() const {
         return bitvector.C.back();
     }
 
@@ -383,7 +382,7 @@ struct OccTable {
 }
 
 namespace eprV8 {
-template <uint64_t TSigma>
+template <size_t TSigma>
 struct OccTable : eprV8_impl::OccTable<TSigma> {
     using eprV8_impl::OccTable<TSigma>::OccTable;
     static auto name() -> std::string {

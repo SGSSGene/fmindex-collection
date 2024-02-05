@@ -10,10 +10,9 @@
 namespace fmindex_collection {
 namespace rankvector {
 
-template <uint64_t TSigma>
+template <size_t TSigma>
 struct Naive {
-    using TLengthType = uint64_t;
-    static constexpr uint64_t Sigma = TSigma;
+    static constexpr size_t Sigma = TSigma;
 
     std::vector<std::array<uint64_t, Sigma>> occ{};
     size_t                                   totalLength;

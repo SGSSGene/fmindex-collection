@@ -26,7 +26,7 @@ namespace rankvector {
 template <size_t TSigma, size_t encodingBlockSize, typename RankVector = Naive<TSigma>, typename RecRankVector = Naive<TSigma>>
 struct RLE {
     using BitVector  = bitvector::CompactBitvector;
-    static constexpr uint64_t Sigma = TSigma;
+    static constexpr size_t Sigma = TSigma;
 
 //    size_t        encodingBlockSize;
     RankVector    bitvector1{};

@@ -22,9 +22,9 @@
 namespace fmindex_collection {
 namespace rankvector {
 
-template <uint64_t TSigma, uint64_t TAlignment, typename block_t>
+template <size_t TSigma, uint64_t TAlignment, typename block_t>
 struct InterleavedEPRV2 {
-    static constexpr uint64_t Sigma = TSigma;
+    static constexpr size_t Sigma = TSigma;
 
     template <size_t I, size_t N>
     static auto requested_bit_for_symbol(uint64_t symb, std::array<uint64_t, N> const& bits) -> uint64_t {

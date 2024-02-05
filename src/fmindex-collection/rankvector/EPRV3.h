@@ -13,10 +13,10 @@
 namespace fmindex_collection {
 namespace rankvector {
 
-template <uint64_t TSigma, typename block_t = uint16_t>
+template <size_t TSigma, typename block_t = uint16_t>
 struct EPRV3 {
 
-    static constexpr uint64_t Sigma = TSigma;
+    static constexpr size_t Sigma = TSigma;
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
     static constexpr auto bitct = required_bits(TSigma-1);

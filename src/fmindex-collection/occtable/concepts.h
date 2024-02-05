@@ -17,8 +17,8 @@ namespace fmindex_collection {
 /*
  * Minimum requirements to function as an Occurrence Table (OccTable)
  */
-template<typename T, typename SymbolType = uint8_t, typename TLengthType = typename T::TLengthType>
-concept OccTable = requires(T t, std::span<SymbolType const> bwt, TLengthType idx, SymbolType symb) {
+template<typename T, typename SymbolType = uint8_t>
+concept OccTable = requires(T t, std::span<SymbolType const> bwt, uint64_t idx, SymbolType symb) {
     /** Every occtable has to be creatable by providing a bwt
      */
     { T{bwt} } -> std::same_as<T>;
@@ -41,7 +41,7 @@ concept OccTable = requires(T t, std::span<SymbolType const> bwt, TLengthType id
      * \param second - symbol, a value in the range of [1, Sigma)
      * \return number of occurrences
      */
-    { t.rank(idx, symb) } -> std::same_as<TLengthType>;
+    { t.rank(idx, symb) } -> std::same_as<uint64_t>;
 
     /* Return the numbers of symbols at a certain row that are equal or smaller.
      *
@@ -49,7 +49,7 @@ concept OccTable = requires(T t, std::span<SymbolType const> bwt, TLengthType id
      * \param second - symbol, a vale in the range of [1, Sigma)
      * \return number of occurrences
      */
-    { t.prefix_rank(idx, symb) } -> std::same_as<TLengthType>;
+    { t.prefix_rank(idx, symb) } -> std::same_as<uint64_t>;
 
     /* Combined rank and prefix_rank over all symbols
      *
@@ -66,15 +66,15 @@ concept OccTable = requires(T t, std::span<SymbolType const> bwt, TLengthType id
      * assert(prefixes[1] == index.prefix_rank(10, 2);
      * \\ ...
      */
-    { t.all_ranks(idx) } -> std::same_as<std::tuple<std::array<TLengthType, T::Sigma>, std::array<TLengthType, T::Sigma>>>;
+    { t.all_ranks(idx) } -> std::same_as<std::tuple<std::array<uint64_t, T::Sigma>, std::array<uint64_t, T::Sigma>>>;
 
     /* Compile time variable indicating the number of symbols (including the delimiter)
      */
-    { decltype(T::Sigma){} } -> std::same_as<TLengthType>;
+    { decltype(T::Sigma){} } -> std::same_as<size_t>;
 
     /* Run time variable indicating the number of rows inside this occurrence table
      */
-    { t.size() } -> std::same_as<TLengthType>;
+    { t.size() } -> std::same_as<size_t>;
 
     /* Returns the symbol of the bwt at a certain position
      *
@@ -85,23 +85,12 @@ concept OccTable = requires(T t, std::span<SymbolType const> bwt, TLengthType id
 //    { t.symbol(idx) } -> (std::same_as<SymbolType> || std::same_as<TLengthType>);
 };
 
-template<typename T, typename TLengthType = typename T::TLengthType>
-concept OccTable_32 = OccTable<T, uint32_t, TLengthType>;
-
 template<template <auto> typename T>
 concept checkOccTable = /*OccTable<T<1>>
                      && OccTable<T<2>>
                      &&*/ OccTable<T<4>>
                      && OccTable<T<5>>
                      && OccTable<T<254>>;
-//                     && OccTable<T<256>>;
-//
-template<template <auto> typename T>
-concept checkOccTable_32 = /*OccTable<T<1>>
-                     && OccTable<T<2>>
-                     &&*/ OccTable_32<T<4>>
-                     && OccTable_32<T<5>>
-                     && OccTable_32<T<254>>;
 //                     && OccTable<T<256>>;
 
 

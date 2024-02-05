@@ -9,7 +9,7 @@
 //#include "InterleavedBitvector.h"
 #include "InterleavedPrefix.h"
 //#include "InterleavedWavelet.h"
-#include "InterleavedWavelet32.h"
+//#include "InterleavedWavelet32.h"
 //#include "InterleavedEPR.h"
 //#include "InterleavedEPRV2.h"
 #include "EPR.h"

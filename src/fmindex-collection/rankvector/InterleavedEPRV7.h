@@ -13,10 +13,10 @@
 namespace fmindex_collection {
 namespace rankvector {
 
-template <uint64_t TSigma>
+template <size_t TSigma>
 struct InterleavedEPRV7 {
 
-    static constexpr uint64_t Sigma = TSigma;
+    static constexpr size_t Sigma = TSigma;
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
     static constexpr auto bitct = required_bits(TSigma-1);
