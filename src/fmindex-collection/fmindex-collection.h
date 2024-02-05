@@ -3,6 +3,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "fmindex/fmindex.h"
+#include "fmindex/all.h"
 #include "occtable/all.h"
 #include "suffixarray/CSA.h"
