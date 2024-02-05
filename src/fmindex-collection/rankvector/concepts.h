@@ -15,10 +15,10 @@
 namespace fmindex_collection {
 
 template <typename T, typename SymbolType = uint8_t>
-concept SymbolVector = requires(T t, std::span<SymbolType const> symbols, size_t idx, SymbolType symb) {
+concept SymbolVector = requires(T t, std::span<SymbolType const> symbols, uint64_t idx, SymbolType symb) {
     /* Compile time variable indicating the number of symbols (including the delimiter)
      */
-    { decltype(T::Sigma){} } -> std::same_as<size_t>;
+    { decltype(T::Sigma){} } -> std::same_as<uint64_t>;
 
     /** Every RankVector can be constructed via some type of string similar thing
      */
@@ -41,7 +41,7 @@ concept SymbolVector = requires(T t, std::span<SymbolType const> symbols, size_t
      * \param second - symbol, a value in the range of [1, Sigma)
      * \return number of occurrences
      */
-    { t.rank(idx, symb) } -> std::same_as<size_t>;
+    { t.rank(idx, symb) } -> std::same_as<uint64_t>;
 
     /* Return the numbers of symbols at a certain row that are equal or smaller.
      *
@@ -49,7 +49,7 @@ concept SymbolVector = requires(T t, std::span<SymbolType const> symbols, size_t
      * \param second - symbol, a vale in the range of [1, Sigma)
      * \return number of occurrences
      */
-    { t.prefix_rank(idx, symb) } -> std::same_as<size_t>;
+    { t.prefix_rank(idx, symb) } -> std::same_as<uint64_t>;
 
     /* Combined rank and prefix_rank over all symbols
      * !TODO documentation outdated
@@ -67,11 +67,11 @@ concept SymbolVector = requires(T t, std::span<SymbolType const> symbols, size_t
      * assert(prefixes[1] == index.prefix_rank(10, 2);
      * \\ ...
      */
-    { t.all_ranks(idx) } -> std::same_as<std::array<size_t, T::Sigma>>;
+    { t.all_ranks(idx) } -> std::same_as<std::array<uint64_t, T::Sigma>>;
 
     /* !TODO needs documentation
      */
-    { t.all_ranks_and_prefix_ranks(idx) } -> std::same_as<std::tuple<std::array<size_t, T::Sigma>, std::array<size_t, T::Sigma>>>;
+    { t.all_ranks_and_prefix_ranks(idx) } -> std::same_as<std::tuple<std::array<uint64_t, T::Sigma>, std::array<uint64_t, T::Sigma>>>;
 };
 
 

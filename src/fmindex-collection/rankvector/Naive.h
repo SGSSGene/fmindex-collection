@@ -30,7 +30,7 @@ struct Naive {
         totalLength = _symbols.size();
     }
 
-    uint64_t size() const noexcept {
+    size_t size() const noexcept {
         return totalLength;
     }
 

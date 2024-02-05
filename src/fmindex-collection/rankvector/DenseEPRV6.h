@@ -175,7 +175,7 @@ struct DenseEPRV6 {
         }
     }
 
-    void prefetch(size_t idx) const {
+    void prefetch(uint64_t idx) const {
         auto level0Id     = idx >>  6;
         auto level1Id     = idx >> level0_size;
 
@@ -188,13 +188,13 @@ struct DenseEPRV6 {
         return totalSize;
     }
 
-    uint8_t symbol(size_t idx) const {
+    uint8_t symbol(uint64_t idx) const {
         auto level0Id     = idx >>  6;
         auto bitId        = idx &  63;
         return bits[level0Id].symbol(bitId);
     }
 
-    uint64_t rank(size_t idx, uint8_t symb) const {
+    uint64_t rank(uint64_t idx, uint8_t symb) const {
         prefetch(idx);
 
         auto level0Id     = idx >>  6;
@@ -207,7 +207,7 @@ struct DenseEPRV6 {
                 + superBlocks[superBlockId*TSigma+symb];
     }
 
-    uint64_t prefix_rank(size_t idx, uint8_t symb) const {
+    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
         prefetch(idx);
 
         auto level0Id     = idx >>  6;
@@ -223,7 +223,7 @@ struct DenseEPRV6 {
         return bits[level0Id].prefix_rank(bitId, symb) + a;
     }
 
-    auto all_ranks(size_t idx) const -> std::array<uint64_t, TSigma> {
+    auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
         prefetch(idx);
 
         auto level0Id     = idx >>  6;
@@ -240,7 +240,7 @@ struct DenseEPRV6 {
         return res;
     }
 
-    auto all_ranks_and_prefix_ranks(size_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
+    auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
         prefetch(idx);
 
         auto level0Id     = idx >>  6;
@@ -267,7 +267,7 @@ struct DenseEPRV6 {
         return {rs, prs};
     }
 
-    uint64_t rank_symbol(size_t idx) const {
+    uint64_t rank_symbol(uint64_t idx) const {
         prefetch(idx);
 
         auto level0Id     = idx >>  6;

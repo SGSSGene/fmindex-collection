@@ -239,7 +239,7 @@ struct InterleavedWavelet {
         blocks[blockId].prefetch();
     }
 
-    uint8_t symbol(size_t idx) const {
+    uint8_t symbol(uint64_t idx) const {
         //!TODO needs a better implementation than this....
         for (size_t i{0}; i < Sigma; ++i) {
             if (rank(idx, i) != rank(idx+1, i)) {

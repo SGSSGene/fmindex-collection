@@ -27,7 +27,7 @@ struct CompactBitvector {
         uint64_t blockEntries{};
         std::array<uint64_t, 6> bits{};
 
-        uint64_t rank(uint64_t idx) const noexcept {
+        uint64_t rank(size_t idx) const noexcept {
             assert(idx < 384);
 
             auto blockId = idx >> 6;
@@ -40,7 +40,7 @@ struct CompactBitvector {
             return total;
         }
 
-        bool symbol(uint64_t idx) const noexcept {
+        bool symbol(size_t idx) const noexcept {
             assert(idx < 384);
 
             auto blockId = idx >> 6;
@@ -48,7 +48,7 @@ struct CompactBitvector {
             return bits[blockId] & (1ull << bitId);
         }
 
-        void setBlock(uint64_t blockId, uint64_t value) {
+        void setBlock(size_t blockId, size_t value) {
             blockEntries = blockEntries & ~uint64_t{0b111111111ull << blockId*9};
             blockEntries = blockEntries | uint64_t{value << blockId*9};
         }
@@ -116,14 +116,14 @@ struct CompactBitvector {
         return totalLength;
     }
 
-    bool symbol(uint64_t idx) const noexcept {
+    bool symbol(size_t idx) const noexcept {
         idx += 1;
         auto superblockId = idx / 384;
         auto bitId        = idx % 384;
         return superblocks[superblockId].symbol(bitId);
     }
 
-    uint64_t rank(uint64_t idx) const noexcept {
+    uint64_t rank(size_t idx) const noexcept {
         auto superblockId = idx / 384;
         auto bitId        = idx % 384;
         auto v = superblocks[superblockId].rank(bitId);

@@ -12,7 +12,7 @@
 
 namespace fmindex_collection::rankvector {
 
-template <uint64_t TSigma, BitVector_c Bitvector = bitvector::Bitvector>
+template <uint64_t TSigma, BitVector_c Bitvector = ::fmindex_collection::bitvector::Bitvector>
 struct MultiBitvector {
     static constexpr uint64_t Sigma = TSigma;
 
@@ -28,7 +28,7 @@ struct MultiBitvector {
         }
     }
 
-    void prefetch(size_t idx) const {
+    void prefetch(uint64_t idx) const {
         if constexpr (requires() { {bitvectors[0].prefetch(idx)}; }) {
             for (auto const& bv : bitvectors) {
                 bv.prefetch(idx);
@@ -40,7 +40,7 @@ struct MultiBitvector {
         return bitvectors[0].size();
     }
 
-    uint8_t symbol(size_t idx) const {
+    uint8_t symbol(uint64_t idx) const {
         for (size_t sym{0}; sym < Sigma; ++sym) {
             if (bitvectors[sym].symbol(idx)) {
                 return sym;
@@ -49,11 +49,11 @@ struct MultiBitvector {
         return 0;
     }
 
-    uint64_t rank(size_t idx, uint8_t symb) const {
+    uint64_t rank(uint64_t idx, uint8_t symb) const {
         return bitvectors[symb].rank(idx);
     }
 
-    uint64_t prefix_rank(size_t idx, uint8_t symb) const {
+    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
         size_t a{};
         for (size_t i{0}; i <= symb; ++i) {
             a += bitvectors[i].rank(idx);
@@ -61,7 +61,7 @@ struct MultiBitvector {
         return a;
     }
 
-    auto all_ranks(size_t idx) const -> std::array<uint64_t, TSigma> {
+    auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
         auto rs = std::array<uint64_t, TSigma>{};
         for (size_t sym{0}; sym < Sigma; ++sym) {
             rs[sym] = rank(idx, sym);
@@ -69,7 +69,7 @@ struct MultiBitvector {
         return rs;
     }
 
-    auto all_ranks_and_prefix_ranks(size_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
+    auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
         auto rs  = all_ranks(idx);
         auto prs = rs;
         for (size_t i{1}; i < Sigma; ++i) {

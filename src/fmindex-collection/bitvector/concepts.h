@@ -43,7 +43,7 @@ concept BitVector_c = requires(T t, std::span<uint8_t const> symbols, size_t idx
      * \param first - row index
      * \return number of occurrences
      */
-    { t.rank(idx) } -> std::same_as<size_t>;
+    { t.rank(idx) } -> std::same_as<uint64_t>;
 };
 
 }

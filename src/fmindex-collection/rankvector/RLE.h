@@ -23,7 +23,7 @@
 namespace fmindex_collection {
 namespace rankvector {
 
-template <uint64_t TSigma, size_t encodingBlockSize, typename RankVector = Naive<TSigma>, typename RecRankVector = Naive<TSigma>>
+template <size_t TSigma, size_t encodingBlockSize, typename RankVector = Naive<TSigma>, typename RecRankVector = Naive<TSigma>>
 struct RLE {
     using BitVector  = bitvector::CompactBitvector;
     static constexpr uint64_t Sigma = TSigma;
@@ -74,7 +74,7 @@ struct RLE {
         });
     }
 
-    uint64_t size() const {
+    size_t size() const {
         return bitvector1.size()
             + bitvector2.size() * encodingBlockSize;
     }
@@ -124,7 +124,7 @@ struct RLE {
         }
     }
 
-    auto all_ranks(size_t idx) const -> std::array<size_t, TSigma> {
+    auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
         auto nbr = partition.rank(idx / encodingBlockSize);
         auto v2  = bitvector2.all_ranks(nbr);
         auto s = partition.symbol(idx/encodingBlockSize);
@@ -145,7 +145,7 @@ struct RLE {
         return v2;
     }
 
-    auto all_ranks_and_prefix_ranks(size_t idx) const -> std::tuple<std::array<size_t, TSigma>, std::array<size_t, TSigma>> {
+    auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
         auto rs = all_ranks(idx);
         auto prs = rs;
         for (size_t i{1}; i < TSigma; ++i) {
