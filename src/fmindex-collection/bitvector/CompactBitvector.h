@@ -105,7 +105,7 @@ struct CompactBitvector {
         }
     }
 
-    CompactBitvector() {}
+    CompactBitvector() = default;
     CompactBitvector(CompactBitvector const&) = default;
     CompactBitvector(CompactBitvector&&) noexcept = default;
     auto operator=(CompactBitvector const&) -> CompactBitvector& = default;

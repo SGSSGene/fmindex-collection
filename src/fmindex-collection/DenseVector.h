@@ -25,6 +25,7 @@ struct DenseVector {
     size_t bitCount{};          // numbers of used bits
     size_t bits{};              // number of bits per entry
 
+    DenseVector() = default;
     /**
      * C'Tor for serialization purposes
      */

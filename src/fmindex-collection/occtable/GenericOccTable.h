@@ -58,14 +58,6 @@ struct GenericOccTable {
         : vector{cereal_tag{}}
     {}
 
-    static uint64_t expectedMemoryUsage(uint64_t length) {
-        return 0;
-    }
-
-    uint64_t memoryUsage() const {
-        return 0;
-    }
-
     auto prefetch(uint64_t idx) const {
         vector.prefetch();
     }

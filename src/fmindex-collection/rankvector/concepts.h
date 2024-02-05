@@ -14,6 +14,7 @@
 
 namespace fmindex_collection {
 
+#if 0
 template <typename T>
 concept BitVector = requires(T t, std::span<uint8_t const> symbols, size_t idx, uint8_t symb) {
     /** Every BitVector can be constructed via some type of string similar thing
@@ -56,6 +57,7 @@ concept BitVector = requires(T t, std::span<uint8_t const> symbols, size_t idx, 
 
 template<typename T>
 concept checkBitVector = BitVector<T>;
+#endif
 
 template <typename T, typename SymbolType = uint8_t>
 concept SymbolVector = requires(T t, std::span<SymbolType const> symbols, size_t idx, SymbolType symb) {

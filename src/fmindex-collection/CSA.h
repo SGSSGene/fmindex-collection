@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+
 #include "BitStack.h"
 #include "bitvector/Bitvector.h"
 #include "bitvector/CompactBitvector.h"
 #include "cereal_tag.h"
+#include "suffixarray/concepts.h"
 
 #include <algorithm>
 #include <cmath>
@@ -25,6 +27,7 @@ struct CSA {
     size_t bitPositionMask;
 
 
+    CSA() = default;
     CSA(std::vector<uint64_t> _ssa, BitStack const& bitstack, size_t _samplingRate, size_t _bitsForPosition)
         : ssa{std::move(_ssa)}
         , bv{bitstack.size, [&](size_t idx) {
@@ -109,5 +112,6 @@ struct CSA {
         ar(ssa, bv, samplingRate, bitsForPosition, bitPositionMask);
     }
 };
+static_assert(SuffixArray_c<CSA>);
 
 }

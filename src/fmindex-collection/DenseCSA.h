@@ -4,10 +4,11 @@
 #pragma once
 
 #include "BitStack.h"
+#include "DenseVector.h"
 #include "bitvector/Bitvector.h"
 #include "bitvector/CompactBitvector.h"
-#include "DenseVector.h"
 #include "cereal_tag.h"
+#include "suffixarray/concepts.h"
 
 #include <algorithm>
 #include <cmath>
@@ -22,6 +23,7 @@ struct DenseCSA {
     bitvector::CompactBitvector bv; // indicates if and which entry the sa → ssa
     size_t samplingRate;    // distance between two samples (inside one sequence)
 
+    DenseCSA() = default;
     DenseCSA(DenseVector _ssaPos, DenseVector _ssaSeq, BitStack const& bitstack, size_t _samplingRate)
         : ssaPos{std::move(_ssaPos)}
         , ssaSeq{std::move(_ssaSeq)}
@@ -129,5 +131,7 @@ struct DenseCSA {
         ar(ssaPos, ssaSeq, bv, samplingRate);
     }
 };
+static_assert(SuffixArray_c<DenseCSA>);
+
 
 }
