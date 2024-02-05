@@ -15,10 +15,12 @@ namespace rankvector {
 
 template <uint64_t TSigma, uint64_t TAlignment, typename block_t>
 struct InterleavedEPR {
+    static_assert(TSigma > 0, "Alphabet has to have at least 1 letter");
     static constexpr uint64_t Sigma = TSigma;
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
     static constexpr auto bitct = required_bits(TSigma-1);
+
     // next full power of 2
     static constexpr auto bvct  = pow(2, bitct);
 
