@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#include "../locate.h"
+#include "../occtable/all.h"
+#include "../rankvector/InterleavedBitvector.h"
+#include "../search/SearchNoErrors.h"
 #include "FMIndex.h"
-#include "locate.h"
-#include "occtable/all.h"
-#include "rankvector/InterleavedBitvector.h"
-#include "search/SearchNoErrors.h"
 
 #include <variant>
 

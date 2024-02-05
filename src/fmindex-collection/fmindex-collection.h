@@ -3,14 +3,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "FMIndex.h"
-#include "FMIndexCursor.h"
-#include "BiFMIndex.h"
-#include "BiFMIndexCursor.h"
-#include "RBiFMIndex.h"
-#include "RBiFMIndexCursor.h"
-#include "ReverseFMIndex.h"
-#include "ReverseFMIndexCursor.h"
-#include "suffixarray/CSA.h"
-#include "VariableFMIndex.h"
+#include "fmindex/fmindex.h"
 #include "occtable/all.h"
+#include "suffixarray/CSA.h"

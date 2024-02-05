@@ -4,7 +4,7 @@
 #include "allTables.h"
 
 #include <catch2/catch_all.hpp>
-#include <fmindex-collection/FMIndex.h>
+#include <fmindex-collection/fmindex/FMIndex.h>
 
 TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLTABLES) {
     using OccTable = TestType;

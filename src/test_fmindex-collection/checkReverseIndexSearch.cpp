@@ -4,7 +4,7 @@
 #include "allTables.h"
 
 #include <catch2/catch_all.hpp>
-#include <fmindex-collection/ReverseFMIndex.h>
+#include <fmindex-collection/fmindex/ReverseFMIndex.h>
 #include <fmindex-collection/search/BacktrackingWithBuffers.h>
 #include <search_schemes/generator/all.h>
 

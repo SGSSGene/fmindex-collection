@@ -3,28 +3,38 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "suffixarray/CSA.h"
-#include "occtable/concepts.h"
-#include "utils.h"
+#include "../occtable/concepts.h"
+#include "../suffixarray/CSA.h"
+#include "../utils.h"
 
 #include <algorithm>
 
 namespace fmindex_collection {
 
 template <OccTable Table, typename TCSA = CSA>
-struct RBiFMIndex {
+struct BiFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
 
     using TTable = Table;
 
     Table  occ;
+    Table  occRev;
     TCSA   csa;
 
 //private:
-    RBiFMIndex(std::span<uint8_t const> bwt, TCSA _csa)
+    BiFMIndex(std::span<uint8_t const> bwt, std::vector<uint8_t> const& bwtRev, TCSA _csa)
         : occ{bwt}
+        , occRev{bwtRev}
         , csa{std::move(_csa)}
     {
+        assert(bwt.size() == bwtRev.size());
+        assert(occ.size() == occRev.size());
+        if (bwt.size() != bwtRev.size()) {
+            throw std::runtime_error("bwt don't have the same size: " + std::to_string(bwt.size()) + " " + std::to_string(bwtRev.size()));
+        }
+        if (occ.size() != occRev.size()) {
+            throw std::runtime_error("occ don't have the same size: " + std::to_string(occ.size()) + " " + std::to_string(occRev.size()));
+        }
         // compute last row
         auto ct = std::array<uint64_t, Sigma>{};
         for (auto v : bwt) {
@@ -43,6 +53,14 @@ struct RBiFMIndex {
                     + " expected: " + std::to_string(ct[sym]);
                 throw std::runtime_error(e);
             }
+            if (occRev.rank(occRev.size(), sym) != ct[sym]) {
+                auto e = std::string{"Wrong rank for the last entry."}
+                    + " Got different values for reverse index."
+                    + " sym: " + std::to_string(sym)
+                    + " got: " + std::to_string(occRev.rank(occRev.size(), sym))
+                    + " expected: " + std::to_string(ct[sym]);
+                throw std::runtime_error(e);
+            }
         }
         if constexpr (requires(Table t) {{ t.hasValue(size_t{}) }; }) {
             for (size_t i{0}; i < occ.size(); ++i) {
@@ -54,16 +72,17 @@ struct RBiFMIndex {
     }
 
 public:
-    /**!\brief Creates a RBiFMIndex with a specified sampling rate
+    /**!\brief Creates a BiFMIndex with a specified sampling rate
      *
      * \param _input a list of sequences
      * \param samplingRate rate of the sampling
      */
-    RBiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr)
+    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr)
         : occ{cereal_tag{}}
+        , occRev{cereal_tag{}}
         , csa{cereal_tag{}}
     {
-        auto [totalSize, inputText, inputSizes] = createSequencesAndReverse(_input, samplingRate);
+        auto [totalSize, inputText, inputSizes] = createSequences(_input, samplingRate);
 
         // create BurrowsWheelerTransform and CompressedSuffixArray
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
@@ -73,21 +92,30 @@ public:
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();
 
+        // create BurrowsWheelerTransform on reversed text
+        auto bwtRev = [&, &inputText=inputText]() {
+            std::ranges::reverse(inputText);
+            auto saRev  = createSA(inputText, threadNbr);
+            auto bwtRev = createBWT(inputText, saRev);
+            return bwtRev;
+        }();
+
         decltype(inputText){}.swap(inputText); // inputText memory can be deleted
 
-        *this = RBiFMIndex{bwt, std::move(csa)};
+        *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
     }
 
 
     /*!\brief Specific c'tor for serialization use
      */
-    RBiFMIndex(cereal_tag)
+    BiFMIndex(cereal_tag)
         : occ{cereal_tag{}}
+        , occRev{cereal_tag{}}
         , csa{cereal_tag{}}
     {}
 
     size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
-        return occ.memoryUsage() + csa.memoryUsage();
+        return occ.memoryUsage() + occRev.memoryUsage() + csa.memoryUsage();
     }
 
     size_t size() const {
@@ -145,7 +173,7 @@ public:
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(occ, csa);
+        ar(occ, occRev, csa);
     }
 };
 
