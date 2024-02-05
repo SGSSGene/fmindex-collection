@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "BitStack.h"
-#include "DenseVector.h"
-#include "bitvector/Bitvector.h"
-#include "bitvector/CompactBitvector.h"
-#include "cereal_tag.h"
-#include "suffixarray/concepts.h"
+#include "../BitStack.h"
+#include "../bitvector/Bitvector.h"
+#include "../bitvector/CompactBitvector.h"
+#include "../cereal_tag.h"
+#include "../DenseVector.h"
+#include "concepts.h"
 
 #include <algorithm>
 #include <cmath>

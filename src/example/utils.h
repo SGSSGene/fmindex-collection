@@ -7,7 +7,7 @@
 
 #include <fmindex-collection/fmindex-collection.h>
 #include <fmindex-collection/occtable/all.h>
-#include <fmindex-collection/DenseCSA.h>
+#include <fmindex-collection/suffixarray/DenseCSA.h>
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/array.hpp>

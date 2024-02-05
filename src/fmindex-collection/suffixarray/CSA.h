@@ -4,11 +4,11 @@
 #pragma once
 
 
-#include "BitStack.h"
-#include "bitvector/Bitvector.h"
-#include "bitvector/CompactBitvector.h"
-#include "cereal_tag.h"
-#include "suffixarray/concepts.h"
+#include "../BitStack.h"
+#include "../bitvector/Bitvector.h"
+#include "../bitvector/CompactBitvector.h"
+#include "../cereal_tag.h"
+#include "concepts.h"
 
 #include <algorithm>
 #include <cmath>

@@ -4,7 +4,7 @@
 #include "allTables.h"
 
 #include <catch2/catch_all.hpp>
-#include <fmindex-collection/DenseCSA.h>
+#include <fmindex-collection/suffixarray/DenseCSA.h>
 #include <fmindex-collection/ReverseFMIndex.h>
 
 TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", ALLTABLES) {

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "CSA.h"
+#include "suffixarray/CSA.h"
 #include "occtable/concepts.h"
 #include "utils.h"
 
