@@ -14,51 +14,6 @@
 
 namespace fmindex_collection {
 
-#if 0
-template <typename T>
-concept BitVector = requires(T t, std::span<uint8_t const> symbols, size_t idx, uint8_t symb) {
-    /** Every BitVector can be constructed via some type of string similar thing
-     */
-    { T{symbols} } -> std::same_as<T>;
-
-    /** Every BitVector can be constructed via some type of string similar thing
-     */
-    { T{symbols, symb} } -> std::same_as<T>;
-
-    /** Every RankVector has a C'Tor that accept cereal_tag{}.
-     * This constructor is used during deserialization
-     **/
-    { T{cereal_tag{}} } -> std::same_as<T>;
-
-    /* Run time variable indicating the number of rows inside this occurrence table
-     */
-    { t.size() } -> std::same_as<size_t>;
-
-    /* Returns the symbol of the symbol at a certain position
-     *
-     * \param idx - row index
-     * \return - will be in range of [0, Sigma)
-     */
-    { t.symbol(idx) } -> std::same_as<bool>;
-
-    /* Return the numbers of ones
-     *
-     * \param first - row index
-     * \param second - symbol, a value in the range of [1, Sigma)
-     * \return number of occurrences
-     */
-    { t.rank(idx) } -> std::same_as<size_t>;
-
-    /* Compile time variable indicating the number of symbols (including the delimiter)
-     */
-    { decltype(T::Sigma){} } -> std::same_as<size_t>;
-};
-
-
-template<typename T>
-concept checkBitVector = BitVector<T>;
-#endif
-
 template <typename T, typename SymbolType = uint8_t>
 concept SymbolVector = requires(T t, std::span<SymbolType const> symbols, size_t idx, SymbolType symb) {
     /* Compile time variable indicating the number of symbols (including the delimiter)
@@ -68,11 +23,6 @@ concept SymbolVector = requires(T t, std::span<SymbolType const> symbols, size_t
     /** Every RankVector can be constructed via some type of string similar thing
      */
     { T{symbols} } -> std::same_as<T>;
-
-    /** Every RankVector has a C'Tor that accept cereal_tag{}.
-     * This constructor is used during deserialization
-     **/
-    { T{cereal_tag{}} } -> std::same_as<T>;
 
     /* Run time variable indicating the number of rows inside this occurrence table
      */

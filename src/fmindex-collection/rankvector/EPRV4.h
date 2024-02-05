@@ -43,6 +43,7 @@ struct EPRV4 {
 
     size_t totalLength;
 
+    EPRV4() = default;
     EPRV4(std::span<uint8_t const> _symbols) {
         totalLength = _symbols.size();
 
@@ -104,8 +105,6 @@ struct EPRV4 {
             sblock_acc[symb] += 1;
         }
     }
-
-    EPRV4(cereal_tag) {}
 
     void prefetch(uint64_t idx) const {
         auto level0Id     = idx >>  6;

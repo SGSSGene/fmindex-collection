@@ -62,6 +62,7 @@ struct InterleavedBitvector {
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
     size_t totalLength;
 
+    InterleavedBitvector() = default;
     InterleavedBitvector(std::span<uint8_t const> _symbols) {
         totalLength = _symbols.size();
         auto length = _symbols.size();
@@ -93,8 +94,6 @@ struct InterleavedBitvector {
             sblock_acc[symb] += 1;
         }
     }
-
-    InterleavedBitvector(cereal_tag) {}
 
     size_t size() const noexcept {
         return totalLength;

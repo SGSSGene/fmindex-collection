@@ -43,6 +43,7 @@ struct GenericOccTable {
     Vector                    vector;
     std::array<size_t, Sigma> C{};
 
+    GenericOccTable() = default;
     GenericOccTable(std::span<uint8_t const> _symbols)
         : vector{_symbols}
     {
@@ -53,10 +54,6 @@ struct GenericOccTable {
             C[i] = C[i] + C[i-1];
         }
     }
-
-    GenericOccTable(cereal_tag)
-        : vector{cereal_tag{}}
-    {}
 
     auto prefetch(uint64_t idx) const {
         vector.prefetch();

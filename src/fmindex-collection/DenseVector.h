@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "cereal_tag.h"
-
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -26,10 +24,6 @@ struct DenseVector {
     size_t bits{};              // number of bits per entry
 
     DenseVector() = default;
-    /**
-     * C'Tor for serialization purposes
-     */
-    DenseVector(cereal_tag) {}
 
     /**
      * \param _bits number of bits used for each integer entry

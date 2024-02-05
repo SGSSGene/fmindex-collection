@@ -95,6 +95,7 @@ struct Wavelet {
     std::array<Bitvector, bvct> bitvector;
     size_t                      totalLength;
 
+    Wavelet() = default;
     Wavelet(std::span<uint8_t const> _symbols) {
         totalLength = _symbols.size();
         auto length = _symbols.size();
@@ -165,9 +166,6 @@ struct Wavelet {
             });
         }
     }
-
-    Wavelet(cereal_tag) {}
-
 
     size_t size() const {
         return totalLength;

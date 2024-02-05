@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../cereal_tag.h"
-
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -19,11 +17,6 @@ concept BitVector_c = requires(T t, std::span<uint8_t const> symbols, size_t idx
     /** Every BitVector can be constructed via some type of string similar thing
      */
     { T{size_t{}, [](size_t) { return false; }} } -> std::same_as<T>;
-
-//    /** Every BitVector has a C'Tor that accept cereal_tag{}.
-//     * This constructor is used during deserialization
-//     **/
-//    { T{cereal_tag{}} } -> std::same_as<T>;
 
     /** Default constructible **/
     { T{} } -> std::same_as<T>;

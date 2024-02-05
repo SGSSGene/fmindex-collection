@@ -106,6 +106,7 @@ struct InterleavedEPR {
     size_t totalLength{};
 
 
+    InterleavedEPR() = default;
     InterleavedEPR(std::span<uint8_t const> _symbols) {
         totalLength = _symbols.size();
         blocks.reserve(_symbols.size()/block_size+1);
@@ -136,8 +137,6 @@ struct InterleavedEPR {
         blocks.emplace_back();
         blocks.back().blocks = block_acc;
     }
-
-    InterleavedEPR(cereal_tag) {}
 
     void prefetch(uint64_t idx) const {
         auto blockId      = idx / letterFit;

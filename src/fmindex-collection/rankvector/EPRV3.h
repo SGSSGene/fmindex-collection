@@ -130,6 +130,7 @@ struct EPRV3 {
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
     size_t totalLength;
 
+    EPRV3() = default;
     EPRV3(std::span<uint8_t const> _symbols) {
         totalLength = _symbols.size();
         blocks_.reserve(_symbols.size()/block_size+1);
@@ -167,8 +168,6 @@ struct EPRV3 {
         blocks_.back().blocks = block_acc;
         bits.emplace_back();
     }
-
-    EPRV3(cereal_tag) {}
 
     void prefetch(uint64_t idx) const {
         auto blockId      = idx >>  6;

@@ -128,6 +128,7 @@ struct Bitvector {
     std::vector<uint64_t> C;
 //    std::array<uint64_t, TSigma+1> C;
 
+    Bitvector() = default;
     Bitvector(std::span<uint8_t const> _bwt, size_t _sigma)
         : sigma{_sigma}
     {
@@ -198,9 +199,6 @@ struct Bitvector {
             C[i+1] = sblock_acc[i] + C[i];
         }
     }
-
-    Bitvector(cereal_tag) {}
-
 
     uint64_t memoryUsage() const {
         return    bits.size() * sizeof(bits.back())
@@ -336,12 +334,9 @@ struct OccTable {
         return 0;
     }
 
+    OccTable() = default;
     OccTable(std::span<uint8_t const> _bwt)
         : bitvector{_bwt, Sigma}
-    {}
-
-    OccTable(cereal_tag)
-        : bitvector{cereal_tag{}}
     {}
 
     uint64_t memoryUsage() const {

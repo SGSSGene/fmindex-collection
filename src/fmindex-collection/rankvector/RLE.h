@@ -29,16 +29,14 @@ struct RLE {
     static constexpr uint64_t Sigma = TSigma;
 
 //    size_t        encodingBlockSize;
-    RankVector    bitvector1;
-    RecRankVector bitvector2;
-    BitVector     partition;
+    RankVector    bitvector1{};
+    RecRankVector bitvector2{};
+    BitVector     partition{};
 
+    RLE() = default;
     RLE(std::span<uint8_t const> _symbols/*, size_t _encodingBlockSize*/)
 //        : encodingBlockSize{_encodingBlockSize}
-        : bitvector1{cereal_tag{}}
-        , bitvector2{cereal_tag{}}
-        , partition{} {
-
+    {
         assert(encodingBlockSize > 1);
         auto symbols1     = std::vector<uint8_t>{};
         auto symbols2     = std::vector<uint8_t>{};
@@ -75,12 +73,6 @@ struct RLE {
             return partitionSym[i];
         });
     }
-
-    RLE(cereal_tag)
-        //: encodingBlockSize{0}
-        : bitvector1{cereal_tag{}}
-        , bitvector2{cereal_tag{}}
-    {}
 
     uint64_t size() const {
         return bitvector1.size()

@@ -22,6 +22,7 @@ struct BiFMIndex {
     TCSA   csa;
 
 //private:
+    BiFMIndex() = default;
     BiFMIndex(std::span<uint8_t const> bwt, std::vector<uint8_t> const& bwtRev, TCSA _csa)
         : occ{bwt}
         , occRev{bwtRev}
@@ -77,11 +78,7 @@ public:
      * \param _input a list of sequences
      * \param samplingRate rate of the sampling
      */
-    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr)
-        : occ{cereal_tag{}}
-        , occRev{cereal_tag{}}
-        , csa{cereal_tag{}}
-    {
+    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
         auto [totalSize, inputText, inputSizes] = createSequences(_input, samplingRate);
 
         // create BurrowsWheelerTransform and CompressedSuffixArray
@@ -104,15 +101,6 @@ public:
 
         *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
     }
-
-
-    /*!\brief Specific c'tor for serialization use
-     */
-    BiFMIndex(cereal_tag)
-        : occ{cereal_tag{}}
-        , occRev{cereal_tag{}}
-        , csa{cereal_tag{}}
-    {}
 
     size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
         return occ.memoryUsage() + occRev.memoryUsage() + csa.memoryUsage();

@@ -122,6 +122,7 @@ struct DenseEPRV6 {
 
     size_t totalSize;
 
+    DenseEPRV6() = default;
     DenseEPRV6(std::span<uint8_t const> _symbols)
         : superBlocks(std::max(uint64_t{1}, uint64_t(std::ceil(std::log2(_symbols.size())))))
     {
@@ -173,10 +174,6 @@ struct DenseEPRV6 {
             sblock_acc[symb] += 1;
         }
     }
-
-    DenseEPRV6(cereal_tag)
-        : superBlocks{cereal_tag{}}
-    {}
 
     void prefetch(size_t idx) const {
         auto level0Id     = idx >>  6;

@@ -21,6 +21,7 @@ struct RBiFMIndex {
     TCSA   csa;
 
 //private:
+    RBiFMIndex() = default;
     RBiFMIndex(std::span<uint8_t const> bwt, TCSA _csa)
         : occ{bwt}
         , csa{std::move(_csa)}
@@ -59,10 +60,7 @@ public:
      * \param _input a list of sequences
      * \param samplingRate rate of the sampling
      */
-    RBiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr)
-        : occ{cereal_tag{}}
-        , csa{cereal_tag{}}
-    {
+    RBiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
         auto [totalSize, inputText, inputSizes] = createSequencesAndReverse(_input, samplingRate);
 
         // create BurrowsWheelerTransform and CompressedSuffixArray
@@ -77,14 +75,6 @@ public:
 
         *this = RBiFMIndex{bwt, std::move(csa)};
     }
-
-
-    /*!\brief Specific c'tor for serialization use
-     */
-    RBiFMIndex(cereal_tag)
-        : occ{cereal_tag{}}
-        , csa{cereal_tag{}}
-    {}
 
     size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
         return occ.memoryUsage() + csa.memoryUsage();

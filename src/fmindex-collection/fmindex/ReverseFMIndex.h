@@ -23,15 +23,13 @@ struct ReverseFMIndex {
     Table  occ;
     TCSA   csa;
 
+    ReverseFMIndex() = default;
     ReverseFMIndex(std::span<uint8_t const> bwt, TCSA _csa)
         : occ{bwt}
         , csa{std::move(_csa)}
     {}
 
-    ReverseFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr)
-        : occ{cereal_tag{}}
-        , csa{cereal_tag{}}
-    {
+    ReverseFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
 
         auto [totalSize, inputText, inputSizes] = createSequences(_input, samplingRate, /*reverse*/ true);
 
@@ -47,12 +45,6 @@ struct ReverseFMIndex {
 
         *this = ReverseFMIndex{bwt, std::move(csa)};
     }
-
-
-    ReverseFMIndex(cereal_tag)
-        : occ{cereal_tag{}}
-        , csa{cereal_tag{}}
-    {}
 
     size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
         return occ.memoryUsage() + csa.memoryUsage();

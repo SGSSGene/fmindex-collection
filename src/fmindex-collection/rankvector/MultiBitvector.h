@@ -28,8 +28,6 @@ struct MultiBitvector {
         }
     }
 
-    MultiBitvector(cereal_tag) {}
-
     void prefetch(size_t idx) const {
         if constexpr (requires() { {bitvectors[0].prefetch(idx)}; }) {
             for (auto const& bv : bitvectors) {

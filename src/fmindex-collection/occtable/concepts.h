@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../cereal_tag.h"
-
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -25,10 +23,9 @@ concept OccTable = requires(T t, std::span<SymbolType const> bwt, TLengthType id
      */
     { T{bwt} } -> std::same_as<T>;
 
-    /** Every occtable has to have a C'Tor that accept cereal_tag{}.
-     * This constructor is used during deserialization
+    /** Every occtable has to have a C'Tor that can be constructed by default
      */
-    { T{cereal_tag{}} } -> std::same_as<T>;
+    { T{} } -> std::same_as<T>;
 
     /** Returns the name of this Occtable
      */

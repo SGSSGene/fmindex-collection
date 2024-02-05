@@ -133,7 +133,7 @@ struct InterleavedEPRV7 {
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
     size_t totalLength;
 
-
+    InterleavedEPRV7() = default;
     InterleavedEPRV7(std::span<uint8_t const> _symbols) {
         totalLength = _symbols.size();
         auto const length = _symbols.size();
@@ -178,8 +178,6 @@ struct InterleavedEPRV7 {
             sblock_acc[symb] += 1;
         }
     }
-
-    InterleavedEPRV7(cereal_tag) {}
 
     size_t size() const {
         return totalLength;

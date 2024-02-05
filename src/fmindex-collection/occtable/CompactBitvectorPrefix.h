@@ -172,11 +172,10 @@ struct OccTable {
     }
 
 
+    OccTable() = default;
     OccTable(std::span<uint8_t const> _bwt) {
         std::tie(bitvector1, bitvector2, C) = construct_bitvectors<Sigma>(_bwt);
     }
-
-    OccTable(cereal_tag) {}
 
     static auto name() -> std::string {
         return "CompactBitvectorPrefix";

@@ -165,6 +165,7 @@ struct InterleavedWavelet {
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
     size_t totalLength{};
 
+    InterleavedWavelet() = default;
     InterleavedWavelet(std::span<uint8_t const> _symbols) {
         totalLength = _symbols.size();
         auto const length = _symbols.size();
@@ -228,8 +229,6 @@ struct InterleavedWavelet {
         }
         insertCount();
     }
-
-    InterleavedWavelet(cereal_tag) {}
 
     size_t size() const {
         return totalLength;

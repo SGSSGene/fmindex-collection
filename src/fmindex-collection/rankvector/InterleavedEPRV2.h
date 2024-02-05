@@ -148,6 +148,7 @@ struct InterleavedEPRV2 {
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
     size_t totalLength{};
 
+    InterleavedEPRV2() = default;
     InterleavedEPRV2(std::span<uint8_t const> _symbols) {
         totalLength = _symbols.size();
         // Next three lines are a reserve call, with zero initialization
@@ -188,8 +189,6 @@ struct InterleavedEPRV2 {
             blocks.back().blocks = block_acc;
         }
     }
-
-    InterleavedEPRV2(cereal_tag) {}
 
     size_t size() const {
         return totalLength;

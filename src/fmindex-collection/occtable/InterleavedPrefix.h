@@ -150,11 +150,10 @@ struct OccTable {
         return C + blocks + superblocks;
     }
 
+    OccTable() = default;
     OccTable(std::span<uint8_t const> _bwt) {
         bitvector = construct_bitvector<Sigma>(_bwt);
     }
-
-    OccTable(cereal_tag) {}
 
     static auto name() -> std::string {
         return "Interleaved Prefixed";

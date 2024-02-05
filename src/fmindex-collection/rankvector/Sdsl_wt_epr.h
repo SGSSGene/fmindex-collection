@@ -30,6 +30,7 @@ struct Sdsl_wt_epr {
     sdsl_wt_index_type index;
     size_t             totalLength{};
 
+    Sdsl_wt_epr() = default;
     Sdsl_wt_epr(std::span<uint8_t const> in_symbols) {
         totalLength = in_symbols.size();
         auto _symbols = std::vector<uint8_t>{begin(in_symbols), end(in_symbols)};
@@ -40,8 +41,6 @@ struct Sdsl_wt_epr {
 
         sdsl::construct(index, "tmp.sdsl.tmp", 1);
     }
-
-    Sdsl_wt_epr(cereal_tag) {}
 
     size_t size() const {
         return totalLength;

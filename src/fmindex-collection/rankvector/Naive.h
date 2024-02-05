@@ -18,6 +18,7 @@ struct Naive {
     std::vector<std::array<uint64_t, Sigma>> occ{};
     size_t                                   totalLength;
 
+    Naive() = default;
     Naive(std::span<uint8_t const> _symbols) {
         occ.reserve(_symbols.size()+1);
         occ.push_back(std::array<uint64_t, Sigma>{}); // Initial first row with only zeros
@@ -28,8 +29,6 @@ struct Naive {
         }
         totalLength = _symbols.size();
     }
-
-    Naive(cereal_tag) {}
 
     uint64_t size() const noexcept {
         return totalLength;

@@ -6,7 +6,6 @@
 #include "../BitStack.h"
 #include "../bitvector/Bitvector.h"
 #include "../bitvector/CompactBitvector.h"
-#include "../cereal_tag.h"
 #include "../DenseVector.h"
 #include "concepts.h"
 
@@ -54,15 +53,8 @@ struct DenseCSA {
     DenseCSA(DenseCSA&& _other) noexcept = default;
 
 
-    DenseCSA(cereal_tag)
-        : ssaPos{cereal_tag{}}
-        , ssaSeq{cereal_tag{}}
-    {}
-
     DenseCSA(std::span<uint64_t const> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
-        : ssaPos{cereal_tag{}}
-        , ssaSeq{cereal_tag{}}
-        , samplingRate{_samplingRate}
+        : samplingRate{_samplingRate}
     {
         size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
         assert(bitsForSeqId < 64);

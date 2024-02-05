@@ -18,23 +18,18 @@ struct FMIndex {
     Table  occ;
     TCSA   csa;
 
+    FMIndex() = default;
     FMIndex(std::span<uint8_t const> bwt, TCSA _csa)
         : occ{bwt}
         , csa{std::move(_csa)}
     {}
 
-    FMIndex(std::vector<uint8_t> _input, size_t samplingRate, size_t threadNbr)
-        : occ{cereal_tag{}}
-        , csa{cereal_tag{}}
-    {
+    FMIndex(std::vector<uint8_t> _input, size_t samplingRate, size_t threadNbr) {
         auto input = std::vector<std::vector<uint8_t>>{std::move(_input)};
         *this = FMIndex{std::move(input), samplingRate, threadNbr};
     }
 
-    FMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr)
-        : occ{cereal_tag{}}
-        , csa{cereal_tag{}}
-    {
+    FMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
         auto [totalSize, inputText, inputSizes] = createSequences(_input, samplingRate);
 
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
@@ -47,12 +42,6 @@ struct FMIndex {
 
         *this = FMIndex{bwt, std::move(csa)};
     }
-
-
-    FMIndex(cereal_tag)
-        : occ{cereal_tag{}}
-        , csa{cereal_tag{}}
-    {}
 
     size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
         return occ.memoryUsage() + csa.memoryUsage();

@@ -7,7 +7,6 @@
 #include "../BitStack.h"
 #include "../bitvector/Bitvector.h"
 #include "../bitvector/CompactBitvector.h"
-#include "../cereal_tag.h"
 #include "concepts.h"
 
 #include <algorithm>
@@ -39,10 +38,6 @@ struct CSA {
     {}
     CSA(CSA const&) = delete;
     CSA(CSA&& _other) noexcept = default;
-
-    CSA(cereal_tag)
-    {}
-
     CSA(std::vector<uint64_t> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
         : bv {sa.size(), [&](size_t idx) {
             return (sa[idx] % _samplingRate) == 0;

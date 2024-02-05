@@ -111,7 +111,7 @@ auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr) {
     } else {
         auto ifs     = std::ifstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryInputArchive{ifs};
-        auto index = fmindex_collection::BiFMIndex<Table>{fmindex_collection::cereal_tag{}};
+        auto index = fmindex_collection::BiFMIndex<Table>{};
         archive(index);
         std::cout << "loading took " << sw.peek() << "s\n";
         return index;
@@ -133,7 +133,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr) {
     } else {
         auto ifs     = std::ifstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryInputArchive{ifs};
-        auto index = fmindex_collection::BiFMIndex<Table, fmindex_collection::DenseCSA>{fmindex_collection::cereal_tag{}};
+        auto index = fmindex_collection::BiFMIndex<Table, fmindex_collection::DenseCSA>{};
         archive(index);
         std::cout << "loading took " << sw.peek() << "s\n";
         return index;

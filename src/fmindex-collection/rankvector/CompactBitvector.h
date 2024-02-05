@@ -92,8 +92,6 @@ struct CompactBitvector {
         }
     }
 
-    CompactBitvector(cereal_tag) {}
-
     CompactBitvector() {}
     CompactBitvector(CompactBitvector const&) = default;
     CompactBitvector(CompactBitvector&&) noexcept = default;

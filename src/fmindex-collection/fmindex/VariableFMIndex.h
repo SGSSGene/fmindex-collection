@@ -131,9 +131,9 @@ struct VariableFMIndex {
             ar(charToRankMapping);
             size_t idx;
             ar(idx);
-            if (idx == 1) index.emplace<Index4>(cereal_tag{});
-            else if (idx == 2) index.emplace<Index5>(cereal_tag{});
-            else if (idx == 3) index.emplace<Index16>(cereal_tag{});
+            if (idx == 1) index.emplace<Index4>();
+            else if (idx == 2) index.emplace<Index5>();
+            else if (idx == 3) index.emplace<Index16>();
             else throw std::runtime_error{"unknown index"};
             std::visit([&]<typename I>(I& index) {
                 if constexpr (std::same_as<I, std::monostate>) {
