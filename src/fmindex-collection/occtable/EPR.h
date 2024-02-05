@@ -170,8 +170,11 @@ template <size_t TSigma>
 using RecursiveRuntimeLengthEncodedD2 = GenericOccTable<rankvector::rRLE<TSigma, 2>, "runtime length encoded, depth 2", "rrle2">;
 static_assert(checkOccTable<RecursiveRuntimeLengthEncodedD2>);
 
+#ifdef FMC_USE_SDSL
+
 template <size_t TSigma>
 using Sdsl_wt_bldc = GenericOccTable<rankvector::Sdsl_wt_bldc<TSigma>, "SDSL wt_bldc", "sdsl_wt_bldc">;
 static_assert(checkOccTable<Sdsl_wt_bldc>);
 
+#endif
 }

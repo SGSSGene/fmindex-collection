@@ -42,7 +42,7 @@
     fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
 */
 
-#define ALLTABLES \
+#define ALLTABLES_IMPL \
     fmindex_collection::occtable::Naive<256>, \
     fmindex_collection::occtable::Bitvector<256>, \
     fmindex_collection::occtable::CompactBitvector<256>, \
@@ -74,9 +74,15 @@
     fmindex_collection::occtable::EprV7<256>, \
     fmindex_collection::occtable::InterleavedWavelet<256>, \
     fmindex_collection::occtable::Wavelet<256>, \
-    fmindex_collection::occtable::Sdsl_wt_bldc<256>, \
     fmindex_collection::occtable::RuntimeLengthEncoded2<256>, \
     fmindex_collection::occtable::RuntimeLengthEncoded3<256>, \
     fmindex_collection::occtable::RuntimeLengthEncoded4<256>, \
     fmindex_collection::occtable::RecursiveRuntimeLengthEncodedD2<256>
 
+#if FMC_USE_SDSL
+#define ALLTABLES \
+    ALLTABLES_IMPL, \
+    fmindex_collection::occtable::Sdsl_wt_bldc<256>
+#else
+#define ALLTABLES ALLTABLES_IMPL
+#endif

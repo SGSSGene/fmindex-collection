@@ -92,4 +92,5 @@ static_assert(checkSymbolVector<Sdsl_wt_bldc>);
 
 }
 }
+
 #endif
