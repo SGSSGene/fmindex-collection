@@ -14,7 +14,7 @@ namespace fmindex_collection {
  *
  * This allows to have "extend_right" functionality instead of "extend_left".
  */
-template <OccTable Table, typename TCSA = CSA>
+template <OccTable Table, SuffixArray_c TCSA = CSA>
 struct ReverseFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
 

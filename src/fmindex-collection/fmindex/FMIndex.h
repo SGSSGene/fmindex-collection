@@ -9,7 +9,7 @@
 
 namespace fmindex_collection {
 
-template <OccTable Table, typename TCSA = CSA>
+template <OccTable Table, SuffixArray_c TCSA = CSA>
 struct FMIndex {
     static size_t constexpr Sigma = Table::Sigma;
 
