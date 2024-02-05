@@ -6,7 +6,6 @@
 #include "FMIndex.h"
 #include "FMIndexCursor.h"
 #include "BiFMIndex.h"
-#include "BiFMIndex_32.h"
 #include "BiFMIndexCursor.h"
 #include "RBiFMIndex.h"
 #include "RBiFMIndexCursor.h"
