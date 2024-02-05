@@ -54,7 +54,7 @@ struct Bitvector {
 
 
         uint64_t sblock_acc{};
-        uint16_t block_acc{};
+        uint8_t block_acc{};
 
         for (size_t size{1}; size <= length; ++size) {
             if (size % 256 == 0) { // new super block + new block
