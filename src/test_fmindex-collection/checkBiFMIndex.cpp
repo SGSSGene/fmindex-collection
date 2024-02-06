@@ -4,7 +4,7 @@
 #include "allTables.h"
 
 #include <catch2/catch_all.hpp>
-#include <fmindex-collection/BiFMIndex.h>
+#include <fmindex-collection/fmindex/BiFMIndex.h>
 
 TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLTABLES) {
     using OccTable = TestType;

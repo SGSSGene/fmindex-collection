@@ -5,8 +5,8 @@
 
 #include <search_schemes/Scheme.h>
 
-#include "../BiFMIndexCursor.h"
 #include "../concepts.h"
+#include "../fmindex/BiFMIndexCursor.h"
 #include "SelectCursor.h"
 
 namespace fmindex_collection {

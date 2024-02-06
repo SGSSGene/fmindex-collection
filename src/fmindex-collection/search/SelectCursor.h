@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../BiFMIndexCursor.h"
-#include "../FMIndexCursor.h"
-#include "../RBiFMIndexCursor.h"
-#include "../ReverseFMIndexCursor.h"
+#include "../fmindex/BiFMIndexCursor.h"
+#include "../fmindex/FMIndexCursor.h"
+#include "../fmindex/RBiFMIndexCursor.h"
+#include "../fmindex/ReverseFMIndexCursor.h"
 
 
 namespace fmindex_collection {

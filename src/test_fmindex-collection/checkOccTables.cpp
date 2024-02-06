@@ -7,6 +7,7 @@
 #include <fmindex-collection/utils.h>
 TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]", ALLTABLES) {
     using OccTable = TestType;
+    INFO(typeid(OccTable).name());
     auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
 
     auto table = OccTable{std::span{text}};
@@ -219,12 +220,29 @@ TEMPLATE_TEST_CASE("check if occ table is working", "[OccTable]", ALLTABLES) {
         CHECK(table.prefix_rank(10, 't') == 10);
     }
 
+    auto C = std::array<size_t, 257>{};
+    for (auto c : text) {
+        C[c+1] += 1;
+    }
+    for (size_t i{1}; i < C.size(); ++i) {
+        C[i] = C[i]+C[i-1];
+    }
+
+    auto countRank = [&](size_t idx, uint8_t sym) {
+        size_t acc{};
+        for (size_t i{0}; i < idx; ++i) {
+            acc = acc + (text[i] == sym);
+        }
+        return acc + C[sym];
+    };
+
     SECTION("check all_ranks() is equal to prefix_rank() and rank()") {
         for (size_t idx{0}; idx < table.size(); ++idx) {
             auto [rank, prefix] = table.all_ranks(idx);
             for (size_t symb{1}; symb < 256; ++symb) {
                 INFO(idx);
                 INFO(symb);
+                CHECK(rank[symb] == countRank(idx, symb));
                 CHECK(rank[symb] == table.rank(idx, symb));
                 CHECK(prefix[symb] == table.prefix_rank(idx, symb));
             }
@@ -286,37 +304,37 @@ TEMPLATE_TEST_CASE("check if occ table is working for all lengths between 60 and
 TEMPLATE_TEST_CASE("check occ table construction on text longer than 256 characters", "[OccTable]", ALLTABLES) {
     using OccTable = TestType;
 
-   auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
-                                    };
+    auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
+                                     };
 
     auto table = OccTable{text};
 
@@ -332,12 +350,39 @@ TEMPLATE_TEST_CASE("check occ table construction on text longer than 256 charact
     CHECK(!OccTable::extension().empty());
     CHECK(OccTable::Sigma == 256);
 
+    auto C = std::array<size_t, 257>{};
+    for (auto c : text) {
+        C[c+1] += 1;
+    }
+    for (size_t i{1}; i < C.size(); ++i) {
+        C[i] = C[i]+C[i-1];
+    }
+
+    auto countRank = [&](size_t idx, uint8_t sym) {
+        size_t acc{};
+        for (size_t i{0}; i < idx; ++i) {
+            acc = acc + (text[i] == sym);
+        }
+        return acc + C[sym];
+    };
+
+    auto countPrefixRank = [&](size_t idx, uint8_t sym) {
+        size_t acc{};
+        for (size_t i{0}; i < idx; ++i) {
+            acc = acc + (text[i] <= sym);
+        }
+        return acc ;
+    };
+
+
     SECTION("check all_ranks() is equal to prefix_rank() and rank()") {
         for (size_t idx{0}; idx < table.size(); ++idx) {
             auto [rank, prefix] = table.all_ranks(idx);
             for (size_t symb{1}; symb < 256; ++symb) {
                 INFO(idx);
                 INFO(symb);
+                CHECK(countRank(idx, symb) == rank[symb]);
+                CHECK(countPrefixRank(idx, symb) == prefix[symb]);
                 CHECK(rank[symb] == table.rank(idx, symb));
                 CHECK(prefix[symb] == table.prefix_rank(idx, symb));
             }

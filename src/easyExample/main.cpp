@@ -18,7 +18,7 @@ using namespace fmindex_collection;
 constexpr size_t Sigma = 5;
 
 template <size_t Sigma>
-using Table = occtable::interleaved16::OccTable<Sigma>;
+using Table = occtable::Interleaved_16<Sigma>;
 
 template <typename Index>
 void saveIndex(Index const& _index, std::filesystem::path _fileName) {
@@ -31,7 +31,7 @@ template <typename Index>
 auto loadIndex(std::filesystem::path _fileName) {
     auto ifs     = std::ifstream(_fileName, std::ios::binary);
     auto archive = cereal::BinaryInputArchive{ifs};
-    auto index = BiFMIndex<Table<Sigma>>{cereal_tag{}};
+    auto index = BiFMIndex<Table<Sigma>>{};
     archive(index);
     return index;
 }

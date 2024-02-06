@@ -4,8 +4,8 @@
 #include "allTables.h"
 
 #include <catch2/catch_all.hpp>
-#include <fmindex-collection/BiFMIndex.h>
-#include <fmindex-collection/DenseCSA.h>
+#include <fmindex-collection/fmindex/BiFMIndex.h>
+#include <fmindex-collection/suffixarray/DenseCSA.h>
 
 
 TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", ALLTABLES) {
