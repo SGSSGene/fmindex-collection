@@ -15,13 +15,10 @@ template <OccTable Table, SuffixArray_c TCSA = CSA>
 struct BiFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
 
-    using TTable = Table;
-
     Table  occ;
     Table  occRev;
     TCSA   csa;
 
-//private:
     BiFMIndex() = default;
     BiFMIndex(std::span<uint8_t const> bwt, std::vector<uint8_t> const& bwtRev, TCSA _csa)
         : occ{bwt}
@@ -72,7 +69,6 @@ struct BiFMIndex {
         }
     }
 
-public:
     /**!\brief Creates a BiFMIndex with a specified sampling rate
      *
      * \param _input a list of sequences

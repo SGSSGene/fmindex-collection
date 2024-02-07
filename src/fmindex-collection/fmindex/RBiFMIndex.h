@@ -15,12 +15,9 @@ template <OccTable Table, SuffixArray_c TCSA = CSA>
 struct RBiFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
 
-    using TTable = Table;
-
     Table  occ;
     TCSA   csa;
 
-//private:
     RBiFMIndex() = default;
     RBiFMIndex(std::span<uint8_t const> bwt, TCSA _csa)
         : occ{bwt}
@@ -54,7 +51,6 @@ struct RBiFMIndex {
         }
     }
 
-public:
     /**!\brief Creates a RBiFMIndex with a specified sampling rate
      *
      * \param _input a list of sequences

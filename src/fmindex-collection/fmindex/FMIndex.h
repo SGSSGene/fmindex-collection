@@ -13,8 +13,6 @@ template <OccTable Table, SuffixArray_c TCSA = CSA>
 struct FMIndex {
     static size_t constexpr Sigma = Table::Sigma;
 
-    using TTable = Table;
-
     Table  occ;
     TCSA   csa;
 
