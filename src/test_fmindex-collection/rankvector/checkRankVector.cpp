@@ -223,10 +223,12 @@ TEMPLATE_TEST_CASE("check if rank on the symbol vectors is working", "[RankVecto
     SECTION("check all_ranks() is equal to prefix_rank() and rank()") {
         for (size_t idx{0}; idx < vec.size(); ++idx) {
             auto [rank, prefix] = vec.all_ranks_and_prefix_ranks(idx);
+            auto rank2 = vec.all_ranks(idx);
             for (size_t symb{1}; symb < Vector::Sigma; ++symb) {
                 INFO(idx);
                 INFO(symb);
                 CHECK(rank[symb] == vec.rank(idx, symb));
+                CHECK(rank2[symb] == vec.rank(idx, symb));
                 CHECK(prefix[symb] == vec.prefix_rank(idx, symb));
             }
         }
@@ -293,11 +295,13 @@ TEMPLATE_TEST_CASE("check symbol vectors construction on text longer than 256 ch
     SECTION("check all_ranks() is equal to prefix_rank() and rank()") {
         for (size_t idx{0}; idx <= vector.size(); ++idx) {
             auto [rank, prefix] = vector.all_ranks_and_prefix_ranks(idx);
+            auto rank2 = vector.all_ranks(idx);
             for (size_t symb{1}; symb < Vector::Sigma; ++symb) {
                 INFO(idx);
                 INFO(symb);
                 CHECK(countRank(idx, symb) == rank[symb]);
                 CHECK(rank[symb] == vector.rank(idx, symb));
+                CHECK(rank2[symb] == vector.rank(idx, symb));
                 CHECK(prefix[symb] == vector.prefix_rank(idx, symb));
             }
         }
