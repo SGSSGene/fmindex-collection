@@ -19,8 +19,7 @@
 #include <cereal/archives/binary.hpp>
 #endif
 
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 
 template <size_t TSigma, uint64_t TAlignment, typename block_t>
 struct InterleavedEPRV2 {
@@ -306,12 +305,11 @@ template <size_t TSigma> using InterleavedEPRV2_16Aligned = InterleavedEPRV2<TSi
 template <size_t TSigma> using InterleavedEPRV2_32Aligned = InterleavedEPRV2<TSigma, 64, uint32_t>;
 
 
-static_assert(checkSymbolVector<InterleavedEPRV2_8>);
-static_assert(checkSymbolVector<InterleavedEPRV2_16>);
-static_assert(checkSymbolVector<InterleavedEPRV2_32>);
-static_assert(checkSymbolVector<InterleavedEPRV2_8Aligned>);
-static_assert(checkSymbolVector<InterleavedEPRV2_16Aligned>);
-static_assert(checkSymbolVector<InterleavedEPRV2_32Aligned>);
+static_assert(checkRankVector<InterleavedEPRV2_8>);
+static_assert(checkRankVector<InterleavedEPRV2_16>);
+static_assert(checkRankVector<InterleavedEPRV2_32>);
+static_assert(checkRankVector<InterleavedEPRV2_8Aligned>);
+static_assert(checkRankVector<InterleavedEPRV2_16Aligned>);
+static_assert(checkRankVector<InterleavedEPRV2_32Aligned>);
 
-}
 }

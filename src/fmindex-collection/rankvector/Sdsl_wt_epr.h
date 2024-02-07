@@ -17,8 +17,7 @@
 #include <span>
 #include <vector>
 
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 /** !TODO This structure is not working as expected
  */
 template <size_t TSigma>
@@ -85,8 +84,7 @@ struct Sdsl_wt_epr {
     }
 };
 //(Sdsl wt epr seems broken?, since it doesn't work for Sigma <= 2 and Sigma == 256
-//static_assert(checkSymbolVector<Sdsl_wt_epr>);
+//static_assert(checkRankVector<Sdsl_wt_epr>);
 
-}
 }
 #endif

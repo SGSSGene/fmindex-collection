@@ -15,7 +15,7 @@
 namespace fmindex_collection {
 
 template <typename T, typename SymbolType = uint8_t>
-concept SymbolVector = requires(T t, std::span<SymbolType const> symbols, uint64_t idx, SymbolType symb) {
+concept RankVector = requires(T t, std::span<SymbolType const> symbols, uint64_t idx, SymbolType symb) {
     /* Compile time variable indicating the number of symbols (including the delimiter)
      */
     { decltype(T::Sigma){} } -> std::same_as<size_t>;
@@ -76,10 +76,10 @@ concept SymbolVector = requires(T t, std::span<SymbolType const> symbols, uint64
 
 
 template<template <auto> typename T>
-concept checkSymbolVector = SymbolVector<T<1>>
-                         && SymbolVector<T<2>>
-                         && SymbolVector<T<4>>
-                         && SymbolVector<T<5>>
-                         && SymbolVector<T<255>>
-                         && SymbolVector<T<256>>;
+concept checkRankVector = RankVector<T<1>>
+                          && RankVector<T<2>>
+                          && RankVector<T<4>>
+                          && RankVector<T<5>>
+                          && RankVector<T<255>>
+                          && RankVector<T<256>>;
 }

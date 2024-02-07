@@ -7,8 +7,8 @@ project(test_fmindex-collection)
 
 # fmindex-collectionunittests
 add_executable(${PROJECT_NAME}
+    bitvector/checkBitvector.cpp
     checkBiFMIndex.cpp
-    checkBitvector.cpp
     checkDenseBiFMIndex.cpp
     checkDenseReverseFMIndex.cpp
     checkFMIndex.cpp
@@ -17,7 +17,7 @@ add_executable(${PROJECT_NAME}
     checkReverseIndexSearch.cpp
     checkSearchBacktracking.cpp
     checkSearchPseudo.cpp
-    checkSymbolVector.cpp
+    rankvector/checkRankVector.cpp
     utils.cpp
 )
 target_link_libraries(${PROJECT_NAME}
@@ -25,8 +25,4 @@ target_link_libraries(${PROJECT_NAME}
     fmindex-collection
 )
 
-
-target_include_directories(${PROJECT_NAME} PRIVATE ${DIVSUFSORT64_INCLUDE_DIRS})
-target_compile_options(${PROJECT_NAME} PRIVATE ${DIVSUFSORT64_CFLAGS})
-target_link_libraries(${PROJECT_NAME} ${DIVSUFSORT64_LIBRARIES})
 add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})

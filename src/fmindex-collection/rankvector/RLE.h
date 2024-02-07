@@ -20,8 +20,7 @@
  * A run length encoded symbols, see unpublished paper
  *
  */
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 
 template <size_t TSigma, size_t encodingBlockSize, typename RankVector = Naive<TSigma>, typename RecRankVector = Naive<TSigma>>
 struct RLE {
@@ -162,7 +161,7 @@ struct RLE {
 };
 
 template <size_t TSigma> using RLEInstance = RLE<TSigma, 4>;
-static_assert(checkSymbolVector<RLEInstance>);
+static_assert(checkRankVector<RLEInstance>);
 
 template <uint64_t TSigma, size_t encodingBlockSize, typename RankVector = Naive<TSigma>, size_t depth = 0>
 struct rRLE : RLE<TSigma, encodingBlockSize, RankVector, rRLE<TSigma, encodingBlockSize, RankVector, depth-1>>
@@ -173,7 +172,6 @@ struct rRLE<TSigma, encodingBlockSize, RankVector, 0> : RLE<TSigma, encodingBloc
 {};
 
 template <size_t TSigma> using rRLEInstance = rRLE<TSigma, 2, Naive<TSigma>, 2>;
-static_assert(checkSymbolVector<rRLEInstance>);
+static_assert(checkRankVector<rRLEInstance>);
 
-}
 }

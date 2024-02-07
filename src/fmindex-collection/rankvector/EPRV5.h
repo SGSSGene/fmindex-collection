@@ -9,8 +9,7 @@
 
 #include <vector>
 
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 
 template <size_t TSigma>
 struct EPRV5 {
@@ -230,7 +229,6 @@ struct EPRV5 {
     }
 };
 
-static_assert(checkSymbolVector<EPRV5>);
+static_assert(checkRankVector<EPRV5>);
 
-}
 }

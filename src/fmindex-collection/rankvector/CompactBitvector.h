@@ -9,8 +9,7 @@
 #include <cassert>
 #include <vector>
 
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 
 struct CompactBitvector {
     struct alignas(64) Superblock {
@@ -143,7 +142,6 @@ struct CompactBitvector {
     }
 };
 
-static_assert(SymbolVector<CompactBitvector>);
+static_assert(RankVector<CompactBitvector>);
 
-}
 }

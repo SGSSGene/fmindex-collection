@@ -6,7 +6,7 @@
 #include <fmindex-collection/bitvector/all.h>
 #include <fmindex-collection/rankvector/rankvector.h>
 
-#define ALLSYMBOLVECTORS_IMPL \
+#define ALLRANKVECTORS_IMPL \
     fmindex_collection::rankvector::Naive<256>, \
     (fmindex_collection::rankvector::MultiBitvector<256, fmindex_collection::bitvector::Bitvector>), \
     (fmindex_collection::rankvector::MultiBitvector<256, fmindex_collection::bitvector::CompactBitvector>), \
@@ -41,11 +41,11 @@
     fmindex_collection::rankvector::RLEInstance<256>
 
 #if FMC_USE_SDSL
-#define ALLSYMBOLVECTORS \
-    ALLSYMBOLVECTORS_IMPL, \
+#define ALLRANKVECTORS \
+    ALLRANKVECTORS_IMPL, \
     fmindex_collection::rankvector::Sdsl_wt_bldc<256>
 #else
-#define ALLSYMBOLVECTORS ALLSYMBOLVECTORS_IMPL
+#define ALLRANKVECTORS ALLRANKVECTORS_IMPL
 
 #endif
 

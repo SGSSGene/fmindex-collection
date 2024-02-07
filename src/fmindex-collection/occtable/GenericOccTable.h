@@ -35,7 +35,7 @@ struct StringLiteral {
     }
 };
 
-template <SymbolVector Vector, StringLiteral Name, StringLiteral Extension>
+template <RankVector Vector, StringLiteral Name, StringLiteral Extension>
 struct GenericOccTable {
     static constexpr size_t Sigma = Vector::Sigma;
 

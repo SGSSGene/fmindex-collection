@@ -4,9 +4,9 @@
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/utils.h>
 
-#include "allSymbolVectors.h"
+#include "allRankVectors.h"
 
-TEMPLATE_TEST_CASE("check if rank on the symbol vectors is working", "[SymbolVector]", ALLSYMBOLVECTORS) {
+TEMPLATE_TEST_CASE("check if rank on the symbol vectors is working", "[RankVector]", ALLRANKVECTORS) {
     using Vector = TestType;
     INFO(typeid(Vector).name());
 
@@ -233,7 +233,7 @@ TEMPLATE_TEST_CASE("check if rank on the symbol vectors is working", "[SymbolVec
     }
 }
 
-TEMPLATE_TEST_CASE("check symbol vectors construction on text longer than 256 characters", "[SymbolVector]", ALLSYMBOLVECTORS) {
+TEMPLATE_TEST_CASE("check symbol vectors construction on text longer than 256 characters", "[RankVector]", ALLRANKVECTORS) {
     using Vector = TestType;
     INFO(typeid(Vector).name());
 

@@ -8,8 +8,7 @@
 #include <bitset>
 #include <vector>
 
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 
 template <size_t TSigma, uint64_t TAlignment, typename block_t>
 struct InterleavedBitvector {
@@ -175,12 +174,11 @@ template <size_t TSigma> using InterleavedBitvector16Aligned = InterleavedBitvec
 template <size_t TSigma> using InterleavedBitvector32Aligned = InterleavedBitvector<TSigma, 64, uint32_t>;
 
 
-static_assert(checkSymbolVector<InterleavedBitvector8>);
-static_assert(checkSymbolVector<InterleavedBitvector16>);
-static_assert(checkSymbolVector<InterleavedBitvector32>);
-static_assert(checkSymbolVector<InterleavedBitvector8Aligned>);
-static_assert(checkSymbolVector<InterleavedBitvector16Aligned>);
-static_assert(checkSymbolVector<InterleavedBitvector32Aligned>);
+static_assert(checkRankVector<InterleavedBitvector8>);
+static_assert(checkRankVector<InterleavedBitvector16>);
+static_assert(checkRankVector<InterleavedBitvector32>);
+static_assert(checkRankVector<InterleavedBitvector8Aligned>);
+static_assert(checkRankVector<InterleavedBitvector16Aligned>);
+static_assert(checkRankVector<InterleavedBitvector32Aligned>);
 
-}
 }

@@ -10,8 +10,7 @@
 #include <cassert>
 #include <vector>
 
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 
 template <size_t TSigma, uint64_t TAlignment, typename block_t>
 struct InterleavedEPR {
@@ -237,12 +236,11 @@ template <size_t TSigma> using InterleavedEPR16Aligned = InterleavedEPR<TSigma, 
 template <size_t TSigma> using InterleavedEPR32Aligned = InterleavedEPR<TSigma, 64, uint32_t>;
 
 
-static_assert(checkSymbolVector<InterleavedEPR8>);
-static_assert(checkSymbolVector<InterleavedEPR16>);
-static_assert(checkSymbolVector<InterleavedEPR32>);
-static_assert(checkSymbolVector<InterleavedEPR8Aligned>);
-static_assert(checkSymbolVector<InterleavedEPR16Aligned>);
-static_assert(checkSymbolVector<InterleavedEPR32Aligned>);
+static_assert(checkRankVector<InterleavedEPR8>);
+static_assert(checkRankVector<InterleavedEPR16>);
+static_assert(checkRankVector<InterleavedEPR32>);
+static_assert(checkRankVector<InterleavedEPR8Aligned>);
+static_assert(checkRankVector<InterleavedEPR16Aligned>);
+static_assert(checkRankVector<InterleavedEPR32Aligned>);
 
-}
 }

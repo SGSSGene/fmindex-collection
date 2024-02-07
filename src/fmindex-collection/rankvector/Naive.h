@@ -7,8 +7,7 @@
 
 #include <vector>
 
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 
 template <size_t TSigma>
 struct Naive {
@@ -73,7 +72,6 @@ struct Naive {
         ar(occ, totalLength);
     }
 };
-static_assert(checkSymbolVector<Naive>);
+static_assert(checkRankVector<Naive>);
 
-}
 }

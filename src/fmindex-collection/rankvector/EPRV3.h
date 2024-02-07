@@ -10,8 +10,7 @@
 #include <cassert>
 #include <vector>
 
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 
 template <size_t TSigma, typename block_t = uint16_t>
 struct EPRV3 {
@@ -265,9 +264,8 @@ template <size_t TSigma> using EPRV3_8  = EPRV3<TSigma,  uint8_t>;
 template <size_t TSigma> using EPRV3_16 = EPRV3<TSigma, uint16_t>;
 template <size_t TSigma> using EPRV3_32 = EPRV3<TSigma, uint32_t>;
 
-static_assert(checkSymbolVector<EPRV3_8>);
-static_assert(checkSymbolVector<EPRV3_16>);
-static_assert(checkSymbolVector<EPRV3_32>);
+static_assert(checkRankVector<EPRV3_8>);
+static_assert(checkRankVector<EPRV3_16>);
+static_assert(checkRankVector<EPRV3_32>);
 
-}
 }

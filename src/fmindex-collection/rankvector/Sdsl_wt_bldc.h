@@ -17,8 +17,7 @@
 #include <span>
 #include <vector>
 
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 
 template <size_t TSigma>
 struct Sdsl_wt_bldc {
@@ -88,9 +87,8 @@ struct Sdsl_wt_bldc {
         ar(index, totalLength);
     }
 };
-static_assert(checkSymbolVector<Sdsl_wt_bldc>);
+static_assert(checkRankVector<Sdsl_wt_bldc>);
 
-}
 }
 
 #endif

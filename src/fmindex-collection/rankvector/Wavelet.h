@@ -18,7 +18,7 @@
 
 namespace fmindex_collection::rankvector {
 
-/* Implements the concept `SymbolVector`
+/* Implements the concept `RankVector`
  *
  * \param TSigma size of the alphabet
  */
@@ -258,6 +258,6 @@ struct Wavelet {
 
 };
 
-static_assert(checkSymbolVector<Wavelet>);
+static_assert(checkRankVector<Wavelet>);
 
 }
