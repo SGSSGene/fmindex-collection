@@ -18,6 +18,10 @@ add_executable(${PROJECT_NAME}
     fmindex/checkDenseReverseFMIndex.cpp
     fmindex/checkFMIndex.cpp
     fmindex/checkFMIndexCursor.cpp
+    fmindex/checkLeftBiFMIndexCursor.cpp
+    fmindex/checkLeftRBiFMIndexCursor.cpp
+    fmindex/checkRBiFMIndex.cpp
+    fmindex/checkRBiFMIndexCursor.cpp
     fmindex/checkReverseFMIndex.cpp
     fmindex/checkReverseFMIndexCursor.cpp
     rankvector/checkRankVector.cpp

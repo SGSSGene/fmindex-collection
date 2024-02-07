@@ -92,7 +92,10 @@ struct RBiFMIndexCursor {
         assert(symb > 0);
         auto& occ = index->occ;
         size_t newLb    = occ.rank(lb, symb);
-        size_t newLbRev = lbRev + occ.prefix_rank(lb+len, symb-1) - occ.prefix_rank(lb, symb-1);
+        size_t newLbRev = lbRev + [&]() -> size_t {
+            if (symb == 0) return {};
+            return occ.prefix_rank(lb+len, symb-1) - occ.prefix_rank(lb, symb-1);
+        }();
         size_t newLen   = occ.rank(lb+len, symb) - newLb;
         auto newCursor = RBiFMIndexCursor{*index, newLb, newLbRev, newLen};
         newCursor.prefetchLeft();
@@ -101,7 +104,10 @@ struct RBiFMIndexCursor {
     auto extendRight(size_t symb) const -> RBiFMIndexCursor {
         assert(symb > 0);
         auto& occ = index->occ;
-        size_t newLb    = lb + occ.prefix_rank(lbRev+len, symb-1) - occ.prefix_rank(lbRev, symb-1);
+        size_t newLb    = lb + [&]() -> size_t {
+            if (symb == 0) return {};
+            return occ.prefix_rank(lbRev+len, symb-1) - occ.prefix_rank(lbRev, symb-1);
+        }();
         size_t newLbRev = occ.rank(lbRev, symb);
         size_t newLen   = occ.rank(lbRev+len, symb) - newLbRev;
         auto newCursor = RBiFMIndexCursor{*index, newLb, newLbRev, newLen};
