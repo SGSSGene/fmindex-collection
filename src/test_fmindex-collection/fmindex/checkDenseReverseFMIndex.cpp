@@ -54,7 +54,7 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
             auto res = index.single_locate_step(i);
             INFO(i);
             INFO(sa[i]);
-            if (sa[i] == 0 || i % 2 == 0) {
+            if (sa[i] == sa.size()-1 || i % 2 == 0) {
                 REQUIRE(res);
                 CHECK(*res == std::make_tuple(0, sa[i]));
             } else {
