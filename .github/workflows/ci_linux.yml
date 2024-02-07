@@ -28,7 +28,6 @@ jobs:
           - gcc13-cpp20-debug-sanitize_address
           - gcc13-cpp20-debug-sanitize_undefined
           - gcc13-cpp20-lcov
-          - clang15-cpp20-release
           - clang16-cpp20-release
           - clang17-cpp20-release
           - intel-cpp20-release
