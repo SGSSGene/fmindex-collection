@@ -12,8 +12,7 @@
  * like search_ng21V6 (with abort flag)
  * but using two buffers
  */
-namespace fmindex_collection {
-namespace search_ng21V7 {
+namespace fmindex_collection::search_ng21V7 {
 
 enum class Dir : uint8_t { Left, Right };
 template <typename T>
@@ -300,5 +299,4 @@ void search_best_n(index_t const & index, queries_t && queries, search_scheme_t 
     return search_n(index, std::forward<queries_t>(queries), search_scheme, n, std::forward<delegate_t>(delegate), std::true_type{});
 }
 
-}
 }

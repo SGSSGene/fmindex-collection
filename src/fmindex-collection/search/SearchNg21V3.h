@@ -11,8 +11,7 @@
 /**
  * like search_ng21V2 but some less parameter per call
  */
-namespace fmindex_collection {
-namespace search_ng21V3 {
+namespace fmindex_collection::search_ng21V3 {
 
 template <typename index_t, typename search_scheme_t, typename query_t, typename delegate_t>
 struct Search {
@@ -161,5 +160,4 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 
 }
 
-}
 }

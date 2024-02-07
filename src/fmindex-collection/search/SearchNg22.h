@@ -15,8 +15,7 @@
 /**
  * like search_ng21 but with alignment string
  */
-namespace fmindex_collection {
-namespace search_ng22 {
+namespace fmindex_collection::search_ng22 {
 
 enum class Dir : uint8_t { Left, Right };
 template <typename T>
@@ -233,5 +232,4 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 
 }
 
-}
 }

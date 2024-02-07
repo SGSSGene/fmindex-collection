@@ -6,8 +6,7 @@
 #include "SelectCursor.h"
 #include "../concepts.h"
 
-namespace fmindex_collection {
-namespace search_backtracking {
+namespace fmindex_collection::search_backtracking {
 
 /* Search algorithm with explicit programmed search scheme
  */
@@ -99,5 +98,4 @@ void search(index_t const& index, query_t const& query, size_t maxError, delegat
     u.search();
 }
 
-}
 }

@@ -11,8 +11,7 @@
 /**
  * like search_ng21V3 but no template functions
  */
-namespace fmindex_collection {
-namespace search_ng21V4 {
+namespace fmindex_collection::search_ng21V4 {
 
 template <typename index_t, typename search_scheme_t, typename query_t, typename delegate_t>
 struct Search {
@@ -157,5 +156,4 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 
 }
 
-}
 }

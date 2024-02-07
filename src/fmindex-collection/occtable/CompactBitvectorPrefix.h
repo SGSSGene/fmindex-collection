@@ -14,9 +14,7 @@
 #include <tuple>
 #include <vector>
 
-namespace fmindex_collection {
-namespace occtable {
-namespace compactBitvectorPrefix {
+namespace fmindex_collection::occtable::compactBitvectorPrefix {
 
 struct alignas(64) Superblock {
     uint64_t superBlockEntry{};
@@ -234,6 +232,4 @@ struct OccTable {
 };
 static_assert(checkOccTable<OccTable>);
 
-}
-}
 }

@@ -7,8 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace fmindex_collection {
-namespace occtable {
+namespace fmindex_collection::occtable {
 
 /** Counts how many bits are needed to represent the number y
  * It performs the computation `ceil(log_2(x))` if x > 0
@@ -29,5 +28,4 @@ constexpr inline uint64_t pow(uint64_t b, uint64_t n) {
     return pow(b, (n-1)) * b;
 }
 
-}
 }

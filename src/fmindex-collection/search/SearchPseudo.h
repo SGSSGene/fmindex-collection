@@ -9,8 +9,7 @@
 #include "../fmindex/BiFMIndexCursor.h"
 #include "SelectCursor.h"
 
-namespace fmindex_collection {
-namespace search_pseudo {
+namespace fmindex_collection::search_pseudo {
 
 template <bool EditDistance, typename index_t, typename search_scheme_t, Sequence query_t, typename delegate_t>
 struct Search {
@@ -194,5 +193,4 @@ void search(index_t const & index, query_t && query, search_schemes_t const & se
 }
 
 
-}
 }

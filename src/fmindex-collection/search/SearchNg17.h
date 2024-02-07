@@ -13,8 +13,7 @@
 /**
  * Ng16 with replaced bandedmatrix
  */
-namespace fmindex_collection {
-namespace search_ng17 {
+namespace fmindex_collection::search_ng17 {
 
 struct BandMatrix {
 private:
@@ -471,5 +470,4 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 
 }
 
-}
 }

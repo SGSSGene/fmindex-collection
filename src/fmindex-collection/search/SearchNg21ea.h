@@ -12,8 +12,7 @@
  * Like Ng21, but aborts early
  * !TODO intext verification, configurable early abort
  */
-namespace fmindex_collection {
-namespace search_ng21ea {
+namespace fmindex_collection::search_ng21ea {
 
 enum class Dir : uint8_t { Left, Right };
 template <typename T>
@@ -203,5 +202,4 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 
 }
 
-}
 }

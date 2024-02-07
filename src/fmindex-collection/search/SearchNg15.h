@@ -14,8 +14,7 @@
  * As ng14
  * but direction change is predetermined
  */
-namespace fmindex_collection {
-namespace search_ng15 {
+namespace fmindex_collection::search_ng15 {
 
 struct Block {
     size_t pi;
@@ -198,5 +197,4 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 
 }
 
-}
 }

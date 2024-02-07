@@ -12,9 +12,7 @@
 #include <span>
 #include <vector>
 
-namespace fmindex_collection {
-namespace occtable {
-namespace interleavedPrefix {
+namespace fmindex_collection::occtable::interleavedPrefix {
 
 template <uint64_t TSigma>
 struct Bitvector {
@@ -198,6 +196,4 @@ struct OccTable {
 };
 static_assert(checkOccTable<OccTable>);
 
-}
-}
 }

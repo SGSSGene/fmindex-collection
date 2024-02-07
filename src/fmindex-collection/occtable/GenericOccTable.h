@@ -15,8 +15,7 @@
  * A run length encoded bwt, see unpublished paper, but with recursive bitvectors
  *
  */
-namespace fmindex_collection {
-namespace occtable {
+namespace fmindex_collection::occtable {
 
 /**
  * Literal class type that wraps a constant expression string.
@@ -98,5 +97,4 @@ struct GenericOccTable {
 
 };
 
-}
 }

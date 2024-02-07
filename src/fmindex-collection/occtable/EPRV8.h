@@ -20,8 +20,7 @@
 // Same as EPRV5 but with runtime sigma instead of compile time
 
 
-namespace fmindex_collection {
-namespace occtable {
+namespace fmindex_collection::occtable {
 namespace eprV8_impl {
 
 struct Bitvector {
@@ -399,5 +398,4 @@ static_assert(checkOccTable<OccTable>);
 
 
 
-}
 }
