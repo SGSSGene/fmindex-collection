@@ -1,3 +1,8 @@
+<!--
+    SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
+    SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
+    SPDX-License-Identifier: CC-BY-4.0
+-->
 # Occurrence Table
 ## OccTable (`fmindex_collection::OccTable`)
 Classes fulfilling this concept provide the member functions:
