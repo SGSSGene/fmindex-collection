@@ -15,7 +15,11 @@
 namespace fmindex_collection {
 
 template <typename T, typename SymbolType = uint8_t>
-concept RankVector = requires(T t, std::span<SymbolType const> symbols, uint64_t idx, SymbolType symb) {
+concept RankVector =
+    std::default_initializable<T>
+    && std::movable<T>
+    && requires(T t, std::span<SymbolType const> symbols, uint64_t idx, SymbolType symb) {
+
     /* Compile time variable indicating the number of symbols (including the delimiter)
      */
     { decltype(T::Sigma){} } -> std::same_as<size_t>;
