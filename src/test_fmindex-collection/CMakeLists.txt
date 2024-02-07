@@ -8,15 +8,15 @@ project(test_fmindex-collection)
 # fmindex-collectionunittests
 add_executable(${PROJECT_NAME}
     bitvector/checkBitvector.cpp
-    checkBiFMIndex.cpp
-    checkDenseBiFMIndex.cpp
-    checkDenseReverseFMIndex.cpp
-    checkFMIndex.cpp
     checkOccTables.cpp
-    checkReverseFMIndex.cpp
     checkReverseIndexSearch.cpp
     checkSearchBacktracking.cpp
     checkSearchPseudo.cpp
+    fmindex/checkBiFMIndex.cpp
+    fmindex/checkDenseBiFMIndex.cpp
+    fmindex/checkDenseReverseFMIndex.cpp
+    fmindex/checkFMIndex.cpp
+    fmindex/checkReverseFMIndex.cpp
     rankvector/checkRankVector.cpp
     utils.cpp
 )

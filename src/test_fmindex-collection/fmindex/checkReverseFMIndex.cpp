@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "allTables.h"
+#include "../allTables.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/ReverseFMIndex.h>
@@ -45,6 +45,15 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
             INFO(i);
             INFO(sa[i]);
             CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto res = index.single_locate_step(i);
+            INFO(i);
+            INFO(sa[i]);
+            if (sa[i] == 0 || i % 2 == 0) {
+                REQUIRE(res);
+                CHECK(*res == std::make_tuple(0, sa[i]));
+            } else {
+                CHECK(!res);
+            }
         }
     }
 
