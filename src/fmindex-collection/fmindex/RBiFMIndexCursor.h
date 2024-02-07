@@ -112,11 +112,11 @@ struct RBiFMIndexCursor {
 
 template <typename Index>
 auto begin(RBiFMIndexCursor<Index> const& _cursor) {
-    return _cursor.lb;
+    return IntIterator{_cursor.lb};
 }
 template <typename Index>
 auto end(RBiFMIndexCursor<Index> const& _cursor) {
-    return _cursor.lb + _cursor.len;
+    return IntIterator{_cursor.lb + _cursor.len};
 }
 
 template <typename Index>
@@ -178,6 +178,16 @@ struct LeftRBiFMIndexCursor {
         return newCursor;
     }
 };
+
+template <typename Index>
+auto begin(LeftRBiFMIndexCursor<Index> const& _cursor) {
+    return IntIterator{_cursor.lb};
+}
+template <typename Index>
+auto end(LeftRBiFMIndexCursor<Index> const& _cursor) {
+    return IntIterator{_cursor.lb + _cursor.len};
+}
+
 }
 
 namespace std {

@@ -13,10 +13,13 @@ add_executable(${PROJECT_NAME}
     checkSearchBacktracking.cpp
     checkSearchPseudo.cpp
     fmindex/checkBiFMIndex.cpp
+    fmindex/checkBiFMIndexCursor.cpp
     fmindex/checkDenseBiFMIndex.cpp
     fmindex/checkDenseReverseFMIndex.cpp
     fmindex/checkFMIndex.cpp
+    fmindex/checkFMIndexCursor.cpp
     fmindex/checkReverseFMIndex.cpp
+    fmindex/checkReverseFMIndexCursor.cpp
     rankvector/checkRankVector.cpp
     utils.cpp
 )

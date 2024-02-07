@@ -224,5 +224,19 @@ auto createSequences_32(Sequences auto const& _input, int samplingRate, bool rev
     return {totalSize, inputText, inputSizes};
 }
 
+struct IntIterator {
+    size_t i;
+
+    auto operator*() const -> size_t {
+        return i;
+    }
+
+    auto operator++() -> IntIterator& {
+        ++i;
+        return *this;
+    }
+
+    auto operator<=>(IntIterator const&) const -> std::strong_ordering = default;
+};
 
 }
