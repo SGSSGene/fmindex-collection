@@ -13,6 +13,7 @@ add_executable(${PROJECT_NAME}
     isComplete.cpp
     isValid.cpp
     nodeCount.cpp
+    weightedNodeCount.cpp
 )
 target_link_libraries(${PROJECT_NAME}
     Catch2::Catch2WithMain
