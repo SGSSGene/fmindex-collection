@@ -89,7 +89,7 @@ struct RBiFMIndexCursor {
     }
 
     auto extendLeft(size_t symb) const -> RBiFMIndexCursor {
-        assert(symb > 0);
+//        assert(symb > 0);
         auto& occ = index->occ;
         size_t newLb    = occ.rank(lb, symb);
         size_t newLbRev = lbRev + [&]() -> size_t {
@@ -102,7 +102,7 @@ struct RBiFMIndexCursor {
         return newCursor;
     }
     auto extendRight(size_t symb) const -> RBiFMIndexCursor {
-        assert(symb > 0);
+//        assert(symb > 0);
         auto& occ = index->occ;
         size_t newLb    = lb + [&]() -> size_t {
             if (symb == 0) return {};
@@ -170,7 +170,7 @@ struct LeftRBiFMIndexCursor {
     }
 
     auto extendLeft(size_t symb) const -> LeftRBiFMIndexCursor {
-        assert(symb > 0);
+//        assert(symb > 0);
         auto& occ = index->occ;
 
         size_t newLb    = occ.rank(lb, symb);
