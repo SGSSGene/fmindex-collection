@@ -1,31 +1,37 @@
 # SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 # SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 # SPDX-License-Identifier: CC0-1.0
-cmake_minimum_required (VERSION 3.16)
+cmake_minimum_required (VERSION 3.20)
+
 
 # check if this is the main project
 if (NOT DEFINED PROJECT_NAME)
-    set(CMAKE_CXX_STANDARD 20)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-    set(CMAKE_CXX_EXTENSIONS OFF)
-    if(WIN32)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /EHsc")
-    else()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -pedantic")
-    endif()
     set(ROOT_PROJECT TRUE)
-else()
+else ()
     set(ROOT_PROJECT FALSE)
 endif ()
-
 
 project(fmindex-collection LANGUAGES CXX
                             DESCRIPTION "fmindex-collection -- Datastructures and Algorithms for (Bi-)FMIndices and Approximate Pattern Matching")
 
-if(NOT WIN32)
-    option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${ROOT_PROJECT})
-else()
+if (${ROOT_PROJECT})
+    set(CMAKE_CXX_STANDARD 20)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /EHsc -DNOMINMAX")
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wpedantic -Wextra -fPIC -fp-model=strict")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wpedantic -Wextra -fPIC")
+    endif()
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" OFF)
+else()
+    option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${ROOT_PROJECT})
 endif()
 
 find_package(OpenMP QUIET)
@@ -86,5 +92,4 @@ if (${ROOT_PROJECT})
     )
 
     add_subdirectory(src/test_header)
-
 endif()
