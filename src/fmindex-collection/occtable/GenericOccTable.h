@@ -55,6 +55,7 @@ struct GenericOccTable {
     }
 
     auto prefetch(uint64_t idx) const {
+        (void)idx;
         vector.prefetch();
     }
 
