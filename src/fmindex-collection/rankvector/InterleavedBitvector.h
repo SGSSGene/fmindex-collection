@@ -162,7 +162,7 @@ struct InterleavedBitvector {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(totalLength, blocks, superBlocks);
+        ar(blocks, superBlocks, totalLength);
     }
 };
 

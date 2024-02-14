@@ -13,6 +13,7 @@ CPMAddPackage(
   OPTIONS
     "LIBSAIS_USE_OPENMP ${OpenMP_C_FOUND}"
     "LIBSAIS_BUILD_SHARED_LIB OFF"
+  SYSTEM YES
 )
 if (FMC_USE_SDSL)
     CPMAddPackage(
@@ -23,7 +24,7 @@ if (FMC_USE_SDSL)
     )
     if(sdsl-lite_ADDED)
         add_library(sdsl-lite INTERFACE IMPORTED)
-        target_include_directories(sdsl-lite INTERFACE "${sdsl-lite_SOURCE_DIR}/include")
+        target_include_directories(sdsl-lite SYSTEM INTERFACE "${sdsl-lite_SOURCE_DIR}/include")
         add_library(sdsl-lite::sdsl-lite ALIAS sdsl-lite)
     endif()
 endif()

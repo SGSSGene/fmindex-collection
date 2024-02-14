@@ -11,11 +11,13 @@
 #include <array>
 #include <cstdint>
 #include <filesystem>
+#include <sdsl/cereal.hpp>
 #include <sdsl/construct.hpp>
 #include <sdsl/suffix_trees.hpp>
 #include <sdsl/wt_blcd.hpp>
 #include <span>
 #include <vector>
+
 
 namespace fmindex_collection::rankvector {
 

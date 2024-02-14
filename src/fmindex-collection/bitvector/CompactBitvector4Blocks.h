@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#include "concepts.h"
+
 #include <array>
 #include <bitset>
 #include <cassert>
@@ -12,13 +14,6 @@
 #include <stdexcept>
 #include <span>
 #include <vector>
-
-#if __has_include(<cereal/archives/binary.hpp>)
-#include <cereal/types/array.hpp>
-#include <cereal/types/vector.hpp>
-#include <cereal/archives/binary.hpp>
-#endif
-
 
 namespace fmindex_collection::bitvector {
 
@@ -168,5 +163,6 @@ struct CompactBitvector4Blocks {
         }
     }
 };
+static_assert(BitVector_c<CompactBitvector4Blocks>);
 
 }

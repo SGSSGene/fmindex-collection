@@ -11,6 +11,12 @@
 #include <utility>
 #include <type_traits>
 
+#if __has_include(<cereal/types/vector.hpp>)
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
+#endif
+
 namespace fmindex_collection {
 
 template <typename T>

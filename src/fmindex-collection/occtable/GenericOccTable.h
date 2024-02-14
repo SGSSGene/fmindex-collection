@@ -11,6 +11,10 @@
 #include <cstdint>
 #include <span>
 
+#if __has_include(<cereal/archives/binary.hpp>)
+#include <cereal/types/array.hpp>
+#endif
+
 /**
  * A run length encoded bwt, see unpublished paper, but with recursive bitvectors
  *

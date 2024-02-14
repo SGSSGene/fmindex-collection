@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 # SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 # SPDX-License-Identifier: CC0-1.0
-cmake_minimum_required (VERSION 3.20)
+cmake_minimum_required (VERSION 3.25)
 
 
 # check if this is the main project
@@ -18,15 +18,6 @@ if (${ROOT_PROJECT})
     set(CMAKE_CXX_STANDARD 20)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set(CMAKE_CXX_EXTENSIONS OFF)
-
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /EHsc -DNOMINMAX")
-    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wpedantic -Wextra -fPIC -fp-model=strict -fno-strict-aliasing")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror -Wpedantic -Wextra -fPIC -fp-model=strict -fno-strict-aliasing")
-    else()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wpedantic -Wextra -fPIC")
-    endif()
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -38,11 +29,22 @@ endif()
 find_package(OpenMP QUIET)
 include(cmake/CPM.cmake)
 include(fmindex_collection-config.cmake)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+    target_compile_options(libsais PRIVATE -fp-model=strict -fno-strict-aliasing)
+endif()
 
 if (${ROOT_PROJECT})
-    CPMaddPackage("gh:fmtlib/fmt#10.1.1")
-    CPMaddPackage("gh:catchorg/Catch2#v3.4.0")
-    CPMaddPackage(NAME cereal
+    CPMAddPackage(
+        GITHUB_REPOSITORY fmtlib/fmt
+        GIT_TAG 10.1.1
+        SYSTEM YES
+    )
+    CPMAddPackage(
+        GITHUB_REPOSITORY catchorg/Catch
+        GIT_TAG v3.4.0
+        SYSTEM YES
+    )
+    CPMAddPackage(NAME cereal
         GITHUB_REPOSITORY USCiLab/cereal
         GIT_TAG v1.3.2
         OPTIONS
@@ -51,6 +53,7 @@ if (${ROOT_PROJECT})
             "BUILD_DOC OFF"
             "WITH_WERROR OFF"
         EXCLUDE_FROM_ALL TRUE
+        SYSTEM YES
     )
 
     enable_testing()
@@ -93,4 +96,10 @@ if (${ROOT_PROJECT})
     )
 
     add_subdirectory(src/test_header)
+
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        target_compile_options(fmindex-collection INTERFACE /bigobj /EHsc -DNOMINMAX)
+    else()
+        target_compile_options(fmindex-collection INTERFACE -Wall -Werror -Wpedantic -Wextra -fPIC)
+    endif()
 endif()
