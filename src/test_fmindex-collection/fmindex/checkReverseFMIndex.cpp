@@ -5,6 +5,7 @@
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/ReverseFMIndex.h>
+#include <fstream>
 
 TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]", ALLTABLES) {
     using OccTable = TestType;
@@ -145,7 +146,7 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
 
     SECTION("serialization/deserialization") {
         SECTION("serialize") {
-            auto ofs = std::ofstream{"temp_test_serialization"};
+            auto ofs = std::ofstream{"temp_test_serialization", std::ios::binary};
             auto bitStack = fmindex_collection::BitStack{};
             for (size_t i{0}; i < sa.size(); ++i) {
                 bitStack.push(true);
@@ -156,7 +157,7 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
             archive(index);
         }
         SECTION("deserialize") {
-            auto ifs = std::ifstream{"temp_test_serialization"};
+            auto ifs = std::ifstream{"temp_test_serialization", std::ios::binary};
             auto index = fmindex_collection::ReverseFMIndex<OccTable>{};
             auto archive = cereal::BinaryInputArchive{ifs};
             archive(index);
