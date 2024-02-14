@@ -31,9 +31,10 @@ jobs:
           - clang15-cpp20-release
           - clang16-cpp20-release
           - clang17-cpp20-release
+          - intel-cpp20-release
     steps:
       - name: Standard IV-project testing
-        uses: iv-project/IVaction/linux-testing@v6.3
+        uses: iv-project/IVaction/linux-testing@v8
         with:
           compiler: ${{ matrix.compiler }}
           threads: 2

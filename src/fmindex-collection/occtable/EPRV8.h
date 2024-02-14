@@ -330,6 +330,7 @@ struct OccTable {
     Bitvector bitvector;
 
     static uint64_t expectedMemoryUsage(uint64_t length) {
+        (void)length;
         return 0;
     }
 
