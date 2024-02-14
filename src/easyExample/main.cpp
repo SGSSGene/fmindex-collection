@@ -31,7 +31,7 @@ template <typename Index>
 auto loadIndex(std::filesystem::path _fileName) {
     auto ifs     = std::ifstream(_fileName, std::ios::binary);
     auto archive = cereal::BinaryInputArchive{ifs};
-    auto index = BiFMIndex<Table<Sigma>>{};
+    auto index = Index{};
     archive(index);
     return index;
 }
