@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../allTables.h"
+#include "../occtables/allTables.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/FMIndex.h>
