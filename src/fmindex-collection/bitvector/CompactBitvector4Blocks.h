@@ -6,15 +6,19 @@
 #include <array>
 #include <bitset>
 #include <cassert>
-#if __has_include(<cereal/archives/binary.hpp>)
-#include <cereal/archives/binary.hpp>
-#endif
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <stdexcept>
 #include <span>
 #include <vector>
+
+#if __has_include(<cereal/archives/binary.hpp>)
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/archives/binary.hpp>
+#endif
+
 
 namespace fmindex_collection::bitvector {
 

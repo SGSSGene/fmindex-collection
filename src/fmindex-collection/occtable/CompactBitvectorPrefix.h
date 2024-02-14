@@ -14,6 +14,12 @@
 #include <tuple>
 #include <vector>
 
+#if __has_include(<cereal/archives/vector.hpp>)
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
+#endif
+
+
 namespace fmindex_collection::occtable::compactBitvectorPrefix {
 
 struct alignas(64) Superblock {

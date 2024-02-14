@@ -13,6 +13,12 @@
 #include <span>
 #include <vector>
 
+#if __has_include(<cereal/archives/vector.hpp>)
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
+#endif
+
+
 namespace fmindex_collection::bitvector {
 
 /**
