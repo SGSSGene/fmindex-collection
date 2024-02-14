@@ -13,7 +13,6 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLTABLES) 
     auto bwtRev = std::vector<uint8_t>{'H', '\0', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
     auto sa     = std::vector<uint64_t>{ 10, 11, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };
 
-
     SECTION("full sa") {
         auto bitStack = fmindex_collection::BitStack{};
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -77,7 +76,6 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLTABLES) 
         }
     }
 
-
     SECTION("sa with only every second value given - text sampled") {
         auto bitStack = fmindex_collection::BitStack{};
         auto sa2 = std::vector<uint64_t>{};
@@ -96,8 +94,36 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLTABLES) 
         for (size_t i{0}; i < sa.size(); ++i) {
             CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
         }
-
     }
+
+
+    SECTION("serialization/deserialization") {
+        SECTION("serialize") {
+            auto ofs = std::ofstream{"temp_test_serialization"};
+
+            auto bitStack = fmindex_collection::BitStack{};
+            for (size_t i{0}; i < sa.size(); ++i) {
+                bitStack.push(true);
+            }
+            auto csa = fmindex_collection::CSA{sa, bitStack, 1, 63};
+            auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+            auto archive = cereal::BinaryOutputArchive{ofs};
+            archive(index);
+        }
+        SECTION("deserialize") {
+            auto ifs = std::ifstream{"temp_test_serialization"};
+
+            auto index = fmindex_collection::BiFMIndex<OccTable>{};
+            auto archive = cereal::BinaryInputArchive{ifs};
+            archive(index);
+
+            REQUIRE(index.size() == bwt.size());
+            for (size_t i{0}; i < sa.size(); ++i) {
+                CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            }
+        }
+    }
+
 }
 
 TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 256 chars)", "[BiFMIndex]", ALLTABLES) {
@@ -161,7 +187,6 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 25
         }
     }
 
-
     SECTION("sa with only every second value given - text sampled") {
         auto bitStack = fmindex_collection::BitStack{};
         auto sa2 = std::vector<uint64_t>{};
@@ -180,6 +205,5 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 25
         for (size_t i{0}; i < sa.size(); ++i) {
             CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
         }
-
     }
 }

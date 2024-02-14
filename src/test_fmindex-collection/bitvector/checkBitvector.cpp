@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: CC0-1.0
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/utils.h>
+#include <fstream>
 
 #include "allBitVectors.h"
 
@@ -111,15 +112,16 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
     }
     SECTION("serialization/deserialization") {
         auto input = std::vector<uint8_t>{0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1};
-        auto ss = std::stringstream{};
         SECTION("serialize") {
+            auto ofs = std::ofstream{"temp_test_serialization"};
             auto vec = Vector{std::span{input}};
-            auto archive = cereal::BinaryOutputArchive{ss};
+            auto archive = cereal::BinaryOutputArchive{ofs};
             archive(vec);
         }
         SECTION("deserialize") {
+            auto ifs = std::ifstream{"temp_test_serialization"};
             auto vec = Vector{};
-            auto archive = cereal::BinaryInputArchive{ss};
+            auto archive = cereal::BinaryInputArchive{ifs};
             archive(vec);
             REQUIRE(input.size() == vec.size());
             size_t count{};

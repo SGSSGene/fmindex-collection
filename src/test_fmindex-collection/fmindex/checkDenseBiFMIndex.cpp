@@ -78,7 +78,6 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", 
         }
     }
 
-
     SECTION("sa with only every second value given - text sampled") {
         auto bitStack = fmindex_collection::BitStack{};
         auto sa2 = fmindex_collection::DenseVector(sa.entry_size());
@@ -97,7 +96,31 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", 
         for (size_t i{0}; i < sa.size(); ++i) {
             CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
         }
+    }
 
+    SECTION("serialization/deserialization") {
+        SECTION("serialize") {
+            auto ofs = std::ofstream{"temp_test_serialization"};
+            auto bitStack = fmindex_collection::BitStack{};
+            for (size_t i{0}; i < sa.size(); ++i) {
+                bitStack.push(true);
+            }
+            auto csa = fmindex_collection::DenseCSA{sa, bitStack, 1};
+            auto index = fmindex_collection::BiFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, bwtRev, std::move(csa)};
+            auto archive = cereal::BinaryOutputArchive{ofs};
+            archive(index);
+        }
+        SECTION("deserialize") {
+            auto ifs = std::ifstream{"temp_test_serialization"};
+            auto index = fmindex_collection::BiFMIndex<OccTable, fmindex_collection::DenseCSA>{};
+            auto archive = cereal::BinaryInputArchive{ifs};
+            archive(index);
+
+            REQUIRE(index.size() == bwt.size());
+            for (size_t i{0}; i < sa.size(); ++i) {
+                CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            }
+        }
     }
 }
 
@@ -181,6 +204,5 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index on longer text (more t
         for (size_t i{0}; i < sa.size(); ++i) {
             CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
         }
-
     }
 }

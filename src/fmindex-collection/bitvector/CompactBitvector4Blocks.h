@@ -138,7 +138,7 @@ struct CompactBitvector4Blocks {
     void serialize(Archive& ar) {
         // 0 version: slow path
         // 1 version: binary path (fast)
-        auto version = []() {
+        auto version = []() -> uint32_t {
 #if __has_include(<cereal/archives/binary.hpp>)
             if constexpr (std::same_as<Archive, cereal::BinaryOutputArchive>
                             || std::same_as<Archive, cereal::BinaryInputArchive>) {
@@ -150,11 +150,12 @@ struct CompactBitvector4Blocks {
         ar(version);
 
         if (version == 0) {
-            ar(superblocks);
+            ar(totalLength, superblocks);
         } else if (version == 1) {
 #if __has_include(<cereal/archives/binary.hpp>)
             if constexpr (std::same_as<Archive, cereal::BinaryOutputArchive>
                             || std::same_as<Archive, cereal::BinaryInputArchive>) {
+                ar(totalLength);
                 auto l = superblocks.size();
                 ar(l);
                 superblocks.resize(l);

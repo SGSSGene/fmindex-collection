@@ -143,4 +143,28 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
         }
     }
 
+    SECTION("serialization/deserialization") {
+        SECTION("serialize") {
+            auto ofs = std::ofstream{"temp_test_serialization"};
+            auto bitStack = fmindex_collection::BitStack{};
+            for (size_t i{0}; i < sa.size(); ++i) {
+                bitStack.push(true);
+            }
+            auto csa = fmindex_collection::CSA{sa, bitStack, 1, 63};
+            auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
+            auto archive = cereal::BinaryOutputArchive{ofs};
+            archive(index);
+        }
+        SECTION("deserialize") {
+            auto ifs = std::ifstream{"temp_test_serialization"};
+            auto index = fmindex_collection::ReverseFMIndex<OccTable>{};
+            auto archive = cereal::BinaryInputArchive{ifs};
+            archive(index);
+
+            REQUIRE(index.size() == bwt.size());
+            for (size_t i{0}; i < sa.size(); ++i) {
+                CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            }
+        }
+    }
 }
