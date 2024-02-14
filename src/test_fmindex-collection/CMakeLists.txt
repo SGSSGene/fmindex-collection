@@ -9,9 +9,6 @@ project(test_fmindex-collection)
 add_executable(${PROJECT_NAME}
     bitvector/checkBitvector.cpp
     checkOccTables.cpp
-    checkReverseIndexSearch.cpp
-    checkSearchBacktracking.cpp
-    checkSearchPseudo.cpp
     fmindex/checkBiFMIndex.cpp
     fmindex/checkBiFMIndexCursor.cpp
     fmindex/checkDenseBiFMIndex.cpp
@@ -25,6 +22,9 @@ add_executable(${PROJECT_NAME}
     fmindex/checkReverseFMIndex.cpp
     fmindex/checkReverseFMIndexCursor.cpp
     rankvector/checkRankVector.cpp
+    search/checkReverseIndexSearch.cpp
+    search/checkSearchBacktracking.cpp
+    search/checkSearchPseudo.cpp
     utils.cpp
 )
 target_link_libraries(${PROJECT_NAME}
