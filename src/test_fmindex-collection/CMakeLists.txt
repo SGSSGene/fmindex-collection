@@ -25,6 +25,7 @@ add_executable(${PROJECT_NAME}
     search/checkReverseIndexSearch.cpp
     search/checkSearchBacktracking.cpp
     search/checkSearchPseudo.cpp
+    search/checkSearches.cpp
     utils.cpp
 )
 target_link_libraries(${PROJECT_NAME}
