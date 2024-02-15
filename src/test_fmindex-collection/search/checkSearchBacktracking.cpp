@@ -4,6 +4,7 @@
 #include "../occtables/allTables.h"
 
 #include <catch2/catch_all.hpp>
+#include <fmindex-collection/locate.h>
 #include <fmindex-collection/search/Backtracking.h>
 #include <search_schemes/generator/all.h>
 
@@ -37,8 +38,8 @@ TEMPLATE_TEST_CASE("searching with backtracking", "[search]", ALLTABLES) {
         CHECK(result.lb == 1);
         CHECK(result.count() == 9);
     });
-
 }
+
 TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]", ALLTABLES) {
     using OccTable = TestType;
 
@@ -131,8 +132,8 @@ TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]", ALLTA
         CHECK(result.lb == 1);
         CHECK(result.count() == 9);
     });
-
 }
+
 TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[collection]", ALLTABLES) {
     using OccTable = TestType;
 
@@ -289,4 +290,40 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMInd
             CHECK(pl == pr);
         }
     }
+}
+
+
+TEST_CASE("backtracking with errors", "[collection]") {
+    using OccTable = fmindex_collection::occtable::EprV2_16<256>;
+    using Index = fmindex_collection::FMIndex<OccTable>;
+
+    auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'B', 'A', 'A', 'A'},
+                                                    {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'C', 'A', 'A', 'A'}};
+
+    auto index = Index{input, /*samplingRate*/1, /*threadNbr*/1};
+
+    auto queries = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'C', 'C'}, std::vector<uint8_t>{'B', 'B'}};
+
+    auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+    fmindex_collection::search_backtracking::search(index, queries, 1, [&](auto qidx, auto cursor, auto errors) {
+        (void)errors;
+        for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
+            results.emplace_back(qidx, sid, spos);
+        }
+    });
+
+    std::ranges::sort(results);
+
+    auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+        {0, 0, 2},
+        {0, 0, 3},
+        {0, 1, 6},
+        {0, 1, 7},
+        {1, 0, 6},
+        {1, 0, 7},
+        {1, 1, 2},
+        {1, 1, 3},
+    };
+
+    CHECK(results == expected);
 }

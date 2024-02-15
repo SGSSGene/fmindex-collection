@@ -9,6 +9,7 @@
 namespace fmindex_collection::search_backtracking {
 
 /* Search algorithm with explicit programmed search scheme
+ * Applies only hamming distance
  */
 template <typename index_t, Sequences queries_t, typename delegate_t>
 struct Search {
