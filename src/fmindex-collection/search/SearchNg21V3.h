@@ -111,7 +111,7 @@ struct Search {
             }
 
             e+=1;
-            for (uint8_t s{1}; s < Sigma; ++s) {
+            for (size_t s{1}; s < Sigma; ++s) {
                 if (s == symb) continue;
                 search_next<OnSubstituteL, OnSubstituteR>(cursors[s], s); // as substitution
             }
@@ -122,7 +122,7 @@ struct Search {
             pos -= 1;
 
             if constexpr (Deletion) {
-                for (uint8_t s{1}; s < Sigma; ++s) {
+                for (size_t s{1}; s < Sigma; ++s) {
                     if (s == symb) continue;
                     search_next<OnDeletionL, OnDeletionR>(cursors[s], s); // deletion occurred in query
                 }

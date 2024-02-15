@@ -190,7 +190,7 @@ struct Search {
             }
 
 #if __clang__
-            for (uint8_t i{1}; i < symb; ++i) {
+            for (size_t i{1}; i < symb; ++i) {
                 if constexpr (Deletion) {
                     buffer.after.push_back(QueueEntry{search, cursors[i], pos, i, &Search::search_next<OnDeletionL, OnDeletionR>}); // deletion occurred in query
                 }
@@ -208,7 +208,7 @@ struct Search {
             }
 
 #else
-            for (uint8_t i{1}; i < symb; ++i) {
+            for (size_t i{1}; i < symb; ++i) {
                 if constexpr (Deletion) {
                     buffer.after.emplace_back(search, cursors[i], pos, i, &Search::search_next<OnDeletionL, OnDeletionR>); // deletion occurred in query
                 }

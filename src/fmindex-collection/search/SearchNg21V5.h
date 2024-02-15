@@ -85,7 +85,7 @@ struct Search {
 
             e+=1;
             RInfo = 'S';
-            for (uint8_t s{1}; s < Sigma; ++s) {
+            for (size_t s{1}; s < Sigma; ++s) {
                 if (s == symb) continue;
                 search_next(cursors[s], s); // as substitution
             }
@@ -98,7 +98,7 @@ struct Search {
 
             if (rInfo == 'M' or rInfo == 'D') {
                 RInfo = 'D';
-                for (uint8_t s{1}; s < Sigma; ++s) {
+                for (size_t s{1}; s < Sigma; ++s) {
                     if (s == symb) continue;
                     search_next(cursors[s], s); // deletion occurred in query
                 }
@@ -140,7 +140,7 @@ struct Search {
 
             e+=1;
             LInfo = 'S';
-            for (uint8_t s{1}; s < Sigma; ++s) {
+            for (size_t s{1}; s < Sigma; ++s) {
                 if (s == symb) continue;
                 search_next(cursors[s], s); // as substitution
             }
@@ -153,7 +153,7 @@ struct Search {
 
             if (lInfo == 'M' or lInfo == 'D') {
                 LInfo = 'D';
-                for (uint8_t s{1}; s < Sigma; ++s) {
+                for (size_t s{1}; s < Sigma; ++s) {
                     if (s == symb) continue;
                     search_next(cursors[s], s); // deletion occurred in query
                 }

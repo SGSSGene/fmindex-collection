@@ -107,7 +107,7 @@ struct Search {
                 search_next<OnMatchL, OnMatchR>(newCur, e, i+1, symb);
             }
 
-            for (uint8_t s{1}; s < symb; ++s) {
+            for (size_t s{1}; s < symb; ++s) {
                 auto newCur = cursors[s];
 
                 if constexpr (Deletion) {
@@ -116,7 +116,7 @@ struct Search {
                 search_next<OnSubstituteL, OnSubstituteR>(newCur, e+1, i+1, s); // as substitution
             }
 
-            for (uint8_t s(symb+1); s < Sigma; ++s) {
+            for (size_t s(symb+1); s < Sigma; ++s) {
                 auto newCur = cursors[s];
 
                 if constexpr (Deletion) {
