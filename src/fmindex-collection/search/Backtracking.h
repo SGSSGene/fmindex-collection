@@ -93,9 +93,10 @@ void search(index_t const& index, query_t const& query, size_t maxError, delegat
     static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
 
     auto queries = std::array<query_t, 1>{query};
-    auto u = Search{index, queries, [&](auto /*queryId*/, auto const& cursor, size_t errors) {
+    auto cb = [&](auto /*queryId*/, auto const& cursor, size_t errors) {
         delegate(cursor, errors);
-    }, maxError};
+    };
+    auto u = Search{index, queries, cb, maxError};
     u.search();
 }
 
