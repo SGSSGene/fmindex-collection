@@ -176,6 +176,71 @@ TEST_CASE("check searches with errors", "[searches]") {
         CHECK(results == expected);
     }
 
+    SECTION("pseudo search, single searches") {
+        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        for (size_t qidx{0}; qidx < queries.size(); ++qidx) {
+            auto const& query = queries[qidx];
+            fmindex_collection::search_pseudo::search</*EditDistance=*/true>(index, query, search_scheme, [&](auto cursor, auto errors) {
+                (void)errors;
+                for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
+                    results.emplace_back(qidx, sid, spos);
+                }
+            });
+        }
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 2},
+            {0, 0, 3},
+            {0, 0, 3},
+            {0, 0, 3},
+            {0, 1, 6},
+            {0, 1, 7},
+            {0, 1, 7},
+            {0, 1, 7},
+            {1, 0, 6},
+            {1, 0, 7},
+            {1, 0, 7},
+            {1, 0, 7},
+            {1, 1, 2},
+            {1, 1, 3},
+            {1, 1, 3},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+
+    SECTION("pseudo search, hamming distance, all search") {
+        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmindex_collection::search_pseudo::search</*EditDistance=*/false>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
+                results.emplace_back(qidx, sid, spos);
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 2},
+            {0, 0, 3},
+            {0, 1, 6},
+            {0, 1, 7},
+            {1, 0, 6},
+            {1, 0, 7},
+            {1, 1, 2},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+
     SECTION("search ng12, all search") {
         auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
 
@@ -349,6 +414,85 @@ TEST_CASE("check searches with errors", "[searches]") {
         CHECK(results == expected);
     }
 
+    SECTION("search ng21, all search_n") {
+        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmindex_collection::search_ng21::search_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
+                results.emplace_back(qidx, sid, spos);
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 3},
+            {0, 1, 7},
+            {0, 1, 7},
+            {1, 0, 7},
+            {1, 0, 7},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+    SECTION("search ng21, all search_best") {
+        auto search_scheme_e0 = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 0), queries[0].size());
+        auto search_scheme_e1 = search_schemes::expand(search_schemes::generator::pigeon_opt(1, 1), queries[0].size());
+        auto search_scheme_e2 = search_schemes::expand(search_schemes::generator::pigeon_opt(2, 2), queries[0].size());
+        auto search_schemes = std::vector{search_scheme_e0, search_scheme_e1, search_scheme_e2};
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmindex_collection::search_ng21::search_best(index, queries, search_schemes, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
+                results.emplace_back(qidx, sid, spos);
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 3},
+            {0, 0, 3},
+            {0, 1, 7},
+            {0, 1, 7},
+            {1, 0, 7},
+            {1, 0, 7},
+            {1, 1, 3},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+    SECTION("search ng21, all search_best_n") {
+        auto search_scheme_e0 = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 0), queries[0].size());
+        auto search_scheme_e1 = search_schemes::expand(search_schemes::generator::pigeon_opt(1, 1), queries[0].size());
+        auto search_schemes = std::vector{search_scheme_e0, search_scheme_e1};
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmindex_collection::search_ng21::search_best_n(index, queries, search_schemes, 3, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
+                results.emplace_back(qidx, sid, spos);
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 3},
+            {0, 1, 7},
+            {0, 1, 7},
+            {1, 0, 7},
+            {1, 0, 7},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
     SECTION("search ng21 V2, all search") {
         auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
 
@@ -474,6 +618,85 @@ TEST_CASE("check searches with errors", "[searches]") {
             {1, 0, 7},
             {1, 0, 7},
             {1, 1, 3},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+    SECTION("search ng21 V6, all search_n") {
+        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmindex_collection::search_ng21V6::search_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
+                results.emplace_back(qidx, sid, spos);
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 3},
+            {0, 1, 7},
+            {0, 1, 7},
+            {1, 0, 7},
+            {1, 0, 7},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+    SECTION("search ng21 V6, all search_best") {
+        auto search_scheme_e0 = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 0), queries[0].size());
+        auto search_scheme_e1 = search_schemes::expand(search_schemes::generator::pigeon_opt(1, 1), queries[0].size());
+        auto search_scheme_e2 = search_schemes::expand(search_schemes::generator::pigeon_opt(2, 2), queries[0].size());
+        auto search_schemes = std::vector{search_scheme_e0, search_scheme_e1, search_scheme_e2};
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmindex_collection::search_ng21V6::search_best(index, queries, search_schemes, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
+                results.emplace_back(qidx, sid, spos);
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 3},
+            {0, 0, 3},
+            {0, 1, 7},
+            {0, 1, 7},
+            {1, 0, 7},
+            {1, 0, 7},
+            {1, 1, 3},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+    SECTION("search ng21 V6, all search_best_n") {
+        auto search_scheme_e0 = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 0), queries[0].size());
+        auto search_scheme_e1 = search_schemes::expand(search_schemes::generator::pigeon_opt(1, 1), queries[0].size());
+        auto search_schemes = std::vector{search_scheme_e0, search_scheme_e1};
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmindex_collection::search_ng21V6::search_best_n(index, queries, search_schemes, 3, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
+                results.emplace_back(qidx, sid, spos);
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 3},
+            {0, 1, 7},
+            {0, 1, 7},
+            {1, 0, 7},
+            {1, 0, 7},
             {1, 1, 3},
         };
         CHECK(results == expected);
