@@ -14,7 +14,7 @@ Example: The human genome consist of around 3 billion base pairs, which can be i
 Searching with a bidirectional index consist out of different parts:
 1. The **Occurrence Table** - Data structure of the bidirectional index
 2. (Compressed) **Suffix Array** - Data structure to map the entries of the index into the actual position of the original text
-3. **FMIndex** and **BiFMIndex** - Data structure that aggregate Occurence Table, Suffix Array and the C array into one container.
+3. **FMIndex** and **BiFMIndex** - Data structure that aggregate Occurrence Table, Suffix Array and the C array into one container.
 3. **Search algorithm** - there are many ways to search, edit distance, hamming distance or using search schemes
 4. **Search scheme generator** - The currently best performing search algorithms are using search schemes, these need to be generated.
 
@@ -25,7 +25,7 @@ Currently, following structures are available and they all fulfill the "OccTable
 | **Naive**                    | `naive::OccTable<uint64_t>`                  | storing the occ table in std::vector<size_t> tables, needs O(|Σ|·n·sizeof(size_t)) space. (144GB for the human genome)|
 | **Bitvector**                | `bitvector::OccTable<uint64_t>`              | using bitvector for each table O(|Σ| · n · 2/8). (4.5GB for human genome) |
 | **CompactBitvector**         | `compactBitvector::OccTable<uint64_t>`       | using bitvector for each table, superblocks, blocks and bits are interleaved,  O(|Σ| · n · 2/8). (4.5GB for human genome) |
-| **CompactBitvectorPrefix**   | `compactBitvectorPrefix::OccTable<uint64_t>` | similar to **CompactBitvector** but has additional bitvector that counts directly for prefix occurences. |
+| **CompactBitvectorPrefix**   | `compactBitvectorPrefix::OccTable<uint64_t>` | similar to **CompactBitvector** but has additional bitvector that counts directly for prefix occurrences. |
 | **Interleaved-8**            | `interleaved8::OccTable<uint64_t>`           | using bitvectors, but interleaving the bitvectors of different occ columns |
 | **Interleaved-16**           | `interleaved16::OccTable<uint64_t>`          | using bitvectors, but interleaving the bitvectors of different occ columns |
 | **Interleaved-32**           | `interleaved32::OccTable<uint64_t>`          | using bitvectors, but interleaving the bitvectors of different occ columns |
@@ -80,7 +80,7 @@ The suffix array requires roughly 52MB of memory, and the dense suffix array req
 see [OccTables](doc/OccTables.png) for more details on their structure
 
 ### Runtimes
-This is run over the first 1GB of the humangenome. Applied a search with k=3 editdistance, using the ng12, applying 40'000queries (inkluding reverse complements) each length of 100 base pairs.
+This is run over the first 1GB of the human genome. Applied a search with k=3 edit distance, using the ng12, applying 40'000queries (including reverse complements) each length of 100 base pairs.
 
 | Name                             | bits   | runtime in s |
 |----------------------------------|--------|--------------|
@@ -135,6 +135,6 @@ found under the namespace of `search_schemes::generator`. To make them usable fo
 | `zeroOnesZero_trivial(minK, K)` | generates based on the 01\*0 lossless seeds paper |
 | `zeroOnesZero_opt(minK, K)`     | same as above, but merging certain searches |
 | `h2(N, minK, K)`                | a custom heuristic to create a search scheme |
-| `optimum(minK, K)`              | the optimum search schemes, as they are provided in the seqan3 library |
+| `optimum(minK, K)`              | the optimum search schemes, as they are provided in the SeqAn3 library |
 | `bestKnown(N, minK, K)`         | mhm, I don't remember where I got these from |
 
