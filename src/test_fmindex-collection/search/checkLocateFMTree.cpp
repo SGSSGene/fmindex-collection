@@ -18,17 +18,17 @@ TEST_CASE("locating using LocateFMTree", "[locate][fmtree]") {
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'B', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'C', 'A', 'A', 'A'}};
 
-    auto index = Index{input, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = Index{input, /*samplingRate*/4, /*threadNbr*/1};
 
     auto queries = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'C', 'C'}, std::vector<uint8_t>{'B', 'B'}};
 
-    SECTION("pseudo search, all search") {
+    SECTION("test LocateFMTree") {
         auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_pseudo::search</*EditDistance=*/true>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateFMTree{index, cursor, 4}) {
+            for (auto [sid, spos] : fmindex_collection::LocateFMTree{index, cursor, 3}) {
                 results.emplace_back(qidx, sid, spos);
             }
         });
@@ -55,4 +55,39 @@ TEST_CASE("locating using LocateFMTree", "[locate][fmtree]") {
         };
         CHECK(results == expected);
     }
+
+    SECTION("test locateFMTree") {
+        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmindex_collection::search_pseudo::search</*EditDistance=*/true>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            fmindex_collection::locateFMTree<4>(index, cursor, [&](size_t sid, size_t spos) {
+                results.emplace_back(qidx, sid, spos);
+            });
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 2},
+            {0, 0, 3},
+            {0, 0, 3},
+            {0, 0, 3},
+            {0, 1, 6},
+            {0, 1, 7},
+            {0, 1, 7},
+            {0, 1, 7},
+            {1, 0, 6},
+            {1, 0, 7},
+            {1, 0, 7},
+            {1, 0, 7},
+            {1, 1, 2},
+            {1, 1, 3},
+            {1, 1, 3},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
 }
