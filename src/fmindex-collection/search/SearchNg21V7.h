@@ -84,8 +84,8 @@ struct Search {
         searches = std::move(reordered);
     }
 
-    template <typename query_t, typename bestHit_t>
-    void search(size_t _qidx, query_t const& query, bestHit_t bestHit = false) {
+    template <typename query_t, typename bestHit_t = std::false_type>
+    void search(size_t _qidx, query_t const& query, bestHit_t = {}) {
         qidx = _qidx;
         abort = {};
         ct = 0;
@@ -110,8 +110,10 @@ struct Search {
                 (this->*q.func)(q.scheme, q.cursor, e, q.pos, q.lastRank);
                 if (abort) return;
             }
-            if (bestHit and ct > 0) {
-                break;
+            if constexpr (std::same_as<bestHit_t, std::true_type>) {
+                if (ct > 0) {
+                    break;
+                }
             }
             e += 1;
         }
@@ -237,7 +239,9 @@ struct Search {
 
 template <typename index_t, typename delegate_t>
 auto refine_callback(delegate_t const& delegate) {
-    using cursor_t = BiFMIndexCursor<index_t>;
+//    using cursor_t = BiFMIndexCursor<index_t>;
+    using cursor_t = select_cursor_t<index_t>;
+
     using R = std::decay_t<decltype(delegate(0, std::declval<cursor_t>(), 0))>;
 
     return [&](size_t qidx, auto cur, size_t e) {
