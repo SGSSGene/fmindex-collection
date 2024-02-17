@@ -5,18 +5,19 @@ site_name: FMIndex Collection
 docs_dir: docs
 nav:
   - index.md
-  - Concepts:
-    - concepts/Bitvector.md
-    - concepts/RankVector.md
-    - concepts/OccTable.md
-    - concepts/SuffixArray.md
-    - concepts/Index.md
-  - Algorithms:
-    - search.md
-    - locate.md
-  - Search Schemes:
-    - search_schemes/generator.md
-    - search_schemes/utility.md
+  - API:
+    - Concepts:
+      - concepts/Bitvector.md
+      - concepts/RankVector.md
+      - concepts/OccTable.md
+      - concepts/SuffixArray.md
+      - concepts/Index.md
+    - Algorithms:
+      - search.md
+      - locate.md
+    - Search Schemes:
+      - search_schemes/generator.md
+      - search_schemes/utility.md
 use_directory_urls: false
 repo_url: https://github.com/SGSSGene/fmindex-collection
 theme:
@@ -25,6 +26,7 @@ theme:
   features:
     - navigation.sections
     - content.code.copy
+    - navigation.expand
 plugins:
   - include-markdown:
       comments: false

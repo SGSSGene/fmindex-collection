@@ -54,8 +54,10 @@ functionality:
 - `#!c++ fmindex_collection::bitvector::CompactBitvector4Blocks`
 
 ## Stats
-|                     Name | Space (bits per bit) |
-|:------------------------ | --------------------:|
-|`Bitvector`               |                1.375 |
-|`CompactBitvector`        |                1.333 |
-|`CompactBitvector4Blocks` |                1.375 |
+|                     Name | Space (bits per bit) | Description |
+|:------------------------ | --------------------:| ----------- |
+|`Bitvector`               |                1.375 | Consist of 3 independent arrays. 64bit values for bits, 8bit for blocks and 64bit for superblocks. Every 64bits a new block is started. Every 256bits a new superblock starts|
+|`CompactBitvector`        |                1.333 | Consist of 3 interleaved arrays. Each DataBlock is 512 bits, and covers 6·64bits, each block is 9 bit and starts every 64bit, superblocks start ever 352 bits, 10bits are wasted for padding.|
+|`CompactBitvector4Blocks` |                1.375 | Consist of 3 interleaved arrays. Each DataBlock is 352 bits, and covers 4·64bits, each block is 8 bit and starts every 64bit, superblocks start every 256 bits. |
+
+![bit vector memory layout](Bitvector.png){ align=right }
