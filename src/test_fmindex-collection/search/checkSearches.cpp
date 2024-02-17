@@ -863,6 +863,4 @@ TEST_CASE("check searches with errors", "[searches]") {
         };
         CHECK(results == expected);
     }
-
-
 }
