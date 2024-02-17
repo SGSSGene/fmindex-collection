@@ -5,6 +5,8 @@
 
 #include "concepts.h"
 
+#include "../bitvector/CompactBitvector.h"
+
 #include <bitset>
 #include <cassert>
 #include <vector>
@@ -12,83 +14,19 @@
 namespace fmindex_collection::rankvector {
 
 struct CompactBitvector {
-    struct alignas(64) Superblock {
-        uint64_t superBlockEntry{};
-        uint64_t blockEntries{};
-        std::array<uint64_t, 6> bits{};
-
-        uint64_t rank(uint64_t idx) const noexcept {
-            assert(idx < 384);
-
-            auto blockId = idx >> 6;
-            auto block = 0b111111111ull & (blockEntries >> (blockId * 9));
-            auto keep = (idx & 63);
-            auto maskedBits = bits[blockId] << (63-keep);
-            auto ct = std::bitset<64>{maskedBits}.count();
-
-            auto total = superBlockEntry + block + ct;
-            return total;
-        }
-
-        bool symbol(uint64_t idx) const noexcept {
-            assert(idx < 384);
-
-            auto blockId = idx >> 6;
-            auto bitId = idx & 63;
-            return bits[blockId] & (1ull << bitId);
-        }
-
-        void setBlock(uint64_t blockId, uint64_t value) {
-            blockEntries = blockEntries & ~uint64_t{0b111111111ull << blockId*9};
-            blockEntries = blockEntries | uint64_t{value << blockId*9};
-        }
-
-        template <typename Archive>
-        void serialize(Archive& ar) {
-            ar(superBlockEntry, blockEntries, bits);
-        }
-    };
-
     static constexpr size_t Sigma = 2;
 
-    std::vector<Superblock> superblocks{};
-    size_t                  totalLength;
+    bitvector::CompactBitvector bitvector;
 
     CompactBitvector(std::span<uint8_t const> _symbols)
         : CompactBitvector(_symbols, 1)
     {}
 
-    CompactBitvector(std::span<uint8_t const> _symbols, uint8_t _symbol) {
-        auto length = _symbols.size();
-        totalLength = length;
-
-        superblocks.reserve(length/384+1);
-        superblocks.emplace_back();
-
-        uint64_t sblock_acc{};
-        uint64_t block_acc{};
-
-        for (uint64_t size{1}; size <= length; ++size) {
-            if (size % 384 == 0) { // new super block + new block
-                superblocks.emplace_back();
-                superblocks.back().superBlockEntry = sblock_acc;
-                block_acc = 0;
-            } else if (size % 64 == 0) { // new block
-                superblocks.back().setBlock((size % 384) / 64, block_acc);
-            }
-
-            auto blockId      = (size >>  6) % 6;
-            auto bitId        = size &  63;
-
-            if (_symbols[size-1] == _symbol) {
-                auto& bits = superblocks.back().bits[blockId];
-                bits = bits | (1ull << bitId);
-            }
-
-            block_acc  += 1;
-            sblock_acc += 1;
-        }
-    }
+    CompactBitvector(std::span<uint8_t const> _symbols, uint8_t _symbol)
+        : bitvector{_symbols.size(), [&](size_t idx) {
+            return _symbols[idx] == _symbol;
+        }}
+    {}
 
     CompactBitvector() {}
     CompactBitvector(CompactBitvector const&) = default;
@@ -98,20 +36,15 @@ struct CompactBitvector {
 
 
     size_t size() const noexcept {
-        return totalLength;
+        return bitvector.size();
     }
 
     uint8_t symbol(uint64_t idx) const noexcept {
-        idx += 1;
-        auto superblockId = idx / 384;
-        auto bitId        = idx % 384;
-        return superblocks[superblockId].symbol(bitId);
+        return bitvector.symbol(idx);
     }
 
     uint64_t rank(uint64_t idx, uint8_t symb=1) const noexcept {
-        auto superblockId = idx / 384;
-        auto bitId        = idx % 384;
-        auto v = superblocks[superblockId].rank(bitId);
+        auto v = bitvector.rank(idx);
         if (symb == 0) {
             v = idx - v;
         }
@@ -138,7 +71,7 @@ struct CompactBitvector {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(totalLength, superblocks);
+        ar(bitvector);
     }
 };
 
