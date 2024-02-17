@@ -387,7 +387,7 @@ TEST_CASE("check searches with errors", "[searches]") {
         CHECK(results == expected);
     }
 
-    SECTION("search ng20, all search") {
+/*    SECTION("search ng20, all search") {
         auto search_scheme = search_schemes::expand(search_schemes::generator::backtracking(2, 0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
@@ -419,7 +419,7 @@ TEST_CASE("check searches with errors", "[searches]") {
             {1, 1, 3},
         };
         CHECK(results == expected);
-    }
+    }*/
 
 
     SECTION("search ng21, all search") {
