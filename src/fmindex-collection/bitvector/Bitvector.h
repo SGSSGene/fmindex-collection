@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <ranges>
 #include <span>
 #include <vector>
 
@@ -34,25 +35,29 @@ struct Bitvector {
     Bitvector(Bitvector const&) = default;
     Bitvector(Bitvector&&) noexcept = default;
 
-    Bitvector(std::span<uint8_t const> _text)
-        : Bitvector{_text.size(), [&](size_t i) {
-            return _text[i] != 0;
-        }}
-    {}
-
     template <typename CB>
     Bitvector(size_t length, CB cb) {
-        reserve(length);
+        Bitvector(std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
+            return cb(i);
+        }));
+    }
+
+    template <std::ranges::sized_range range_t>
+        requires std::same_as<std::ranges::range_value_t<range_t>, uint8_t>
+    Bitvector(range_t&& _range) {
+        reserve(_range.size());
 
         superblocks.emplace_back();
         superblocks.emplace_back();
         blocks.emplace_back();
         bits.emplace_back();
 
-        size_t const loop64  = length / 64;
+        auto iter = begin(_range);
+
+        size_t const loop64  = _range.size() / 64;
         for (size_t l64{}; l64 < loop64; ++l64) {
             for (size_t i{}; i < 64; ++i) {
-                bool value = cb(totalSize+i);
+                bool value = *(iter++);
                 if (value) {
                     auto bitId = i;
                     auto& tbits  = bits.back();
@@ -69,8 +74,8 @@ struct Bitvector {
                 blocks.back() = 0;
             }
         }
-        while(totalSize < length) {
-            push_back(cb(totalSize));
+        while(totalSize < _range.size()) {
+            push_back(*(iter++));
         }
     }
 
