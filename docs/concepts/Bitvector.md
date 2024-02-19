@@ -10,12 +10,14 @@ The concept `fmindex_collection::Bitvector_c` models
 a bitvector with rank support. Classes fulfilling this concept are guaranteed to provide following
 functionality:
 
-- class is `std::default_initializable<T>`
-- class is `std::movable<T>`
-- `#!c++ T(size_t length, Proj proj)`
-- `#!c++ auto size() const -> size_t`
-- `#!c++ auto symbol(size_t idx) const -> bool`
-- `#!c++ auto rank(size_t idx) const -> bool`
+| Functionality                                 | Description |
+|-----------------------------------------------|-------------|
+| class is `std::default_initializable<T>`      |             |
+| class is `std::movable<T>`                    |             |
+| `#!c++ T(size_t length, Proj proj)`           |             |
+| `#!c++ auto size() const -> size_t`           | Returns the number of bits of this vector. |
+| `#!c++ auto symbol(size_t idx) const -> bool` | Returns the bit at position `idx`. Parameter must be 0 ≤ idx < size(). |
+| `#!c++ auto rank(size_t idx) const -> bool`   | Returns the number of ones in the first `idx` bits. Paremeter must be 0 ≤ idx ≤ size(). |
 
 ## Examples usages
 === "Construction and Usage"
