@@ -1,0 +1,15 @@
+.rankvector_table {
+    line-height: 1em !important;
+}
+.rankvector_table table th {
+    min-width: unset !important;
+}
+.rankvector_table table th:nth-of-type(1) {
+    min-width: 18em !important;
+}
+.rankvector_table table tbody tr:nth-child(odd) {
+    background: #f8f8f8;
+}
+.rankvector_table table tbody tr:nth-child(even) {
+    background: #FFF;
+}
