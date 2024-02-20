@@ -36,14 +36,14 @@ struct Bitvector {
     Bitvector(Bitvector&&) noexcept = default;
 
     template <typename CB>
-    Bitvector(size_t length, CB cb) {
-        Bitvector(std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
+    Bitvector(size_t length, CB cb)
+        : Bitvector{std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
             return cb(i);
-        }));
-    }
+        })}
+    {}
 
     template <std::ranges::sized_range range_t>
-        requires std::same_as<std::ranges::range_value_t<range_t>, uint8_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
     Bitvector(range_t&& _range) {
         reserve(_range.size());
 
@@ -52,7 +52,7 @@ struct Bitvector {
         blocks.emplace_back();
         bits.emplace_back();
 
-        auto iter = begin(_range);
+        auto iter = _range.begin();
 
         size_t const loop64  = _range.size() / 64;
         for (size_t l64{}; l64 < loop64; ++l64) {

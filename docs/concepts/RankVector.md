@@ -40,40 +40,44 @@ functionality:
     ```
 
 ## Implementation
-- `#!c++ fmindex_collection::rankvector::CompactBitvector` (obsolete?)
-- `#!c++ fmindex_collection::rankvector::DenseEPRV6<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::EPRV3_8<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::EPRV3_16<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::EPRV3_32<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::EPRV4<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::EPRV5<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedBitvector8<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedBitvector16<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedBitvector32<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedBitvector8Aligned<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedBitvector16Aligned<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedBitvector32Aligned<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedEPR8<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedEPR16<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedEPR32<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedEPR8Aligned<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedEPR16Aligned<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedEPR32Aligned<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedEPRV2_8<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedEPRV2_16<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedEPRV2_32<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedEPRV2_8Aligned<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedEPRV2_16Aligned<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedEPRV2_32Aligned<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::InterleavedWavelet<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::MultiBitvector<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::Naive<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::RLE<size_t TSigma, size_t encodingBlockSize>` (some parameters are missing)
-- `#!c++ fmindex_collection::rankvector::rRLE<size_t TSigma, size_t encodingBlockSize>` (some parameters are missing)
-- `#!c++ fmindex_collection::rankvector::Sdsl_wt_bldc<size_t TSigma>`
-- `#!c++ fmindex_collection::rankvector::Sdsl_wt_epr<size_t TSigma>` (something is broken here)
-- `#!c++ fmindex_collection::rankvector::Wavelet<size_t TSigma>`
+All implementation are located inside the namespace `fmindex_collection::rankvector`.
 
+| rank vector                                               |  bits |  4 |  5 |  6 | 21 |256(!TODO for 1GB of data, currently only 100MB)| Description |
+|:----------------------------------------------------------|-------|---:|---:|---:|---:|----:|--------------|
+| `#!c++ Naive<size_t TSigma>`                              |       | 256| 320| 384|1344|16384| Stores every thing in `std::vector<size_t>`, requires O(n·log n). |
+| `#!c++ MultiBitvector<size_t TSigma>`                     |       | 5.5| 6.9| 8.3|28.9|352.0| Standard FM-Index implementation. Using a bitvector for every alphabet character. |
+| `#!c++ InterleavedBitvector8<size_t TSigma>`              |       | 5.5| 6.9| 8.3|28.9|352.0| Interleaving blocks and bits. Using 8 bits for storing block values. New super-block every 256bits.     |
+| `#!c++ InterleavedBitvector16<size_t TSigma>`             |       | 5.0| 6.3| 7.5|26.3|320.3| Interleaving blocks and bits. Using 16 bits for storing block values. New super-block every 65536 bits. |
+| `#!c++ InterleavedBitvector32<size_t TSigma>`             |       | 6.0| 7.5| 9.0|31.5|384.0| Interleaving blocks and bits. Using 32 bits for storing block values. New super-block every 2^32 bits.  |
+| `#!c++ InterleavedBitvector8Aligned<size_t TSigma>`       |       |    |    |    |    |     | Same as `InterleavedBitvector` but the bits and blocks sections are aligned to 64bit. |
+| `#!c++ InterleavedBitvector16Aligned<size_t TSigma>`      |       |    |    |    |    |     | Same as `InterleavedBitvector` but the bits and blocks sections are aligned to 64bit. |
+| `#!c++ InterleavedBitvector32Aligned<size_t TSigma>`      |       |    |    |    |    |     | Same as `InterleavedBitvector` but the bits and blocks sections are aligned to 64bit. |
+| `#!c++ InterleavedEPR8<size_t TSigma>`                    |       | 4.0| 6.2| 6.9|24.7|328.0| Similar to `InterleavedBitvector, but bits are encoded according to their BWT representation. |
+| `#!c++ InterleavedEPR16<size_t TSigma>`                   |       | 4.0| 6.9| 7.6|33.4|520.3| See `InterleavedEPR8`. |
+| `#!c++ InterleavedEPR32<size_t TSigma>`                   |       | 6.0|10.7|12.2|61.3| 1032| See `InterleavedEPR8`. |
+| `#!c++ InterleavedEPR8Aligned<size_t TSigma>`             |       |    |    |    |    |     | See `InterleavedEPR8`. |
+| `#!c++ InterleavedEPR16Aligned<size_t TSigma>`            |       |    |    |    |    |     | See `InterleavedEPR8`. |
+| `#!c++ InterleavedEPR32Aligned<size_t TSigma>`            |       |    |    |    |    |     | See `InterleavedEPR8`. |
+| `#!c++ InterleavedEPRV2_8<size_t TSigma>`                 |       | 4.0| 5.3| 5.5|13.3|104.0| Similar to `InterleavedBitvector8`, but custom bit shuffling. Faster and better use of space compared to EPR. |
+| `#!c++ InterleavedEPRV2_16<size_t TSigma>`                |       | 3.0| 5.0| 5.0|11.0| 72.3| See `InterleavedEPRV2_8`. |
+| `#!c++ InterleavedEPRV2_32<size_t TSigma>`                |       | 4.0| 6.0| 6.0|16.0|136.0| See `InterleavedEPRV2_8`. |
+| `#!c++ InterleavedEPRV2_8Aligned<size_t TSigma>`          |       |    |    |    |    |     | See `InterleavedEPRV2_8`. |
+| `#!c++ InterleavedEPRV2_16Aligned<size_t TSigma>`         |       |    |    |    |    |     | See `InterleavedEPRV2_8`. |
+| `#!c++ InterleavedEPRV2_32Aligned<size_t TSigma>`         |       |    |    |    |    |     | See `InterleavedEPRV2_8`. |
+| `#!c++ EPRV3_8<size_t TSigma>`                            |       | 3.5| 4.9| 5.3|12.9|104.0| Similar to `InterlavedEPRV2_8` but no interleaving. |
+| `#!c++ EPRV3_16<size_t TSigma>`                           |       | 3.0| 4.3| 4.5|10.3| 72.3| See `EPRV3_8` |
+| `#!c++ EPRV3_32<size_t TSigma>`                           |       | 4.0| 5.5| 6.0|15.5|136.0| See `EPRV3_8` |
+| `#!c++ EPRV4<size_t TSigma>`                              |       | 2.8| 3.9| 4.1| 8.9| 56.1| Similar to  `EPRV3` but using two additional layers of blocks. (8bit, 16bit and 32bit). |
+| `#!c++ EPRV5<size_t TSigma>`                              |       | 2.8| 3.9| 4.1| 9.0| 56.3| Similar to `EPRV3` but using one additional layer of blocks. (8bit and 16bit). |
+| `#!c++ DenseEPRV6<size_t TSigma>`                         |       | 2.8| 3.9| 4.1| 8.9| 56.1| Same as `EPRV5` but using a dense vector for the super blocks instead of 64bit values. (Not worth it). |
+| `#!c++ InterleavedEPRV7<size_t TSigma>`                   |       | 2.8| 3.9| 4.1| 8.9| 56.3| Similar to `EPRV5` but blocks and lowest layer are interleaved. |
+| `#!c++ InterleavedWavelet<size_t TSigma>`                 |       | 5.0| 5.5| 6.0|15.5|137.0| Special version of Wavelet-trees (!TODO I think this was a combination fo EPR and Wavelet, not sure)|
+| `#!c++ RLE<size_t TSigma, size_t encodingBlockSize>`      |       |    |    |    |    |     | (!TODO some parameters are missing) |
+| `#!c++ rRLE<size_t TSigma, size_t encodingBlockSize>`     |       |    |    |    |    |     | (!TODO some parameters are missing) |
+| `#!c++ Sdsl_wt_bldc<size_t TSigma>`                       |       | 2.5| 3.0| 3.3| 5.6| 10.0| Wrapper of the Wavelet-Tree implementation of the SDSL library. |
+| `#!c++ Sdsl_wt_epr<size_t TSigma>`                        |       |    |    |    |    |     | Wrapper of the EPR implementation of the SDSL library. (!TODO something is broken) |
+| `#!c++ Wavelet<size_t TSigma>`                            |       | 4.0| 4.0| 4.0| 6.7| 12.0| Custom Wavelet-Tree implementation. |
+| `#!c++ CompactBitvector`                                  |       |    |    |    |    |     | Special case for Sigma 2, using `bitvector::CompactBitvector` as implementation. |
 
 ## Stats
 |                                           Name | Space (bits per bit) |

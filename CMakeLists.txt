@@ -88,13 +88,13 @@ if (${ROOT_PROJECT})
     add_executable(run_search_schemes
         src/run_search_schemes/main.cpp
     )
-
     target_link_libraries(run_search_schemes
         PRIVATE
         search_schemes
         fmt::fmt-header-only
     )
 
+    add_subdirectory(src/fmindex-collection-stats)
     add_subdirectory(src/test_header)
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
