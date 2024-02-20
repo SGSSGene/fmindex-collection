@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <ranges>
 #include <stdexcept>
 #include <span>
 #include <vector>
@@ -59,12 +60,14 @@ struct CompactBitvector4Blocks {
         }
     };
 
-    size_t totalLength;
     std::vector<Superblock> superblocks{};
+    size_t totalLength{};
 
-    CompactBitvector4Blocks(std::span<uint8_t const> _text)
-        : CompactBitvector4Blocks{_text.size(), [&](size_t i) {
-            return _text[i] != 0;
+    template <std::ranges::sized_range range_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
+    CompactBitvector4Blocks(range_t&& _range)
+        : CompactBitvector4Blocks{_range.size(), [&](size_t i) {
+            return _range[i] != 0; //!TODO this is not a purely range based c'tor
         }}
     {}
 
@@ -91,10 +94,10 @@ struct CompactBitvector4Blocks {
                 superblocks.back().setBlock((size % 256) / 64, block_acc);
             }
 
-            auto blockId      = (size >>  6) % 4;
-            auto bitId        = size &  63;
-
             if (cb(size-1)) {
+                auto blockId      = (size >>  6) % 4;
+                auto bitId        = size &  63;
+
                 auto& bits = superblocks.back().bits[blockId];
                 bits = bits | (1ull << bitId);
 

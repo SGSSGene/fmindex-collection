@@ -29,7 +29,7 @@ struct Bitvector {
     std::vector<uint64_t> superblocks;
     std::vector<uint8_t>  blocks;
     std::vector<uint64_t> bits;
-    size_t totalSize{};
+    size_t totalLength{};
 
     Bitvector() = default;
     Bitvector(Bitvector const&) = default;
@@ -65,16 +65,16 @@ struct Bitvector {
                     superblocks.back() += 1;
                 }
             }
-            totalSize += 64;
+            totalLength += 64;
             blocks.emplace_back(superblocks.back());
             bits.emplace_back();
-            if (totalSize % 256 == 0) {
+            if (totalLength % 256 == 0) {
                 superblocks.back() += superblocks[superblocks.size()-2];
                 superblocks.emplace_back();
                 blocks.back() = 0;
             }
         }
-        while(totalSize < _range.size()) {
+        while(totalLength < _range.size()) {
             push_back(*(iter++));
         }
     }
@@ -90,14 +90,14 @@ struct Bitvector {
 
     void push_back(bool _value) {
         if (_value) {
-            auto bitId   = totalSize % 64;
+            auto bitId   = totalLength % 64;
             auto& tbits  = bits.back();
             tbits        = tbits | (size_t{1} << bitId);
             superblocks.back() += 1;
         }
-        totalSize += 1;
-        if (totalSize % 64 == 0) { // new block
-            if (totalSize % 256 == 0) { // new super block + new block
+        totalLength += 1;
+        if (totalLength % 64 == 0) { // new block
+            if (totalLength % 256 == 0) { // new super block + new block
                 superblocks.back() += superblocks[superblocks.size()-2];
                 superblocks.emplace_back();
                 blocks.emplace_back();
@@ -110,7 +110,7 @@ struct Bitvector {
     }
 
     size_t size() const noexcept {
-        return totalSize;
+        return totalLength;
     }
 
     bool symbol(size_t idx) const noexcept {
@@ -138,7 +138,7 @@ struct Bitvector {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(superblocks, blocks, bits, totalSize);
+        ar(superblocks, blocks, bits, totalLength);
     }
 };
 

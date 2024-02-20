@@ -7,6 +7,7 @@
 
 #include <bitset>
 #include <cassert>
+#include <ranges>
 #include <vector>
 
 namespace fmindex_collection::bitvector {
@@ -33,10 +34,10 @@ struct CompactBitvector {
             auto blockId = idx >> 6;
             auto block = 0b111111111ull & (blockEntries >> (blockId * 9));
             auto keep = (idx & 63);
-            auto maskedBits = bits[blockId] << (63-keep);
-            auto ct = std::bitset<64>{maskedBits}.count();
+            auto maskedBits = (std::bitset<64>(bits[blockId]) << (64 - keep));
+            auto bitcount   = std::bitset<64>{maskedBits}.count();
 
-            auto total = superBlockEntry + block + ct;
+            auto total = superBlockEntry + block + bitcount;
             return total;
         }
 
@@ -62,45 +63,30 @@ struct CompactBitvector {
     static constexpr size_t Sigma = 2;
 
     std::vector<Superblock> superblocks{};
-    size_t                  totalLength;
-
-    CompactBitvector(std::span<uint8_t const> _text)
-        : CompactBitvector{_text.size(), [&](size_t i) {
-            return _text[i] != 0;
-        }}
-    {}
+    size_t                  totalLength{};
 
     template <typename CB>
-    CompactBitvector(size_t length, CB cb) {
-        totalLength = length;
+    CompactBitvector(size_t length, CB cb)
+        : CompactBitvector{std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
+            return cb(i);
+        })}
+    {}
 
-        superblocks.reserve(length/384+1);
+    //!TODO helper structures, when building the vector
+    uint64_t sblock_acc{};
+    uint64_t block_acc{};
+
+
+    template <std::ranges::sized_range range_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
+    CompactBitvector(range_t&& _range) {
+
+        reserve(_range.size());
         superblocks.emplace_back();
 
-        uint64_t sblock_acc{};
-        uint64_t block_acc{};
-
-        for (uint64_t size{1}; size <= length; ++size) {
-            if (size % 384 == 0) { // new super block + new block
-                superblocks.emplace_back();
-                superblocks.back().superBlockEntry = sblock_acc;
-                block_acc = 0;
-            } else if (size % 64 == 0) { // new block
-                superblocks.back().setBlock((size % 384) / 64, block_acc);
-            }
-
-            auto blockId      = (size >>  6) % 6;
-            auto bitId        = size &  63;
-
-            auto sym = cb(size-1);
-
-            if (sym) {
-                auto& bits = superblocks.back().bits[blockId];
-                bits = bits | (1ull << bitId);
-
-                block_acc  += 1;
-                sblock_acc += 1;
-            }
+        auto iter = _range.begin();
+        while (totalLength < _range.size()) {
+            push_back(*(iter++));
         }
     }
 
@@ -110,13 +96,39 @@ struct CompactBitvector {
     auto operator=(CompactBitvector const&) -> CompactBitvector& = default;
     auto operator=(CompactBitvector&&) noexcept -> CompactBitvector& = default;
 
+    void reserve(size_t _length) {
+        superblocks.reserve((_length+1)/(64*6) + 1);
+    }
+
+    void push_back(bool _value) {
+        if (_value) {
+            auto blockId      = (totalLength >>  6) % 6;
+            auto bitId        = totalLength &  63;
+
+            auto& bits = superblocks.back().bits[blockId];
+            bits = bits | (1ull << bitId);
+
+            block_acc  += 1;
+            sblock_acc += 1;
+        }
+        totalLength += 1;
+        if (totalLength % 64 == 0) { // new block
+            if (totalLength % 384 == 0) { // new super block + new block
+                superblocks.emplace_back();
+                superblocks.back().superBlockEntry = sblock_acc;
+                block_acc = 0;
+            } else {
+                superblocks.back().setBlock((totalLength % 384) / 64, block_acc);
+            }
+        }
+    }
+
 
     size_t size() const noexcept {
         return totalLength;
     }
 
     bool symbol(size_t idx) const noexcept {
-        idx += 1;
         auto superblockId = idx / 384;
         auto bitId        = idx % 384;
         return superblocks[superblockId].symbol(bitId);
@@ -133,7 +145,7 @@ struct CompactBitvector {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(totalLength, superblocks);
+        ar(totalLength, superblocks, sblock_acc, block_acc);
     }
 };
 static_assert(BitVector_c<CompactBitvector>);
