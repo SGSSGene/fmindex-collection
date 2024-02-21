@@ -94,6 +94,19 @@ All implementation are located inside the namespace `fmindex_collection::rankvec
 |:-------------------------------------------|--------:|-------:|------:|-------:|--------:|
 | `#!c++ Naive`                              |    256  |   320  |  384  |  1344  |  16384  |
 | `#!c++ MultiBitvector`                     |    5.5  |   6.9  |  8.3  |  28.9  |  352.0  |
+| `#!c++ MultiBitvector` Sparse 2            |    5.2  |   5.9  |  6.7  |  17.1  |  178.8  |
+| `#!c++ MultiBitvector` Sparse 4            |    5.1  |   5.8  |  6.3  |  12.3  |   93.5  |
+| `#!c++ MultiBitvector` Sparse 8            |    5.6  |   6.6  |  7.4  |  12.9  |   54.9  |
+| `#!c++ MultiBitvector` Sparse 16           |         |        |       |        | **43.4**|
+| `#!c++ MultiBitvector` Sparse 32           |         |        |       |        |   52.5  |
+| `#!c++ MultiBitvector` Sparse 64           |         |        |       |        |   83.5  |
+| `#!c++ MultiBitvector` Sparse 2/2          |    6.0  |   7.2  |  8.3  |  24.2  |  266.8  |
+| `#!c++ MultiBitvector` Sparse 4/2          |    5.2  |   6.0  |  6.8  |  15.7  |  137.5  |
+| `#!c++ MultiBitvector` Sparse 4/4          |    5.2  |   6.0  |  6.7  |  14.1  |  115.5  |
+| `#!c++ MultiBitvector` Sparse 4/-2         |    5.7  |   6.2  |  6.7  |  12.5  |   93.5  |
+| `#!c++ MultiBitvector` Sparse 8/-2         |    5.6  |   6.2  |  6.7  |  11.0  |   52.2  |
+| `#!c++ MultiBitvector` Sparse 8/-4         |    5.7  |   6.4  |  6.9  |  11.1  |   52.2  |
+| `#!c++ MultiBitvector` Sparse 16/-4        |         |        |       |  10.8  | **32.9**|
 | `#!c++ InterleavedBitvector8`              |    5.5  |   6.9  |  8.3  |  28.9  |  352.0  |
 | `#!c++ InterleavedBitvector16`             |    5.0  |   6.3  |  7.5  |  26.3  |  320.3  |
 | `#!c++ InterleavedBitvector32`             |    6.0  |   7.5  |  9.0  |  31.5  |  384.0  |

@@ -113,13 +113,30 @@ void analyse_rankvector(std::string label, std::vector<uint8_t> const& text) {
     (void)rankvector;
 }
 
+template <size_t BL, typename Bitvector = fmindex_collection::bitvector::Bitvector, typename Bitvector2 = fmindex_collection::bitvector::Bitvector>
+using SparseBitvector = fmindex_collection::bitvector::SparseBLEBitvector<BL, Bitvector, Bitvector2>;
+
 static void analyse_rankvectors() {
     using namespace fmindex_collection::rankvector;
-    for (auto e : {9}) {
-        constexpr static size_t Sigma = 5;
+    for (auto e : {7}) {
+        constexpr static size_t Sigma = 21;
         auto text = generateString<Sigma>(pow10(e));
 //        f<Naive<Sigma>>(text);
         analyse_rankvector<MultiBitvector<Sigma>>("MultiBitvector", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<1>>>("SparseMultiBitvector 2", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<2>>>("SparseMultiBitvector 4", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<3>>>("SparseMultiBitvector 8", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<4>>>("SparseMultiBitvector 16", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<5>>>("SparseMultiBitvector 32", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<6>>>("SparseMultiBitvector 64", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<1, SparseBitvector<1>>>>("SparseMultiBitvector 2/2", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<2, SparseBitvector<1>>>>("SparseMultiBitvector 4/2", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<2, SparseBitvector<2>>>>("SparseMultiBitvector 4/4", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<2, fmindex_collection::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 4/-2", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<3, fmindex_collection::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 8/-2", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<3, fmindex_collection::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 8/-4", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<4, fmindex_collection::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 16/-4", text);
+
         analyse_rankvector<InterleavedBitvector8<Sigma>>("InterleavedBitvector8", text);
         analyse_rankvector<InterleavedBitvector16<Sigma>>("InterleavedBitvector16", text);
         analyse_rankvector<InterleavedBitvector32<Sigma>>("InterleavedBitvector32", text);
