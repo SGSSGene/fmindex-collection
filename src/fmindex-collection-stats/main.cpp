@@ -4,62 +4,9 @@
 #include <fmindex-collection/rankvector/rankvector.h>
 #include <fmindex-collection/bitvector/all.h>
 #include <fmt/format.h>
-#include <sys/resource.h>
+#include <filesystem>
 #include <thread>
 #include <fstream>
-
-// Estimate current ram usage
-static size_t ramUsage() {
-    {
-        auto fs = std::ofstream{"/proc/self/clear_refs"};
-        fs << 5;
-    }
-
-    rusage r{};
-    getrusage(RUSAGE_SELF, &r);
-    return r.ru_maxrss * 1024;
-
-/*    auto fs = std::ifstream{"/proc/self/smaps_rollup"};
-    auto line = std::string{};
-    for (size_t i{0}; i < 1; ++i) {
-        std::getline(fs, line);
-    }
-
-    size_t value;
-    fs >> line;
-    fs >> value;
-    fmt::print("{}: {}\n", line, value);
-    return value * 1024;*/
-}
-
-struct ScopedRam {
-    size_t start = ramUsage();
-    ScopedRam() {
-//        auto fs = std::ofstream{"/proc/self/clear_refs"};
-//        fs << 1;
-    }
-    auto operator*() const -> int64_t {
-        return (int64_t)ramUsage() - start;
-    }
-    void print() const {
-        fmt::print("ram usage: {}\n", to_string());
-    }
-    auto to_string() const -> std::string {
-        auto v = **this;
-        auto suffix = std::string{};
-        if (v > int64_t{1024}*1024*1024*100) {
-            v = v/1024/1024/1024;
-            suffix = "gb";
-        } else if (v > 1024*1024*100) {
-            v = v/1024/1024;
-            suffix = "mb";
-        } else if (v > 1024*100) {
-            v = v/1024;
-            suffix = "kb";
-        }
-        return fmt::format("{}{}", v, suffix);
-    }
-};
 
 template <size_t Sigma>
 static auto generateString(size_t l) {
