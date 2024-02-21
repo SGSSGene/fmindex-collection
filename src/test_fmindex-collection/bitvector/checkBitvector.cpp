@@ -136,8 +136,8 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
 
     SECTION("benchmarking") {
         auto text = std::vector<uint8_t>{};
-        for (size_t i{0}; i<100'000; ++i) {
-            text.push_back(rand() % 2);
+        for (size_t i{0}; i<100'000'000; ++i) {
+            text.push_back(rand() % 4 == 0);
         }
         auto buffer = std::vector<uint8_t>{};
         buffer.resize(text.size());

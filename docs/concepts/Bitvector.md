@@ -49,17 +49,59 @@ functionality:
     T bitvector2 = std::move(bitvector);
     ```
 
-## Implementations
+## Implementations - Description
 
 - `#!c++ fmindex_collection::bitvector::Bitvector`
+
+    Consist of 3 independent arrays. 64bit values for bits, 8bit for blocks and 64bit for superblocks. Every 64bits a new block is started. Every 256bits a new superblock starts.
+
 - `#!c++ fmindex_collection::bitvector::CompactBitvector`
+
+    Consist of 3 interleaved arrays. Each DataBlock is 512 bits, and covers 6·64bits, each block is 9 bit and starts every 64bit, superblocks start ever 352 bits, 10bits are wasted for padding.
+
 - `#!c++ fmindex_collection::bitvector::CompactBitvector4Blocks`
 
-## Stats
-|                     Name | Space (bits per bit) | Description |
-|:------------------------ | --------------------:| ----------- |
-|`Bitvector`               |                1.375 | Consist of 3 independent arrays. 64bit values for bits, 8bit for blocks and 64bit for superblocks. Every 64bits a new block is started. Every 256bits a new superblock starts|
-|`CompactBitvector`        |                1.333 | Consist of 3 interleaved arrays. Each DataBlock is 512 bits, and covers 6·64bits, each block is 9 bit and starts every 64bit, superblocks start ever 352 bits, 10bits are wasted for padding.|
-|`CompactBitvector4Blocks` |                1.375 | Consist of 3 interleaved arrays. Each DataBlock is 352 bits, and covers 4·64bits, each block is 8 bit and starts every 64bit, superblocks start every 256 bits. |
+    Consist of 3 interleaved arrays. Each DataBlock is 352 bits, and covers 4·64bits, each block is 8 bit and starts every 64bit, superblocks start every 256 bits.
+
+- `#!c++ fmindex_collection::bitvector::SparseBLEBitvector`
+
+    Sparse Block Length Encoded Bitvector. !TODO add paper reference
+
+## Statistics
+### Memory
+Percentage refer to how many ones where present in the input data.
+
+|                         Name |   50%    |   25%    |   10%    |    5%    |
+|:---------------------------- |   ----  :|  -----  :|  -----  :|  -----  :|
+|`Bitvector`                   |   1.38   |   1.38   |   1.38   |   1.38   |
+|`CompactBitvector`            | **1.33** |   1.33   |   1.33   |   1.33   |
+|`CompactBitvector4Blocks`     |   1.50   |   1.50   |   1.50   |   1.50   |
+|`SparseBLEBitvector`  2       |   1.72   |   1.29   |   0.95   |   0.82   |
+|`SparseBLEBitvector`  4       |   1.63   | **1.28** | **0.82** |   0.60   |
+|`SparseBLEBitvector`  8       |   1.54   |   1.41   |   0.96   |   0.63   |
+|`SparseBLEBitvector` 16       |   1.46   |   1.45   |   1.21   |   0.86   |
+|`SparseBLEBitvector` 32       |   1.42   |   1.42   |   1.37   |   1.15   |
+|`SparseBLEBitvector` 64       |   1.40   |   1.40   |   1.39   |   1.34   |
+|`SparseBLEBitvector` 2/2      |   1.66   |   1.50   |   1.27   |   1.16   |
+|`SparseBLEBitvector` 4/2      |   1.50   |   1.29   |   0.95   |   0.76   |
+|`SparseBLEBitvector` 4/4      |   1.45   |   1.29   |   0.90   |   0.68   |
+|`SparseBLEBitvector` 4/-2     |   2.02   |   1.42   |   0.84   |   0.61   |
+|`SparseBLEBitvector` 8/-2     |   1.89   |   1.39   | **0.82** | **0.54** |
+|`SparseBLEBitvector` 8/-4     |   1.80   |   1.42   |   0.84   | **0.54** |
+
+
+
+### Run-time
+Input data was 100'000'000 bits with 50% of them ones.
+
+|                         Name | Construct   |   symbol()   |   rank()    |
+|:---------------------------- | -----------:|  ---------  :|  -------   :|
+|`Bitvector`                   |   **182ms** |    27.64ns   |   43.89ns   |
+|`CompactBitvector`            |     197ms   |  **26.03ns** | **29.68ns** |
+|`CompactBitvector4Blocks`     |     248ms   |    37.29ns   |   34.74ns   |
+|`SparseBLEBitvector` 4        |     377ms   |    54.19ns   |   45.85ns   |
+|`SparseBLEBitvector` 8/-2     |     592ms   |    96.70ns   |   81.20ns   |
+
+
 
 ![bit vector memory layout](Bitvector.png){ align=right }
