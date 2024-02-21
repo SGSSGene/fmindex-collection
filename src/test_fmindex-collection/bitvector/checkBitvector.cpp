@@ -141,15 +141,28 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
         }
         auto buffer = std::vector<uint8_t>{};
         buffer.resize(text.size());
+
         BENCHMARK("memcpy") {
-            return std::memcpy(buffer.data(), text.data(), text.size());
+            return memcpy(buffer.data(), text.data(), text.size());
         };
+
         BENCHMARK("Construction") {
             auto vec = Vector{std::span{text}};
             return vec;
         };
+        BENCHMARK("Construction") {
+            auto vec = Vector{std::views::iota(0, 100'00) | std::views::transform([](auto) {
+                return rand() % 2;
+            })};
+            return vec;
+        };
 
         auto vec = Vector{std::span{text}};
+        BENCHMARK("Copy") {
+            auto vec2 = vec;
+            return vec2;
+        };
+
         BENCHMARK("symbol") {
             return vec.symbol(rand()%text.size());
         };
