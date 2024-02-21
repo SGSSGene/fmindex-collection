@@ -71,8 +71,10 @@ functionality:
 ### Memory
 Percentage refer to how many ones where present in the input data.
 
+<div markdown class="compact_data_table">
+
 |                         Name |   50%    |   25%    |   10%    |    5%    |
-|:---------------------------- |   ----  :|  -----  :|  -----  :|  -----  :|
+|:-----------------------------|---------:|---------:|---------:|---------:|
 |`Bitvector`                   |   1.38   |   1.38   |   1.38   |   1.38   |
 |`CompactBitvector`            | **1.33** |   1.33   |   1.33   |   1.33   |
 |`CompactBitvector4Blocks`     |   1.50   |   1.50   |   1.50   |   1.50   |
@@ -89,10 +91,13 @@ Percentage refer to how many ones where present in the input data.
 |`SparseBLEBitvector` 8/-2     |   1.89   |   1.39   | **0.82** | **0.54** |
 |`SparseBLEBitvector` 8/-4     |   1.80   |   1.42   |   0.84   | **0.54** |
 
+</div>
 
 
 ### Run-time
 Input data was 100'000'000 bits with 50% of them ones.
+
+<div markdown class="compact_data_table">
 
 |                         Name | Construct   |   symbol()   |   rank()    |
 |:---------------------------- | -----------:|  ---------  :|  -------   :|
@@ -102,6 +107,7 @@ Input data was 100'000'000 bits with 50% of them ones.
 |`SparseBLEBitvector` 4        |     377ms   |    54.19ns   |   45.85ns   |
 |`SparseBLEBitvector` 8/-2     |     592ms   |    96.70ns   |   81.20ns   |
 
+</div>
 
 
 ![bit vector memory layout](Bitvector.png){ align=right }

@@ -18,3 +18,19 @@
 .rankvector_table table tbody tr:nth-child(even) {
     background: #FFF;
 }
+
+.compact_data_table {
+    line-height: 1em !important;
+}
+.compact_data_table table th {
+    padding: 0.2em !important;
+}
+.compact_data_table table td {
+    padding: 0.2em !important;
+}
+.compact_data_table table tbody tr:nth-child(odd) {
+    background: #f8f8f8;
+}
+.compact_data_table table tbody tr:nth-child(even) {
+    background: #FFF;
+}
