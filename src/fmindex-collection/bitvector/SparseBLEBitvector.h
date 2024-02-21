@@ -72,6 +72,7 @@ struct SparseBLEBitvector {
                     bv2.push_back(trailing[j]);
                 }
             }
+            totalLength += trailing.size();
             trailing.clear();
         }
     }
@@ -100,8 +101,8 @@ struct SparseBLEBitvector {
     uint64_t rank(size_t idx) const noexcept {
         if (idx >= totalLength) {
             auto r = bv2.rank(bv2.size());
-            for (auto v : trailing) {
-                r += v;
+            for (size_t i{0}; i < idx-totalLength; ++i) {
+                r += trailing[i];
             }
             return r;
         }
@@ -116,7 +117,7 @@ struct SparseBLEBitvector {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(bv1, bv2, totalLength);
+        ar(bv1, bv2, totalLength, trailing);
     }
 };
 static_assert(BitVector_c<SparseBLEBitvector<>>);
