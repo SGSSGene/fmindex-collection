@@ -26,9 +26,9 @@ namespace fmindex_collection::bitvector {
  *   For 256bits, we need 352bits, or 1.375bits to save a single bit
  */
 struct Bitvector {
-    std::vector<uint64_t> superblocks;
-    std::vector<uint8_t>  blocks;
-    std::vector<uint64_t> bits;
+    std::vector<uint64_t> superblocks{0, 0};
+    std::vector<uint8_t>  blocks{0};
+    std::vector<uint64_t> bits{0};
     size_t totalLength{};
 
     Bitvector() = default;
@@ -46,11 +46,6 @@ struct Bitvector {
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
     Bitvector(range_t&& _range) {
         reserve(_range.size());
-
-        superblocks.emplace_back();
-        superblocks.emplace_back();
-        blocks.emplace_back();
-        bits.emplace_back();
 
         auto iter = _range.begin();
 
