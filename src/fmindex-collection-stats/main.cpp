@@ -1,4 +1,5 @@
 #include <fmindex-collection/rankvector/rankvector.h>
+#include <fmindex-collection/bitvector/all.h>
 #include <fmt/format.h>
 #include <sys/resource.h>
 #include <thread>
