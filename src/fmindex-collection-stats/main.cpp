@@ -73,7 +73,9 @@ int main() {
         f<DenseEPRV6<Sigma>> ("DenseEPRV6", text);
         f<InterleavedEPRV7<Sigma>>("InterleavedEPRV7", text);
         f<InterleavedWavelet<Sigma>>("InterleavedWavelet", text);
+#if FMC_USE_SDSL
         f<Sdsl_wt_bldc<Sigma>>("sdsl-wavelet", text);
+#endif
         f<Wavelet<Sigma>>("Wavelet", text);
     }
 }
