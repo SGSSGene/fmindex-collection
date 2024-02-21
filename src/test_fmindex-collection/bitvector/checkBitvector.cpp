@@ -135,14 +135,26 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
     }
 
     SECTION("benchmarking") {
-        auto row = std::vector<uint8_t>{0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1};
         auto text = std::vector<uint8_t>{};
-        for (size_t i{0}; i<1000; ++i) {
-            text.insert(end(text), row.begin(), row.end());
+        for (size_t i{0}; i<100'000; ++i) {
+            text.push_back(rand() % 2);
         }
+        auto buffer = std::vector<uint8_t>{};
+        buffer.resize(text.size());
+        BENCHMARK("memcpy") {
+            return std::memcpy(buffer.data(), text.data(), text.size());
+        };
         BENCHMARK("Construction") {
             auto vec = Vector{std::span{text}};
             return vec;
+        };
+
+        auto vec = Vector{std::span{text}};
+        BENCHMARK("symbol") {
+            return vec.symbol(rand()%text.size());
+        };
+        BENCHMARK("rank") {
+            return vec.rank(rand()%text.size());
         };
     }
 }
