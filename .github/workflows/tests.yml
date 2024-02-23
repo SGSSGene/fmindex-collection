@@ -1,0 +1,83 @@
+# SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
+# SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
+# SPDX-License-Identifier: CC0-1.0
+name: "CI"
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+
+env:
+  NANOBENCH_SUPPRESS_WARNINGS: 1
+
+concurrency:
+  group: ${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  license_check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: REUSE Compliance Check
+      uses: fsfe/reuse-action@v2
+      with:
+        args: --suppress-deprecation lint
+  linux:
+    name: linux-${{ matrix.compiler }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - gcc11-cpp20-release
+          - gcc12-cpp20-release
+          - gcc13-cpp20-release
+          - gcc13-cpp20-debug-sanitize_address
+          - gcc13-cpp20-debug-sanitize_undefined
+          - gcc13-cpp20-lcov
+          - clang16-cpp20-release
+          - clang17-cpp20-release
+          - intel-cpp20-release
+    steps:
+      - name: Standard IV-project testing
+        uses: iv-project/IVaction/linux-testing@v8.2
+        with:
+          compiler: ${{ matrix.compiler }}
+          threads: 2
+  macos:
+    name: macos-${{ matrix.compiler }}
+    runs-on: macos-12
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - gcc13-cpp20-release
+          - clang17-cpp20-release
+    steps:
+      - name: Standard IV-project testing
+        uses: iv-project/IVaction/macos-testing@v8.2
+        with:
+          compiler: ${{ matrix.compiler }}
+          threads: 3
+          cmake_flags: "-DFMC_USE_SDSL=NO"
+  windows:
+    name: windows-${{ matrix.compiler }}
+    runs-on: windows-2022
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - msvc-cpp20-release
+          - msvc-cpp20-debug
+    steps:
+      - name: Standard IV-project testing
+        uses: iv-project/IVaction/msvc-testing@v8.2
+        with:
+          compiler: ${{ matrix.compiler }}
+          cmake_flags: "-DFMC_USE_SDSL=NO"
