@@ -61,15 +61,6 @@ if (${ROOT_PROJECT})
         SYSTEM YES
     )
 
-    CPMAddPackage(
-        Name reflect
-        GITHUB_REPOSITORY boost-ext/reflect
-        GIT_TAG v1.0.0
-    )
-    add_library(reflect INTERFACE)
-    target_include_directories(reflect SYSTEM INTERFACE ${reflect_SOURCE_DIR})
-    add_library(reflect::reflect ALIAS reflect)
-
     enable_testing()
     add_subdirectory(src/test_fmindex-collection)
     add_subdirectory(src/test_search_schemes)

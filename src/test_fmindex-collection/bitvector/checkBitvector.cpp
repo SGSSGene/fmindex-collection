@@ -5,14 +5,13 @@
 #include <fmindex-collection/utils.h>
 #include <fstream>
 #include <nanobench.h>
-#include <reflect>
 #include <thread>
 
 #include "allBitVectors.h"
 
 TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS) {
     using Vector = TestType;
-    auto vector_name = std::string{reflect::type_name<Vector>()};
+    auto vector_name = std::string{typeid(Vector).name()};
     INFO(vector_name);
 
     SECTION("short text") {
