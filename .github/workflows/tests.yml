@@ -11,6 +11,7 @@ on:
 
 env:
   NANOBENCH_SUPPRESS_WARNINGS: 1
+  TZ: Europe/Berlin
 
 concurrency:
   group: ${{ github.event.pull_request.number || github.ref }}

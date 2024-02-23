@@ -6,6 +6,9 @@ on:
   push:
     branches:
       - main
+env:
+  TZ: Europe/Berlin
+
 permissions:
   contents: write
 jobs:
