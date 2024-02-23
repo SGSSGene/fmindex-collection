@@ -56,16 +56,25 @@ void analyse_bitvector(std::string label, std::vector<uint8_t> const& text) {
 static void analyse_bitvectors() {
     using namespace fmindex_collection::bitvector;
 
-    auto f = [](auto const& text) {
+
+    double onePercentage;
+    auto f = [&](auto const& text) {
+        fmt::print("length: {}, percantage of ones: {}%\n", text.size(), onePercentage);
+        analyse_bitvector<Bitvector>("Bitvector", text);
+        analyse_bitvector<CompactBitvector>("CompactBitvector", text);
+        analyse_bitvector<CompactBitvector4Blocks>("CompactBitvector4Blocks", text);
         analyse_bitvector<SparseBLEBitvector<1>>("SparseBLEBitvector  2", text);
         analyse_bitvector<SparseBLEBitvector<2>>("SparseBLEBitvector  4", text);
         analyse_bitvector<SparseBLEBitvector<3>>("SparseBLEBitvector  8", text);
         analyse_bitvector<SparseBLEBitvector<4>>("SparseBLEBitvector 16", text);
         analyse_bitvector<SparseBLEBitvector<5>>("SparseBLEBitvector 32", text);
         analyse_bitvector<SparseBLEBitvector<6>>("SparseBLEBitvector 64", text);
-        analyse_bitvector<SparseBLEBitvector<1, SparseBLEBitvector<1>>>("SparseBLEBitvector  2/2", text);
-        analyse_bitvector<SparseBLEBitvector<2, SparseBLEBitvector<1>>>("SparseBLEBitvector  4/2", text);
-        analyse_bitvector<SparseBLEBitvector<2, SparseBLEBitvector<2>>>("SparseBLEBitvector  4/4", text);
+        analyse_bitvector<SparseBLEBitvector<1, SparseBLEBitvector<-1>>>("SparseBLEBitvector  2/2", text);
+        analyse_bitvector<SparseBLEBitvector<2, SparseBLEBitvector<-1>>>("SparseBLEBitvector  4/2", text);
+        analyse_bitvector<SparseBLEBitvector<2, SparseBLEBitvector<-2>>>("SparseBLEBitvector  4/4", text);
+        analyse_bitvector<SparseBLEBitvector<3, SparseBLEBitvector<-1>>>("SparseBLEBitvector  8/2", text);
+        analyse_bitvector<SparseBLEBitvector<3, SparseBLEBitvector<-2>>>("SparseBLEBitvector  8/4", text);
+        analyse_bitvector<SparseBLEBitvector<3, SparseBLEBitvector<-3>>>("SparseBLEBitvector  8/8", text);
 
         analyse_bitvector<SparseBLEBitvector<2, Bitvector, SparseBLEBitvector<1>>>("SparseBLEBitvector  4/-2", text);
         analyse_bitvector<SparseBLEBitvector<3, Bitvector, SparseBLEBitvector<1>>>("SparseBLEBitvector  8/-2", text);
@@ -73,22 +82,31 @@ static void analyse_bitvectors() {
 
     };
 
-    for (auto e : {9}) {
+    for (auto e : {7}) {
         {
+            onePercentage=50;
             auto text = generateString<2>(pow10(e));
             f(text);
         }
         {
+            onePercentage=25;
             auto sparseText25 = generateString<2, 2>(pow10(e));
             f(sparseText25);
         }
         {
+            onePercentage=10;
             auto sparseText10 = generateString<2, 5>(pow10(e));
             f(sparseText10);
         }
         {
+            onePercentage=5;
             auto sparseText5 = generateString<2, 10>(pow10(e));
             f(sparseText5);
+        }
+        {
+            onePercentage=0.5;
+            auto sparseText0_5 = generateString<2, 100>(pow10(e));
+            f(sparseText0_5);
         }
     }
 }
@@ -113,7 +131,7 @@ void analyse_rankvector(std::string label, std::vector<uint8_t> const& text) {
     (void)rankvector;
 }
 
-template <size_t BL, typename Bitvector = fmindex_collection::bitvector::Bitvector, typename Bitvector2 = fmindex_collection::bitvector::Bitvector>
+template <int64_t BL, typename Bitvector = fmindex_collection::bitvector::Bitvector, typename Bitvector2 = fmindex_collection::bitvector::Bitvector>
 using SparseBitvector = fmindex_collection::bitvector::SparseBLEBitvector<BL, Bitvector, Bitvector2>;
 
 static void analyse_rankvectors() {
@@ -129,9 +147,9 @@ static void analyse_rankvectors() {
         analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<4>>>("SparseMultiBitvector 16", text);
         analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<5>>>("SparseMultiBitvector 32", text);
         analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<6>>>("SparseMultiBitvector 64", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<1, SparseBitvector<1>>>>("SparseMultiBitvector 2/2", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<2, SparseBitvector<1>>>>("SparseMultiBitvector 4/2", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<2, SparseBitvector<2>>>>("SparseMultiBitvector 4/4", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<1, SparseBitvector<-1>>>>("SparseMultiBitvector 2/2", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<2, SparseBitvector<-1>>>>("SparseMultiBitvector 4/2", text);
+        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<2, SparseBitvector<-2>>>>("SparseMultiBitvector 4/4", text);
         analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<2, fmindex_collection::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 4/-2", text);
         analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<3, fmindex_collection::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 8/-2", text);
         analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<3, fmindex_collection::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 8/-4", text);
@@ -165,6 +183,6 @@ int main() {
     fmt::print("analyse bitvectors:\n");
     analyse_bitvectors();
 
-    fmt::print("analyse rankvectors:\n");
+    fmt::print("\nanalyse rankvectors:\n");
     analyse_rankvectors();
 }

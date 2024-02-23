@@ -44,6 +44,11 @@ if (${ROOT_PROJECT})
         GIT_TAG v3.4.0
         SYSTEM YES
     )
+    CPMAddPackage(
+        GITHUB_REPOSITORY martinus/nanobench
+        GIT_TAG v4.3.11
+        SYSTEM YES
+    )
     CPMAddPackage(NAME cereal
         GITHUB_REPOSITORY USCiLab/cereal
         GIT_TAG v1.3.2
@@ -55,6 +60,15 @@ if (${ROOT_PROJECT})
         EXCLUDE_FROM_ALL TRUE
         SYSTEM YES
     )
+
+    CPMAddPackage(
+        Name reflect
+        GITHUB_REPOSITORY boost-ext/reflect
+        GIT_TAG v1.0.0
+    )
+    add_library(reflect INTERFACE)
+    target_include_directories(reflect SYSTEM INTERFACE ${reflect_SOURCE_DIR})
+    add_library(reflect::reflect ALIAS reflect)
 
     enable_testing()
     add_subdirectory(src/test_fmindex-collection)

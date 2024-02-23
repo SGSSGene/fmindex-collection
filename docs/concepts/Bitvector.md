@@ -73,23 +73,26 @@ Percentage refer to how many ones where present in the input data.
 
 <div markdown class="compact_data_table">
 
-|                         Name |   50%    |   25%    |   10%    |    5%    |
-|:-----------------------------|---------:|---------:|---------:|---------:|
-|`Bitvector`                   |   1.38   |   1.38   |   1.38   |   1.38   |
-|`CompactBitvector`            | **1.33** |   1.33   |   1.33   |   1.33   |
-|`CompactBitvector4Blocks`     |   1.50   |   1.50   |   1.50   |   1.50   |
-|`SparseBLEBitvector`  2       |   1.72   |   1.29   |   0.95   |   0.82   |
-|`SparseBLEBitvector`  4       |   1.63   | **1.28** | **0.82** |   0.60   |
-|`SparseBLEBitvector`  8       |   1.54   |   1.41   |   0.96   |   0.63   |
-|`SparseBLEBitvector` 16       |   1.46   |   1.45   |   1.21   |   0.86   |
-|`SparseBLEBitvector` 32       |   1.42   |   1.42   |   1.37   |   1.15   |
-|`SparseBLEBitvector` 64       |   1.40   |   1.40   |   1.39   |   1.34   |
-|`SparseBLEBitvector` 2/2      |   1.66   |   1.50   |   1.27   |   1.16   |
-|`SparseBLEBitvector` 4/2      |   1.50   |   1.29   |   0.95   |   0.76   |
-|`SparseBLEBitvector` 4/4      |   1.45   |   1.29   |   0.90   |   0.68   |
-|`SparseBLEBitvector` 4/-2     |   2.02   |   1.42   |   0.84   |   0.61   |
-|`SparseBLEBitvector` 8/-2     |   1.89   |   1.39   | **0.82** | **0.54** |
-|`SparseBLEBitvector` 8/-4     |   1.80   |   1.42   |   0.84   | **0.54** |
+|                         Name |   50%    |   25%    |   10%    |    5%    |  0.5%    |
+|:-----------------------------|---------:|---------:|---------:|---------:|---------:|
+|`Bitvector`                   |   1.38   |   1.38   |   1.38   |   1.38   |   1.38   |
+|`CompactBitvector`            | **1.33** |   1.33   |   1.33   |   1.33   |   1.33   |
+|`CompactBitvector4Blocks`     |   1.50   |   1.50   |   1.50   |   1.50   |   1.50   |
+|`SparseBLEBitvector`  2       |   1.72   | **1.29** |   0.95   |   0.82   |   0.70   |
+|`SparseBLEBitvector`  4       |   1.63   | **1.28** | **0.82** |   0.60   |   0.37   |
+|`SparseBLEBitvector`  8       |   1.54   |   1.41   |   0.96   |   0.63   |   0.23   |
+|`SparseBLEBitvector` 16       |   1.46   |   1.45   |   1.21   |   0.86   |   0.19   |
+|`SparseBLEBitvector` 32       |   1.42   |   1.42   |   1.37   |   1.15   |   0.25   |
+|`SparseBLEBitvector` 2/2      |   2.02   |   1.42   |   0.84   |   0.61   |   0.37   |
+|`SparseBLEBitvector` 4/2      |   1.80   |   1.42   |   0.84   |   0.54   |   0.21   |
+|`SparseBLEBitvector` 4/4      |   1.72   |   1.37   |   0.84   | **0.53** |   0.14   |
+|`SparseBLEBitvector` 8/2      |   1.63   |   1.49   |   1.01   |   0.65   |   0.15   |
+|`SparseBLEBitvector` 8/4      |   1.58   |   1.45   |   0.99   |   0.64   | **0.12** |
+|`SparseBLEBitvector` 8/8      |   1.56   |   1.43   |   0.98   |   0.65   | **0.12** |
+|`SparseBLEBitvector` 4/-2     |   2.02   |   1.42   |   0.84   |   0.61   |   0.37   |
+|`SparseBLEBitvector` 8/-2     |   1.89   |   1.39   | **0.82** | **0.54** |   0.21   |
+|`SparseBLEBitvector` 8/-4     |   1.80   |   1.42   |   0.84   | **0.54** |   0.21   |
+
 
 </div>
 
@@ -101,11 +104,13 @@ Input data was 100'000'000 bits with 50% of them ones.
 
 |                         Name | Construct   |   symbol()   |   rank()    |
 |:---------------------------- | -----------:|  ---------  :|  -------   :|
-|`Bitvector`                   |   **182ms** |    27.64ns   |   43.89ns   |
-|`CompactBitvector`            |     197ms   |  **26.03ns** | **29.68ns** |
-|`CompactBitvector4Blocks`     |     248ms   |    37.29ns   |   34.74ns   |
-|`SparseBLEBitvector` 4        |     377ms   |    54.19ns   |   45.85ns   |
-|`SparseBLEBitvector` 8/-2     |     592ms   |    96.70ns   |   81.20ns   |
+|`Bitvector`                   |  **1.97ns** |  **15.64ns** | **40.93ns** |
+|`CompactBitvector`            |    1.98ns   |    40.51ns   |   90.74ns   |
+|`CompactBitvector4Blocks`     |    2.39ns   |    28.72ns   |   47.80ns   |
+|`SparseBLEBitvector` 4        |    4.14ns   |    27.86ns   |  183.78ns   |
+|`SparseBLEBitvector` !4       |    3.58ns   |    40.56ns   |   56.90ns   |
+|`SparseBLEBitvector` 8/4      |    4.01ns   |    45.92ns   |   78.69ns   |
+|`SparseBLEBitvector` 8/-4     |    5.18ns   |    43.57ns   |  117.80ns   |
 
 </div>
 

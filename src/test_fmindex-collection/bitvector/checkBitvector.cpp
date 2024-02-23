@@ -4,17 +4,21 @@
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/utils.h>
 #include <fstream>
+#include <nanobench.h>
+#include <reflect>
+#include <thread>
 
 #include "allBitVectors.h"
 
 TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS) {
     using Vector = TestType;
-    INFO(typeid(Vector).name());
+    auto vector_name = std::string{reflect::type_name<Vector>()};
+    INFO(vector_name);
 
     SECTION("short text") {
         auto text = std::vector<uint8_t>{0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1};
 
-        auto vec = Vector{std::span{text}};
+        auto vec = Vector{text};
         REQUIRE(vec.size() == text.size());
 
         SECTION("check that symbol() call works") {
@@ -78,7 +82,7 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
 
                                         };
 
-        auto vec = Vector{std::span{text}};
+        auto vec = Vector{text};
         REQUIRE(vec.size() == text.size());
 
         SECTION("check that symbol() call works") {
@@ -114,7 +118,7 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
         auto input = std::vector<uint8_t>{0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1};
         SECTION("serialize") {
             auto ofs = std::ofstream{"temp_test_serialization"};
-            auto vec = Vector{std::span{input}};
+            auto vec = Vector{input};
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(vec);
         }
@@ -135,39 +139,26 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
     }
 
     SECTION("benchmarking") {
+        auto bench = ankerl::nanobench::Bench{};
+        auto rng = ankerl::nanobench::Rng{};
+
         auto text = std::vector<uint8_t>{};
         for (size_t i{0}; i<100'000'000; ++i) {
-            text.push_back(rand() % 4 == 0);
+            text.push_back(rng.bounded(4) == 0);
         }
-        auto buffer = std::vector<uint8_t>{};
-        buffer.resize(text.size());
 
-        BENCHMARK("memcpy") {
-            return memcpy(buffer.data(), text.data(), text.size());
-        };
-
-        BENCHMARK("Construction") {
-            auto vec = Vector{std::span{text}};
-            return vec;
-        };
-        BENCHMARK("Construction") {
-            auto vec = Vector{std::views::iota(0, 100'00) | std::views::transform([](auto) {
-                return rand() % 2;
-            })};
-            return vec;
-        };
-
-        auto vec = Vector{std::span{text}};
-        BENCHMARK("Copy") {
-            auto vec2 = vec;
-            return vec2;
-        };
-
-        BENCHMARK("symbol") {
-            return vec.symbol(rand()%text.size());
-        };
-        BENCHMARK("rank") {
-            return vec.rank(rand()%text.size());
-        };
+        bench.batch(text.size()).run(vector_name + "()", [&]() {
+            auto vec = Vector{text};
+            ankerl::nanobench::doNotOptimizeAway(vec);
+        });
+        auto vec = Vector{text};
+        bench.batch(1).run(vector_name + "::symbol()", [&]() {
+            auto v = vec.symbol(rand()%text.size());
+            ankerl::nanobench::doNotOptimizeAway(v);
+        });
+        bench.run(vector_name + "::rank()", [&]() {
+            auto v = vec.rank(rand()%text.size());
+            ankerl::nanobench::doNotOptimizeAway(v);
+        });
     }
 }

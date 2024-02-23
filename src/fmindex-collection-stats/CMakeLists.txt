@@ -13,5 +13,6 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
     fmindex-collection::fmindex-collection
+    nanobench::nanobench
     fmt::fmt-header-only
 )
