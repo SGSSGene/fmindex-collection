@@ -7,5 +7,7 @@
 
 After searching locating is required, two algorithms are implemented
 
-- `fmindex_collection::LocateLinear`
-- `fmindex_collection::LocateFMTree`
+| locate algorithm (inside `fmindex_collection::`)                | Description |
+|:----------------------------------------------------------------|-------------|
+| `LocateLinear`                                                  | Standard linear locate |
+| `LocateFMTree`                                                  | FMTree locate (not faster in this implementation) |
