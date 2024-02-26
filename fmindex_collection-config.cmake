@@ -9,7 +9,7 @@ endif()
 CPMAddPackage(
   NAME libsais
   GITHUB_REPOSITORY IlyaGrebnov/libsais
-  GIT_TAG v2.7.3
+  GIT_TAG v2.7.4
   OPTIONS
     "LIBSAIS_USE_OPENMP ${OpenMP_C_FOUND}"
     "LIBSAIS_BUILD_SHARED_LIB OFF"
