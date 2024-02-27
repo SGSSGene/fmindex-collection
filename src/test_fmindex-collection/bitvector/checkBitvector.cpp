@@ -152,11 +152,11 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
         });
         auto vec = Vector{text};
         bench.batch(1).run(vector_name + "::symbol()", [&]() {
-            auto v = vec.symbol(rand()%text.size());
+            auto v = vec.symbol(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
         bench.run(vector_name + "::rank()", [&]() {
-            auto v = vec.rank(rand()%text.size());
+            auto v = vec.rank(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
     }

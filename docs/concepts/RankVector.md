@@ -141,3 +141,47 @@ All implementation are located inside the namespace `fmindex_collection::rankvec
 | `#!c++ CompactBitvector`                   |         |        |       |        |         |
 
 </div>
+
+### Run-time
+Input data was 100'000 characters in range of 1-4
+
+<div markdown class="compact_data_table">
+
+|                                                                 Name | Construct(ns)| symbol() (ns) |  rank() (ns)   |
+|:-------------------------------------------------------------------- |-------------:|--------------:|---------------:|
+| Naive<256>                                                           |   252.89ns  |        na        |          na    |
+| MultiBitvector<256, bitvector::Bitvector>                            |   218.50ns  |     39.99      |       42.66  |
+| MultiBitvector<256, bitvector::CompactBitvector>                     |   217.75ns  |     44.17      |       27.69  |
+| MultiBitvector<256, bitvector::CompactBitvector4Blocks>              |   220.26ns  |     44.54      |       28.03  |
+| MultiBitvector<256, bitvector::SparseBLEBitvector<>>  (defect)       |   453.69ns  |    132.20      |       62.22  |
+| InterleavedBitvector8<256>                                           |     7.11ns  |     29.57      |       26.70  |
+| InterleavedBitvector16<256>                                          |     5.15ns  |     28.40      |     **24.53**|
+| InterleavedBitvector32<256>                                          |     6.62ns  |     28.52      |       25.12  |
+| InterleavedBitvector8Aligned<256>                                    |     6.91ns  |     28.17      |       26.48  |
+| InterleavedBitvector16Aligned<256>                                   |     5.07ns  |     28.03      |     **24.44**|
+| InterleavedBitvector32Aligned<256>                                   |     6.46ns  |     28.39      |       25.06  |
+| InterleavedEPR8<256>                                                 |     7.59ns  |   **14.83**    |       50.80  |
+| InterleavedEPR16<256>                                                |    18.38ns  |   **14.86**    |       42.69  |
+| InterleavedEPR32<256>                                                |    39.76ns  |  16158.44      |    19360.74  |
+| InterleavedEPR8Aligned<256>                                          |    12.18ns  |     16.11      |       51.17  |
+| InterleavedEPR16Aligned<256>                                         |    21.47ns  |     16.24      |       44.59  |
+| InterleavedEPR32Aligned<256>                                         |    41.81ns  |  15377.29      |    18771.09  |
+| InterleavedEPRV2_8<256>                                              |     3.42ns  |     39.15      |       40.15  |
+| InterleavedEPRV2_16<256>                                             |   **2.55ns**|     38.89      |       43.58  |
+| InterleavedEPRV2_32<256>                                             |     3.73ns  |     47.48      |       55.08  |
+| InterleavedEPRV2_8Aligned<256>                                       |     3.43ns  |     38.04      |       44.63  |
+| InterleavedEPRV2_16Aligned<256>                                      |   **2.43ns**|     37.40      |       43.29  |
+| InterleavedEPRV2_32Aligned<256>                                      |     3.91ns  |     37.21      |       52.23  |
+| EPRV3_8<256>                                                         |     3.65ns  |     36.76      |       61.26  |
+| EPRV3_16<256>                                                        |     2.81ns  |     36.62      |       61.12  |
+| EPRV3_32<256>                                                        |     2.92ns  |     36.67      |       46.78  |
+| EPRV4<256>                                                           |     4.14ns  |     36.75      |       48.82  |
+| EPRV5<256>                                                           |     4.07ns  |     36.28      |       46.65  |
+| DenseEPRV6<256>                                                      |     3.97ns  |     37.59      |       65.85  |
+| InterleavedEPRV7<256>                                                |     3.99ns  |     38.32      |       45.06  |
+| InterleavedWavelet<256>                                              |    35.91ns  |    296.69      |      146.26  |
+| Wavelet<256>                                                         |    27.85ns  |   1408.59      |      615.17  |
+| RLE<256, 4, InterleavedBitvector16<256>, InterleavedBitvector16<256>>|     6.28ns  |     54.24      |       82.94  |
+| Sdsl_wt_bldc<256>                                                    |    10.83ns  |     76.36      |      108.03  |
+
+</div>

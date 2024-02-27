@@ -11,6 +11,7 @@
     (fmindex_collection::rankvector::MultiBitvector<256, fmindex_collection::bitvector::Bitvector>), \
     (fmindex_collection::rankvector::MultiBitvector<256, fmindex_collection::bitvector::CompactBitvector>), \
     (fmindex_collection::rankvector::MultiBitvector<256, fmindex_collection::bitvector::CompactBitvector4Blocks>), \
+    (fmindex_collection::rankvector::MultiBitvector<256, fmindex_collection::bitvector::SparseBLEBitvector<>>), \
     fmindex_collection::rankvector::InterleavedBitvector8<256>, \
     fmindex_collection::rankvector::InterleavedBitvector16<256>, \
     fmindex_collection::rankvector::InterleavedBitvector32<256>, \
@@ -38,7 +39,7 @@
     fmindex_collection::rankvector::InterleavedEPRV7<256>, \
     fmindex_collection::rankvector::InterleavedWavelet<256>, \
     fmindex_collection::rankvector::Wavelet<256>, \
-    fmindex_collection::rankvector::RLEInstance<256>
+    (fmindex_collection::rankvector::RLE<256, 4, fmindex_collection::rankvector::InterleavedBitvector16<256>, fmindex_collection::rankvector::InterleavedBitvector16<256>>)
 
 #if FMC_USE_SDSL
 #define ALLRANKVECTORS \
@@ -46,11 +47,7 @@
     fmindex_collection::rankvector::Sdsl_wt_bldc<256>
 #else
 #define ALLRANKVECTORS ALLRANKVECTORS_IMPL
-
 #endif
-
 
 //!wt_epr is not working as expected
 //    fmindex_collection::rankvector::Sdsl_wt_epr<255>,
-
-

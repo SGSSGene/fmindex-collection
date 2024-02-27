@@ -3,12 +3,14 @@
 // SPDX-License-Identifier: CC0-1.0
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/utils.h>
+#include <nanobench.h>
 
 #include "allRankVectors.h"
 
 TEMPLATE_TEST_CASE("check if rank on the symbol vectors is working", "[RankVector]", ALLRANKVECTORS) {
     using Vector = TestType;
-    INFO(typeid(Vector).name());
+    auto vector_name = std::string{typeid(Vector).name()};
+    INFO(vector_name);
 
     auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
 
@@ -237,7 +239,8 @@ TEMPLATE_TEST_CASE("check if rank on the symbol vectors is working", "[RankVecto
 
 TEMPLATE_TEST_CASE("check symbol vectors construction on text longer than 256 characters", "[RankVector]", ALLRANKVECTORS) {
     using Vector = TestType;
-    INFO(typeid(Vector).name());
+    auto vector_name = std::string{typeid(Vector).name()};
+    INFO(vector_name);
 
     auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't',
                                      'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
@@ -306,4 +309,34 @@ TEMPLATE_TEST_CASE("check symbol vectors construction on text longer than 256 ch
             }
         }
     }
+
+    SECTION("benchmarking") {
+        if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<256>>) {
+            return;
+        }
+
+        auto bench = ankerl::nanobench::Bench{};
+        auto rng = ankerl::nanobench::Rng{};
+
+        // generates string with values between 1-4
+        auto text = std::vector<uint8_t>{};
+        for (size_t i{0}; i<100'000'000; ++i) {
+            text.push_back(rng.bounded(4)+1);
+        }
+
+        bench.batch(text.size()/100).run(vector_name + "()", [&]() {
+            auto vec = Vector{std::span{text.begin(), text.size()/100}};
+            ankerl::nanobench::doNotOptimizeAway(const_cast<Vector const&>(vec));
+        });
+        auto vec = Vector{text};
+        bench.batch(1).run(vector_name + "::symbol()", [&]() {
+            auto v = vec.symbol(rng.bounded(text.size()));
+            ankerl::nanobench::doNotOptimizeAway(v);
+        });
+        bench.run(vector_name + "::rank()", [&]() {
+            auto v = vec.rank(rng.bounded(text.size()), rng.bounded(4)+1);
+            ankerl::nanobench::doNotOptimizeAway(v);
+        });
+    }
+
 }

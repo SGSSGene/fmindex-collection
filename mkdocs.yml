@@ -29,6 +29,14 @@ theme:
     - navigation.expand
 extra_css:
   - stylesheets/extra.css
+extra_javascript:
+  - javascript/tablesort.js
+  - javascript/sorts/tablesort.date.js
+  - javascript/sorts/tablesort.dotsep.js
+  - javascript/sorts/tablesort.filesize.js
+  - javascript/sorts/tablesort.monthname.js
+  - javascript/sorts/tablesort.number.js
+  - javascript/inittablesort.js
 plugins:
   - include-markdown:
       comments: false
