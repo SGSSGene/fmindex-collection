@@ -115,13 +115,27 @@ struct SparseBLEBitvector {
         }
 
         auto blockId        = idx >> BlockLengthE;
-        auto compBlocks     = indicatorBitvector.rank(blockId);
-        auto detailedSymbId = idx - (compBlocks * (1 << BlockLengthE));
-        auto r = uncompressedBitvector.rank(detailedSymbId);
-        if constexpr (CompressOnes) {
-            r += (compBlocks * (1 << BlockLengthE));
+
+        // If target block is compressed
+        if (indicatorBitvector.symbol(blockId)) {
+            auto compBlocks     = indicatorBitvector.rank(blockId);
+            auto detailedSymbId = ((idx >> BlockLengthE) - compBlocks) << BlockLengthE;
+            auto r = uncompressedBitvector.rank(detailedSymbId);
+
+            if constexpr (CompressOnes) {
+                r += (compBlocks * (1 << BlockLengthE));
+                r += idx % (1 << BlockLengthE);
+            }
+            return r;
+        } else {
+            auto compBlocks     = indicatorBitvector.rank(blockId);
+            auto detailedSymbId = idx - (compBlocks * (1 << BlockLengthE));
+            auto r = uncompressedBitvector.rank(detailedSymbId);
+            if constexpr (CompressOnes) {
+                r += (compBlocks * (1 << BlockLengthE));
+            }
+            return r;
         }
-        return r;
     }
 
     template <typename Archive>
