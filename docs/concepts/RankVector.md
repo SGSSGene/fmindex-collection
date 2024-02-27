@@ -45,7 +45,7 @@ All implementation are located inside the namespace `fmindex_collection::rankvec
 
 <div markdown class="rankvector_table">
 
-| rank vector                                | Description |
+| rank vector (`fmindex_collection::rankvecto::`) | Description |
 |:-------------------------------------------|--------------|
 | `#!c++ Naive`                              | Stores every thing in `std::vector<size_t>`, requires O(n·log n). |
 | `#!c++ MultiBitvector`                     | Standard FM-Index implementation. Using a bitvector for every alphabet character. |
