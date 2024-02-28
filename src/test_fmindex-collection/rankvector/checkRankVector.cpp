@@ -320,7 +320,11 @@ TEMPLATE_TEST_CASE("check symbol vectors construction on text longer than 256 ch
 
         // generates string with values between 1-4
         auto text = std::vector<uint8_t>{};
+        #ifdef NDEBUG
         for (size_t i{0}; i<100'000'000; ++i) {
+        #else
+        for (size_t i{0}; i<100'000; ++i) {
+        #endif
             text.push_back(rng.bounded(4)+1);
         }
 
