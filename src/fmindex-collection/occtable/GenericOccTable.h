@@ -11,12 +11,15 @@
 #include <cstdint>
 #include <span>
 
+#if __has_include(<cereal/archives/binary.hpp>)
+#include <cereal/types/array.hpp>
+#endif
+
 /**
  * A run length encoded bwt, see unpublished paper, but with recursive bitvectors
  *
  */
-namespace fmindex_collection {
-namespace occtable {
+namespace fmindex_collection::occtable {
 
 /**
  * Literal class type that wraps a constant expression string.
@@ -35,7 +38,7 @@ struct StringLiteral {
     }
 };
 
-template <SymbolVector Vector, StringLiteral Name, StringLiteral Extension>
+template <RankVector Vector, StringLiteral Name, StringLiteral Extension>
 struct GenericOccTable {
     static constexpr size_t Sigma = Vector::Sigma;
 
@@ -98,5 +101,4 @@ struct GenericOccTable {
 
 };
 
-}
 }

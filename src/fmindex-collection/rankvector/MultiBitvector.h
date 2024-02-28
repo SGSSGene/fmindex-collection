@@ -8,6 +8,7 @@
 #include "utils.h"
 
 #include <bitset>
+#include <ranges>
 #include <vector>
 
 namespace fmindex_collection::rankvector {
@@ -22,9 +23,10 @@ struct MultiBitvector {
 
     MultiBitvector(std::span<uint8_t const> _symbols) {
         for (size_t sym{0}; sym < Sigma; ++sym) {
-            bitvectors[sym] = Bitvector(_symbols.size(), [&](size_t idx) {
-                return (_symbols[idx] == sym);
-            });
+            bitvectors[sym] = Bitvector(std::views::iota(size_t{}, _symbols.size())
+                                        | std::views::transform([&](size_t idx) {
+                                            return _symbols[idx] == sym;
+                                        }));
         }
     }
 
@@ -88,6 +90,6 @@ struct MultiBitvector {
 template <uint64_t TSigma>
 using MultiBitvector_Bitvector = MultiBitvector<TSigma, bitvector::Bitvector>;
 
-static_assert(checkSymbolVector<MultiBitvector_Bitvector>);
+static_assert(checkRankVector<MultiBitvector_Bitvector>);
 
 }

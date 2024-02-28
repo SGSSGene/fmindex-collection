@@ -7,26 +7,32 @@ project(test_fmindex-collection)
 
 # fmindex-collectionunittests
 add_executable(${PROJECT_NAME}
-    checkBiFMIndex.cpp
-    checkBitvector.cpp
-    checkDenseBiFMIndex.cpp
-    checkDenseReverseFMIndex.cpp
-    checkFMIndex.cpp
-    checkOccTables.cpp
-    checkReverseFMIndex.cpp
-    checkReverseIndexSearch.cpp
-    checkSearchBacktracking.cpp
-    checkSearchPseudo.cpp
-    checkSymbolVector.cpp
+    bitvector/checkBitvector.cpp
+    fmindex/checkBiFMIndex.cpp
+    fmindex/checkBiFMIndexCursor.cpp
+    fmindex/checkDenseBiFMIndex.cpp
+    fmindex/checkDenseReverseFMIndex.cpp
+    fmindex/checkFMIndex.cpp
+    fmindex/checkFMIndexCursor.cpp
+    fmindex/checkLeftBiFMIndexCursor.cpp
+    fmindex/checkLeftRBiFMIndexCursor.cpp
+    fmindex/checkRBiFMIndex.cpp
+    fmindex/checkRBiFMIndexCursor.cpp
+    fmindex/checkReverseFMIndex.cpp
+    fmindex/checkReverseFMIndexCursor.cpp
+    occtables/checkOccTables.cpp
+    rankvector/checkRankVector.cpp
+    search/checkReverseIndexSearch.cpp
+    search/checkSearchBacktracking.cpp
+    search/checkSearchPseudo.cpp
+    search/checkLocateFMTree.cpp
+    search/checkSearches.cpp
     utils.cpp
 )
 target_link_libraries(${PROJECT_NAME}
     Catch2::Catch2WithMain
     fmindex-collection
+    nanobench::nanobench
 )
 
-
-target_include_directories(${PROJECT_NAME} PRIVATE ${DIVSUFSORT64_INCLUDE_DIRS})
-target_compile_options(${PROJECT_NAME} PRIVATE ${DIVSUFSORT64_CFLAGS})
-target_link_libraries(${PROJECT_NAME} ${DIVSUFSORT64_LIBRARIES})
 add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})

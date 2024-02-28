@@ -15,12 +15,9 @@ template <OccTable Table, SuffixArray_c TCSA = CSA>
 struct RBiFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
 
-    using TTable = Table;
-
     Table  occ;
     TCSA   csa;
 
-//private:
     RBiFMIndex() = default;
     RBiFMIndex(std::span<uint8_t const> bwt, TCSA _csa)
         : occ{bwt}
@@ -54,7 +51,6 @@ struct RBiFMIndex {
         }
     }
 
-public:
     /**!\brief Creates a RBiFMIndex with a specified sampling rate
      *
      * \param _input a list of sequences
@@ -112,21 +108,6 @@ public:
             return {chr, pos+steps};
         }
     }
-
-    auto locate(size_t idx, size_t maxSteps) const -> std::optional<std::tuple<size_t, size_t>> {
-        auto opt = csa.value(idx);
-        uint64_t steps{};
-        for (;!opt and maxSteps > 0; --maxSteps) {
-            idx = occ.rank(idx, occ.symbol(idx));
-            steps += 1;
-            opt = csa.value(idx);
-        }
-        if (opt) {
-            std::get<1>(*opt) += steps;
-        }
-        return opt;
-    }
-
 
     auto single_locate_step(size_t idx) const -> std::optional<std::tuple<size_t, size_t>> {
         return csa.value(idx);

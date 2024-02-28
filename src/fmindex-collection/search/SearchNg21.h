@@ -12,8 +12,7 @@
  * like search_ng14
  * but it is ignoring certain constellation with InDels and Merges
  */
-namespace fmindex_collection {
-namespace search_ng21 {
+namespace fmindex_collection::search_ng21 {
 
 enum class Dir : uint8_t { Left, Right };
 template <typename T>
@@ -293,5 +292,4 @@ void search_best_n(index_t const & index, queries_t && queries, std::vector<sear
     }
 }
 
-}
 }

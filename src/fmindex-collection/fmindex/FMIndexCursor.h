@@ -5,6 +5,8 @@
 
 #include "FMIndex.h"
 
+#include <compare>
+
 namespace fmindex_collection {
 
 template <typename Index>
@@ -57,12 +59,11 @@ struct FMIndexCursor {
 
 template <typename Index>
 auto begin(FMIndexCursor<Index> const& _cursor) {
-    return _cursor.lb;
+    return IntIterator{_cursor.lb};
 }
 template <typename Index>
 auto end(FMIndexCursor<Index> const& _cursor) {
-    return _cursor.lb + _cursor.len;
+    return IntIterator{_cursor.lb + _cursor.len};
 }
-
 
 }

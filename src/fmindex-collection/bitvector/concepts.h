@@ -9,23 +9,25 @@
 #include <span>
 #include <tuple>
 #include <utility>
+#include <type_traits>
+
+#if __has_include(<cereal/types/vector.hpp>)
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
+#endif
 
 namespace fmindex_collection {
 
 template <typename T>
-concept BitVector_c = requires(T t, std::span<uint8_t const> symbols, size_t idx, uint8_t symb) {
+concept BitVector_c =
+    std::default_initializable<T>
+    && std::movable<T>
+    && requires(T t, std::span<uint8_t const> symbols, size_t idx, uint8_t symb) {
+
     /** Every BitVector can be constructed via some type of string similar thing
      */
     { T{size_t{}, [](size_t) { return false; }} } -> std::same_as<T>;
-
-    /** Default constructible **/
-    { T{} } -> std::same_as<T>;
-
-    /** Copyable */
-    { T{T{}}} -> std::same_as<T>;
-
-    /** Copyable assignable */
-    { t = t } -> std::same_as<T&>;
 
     /* Run time variable indicating the number of rows inside this occurrence table
      */

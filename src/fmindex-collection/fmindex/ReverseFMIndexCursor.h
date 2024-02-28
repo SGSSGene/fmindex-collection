@@ -63,11 +63,11 @@ struct ReverseFMIndexCursor {
 
 template <typename Index>
 auto begin(ReverseFMIndexCursor<Index> const& _cursor) {
-    return _cursor.lb;
+    return IntIterator{_cursor.lb};
 }
 template <typename Index>
 auto end(ReverseFMIndexCursor<Index> const& _cursor) {
-    return _cursor.lb + _cursor.len;
+    return IntIterator{_cursor.lb + _cursor.len};
 }
 
 

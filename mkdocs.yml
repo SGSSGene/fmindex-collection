@@ -1,0 +1,61 @@
+# SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
+# SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
+# SPDX-License-Identifier: CC0-1.0
+site_name: FMIndex Collection
+docs_dir: docs
+nav:
+  - index.md
+  - API:
+    - Concepts:
+      - concepts/Bitvector.md
+      - concepts/RankVector.md
+      - concepts/OccTable.md
+      - concepts/SuffixArray.md
+      - concepts/Index.md
+    - Algorithms:
+      - search.md
+      - locate.md
+    - Search Schemes:
+      - search_schemes/generator.md
+      - search_schemes/utility.md
+use_directory_urls: false
+repo_url: https://github.com/SGSSGene/fmindex-collection
+theme:
+  name: material
+  local: en
+  features:
+    - navigation.sections
+    - content.code.copy
+    - navigation.expand
+extra_css:
+  - stylesheets/extra.css
+extra_javascript:
+  - javascript/tablesort.js
+  - javascript/sorts/tablesort.date.js
+  - javascript/sorts/tablesort.dotsep.js
+  - javascript/sorts/tablesort.filesize.js
+  - javascript/sorts/tablesort.monthname.js
+  - javascript/sorts/tablesort.number.js
+  - javascript/inittablesort.js
+plugins:
+  - include-markdown:
+      comments: false
+      trailing_newlines: false
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      separator: "_"
+  - pymdownx.highlight:
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.superfences
+#  - pymdownx.critic
+#  - pymdownx.caret
+#  - pymdownx.keys
+#  - pymdownx.mark
+#  - pymdownx.tilde

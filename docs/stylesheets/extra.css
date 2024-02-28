@@ -1,0 +1,36 @@
+/*
+ SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
+ SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
+ SPDX-License-Identifier: CC0-1.0
+*/
+.rankvector_table {
+    line-height: 1em !important;
+}
+.rankvector_table table th {
+    min-width: unset !important;
+}
+.rankvector_table table th:nth-of-type(1) {
+    min-width: 18em !important;
+}
+.rankvector_table table tbody tr:nth-child(odd) {
+    background: #f8f8f8;
+}
+.rankvector_table table tbody tr:nth-child(even) {
+    background: #FFF;
+}
+
+.compact_data_table {
+    line-height: 1em !important;
+}
+.compact_data_table table th {
+    padding: 0.2em !important;
+}
+.compact_data_table table td {
+    padding: 0.2em !important;
+}
+.compact_data_table table tbody tr:nth-child(odd) {
+    background: #f8f8f8;
+}
+.compact_data_table table tbody tr:nth-child(even) {
+    background: #FFF;
+}

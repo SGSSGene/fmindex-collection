@@ -89,19 +89,23 @@ struct RBiFMIndexCursor {
     }
 
     auto extendLeft(size_t symb) const -> RBiFMIndexCursor {
-        assert(symb > 0);
         auto& occ = index->occ;
         size_t newLb    = occ.rank(lb, symb);
-        size_t newLbRev = lbRev + occ.prefix_rank(lb+len, symb-1) - occ.prefix_rank(lb, symb-1);
+        size_t newLbRev = lbRev + [&]() -> size_t {
+            if (symb == 0) return {};
+            return occ.prefix_rank(lb+len, symb-1) - occ.prefix_rank(lb, symb-1);
+        }();
         size_t newLen   = occ.rank(lb+len, symb) - newLb;
         auto newCursor = RBiFMIndexCursor{*index, newLb, newLbRev, newLen};
         newCursor.prefetchLeft();
         return newCursor;
     }
     auto extendRight(size_t symb) const -> RBiFMIndexCursor {
-        assert(symb > 0);
         auto& occ = index->occ;
-        size_t newLb    = lb + occ.prefix_rank(lbRev+len, symb-1) - occ.prefix_rank(lbRev, symb-1);
+        size_t newLb    = lb + [&]() -> size_t {
+            if (symb == 0) return {};
+            return occ.prefix_rank(lbRev+len, symb-1) - occ.prefix_rank(lbRev, symb-1);
+        }();
         size_t newLbRev = occ.rank(lbRev, symb);
         size_t newLen   = occ.rank(lbRev+len, symb) - newLbRev;
         auto newCursor = RBiFMIndexCursor{*index, newLb, newLbRev, newLen};
@@ -112,11 +116,11 @@ struct RBiFMIndexCursor {
 
 template <typename Index>
 auto begin(RBiFMIndexCursor<Index> const& _cursor) {
-    return _cursor.lb;
+    return IntIterator{_cursor.lb};
 }
 template <typename Index>
 auto end(RBiFMIndexCursor<Index> const& _cursor) {
-    return _cursor.lb + _cursor.len;
+    return IntIterator{_cursor.lb + _cursor.len};
 }
 
 template <typename Index>
@@ -158,13 +162,11 @@ struct LeftRBiFMIndexCursor {
         cursors[0] = LeftRBiFMIndexCursor{*index, rs1[0], rs2[0] - rs1[0]};
         for (size_t i{1}; i < Sigma; ++i) {
             cursors[i] = LeftRBiFMIndexCursor{*index, rs1[i], rs2[i] - rs1[i]};
-//            cursors[i].prefetchLeft();
         }
         return cursors;
     }
 
     auto extendLeft(size_t symb) const -> LeftRBiFMIndexCursor {
-        assert(symb > 0);
         auto& occ = index->occ;
 
         size_t newLb    = occ.rank(lb, symb);
@@ -178,6 +180,16 @@ struct LeftRBiFMIndexCursor {
         return newCursor;
     }
 };
+
+template <typename Index>
+auto begin(LeftRBiFMIndexCursor<Index> const& _cursor) {
+    return IntIterator{_cursor.lb};
+}
+template <typename Index>
+auto end(LeftRBiFMIndexCursor<Index> const& _cursor) {
+    return IntIterator{_cursor.lb + _cursor.len};
+}
+
 }
 
 namespace std {

@@ -16,10 +16,9 @@
 #include <stdexcept>
 #include <vector>
 
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 
-/* Implements the concept `SymbolVector`
+/* Implements the concept `RankVector`
  *
  * \param TSigma size of the alphabet
  */
@@ -308,7 +307,6 @@ struct InterleavedWavelet {
     }
 };
 
-static_assert(checkSymbolVector<InterleavedWavelet>);
+static_assert(checkRankVector<InterleavedWavelet>);
 
-}
 }

@@ -7,8 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 
 /** Counts how many bits are needed to represent the number y
  * It performs the computation `ceil(log_2(x))` if x > 0
@@ -40,5 +39,4 @@ static_assert(required_bits(2) == 2);
 static_assert(required_bits(1) == 1);
 static_assert(required_bits(0) == 1);
 
-}
 }

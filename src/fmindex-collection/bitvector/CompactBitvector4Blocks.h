@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#include "concepts.h"
+
 #include <array>
 #include <bitset>
 #include <cassert>
-#if __has_include(<cereal/archives/binary.hpp>)
-#include <cereal/archives/binary.hpp>
-#endif
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <ranges>
 #include <stdexcept>
 #include <span>
 #include <vector>
@@ -60,12 +60,14 @@ struct CompactBitvector4Blocks {
         }
     };
 
-    size_t totalLength;
     std::vector<Superblock> superblocks{};
+    size_t totalLength{};
 
-    CompactBitvector4Blocks(std::span<uint8_t const> _text)
-        : CompactBitvector4Blocks{_text.size(), [&](size_t i) {
-            return _text[i] != 0;
+    template <std::ranges::sized_range range_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
+    CompactBitvector4Blocks(range_t&& _range)
+        : CompactBitvector4Blocks{_range.size(), [&](size_t i) {
+            return _range[i] != 0; //!TODO this is not a purely range based c'tor
         }}
     {}
 
@@ -92,10 +94,10 @@ struct CompactBitvector4Blocks {
                 superblocks.back().setBlock((size % 256) / 64, block_acc);
             }
 
-            auto blockId      = (size >>  6) % 4;
-            auto bitId        = size &  63;
-
             if (cb(size-1)) {
+                auto blockId      = (size >>  6) % 4;
+                auto bitId        = size &  63;
+
                 auto& bits = superblocks.back().bits[blockId];
                 bits = bits | (1ull << bitId);
 
@@ -105,7 +107,7 @@ struct CompactBitvector4Blocks {
         }
     }
 
-    CompactBitvector4Blocks() {}
+    CompactBitvector4Blocks() = default;
     CompactBitvector4Blocks(CompactBitvector4Blocks const&) = default;
     CompactBitvector4Blocks(CompactBitvector4Blocks&&) noexcept = default;
     auto operator=(CompactBitvector4Blocks const&) -> CompactBitvector4Blocks& = default;
@@ -134,7 +136,7 @@ struct CompactBitvector4Blocks {
     void serialize(Archive& ar) {
         // 0 version: slow path
         // 1 version: binary path (fast)
-        auto version = []() {
+        auto version = []() -> uint32_t {
 #if __has_include(<cereal/archives/binary.hpp>)
             if constexpr (std::same_as<Archive, cereal::BinaryOutputArchive>
                             || std::same_as<Archive, cereal::BinaryInputArchive>) {
@@ -146,11 +148,12 @@ struct CompactBitvector4Blocks {
         ar(version);
 
         if (version == 0) {
-            ar(superblocks);
+            ar(totalLength, superblocks);
         } else if (version == 1) {
 #if __has_include(<cereal/archives/binary.hpp>)
             if constexpr (std::same_as<Archive, cereal::BinaryOutputArchive>
                             || std::same_as<Archive, cereal::BinaryInputArchive>) {
+                ar(totalLength);
                 auto l = superblocks.size();
                 ar(l);
                 superblocks.resize(l);
@@ -163,5 +166,6 @@ struct CompactBitvector4Blocks {
         }
     }
 };
+static_assert(BitVector_c<CompactBitvector4Blocks>);
 
 }

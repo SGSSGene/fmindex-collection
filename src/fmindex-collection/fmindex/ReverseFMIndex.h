@@ -18,8 +18,6 @@ template <OccTable Table, SuffixArray_c TCSA = CSA>
 struct ReverseFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
 
-    using TTable = Table;
-
     Table  occ;
     TCSA   csa;
 
@@ -82,21 +80,6 @@ struct ReverseFMIndex {
             return {chr, pos-steps};
         }
     }
-
-    auto locate(size_t idx, size_t maxSteps) const -> std::optional<std::tuple<size_t, size_t>> {
-        auto opt = csa.value(idx);
-        uint64_t steps{};
-        for (;!opt and maxSteps > 0; --maxSteps) {
-            idx = occ.rank(idx, occ.symbol(idx));
-            steps += 1;
-            opt = csa.value(idx);
-        }
-        if (opt) {
-            std::get<1>(*opt) -= steps;
-        }
-        return opt;
-    }
-
 
     auto single_locate_step(size_t idx) const -> std::optional<std::tuple<size_t, size_t>> {
         return csa.value(idx);

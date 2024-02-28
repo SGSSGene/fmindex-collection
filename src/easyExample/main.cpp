@@ -31,7 +31,7 @@ template <typename Index>
 auto loadIndex(std::filesystem::path _fileName) {
     auto ifs     = std::ifstream(_fileName, std::ios::binary);
     auto archive = cereal::BinaryInputArchive{ifs};
-    auto index = BiFMIndex<Table<Sigma>>{};
+    auto index = Index{};
     archive(index);
     return index;
 }
@@ -49,7 +49,7 @@ int main(int argc, char const* const* argv) {
         search_backtracking::search(index, queries, 0, [&](size_t queryId, auto cursor, size_t errors) {
             (void)errors;
             fmt::print("found something {} {}\n", queryId, cursor.count());
-            for (auto i{begin(cursor)}; i < end(cursor); ++i) {
+            for (auto i : cursor) {
                 auto [chr, pos] = index.locate(i);
                 fmt::print("chr/pos: {}/{}\n", chr, pos);
             }
@@ -63,7 +63,7 @@ int main(int argc, char const* const* argv) {
         search_backtracking::search(index, queries, 0, [&](size_t queryId, auto cursor, size_t errors) {
             (void)errors;
             fmt::print("found something {} {}\n", queryId, cursor.count());
-            for (auto i{begin(cursor)}; i < end(cursor); ++i) {
+            for (auto i : cursor) {
                 auto [chr, pos] = index.locate(i);
                 fmt::print("chr/pos: {}/{}\n", chr, pos);
             }
@@ -77,7 +77,7 @@ int main(int argc, char const* const* argv) {
         search_backtracking::search(index, queries, 0, [&](size_t queryId, auto cursor, size_t errors) {
             (void)errors;
             fmt::print("found something {} {}\n", queryId, cursor.count());
-            for (auto i{begin(cursor)}; i < end(cursor); ++i) {
+            for (auto i : cursor) {
                 auto [chr, pos] = index.locate(i);
                 pos = pos -  queries[queryId].size();
                 fmt::print("chr/pos: {}/{}\n", chr, pos);

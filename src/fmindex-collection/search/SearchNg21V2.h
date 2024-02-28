@@ -11,8 +11,7 @@
 /**
  * like search_ng21 but without extra vector
  */
-namespace fmindex_collection {
-namespace search_ng21V2 {
+namespace fmindex_collection::search_ng21V2 {
 
 template <typename index_t, typename search_scheme_t, typename query_t, typename delegate_t>
 struct Search {
@@ -108,7 +107,7 @@ struct Search {
                 search_next<OnMatchL, OnMatchR>(newCur, e, i+1, symb);
             }
 
-            for (uint8_t s{1}; s < symb; ++s) {
+            for (size_t s{1}; s < symb; ++s) {
                 auto newCur = cursors[s];
 
                 if constexpr (Deletion) {
@@ -117,7 +116,7 @@ struct Search {
                 search_next<OnSubstituteL, OnSubstituteR>(newCur, e+1, i+1, s); // as substitution
             }
 
-            for (uint8_t s(symb+1); s < Sigma; ++s) {
+            for (size_t s(symb+1); s < Sigma; ++s) {
                 auto newCur = cursors[s];
 
                 if constexpr (Deletion) {
@@ -159,5 +158,4 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 
 }
 
-}
 }

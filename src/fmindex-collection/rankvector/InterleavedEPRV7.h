@@ -10,8 +10,7 @@
 #include <cassert>
 #include <vector>
 
-namespace fmindex_collection {
-namespace rankvector {
+namespace fmindex_collection::rankvector {
 
 template <size_t TSigma>
 struct InterleavedEPRV7 {
@@ -270,7 +269,6 @@ struct InterleavedEPRV7 {
 
 };
 
-static_assert(checkSymbolVector<InterleavedEPRV7>);
+static_assert(checkRankVector<InterleavedEPRV7>);
 
-}
 }

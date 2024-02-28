@@ -15,8 +15,7 @@
 /**
  * like search_ng21 but with alignment string
  */
-namespace fmindex_collection {
-namespace search_ng22 {
+namespace fmindex_collection::search_ng22 {
 
 enum class Dir : uint8_t { Left, Right };
 template <typename T>
@@ -158,7 +157,7 @@ struct Search {
                 search_next<OnMatchL, OnMatchR>(newCur, e, blockIter+1, symb);
             }
 
-            for (uint8_t i{1}; i < symb; ++i) {
+            for (size_t i{1}; i < symb; ++i) {
                 auto newCur = cursors[i];
 
                 if constexpr (Deletion) {
@@ -169,7 +168,7 @@ struct Search {
                 search_next<OnSubstituteL, OnSubstituteR>(newCur, e+1, blockIter+1, i); // as substitution
             }
 
-            for (uint8_t i(symb+1); i < Sigma; ++i) {
+            for (size_t i(symb+1); i < Sigma; ++i) {
                 auto newCur = cursors[i];
 
                 if constexpr (Deletion) {
@@ -233,5 +232,4 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 
 }
 
-}
 }
