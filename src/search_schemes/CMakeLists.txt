@@ -7,6 +7,7 @@ project(search_schemes)
 
 # search scheme generator library
 add_library(${PROJECT_NAME} INTERFACE)
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 add_library(search_schemes::search_schemes ALIAS ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME}
     INTERFACE
