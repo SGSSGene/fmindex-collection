@@ -14,52 +14,25 @@ endif ()
 project(fmindex-collection LANGUAGES CXX
                             DESCRIPTION "fmindex-collection -- Datastructures and Algorithms for (Bi-)FMIndices and Approximate Pattern Matching")
 
-if (${ROOT_PROJECT})
-    set(CMAKE_CXX_STANDARD 20)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-    set(CMAKE_CXX_EXTENSIONS OFF)
-endif()
-
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" OFF)
 else()
-    option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${ROOT_PROJECT})
+    option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${PROJECT_IS_TOP_LEVEL})
 endif()
 
 find_package(OpenMP QUIET)
 include(cmake/CPM.cmake)
+CPMAddPackage("gh:SGSSGene/WrappedCPMAddPackage@0.2.7")
 include(fmindex_collection-config.cmake)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
     target_compile_options(libsais PRIVATE -fp-model=strict -fno-strict-aliasing)
 endif()
 
-if (${ROOT_PROJECT})
-    CPMAddPackage(
-        GITHUB_REPOSITORY fmtlib/fmt
-        GIT_TAG 10.1.1
-        SYSTEM YES
-    )
-    CPMAddPackage(
-        GITHUB_REPOSITORY catchorg/Catch
-        GIT_TAG v3.4.0
-        SYSTEM YES
-    )
-    CPMAddPackage(
-        GITHUB_REPOSITORY martinus/nanobench
-        GIT_TAG v4.3.11
-        SYSTEM YES
-    )
-    CPMAddPackage(NAME cereal
-        GITHUB_REPOSITORY USCiLab/cereal
-        GIT_TAG v1.3.2
-        OPTIONS
-            "SKIP_PERFORMANCE_COMPARISON ON"
-            "BUILD_SANDBOX OFF"
-            "BUILD_DOC OFF"
-            "WITH_WERROR OFF"
-        EXCLUDE_FROM_ALL TRUE
-        SYSTEM YES
-    )
+if (PROJECT_IS_TOP_LEVEL)
+    CPMAddPackage("gh:fmtlib/fmt#10.1.1@10.1.1")
+    CPMAddPackage("gh:catchorg/Catch@3.4.0")
+    CPMAddPackage("gh:martinus/nanobench@4.3.11")
+    WrappedCPMAddPackage("gh:USCiLab/cereal@1.3.2")
 
     enable_testing()
     add_subdirectory(src/test_fmindex-collection)

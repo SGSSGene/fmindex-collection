@@ -6,15 +6,10 @@ if (TARGET fmindex-collection::fmindex-collection)
     return()
 endif()
 
-CPMAddPackage(
-  NAME libsais
-  GITHUB_REPOSITORY IlyaGrebnov/libsais
-  GIT_TAG v2.8.0
-  OPTIONS
-    "LIBSAIS_USE_OPENMP ${OpenMP_C_FOUND}"
-    "LIBSAIS_BUILD_SHARED_LIB OFF"
-  SYSTEM YES
-)
+set(LIBSAIS_USE_OPENMP ${OpenMP_C_FOUND})
+set(LIBSAIS_BUILD_SHARED_LIB OFF)
+CPMAddPackage("gh:IlyaGrebnov/libsais@2.8.0")
+
 if (FMC_USE_SDSL)
     CPMAddPackage(
       NAME sdsl-lite

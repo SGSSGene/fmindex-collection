@@ -7,6 +7,7 @@ project(fmindex-collection)
 
 # fmindex_collection library
 add_library(${PROJECT_NAME} INTERFACE)
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 add_library(fmindex-collection::fmindex-collection ALIAS ${PROJECT_NAME})
 
 option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${ROOT_PROJECT})
