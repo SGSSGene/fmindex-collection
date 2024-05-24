@@ -33,6 +33,7 @@ jobs:
           - {os: ubuntu-22.04, compiler: gcc14-cpp20-release}
           - {os: ubuntu-22.04, compiler: gcc14-cpp20-debug-sanitize_address}
           - {os: ubuntu-22.04, compiler: gcc14-cpp20-debug-sanitize_undefined}
+          - {os: ubuntu-22.04, compiler: gcc14-cpp20-debug-sanitize_thread}
           - {os: ubuntu-22.04, compiler: gcc14-cpp20-lcov}
           - {os: ubuntu-22.04, compiler: clang16-cpp20-release}
           - {os: ubuntu-22.04, compiler: clang17-cpp20-release}
@@ -42,7 +43,7 @@ jobs:
           - {os: windows-2022, compiler: msvc-cpp20-debug,      cmake_flags: "-DFMC_USE_SDSL=NO"}
     steps:
       - name: Standard IV-project testing
-        uses: iv-project/IVaction@v9.9
+        uses: iv-project/IVaction@v9.10
         with:
           compiler: ${{ matrix.compiler }}
           threads: 2
