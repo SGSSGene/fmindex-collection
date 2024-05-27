@@ -159,7 +159,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
             auto index = std::optional<Index>{};
             for (auto& r : ref) {
                 refs[0] = std::move(r);
-                auto newIndex = Index{ref, samplingRate, threadNbr};
+                auto newIndex = Index{refs, samplingRate, threadNbr};
                 if (!index) {
                     index = std::move(newIndex);
                 } else {
