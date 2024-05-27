@@ -73,15 +73,14 @@ struct CSA {
         , seqCount{_seqCount}
     {}
 
-    CSA(std::vector<uint64_t> sa, size_t samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
+    CSA(std::vector<uint64_t> sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false)
         : bv {sa.size(), [&](size_t idx) {
             return (sa[idx] % samplingRate) == 0;
         }}
         , seqCount{_inputSizes.size()}
     {
         size_t longestSequence = std::accumulate(_inputSizes.begin(), _inputSizes.end(), size_t{}, [](size_t lhs, auto rhs) {
-            auto [len, delCt] = rhs;
-            return std::max(lhs, len + delCt);
+            return std::max(lhs, rhs);
         });
         bitsForPosition = size_t(std::ceil(std::log2(longestSequence)));
         size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
@@ -94,9 +93,8 @@ struct CSA {
         auto accInputSizes = std::vector<uint64_t>{};
         accInputSizes.reserve(_inputSizes.size()+1);
         accInputSizes.emplace_back(0);
-        for (size_t i{0}; i < _inputSizes.size(); ++i) {
-            auto [len, delCt] = _inputSizes[i];
-            accInputSizes.emplace_back(accInputSizes.back() + len + delCt);
+        for (auto len : _inputSizes) {
+            accInputSizes.emplace_back(accInputSizes.back() + len);
         }
 
         // Construct sampled suffix array
@@ -109,11 +107,11 @@ struct CSA {
                 size_t subjId = std::distance(accInputSizes.begin(), iter) - 1;
                 auto subjPos = sa[i] - accInputSizes[subjId];
                 if (reverse) {
-                    auto [len, delCt] = _inputSizes[subjId];
-                    if (subjPos < len) {
-                        subjPos = len - subjPos;
+                    auto len = _inputSizes[subjId];
+                    if (subjPos < len-1) {
+                        subjPos = len - subjPos - 1;
                     } else {
-                        subjPos = len+1;
+                        subjPos = len;
                     }
                 }
                 sa[ssaI] = subjPos | (subjId << bitsForPosition);

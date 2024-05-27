@@ -70,7 +70,7 @@ struct DenseCSA {
 
     }
 
-    DenseCSA(std::span<uint64_t const> sa, size_t samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false) {
+    DenseCSA(std::span<uint64_t const> sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false) {
         size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
         assert(bitsForSeqId < 64);
 
@@ -79,10 +79,9 @@ struct DenseCSA {
         auto accInputSizes = std::vector<uint64_t>{};
         accInputSizes.reserve(_inputSizes.size()+1);
         accInputSizes.emplace_back(0);
-        for (size_t i{0}; i < _inputSizes.size(); ++i) {
-            auto [len, delCt] = _inputSizes[i];
-            accInputSizes.emplace_back(accInputSizes.back() + len + delCt);
-            largestText = std::max(largestText, len);
+        for (auto len : _inputSizes) {
+            accInputSizes.emplace_back(accInputSizes.back() + len);
+            largestText = std::max(largestText, len-1);
         }
 
         // Construct sampled suffix array
@@ -100,11 +99,11 @@ struct DenseCSA {
                 size_t subjId = std::distance(accInputSizes.begin(), iter) - 1;
                 auto subjPos = sa[i] - accInputSizes[subjId];
                 if (reverse) {
-                    auto [len, delCt] = _inputSizes[subjId];
-                    if (subjPos < len) {
-                        subjPos = len - subjPos;
+                    auto len = _inputSizes[subjId];
+                    if (subjPos < len-1) {
+                        subjPos = len - subjPos - 1;
                     } else {
-                        subjPos = len+1;
+                        subjPos = len;
                     }
                 }
                 ssaSeq.push_back(subjId);

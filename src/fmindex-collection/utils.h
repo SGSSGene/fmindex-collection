@@ -50,13 +50,11 @@ inline auto createBWT(std::span<uint8_t const> input, std::span<uint64_t const> 
     return bwt;
 }
 
-auto createSequences(Sequences auto const& _input, int samplingRate, bool reverse=false) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<std::tuple<size_t, size_t>>> {
+auto createSequences(Sequences auto const& _input, bool reverse=false) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<size_t>> {
     // compute total numbers of bytes of the text including delimiters "$"
     size_t totalSize{};
     for (auto const& l : _input) {
-        auto textLen  = l.size();
-        auto delimLen = samplingRate - textLen % samplingRate; // Make sure it is always a multiple of samplingRate
-        totalSize += textLen + delimLen;
+        totalSize += l.size() + 1;
     }
 
     // our concatenated sequences with delimiters
@@ -64,12 +62,10 @@ auto createSequences(Sequences auto const& _input, int samplingRate, bool revers
     inputText.reserve(totalSize);
 
     // list of sizes of the individual sequences
-    auto inputSizes = std::vector<std::tuple<size_t, size_t>>{};
+    auto inputSizes = std::vector<size_t>{};
     inputSizes.reserve(_input.size());
 
     for (auto const& l : _input) {
-        auto ls = l.size();
-
         if (not reverse) {
             inputText.insert(inputText.end(), begin(l), end(l));
         } else {
@@ -83,69 +79,49 @@ auto createSequences(Sequences auto const& _input, int samplingRate, bool revers
             inputText.insert(inputText.end(), begin(l2), end(l2));
         }
 
-        // number of delimiters ('$') which need to be added. It must be at least one, and it
-        // has to make sure the text will be a multiple of samplingRate
-        size_t delimCount = samplingRate - (ls % samplingRate);
-
         // fill with delimiters/zeros
-        inputText.resize(inputText.size() + delimCount);
+        inputText.resize(inputText.size() + 1);
 
-        inputSizes.emplace_back(ls, delimCount);
+        inputSizes.emplace_back(l.size()+1);
     }
     return {totalSize, inputText, inputSizes};
 }
 
-auto createSequencesAndReverse(Sequences auto const& _input, int samplingRate) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<std::tuple<size_t, size_t>>> {
+auto createSequencesAndReverse(Sequences auto const& _input) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<size_t>> {
     // compute total numbers of bytes of the text including delimiters "$"
     size_t totalSize{};
     for (auto const& l : _input) {
-        auto textLen  = l.size();
-        auto delimLen = samplingRate - textLen % samplingRate; // Make sure it is always a multiple of samplingRate
-        totalSize += textLen + delimLen;
+        totalSize += l.size()+1;
     }
-    for (auto const& l : std::views::reverse(_input)) {
-        auto textLen  = l.size();
-        auto delimLen = samplingRate - textLen % samplingRate; // Make sure it is always a multiple of samplingRate
-        totalSize += textLen + delimLen;
-    }
+    totalSize = totalSize*2; // including reverse text
 
     // our concatenated sequences with delimiters
     auto inputText = std::vector<uint8_t>{};
     inputText.reserve(totalSize);
 
     // list of sizes of the individual sequences
-    auto inputSizes = std::vector<std::tuple<size_t, size_t>>{};
+    auto inputSizes = std::vector<size_t>{};
     inputSizes.reserve(_input.size());
 
     // add text
     for (auto const& l : _input) {
-        auto ls = l.size();
         inputText.insert(inputText.end(), begin(l), end(l));
 
-        // number of delimiters ('$') which need to be added. It must be at least one, and it
-        // has to make sure the text will be a multiple of samplingRate
-        size_t delimCount = samplingRate - (ls % samplingRate);
-
         // fill with delimiters/zeros
-        inputText.resize(inputText.size() + delimCount);
+        inputText.resize(inputText.size() + 1);
 
-        inputSizes.emplace_back(ls, delimCount);
+        inputSizes.emplace_back(l.size()+1);
     }
 
     // add reversed text
     for (auto const& l : std::views::reverse(_input)) {
-        auto ls = l.size();
         auto l2 = std::views::reverse(l);
         inputText.insert(inputText.end(), begin(l2), end(l2));
 
-        // number of delimiters ('$') which need to be added. It must be at least one, and it
-        // has to make sure the text will be a multiple of samplingRate
-        size_t delimCount = samplingRate - (ls % samplingRate);
-
         // fill with delimiters/zeros
-        inputText.resize(inputText.size() + delimCount);
+        inputText.resize(inputText.size() + 1);
 
-        inputSizes.emplace_back(ls, delimCount);
+        inputSizes.emplace_back(l.size()+1);
     }
 
     return {totalSize, inputText, inputSizes};
