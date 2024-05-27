@@ -81,7 +81,7 @@ auto merge(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const& ind
 
 //!TODO swap index1 and index2 if index1 is smaller
 template <typename Res = void, typename OccLhs, typename OccRhs, typename TCSA>
-auto merge(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
+auto mergeImpl(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> const& index2, size_t seqOffset1, size_t seqOffset2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
     auto csa = TCSA::createJoinedCSA(index1.csa, index2.csa);
 
     // Interleave BWT->R and SA->ssa
@@ -91,10 +91,15 @@ auto merge(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> const&
     // compute normal forward bwt
     {
         auto R = computeInterleavingR(index1.occ, index2.occ);
-
+/*
         // The right hand index sequences, require adjusted sequence number
-        size_t seqOffset = index1.occ.rank(index1.size(), 0);
-
+        auto [seqOffset1, seqOffset2] = [&]() -> std::tuple<size_t, size_t> {
+            if (swapOffsets) {
+                return {index2.occ.rank(index2.size(), 0), 0};
+            }
+            return {0, index1.occ.rank(index1.size(), 0)};
+        }();
+*/
 
         auto addSSAEntry = [&csa](auto const& index, size_t idx, size_t seqOffset) {
             auto loc = index.csa.value(idx);
@@ -110,14 +115,14 @@ auto merge(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> const&
         for (size_t idx2{}; idx2 < R.size(); ++idx2) {
             for (; idx1 < R[idx2]; ++idx1) {
                 mergedBWT.push_back(index1.occ.symbol(idx1));
-                addSSAEntry(index1, idx1, 0);
+                addSSAEntry(index1, idx1, seqOffset1);
             }
             mergedBWT.push_back(index2.occ.symbol(idx2));
-            addSSAEntry(index2, idx2, seqOffset);
+            addSSAEntry(index2, idx2, seqOffset2);
         }
         for (; idx1 < index1.size(); ++idx1) {
             mergedBWT.push_back(index1.occ.symbol(idx1));
-            addSSAEntry(index1, idx1, 0);
+            addSSAEntry(index1, idx1, seqOffset1);
         }
     }
 
@@ -142,6 +147,14 @@ auto merge(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> const&
     }
 
     return {mergedBWT, mergedBWTRev, std::move(csa)};
+}
+
+template <typename Res = void, typename OccLhs, typename OccRhs, typename TCSA>
+auto merge(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
+    if (index1.size() >= index2.size()) {
+        return mergeImpl(index1, index2, 0, index1.occ.rank(index1.size(), 0));
+    }
+    return mergeImpl(index2, index1, index2.occ.rank(index2.size(), 0), 0);
 }
 
 }
