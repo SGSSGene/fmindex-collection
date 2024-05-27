@@ -20,9 +20,19 @@ struct DenseCSA {
     DenseVector ssaPos;             // sampled suffix array - position inside the sequence
     DenseVector ssaSeq;             // sampled suffix array  - sequence id
     bitvector::CompactBitvector bv; // indicates if and which entry the sa → ssa
-    size_t samplingRate;    // distance between two samples (inside one sequence)
+    size_t samplingRate;            // distance between two samples (inside one sequence)
+
+    static auto createJoinedCSA(DenseCSA const& lhs, DenseCSA const& rhs) -> DenseCSA {
+        auto csa = DenseCSA{};
+        //!TODO sampling Rate is only required for FMTree localization, we should remove it
+        csa.samplingRate    = std::max(lhs.samplingRate, rhs.samplingRate);
+        return csa;
+    }
+
 
     DenseCSA() = default;
+    DenseCSA(DenseCSA const&) = delete;
+    DenseCSA(DenseCSA&&) noexcept = default;
 
     template <std::ranges::range Range>
         requires requires(Range r) {
@@ -67,10 +77,6 @@ struct DenseCSA {
         assert(ssaPos.size() == ssaSeq.size());
 
     }
-
-    DenseCSA(DenseCSA const&) = delete;
-    DenseCSA(DenseCSA&& _other) noexcept = default;
-
 
     DenseCSA(std::span<uint64_t const> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
         : samplingRate{_samplingRate}
@@ -123,7 +129,7 @@ struct DenseCSA {
 
 
     auto operator=(DenseCSA const&) -> DenseCSA& = delete;
-    auto operator=(DenseCSA&& _other) noexcept -> DenseCSA& = default;
+    auto operator=(DenseCSA&&) noexcept -> DenseCSA& = default;
 
     size_t memoryUsage() const {
         return (ssaPos.bit_size() + ssaSeq.bit_size()) / 8;

@@ -17,6 +17,8 @@ struct FMIndex {
     TCSA   csa;
 
     FMIndex() = default;
+    FMIndex(FMIndex const&) = delete;
+    FMIndex(FMIndex&&) noexcept = default;
     FMIndex(std::span<uint8_t const> bwt, TCSA _csa)
         : occ{bwt}
         , csa{std::move(_csa)}
@@ -40,6 +42,9 @@ struct FMIndex {
 
         *this = FMIndex{bwt, std::move(csa)};
     }
+    auto operator=(FMIndex const&) -> FMIndex& = delete;
+    auto operator=(FMIndex&&) noexcept -> FMIndex& = default;
+
 
     size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
         return occ.memoryUsage() + csa.memoryUsage();

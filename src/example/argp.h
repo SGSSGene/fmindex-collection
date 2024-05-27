@@ -17,6 +17,7 @@ struct Config {
     size_t minK{0}, maxK{6}, k_stepSize{1};
     bool reverse{true};
     bool help{false};
+    bool partialBuildUp{false};
     std::set<std::string> extensions;
 
     std::vector<std::string> algorithms;
@@ -76,6 +77,8 @@ auto loadConfig(int argc, char const* const* argv) {
             config.reverse = false;
         } else if (argv[i] == std::string{"--help"}) {
             config.help = true;
+        } else if (argv[i] == std::string{"--partialBuildUp"}) {
+            config.partialBuildUp = true;
         } else if (argv[i] == std::string{"--mode"} and i+1 < argc) {
             ++i;
             auto s = std::string{argv[i]};

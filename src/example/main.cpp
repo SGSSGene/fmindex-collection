@@ -89,7 +89,7 @@ int main(int argc, char const* const* argv) {
         }
         fmt::print("start loading {} ...", name);
         fflush(stdout);
-        auto index = loadDenseIndex<CSA, Table>(config.indexPath, /*samplingRate*/16, /*threadNbr*/1);
+        auto index = loadDenseIndex<CSA, Table>(config.indexPath, /*.samplingRate=*/16, /*.threadNbr=*/1, /*.partialBuildUp=*/config.partialBuildUp);
         fmt::print("done\n");
         for (auto const& algorithm : config.algorithms) {
             fmt::print("using algorithm {}\n", algorithm);

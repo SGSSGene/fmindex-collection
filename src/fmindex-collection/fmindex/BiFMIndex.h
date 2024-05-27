@@ -20,6 +20,8 @@ struct BiFMIndex {
     TCSA   csa;
 
     BiFMIndex() = default;
+    BiFMIndex(BiFMIndex&&) noexcept = default;
+
     BiFMIndex(std::span<uint8_t const> bwt, std::span<uint8_t const> bwtRev, TCSA _csa)
         : occ{bwt}
         , occRev{bwtRev}
@@ -97,6 +99,9 @@ struct BiFMIndex {
 
         *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
     }
+
+    auto operator=(BiFMIndex const&) -> BiFMIndex& = delete;
+    auto operator=(BiFMIndex&&) noexcept -> BiFMIndex& = default;
 
     size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
         return occ.memoryUsage() + occRev.memoryUsage() + csa.memoryUsage();

@@ -44,6 +44,9 @@ struct CSA {
 
 
     CSA() = default;
+    CSA(CSA const&) = delete;
+    CSA(CSA&&) noexcept = default;
+
     template <std::ranges::range Range>
         requires requires(Range r) {
             {*(r.begin())} -> std::same_as<std::optional<std::tuple<size_t, size_t>>>;
@@ -73,8 +76,6 @@ struct CSA {
         , bitsForPosition{_bitsForPosition}
         , bitPositionMask{(1ull<<bitsForPosition)-1}
     {}
-    CSA(CSA const&) = delete;
-    CSA(CSA&& _other) noexcept = default;
     CSA(std::vector<uint64_t> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
         : bv {sa.size(), [&](size_t idx) {
             return (sa[idx] % _samplingRate) == 0;
@@ -127,7 +128,7 @@ struct CSA {
     }
 
     auto operator=(CSA const&) -> CSA& = delete;
-    auto operator=(CSA&& _other) noexcept -> CSA& = default;
+    auto operator=(CSA&&) noexcept -> CSA& = default;
 
     size_t memoryUsage() const {
         return sizeof(ssa) + ssa.size() * sizeof(ssa.back());

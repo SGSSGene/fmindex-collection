@@ -6,6 +6,7 @@
 #include "utils/utils.h"
 
 #include <fmindex-collection/fmindex-collection.h>
+#include <fmindex-collection/fmindex/merge.h>
 #include <fmindex-collection/occtable/all.h>
 #include <fmindex-collection/suffixarray/DenseCSA.h>
 
@@ -102,7 +103,22 @@ auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr) {
     auto indexPath = path + "." + Table::extension() + ".index";
     if (!std::filesystem::exists(indexPath)) {
         auto [ref, refInfo] = loadQueries<Table::Sigma>(path, false);
-        auto index = fmindex_collection::BiFMIndex<Table>{ref, samplingRate, threadNbr};
+        auto index = [&]() {
+            auto refs = std::vector<std::vector<uint8_t>>{};
+            refs.resize(1);
+
+            auto index = std::optional<fmindex_collection::BiFMIndex<Table>>{};
+            for (auto& r : ref) {
+                refs[0] = std::move(r);
+                auto newIndex = fmindex_collection::BiFMIndex<Table>{ref, samplingRate, threadNbr};
+                if (!index) {
+                    index = std::move(newIndex);
+                } else {
+                    index = merge(*index, newIndex);
+                }
+            }
+            return *index;
+        }();
         // save index here
         auto ofs     = std::ofstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryOutputArchive{ofs};
@@ -119,12 +135,32 @@ auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr) {
 }
 
 template <typename CSA, typename Table>
-auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr) {
+auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, bool partialBuildUp) {
     auto sw = StopWatch{};
     auto indexPath = path + "." + Table::extension() + ".dense.index";
     if (!std::filesystem::exists(indexPath)) {
         auto [ref, refInfo] = loadQueries<Table::Sigma>(path, false);
-        auto index = fmindex_collection::BiFMIndex<Table, fmindex_collection::DenseCSA>{ref, samplingRate, threadNbr};
+        using Index = fmindex_collection::BiFMIndex<Table, fmindex_collection::DenseCSA>;
+        auto index = [&]() -> Index {
+            if (!partialBuildUp) {
+                return {ref, samplingRate, threadNbr};
+            }
+            auto refs = std::vector<std::vector<uint8_t>>{};
+            refs.resize(1);
+
+            auto index = std::optional<Index>{};
+            for (auto& r : ref) {
+                refs[0] = std::move(r);
+                auto newIndex = Index{ref, samplingRate, threadNbr};
+                if (!index) {
+                    index = std::move(newIndex);
+                } else {
+                    index = merge(*index, newIndex);
+                }
+            }
+            return std::move(*index);
+        }();
+
         // save index here
         auto ofs     = std::ofstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryOutputArchive{ofs};

@@ -49,10 +49,10 @@ struct DenseVector {
         }
     }
 
-    DenseVector(DenseVector&&) noexcept = default;
     DenseVector(DenseVector const&) = default;
-    DenseVector& operator=(DenseVector&&) noexcept = default;
+    DenseVector(DenseVector&&) noexcept = default;
     DenseVector& operator=(DenseVector const&) = default;
+    DenseVector& operator=(DenseVector&&) noexcept = default;
 
     /** Reserve memory for a certain number of integers.
      *

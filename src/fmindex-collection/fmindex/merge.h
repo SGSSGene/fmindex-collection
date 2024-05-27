@@ -40,7 +40,6 @@ auto computeInterleavingR(OccLhs const& lhsOcc, OccRhs const& rhsOcc) -> std::ve
 //!TODO swap index1 and index2 if index1 is smaller
 template <typename Res = void, typename OccLhs, typename OccRhs, typename TCSA>
 auto merge(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const& index2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
-
     auto R = computeInterleavingR(index1.occ, index2.occ);
 
     // Interleave BWT->R and SA->ssa
