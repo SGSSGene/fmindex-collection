@@ -19,6 +19,7 @@ struct Config {
     bool help{false};
     bool partialBuildUp{false};
     std::set<std::string> extensions;
+    bool convertUnknownChar{false};
 
     std::vector<std::string> algorithms;
 
@@ -79,6 +80,8 @@ auto loadConfig(int argc, char const* const* argv) {
             config.help = true;
         } else if (argv[i] == std::string{"--partialBuildUp"}) {
             config.partialBuildUp = true;
+        } else if (argv[i] == std::string{"--convertUnknownChar"}) {
+            config.convertUnknownChar = true;
         } else if (argv[i] == std::string{"--mode"} and i+1 < argc) {
             ++i;
             auto s = std::string{argv[i]};

@@ -51,7 +51,9 @@ struct CSA {
         requires requires(Range r) {
             {*(r.begin())} -> std::same_as<std::optional<std::tuple<size_t, size_t>>>;
         }
-    CSA(Range _ssa, size_t sequencesCount, size_t longestSequence, size_t _samplingRate) {
+    CSA(Range _ssa, size_t sequencesCount, size_t longestSequence, size_t _samplingRate)
+        : seqCount{sequencesCount}
+    {
 
         samplingRate = _samplingRate; //!TODO samplingRate has to go
 
@@ -67,7 +69,7 @@ struct CSA {
         }
     }
 
-    CSA(std::vector<uint64_t> _ssa, BitStack const& bitstack, size_t _samplingRate, size_t _bitsForPosition)
+    CSA(std::vector<uint64_t> _ssa, BitStack const& bitstack, size_t _samplingRate, size_t _bitsForPosition, size_t _seqCount)
         : ssa{std::move(_ssa)}
         , bv{bitstack.size, [&](size_t idx) {
             return bitstack.value(idx);
@@ -75,12 +77,14 @@ struct CSA {
         , samplingRate{_samplingRate}
         , bitsForPosition{_bitsForPosition}
         , bitPositionMask{(1ull<<bitsForPosition)-1}
+        , seqCount{_seqCount}
     {}
     CSA(std::vector<uint64_t> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
         : bv {sa.size(), [&](size_t idx) {
             return (sa[idx] % _samplingRate) == 0;
         }}
         , samplingRate{_samplingRate}
+        , seqCount{_inputSizes.size()}
     {
         size_t longestSequence = std::accumulate(_inputSizes.begin(), _inputSizes.end(), size_t{}, [](size_t lhs, auto rhs) {
             auto [len, delCt] = rhs;

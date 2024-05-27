@@ -25,7 +25,7 @@ struct Query {
         {}
 };
 template <size_t Sigma>
-auto loadQueries(std::string path, bool reverse) {
+auto loadQueries(std::string path, bool reverse, bool convertUnknownChar) {
     std::vector<std::vector<uint8_t>> queries;
     std::vector<Query> queryInfos;
     if (path.empty() || !std::filesystem::exists(path)) {
@@ -87,7 +87,15 @@ auto loadQueries(std::string path, bool reverse) {
                     else if ((*ptr == 'N' || *ptr == 'n') and Sigma == 6) query.push_back(5);
                     else if (*ptr == '\n') {}
                     else {
-                        throw std::runtime_error("unknown alphabet");
+                        if (convertUnknownChar) {
+                            if (Sigma == 6) {
+                                query.push_back(5);
+                            } else {
+                                query.push_back(1);
+                            }
+                        } else {
+                            throw std::runtime_error("unknown alphabet");
+                        }
                     }
                     ++ptr;
                 }
@@ -98,11 +106,11 @@ auto loadQueries(std::string path, bool reverse) {
 }
 
 template <typename CSA, typename Table>
-auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr) {
+auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr, bool convertUnknownChar) {
     auto sw = StopWatch{};
     auto indexPath = path + "." + Table::extension() + ".index";
     if (!std::filesystem::exists(indexPath)) {
-        auto [ref, refInfo] = loadQueries<Table::Sigma>(path, false);
+        auto [ref, refInfo] = loadQueries<Table::Sigma>(path, false, convertUnknownChar);
         auto index = [&]() {
             auto refs = std::vector<std::vector<uint8_t>>{};
             refs.resize(1);
@@ -110,7 +118,7 @@ auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr) {
             auto index = std::optional<fmindex_collection::BiFMIndex<Table>>{};
             for (auto& r : ref) {
                 refs[0] = std::move(r);
-                auto newIndex = fmindex_collection::BiFMIndex<Table>{ref, samplingRate, threadNbr};
+                auto newIndex = fmindex_collection::BiFMIndex<Table>{refs, samplingRate, threadNbr};
                 if (!index) {
                     index = std::move(newIndex);
                 } else {
@@ -135,11 +143,11 @@ auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr) {
 }
 
 template <typename CSA, typename Table>
-auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, bool partialBuildUp) {
+auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, bool partialBuildUp, bool convertUnknownChar) {
     auto sw = StopWatch{};
     auto indexPath = path + "." + Table::extension() + ".dense.index";
     if (!std::filesystem::exists(indexPath)) {
-        auto [ref, refInfo] = loadQueries<Table::Sigma>(path, false);
+        auto [ref, refInfo] = loadQueries<Table::Sigma>(path, false, convertUnknownChar);
         using Index = fmindex_collection::BiFMIndex<Table, fmindex_collection::DenseCSA>;
         auto index = [&]() -> Index {
             if (!partialBuildUp) {

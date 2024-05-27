@@ -68,7 +68,7 @@ int main(int argc, char const* const* argv) {
         , ext, gens);
         return 0;
     }
-    auto const [queries, queryInfos] = loadQueries<Sigma>(config.queryPath, config.reverse);
+    auto const [queries, queryInfos] = loadQueries<Sigma>(config.queryPath, config.reverse, config.convertUnknownChar);
 
     if (!queries.empty()) {
         fmt::print("loaded {} queries (incl reverse complements)\n", queries.size());
@@ -89,7 +89,7 @@ int main(int argc, char const* const* argv) {
         }
         fmt::print("start loading {} ...", name);
         fflush(stdout);
-        auto index = loadDenseIndex<CSA, Table>(config.indexPath, /*.samplingRate=*/16, /*.threadNbr=*/1, /*.partialBuildUp=*/config.partialBuildUp);
+        auto index = loadDenseIndex<CSA, Table>(config.indexPath, /*.samplingRate=*/16, /*.threadNbr=*/1, config.partialBuildUp, config.convertUnknownChar);
         fmt::print("done\n");
         for (auto const& algorithm : config.algorithms) {
             fmt::print("using algorithm {}\n", algorithm);
