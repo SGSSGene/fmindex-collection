@@ -14,22 +14,22 @@ namespace fmindex_collection {
 /**
  * creates the R array for interleaving FMIndices
  */
-template <typename OccLhs, typename OccRhs, typename TCSA, typename value_t = size_t>
-auto computeInterleavingR(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const& index2) -> std::vector<value_t> {
-    auto R = std::vector<value_t>{};
-    R.resize(index2.size(), 0);
-
-    if (index2.size() > std::numeric_limits<value_t>::max()) {
+template <typename OccLhs, typename OccRhs, typename value_t = size_t>
+auto computeInterleavingR(OccLhs const& lhsOcc, OccRhs const& rhsOcc) -> std::vector<value_t> {
+    if (rhsOcc.size() > std::numeric_limits<value_t>::max()) {
         throw std::runtime_error{"Can not create interleaving R for this value type, index to large"};
     }
+
+    auto R = std::vector<value_t>{};
+    R.resize(rhsOcc.size(), 0);
 
     size_t idx1{};
     size_t idx2{};
 
     for (size_t i{0}; i < R.size(); ++i) {
-        auto c = index2.occ.symbol(idx2);
-        idx1 = index1.occ.rank(idx1, c);
-        idx2 = index2.occ.rank(idx2, c);
+        auto c = rhsOcc.symbol(idx2);
+        idx1 = lhsOcc.rank(idx1, c);
+        idx2 = rhsOcc.rank(idx2, c);
         R[idx2] = idx1;
     }
     return R;
@@ -41,7 +41,7 @@ auto computeInterleavingR(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, T
 template <typename Res = void, typename OccLhs, typename OccRhs, typename TCSA>
 auto merge(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const& index2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
 
-    auto R = computeInterleavingR(index1, index2);
+    auto R = computeInterleavingR(index1.occ, index2.occ);
 
     // Interleave BWT->R and SA->ssa
     auto mergedBWT = std::vector<uint8_t>{};
@@ -74,9 +74,75 @@ auto merge(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const& ind
         mergedBWT.push_back(index1.occ.symbol(idx1));
         addSSAEntry(index1, idx1, 0);
     }
+    R.clear();
 
 
     return {mergedBWT, std::move(csa)};
+}
+
+//!TODO swap index1 and index2 if index1 is smaller
+template <typename Res = void, typename OccLhs, typename OccRhs, typename TCSA>
+auto merge(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
+    using CSA = decltype(index1.csa);
+
+    auto csa = CSA::createJoinedCSA(index1.csa, index2.csa);
+
+    // Interleave BWT->R and SA->ssa
+    auto mergedBWT = std::vector<uint8_t>{};
+    mergedBWT.reserve(index1.size() + index2.size());
+
+    // compute normal forward bwt
+    {
+        auto R = computeInterleavingR(index1.occ, index2.occ);
+
+        // The right hand index sequences, require adjusted sequence number
+        size_t seqOffset = index1.occ.rank(index1.size(), 0);
+
+
+        auto addSSAEntry = [&csa](auto const& index, size_t idx, size_t seqOffset) {
+            auto loc = index.csa.value(idx);
+            if (loc) {
+                auto [seq, pos] = *loc;
+                csa.push_back(std::tuple{seq + seqOffset, pos});
+            }
+        };
+
+        size_t idx1{};
+        for (size_t idx2{}; idx2 < R.size(); ++idx2) {
+            for (; idx1 < R[idx2]; ++idx1) {
+                mergedBWT.push_back(index1.occ.symbol(idx1));
+                addSSAEntry(index1, idx1, 0);
+            }
+            mergedBWT.push_back(index2.occ.symbol(idx2));
+            addSSAEntry(index2, idx2, seqOffset);
+        }
+        for (; idx1 < index1.size(); ++idx1) {
+            mergedBWT.push_back(index1.occ.symbol(idx1));
+            addSSAEntry(index1, idx1, 0);
+        }
+    }
+
+    // Interleave BWT->R and SA->ssa
+    auto mergedBWTRev = std::vector<uint8_t>{};
+    mergedBWTRev.reserve(index1.size() + index2.size());
+
+    // compute reversed bwt
+    {
+        auto R = computeInterleavingR(index1.occRev, index2.occRev);
+
+        size_t idx1{};
+        for (size_t idx2{}; idx2 < R.size(); ++idx2) {
+            for (; idx1 < R[idx2]; ++idx1) {
+                mergedBWTRev.push_back(index1.occRev.symbol(idx1));
+            }
+            mergedBWTRev.push_back(index2.occRev.symbol(idx2));
+        }
+        for (; idx1 < index1.size(); ++idx1) {
+            mergedBWTRev.push_back(index1.occRev.symbol(idx1));
+        }
+    }
+
+    return {mergedBWT, mergedBWTRev, std::move(csa)};
 }
 
 }
