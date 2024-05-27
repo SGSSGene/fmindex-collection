@@ -239,4 +239,29 @@ struct IntIterator {
     auto operator<=>(IntIterator const&) const -> std::strong_ordering = default;
 };
 
+template <typename Index>
+auto reconstructText(Index const& index, size_t seqNbr) -> std::vector<uint8_t> {
+    auto r = std::vector<uint8_t>{};
+
+    uint8_t c{};
+    size_t idx = seqNbr;
+    do {
+        c = index.occ.symbol(idx);
+        idx = index.occ.rank(idx, c);
+        r.push_back(c);
+    } while (c != 0);
+    std::ranges::reverse(r);
+    return r;
+}
+
+template <typename Index>
+auto reconstructText(Index const& index) -> std::vector<std::vector<uint8_t>> {
+    auto nbrOfSeq = index.occ.rank(index.size(), 0);
+    auto texts = std::vector<std::vector<uint8_t>>{};
+    for (size_t i{}; i < nbrOfSeq; ++i) {
+        texts.push_back(reconstructText(index, i));
+    }
+    return texts;
+}
+
 }

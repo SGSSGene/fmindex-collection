@@ -21,12 +21,49 @@ namespace fmindex_collection {
 struct CSA {
     std::vector<uint64_t> ssa;
     bitvector::CompactBitvector bv;
-    size_t samplingRate;    // distance between two samples (inside one sequence)
-    size_t bitsForPosition; // bits reserved for position
-    size_t bitPositionMask;
+    size_t samplingRate;      // distance between two samples (inside one sequence)
+    size_t bitsForPosition;   // bits reserved for position
+    size_t bitPositionMask;   // Bit mask, to extract the position from ssa
+    size_t seqCount;          // Number of sequences
+
+
+    static auto createJoinedCSA(CSA const& lhs, CSA const& rhs) -> CSA {
+        auto csa = CSA{};
+        size_t bitsForPosition = std::max(lhs.bitsForPosition, rhs.bitsForPosition);
+        auto seqBits = size_t(std::ceil(std::log2(lhs.seqCount + rhs.seqCount)));
+        if (seqBits + bitsForPosition > 64) {
+            throw std::runtime_error{"Can't merge indices, requires more than 64bit"};
+        }
+
+        //!TODO sampling Rate is only required for FMTree localization, we should remove it
+        csa.samplingRate    = std::max(lhs.samplingRate, rhs.samplingRate);
+        csa.bitsForPosition = bitsForPosition;
+        csa.bitPositionMask = (1ull<<bitsForPosition)-1;
+        return csa;
+    }
 
 
     CSA() = default;
+    template <std::ranges::range Range>
+        requires requires(Range r) {
+            {*(r.begin())} -> std::same_as<std::optional<std::tuple<size_t, size_t>>>;
+        }
+    CSA(Range _ssa, size_t sequencesCount, size_t longestSequence, size_t _samplingRate) {
+
+        samplingRate = _samplingRate; //!TODO samplingRate has to go
+
+        bitsForPosition = size_t(std::ceil(std::log2(longestSequence)));
+        size_t bitsForSeqId = longestSequence;
+        if (bitsForPosition + bitsForSeqId > 64) {
+            throw std::runtime_error{"requires more than 64bit to encode sequence length and number of sequence"};
+        }
+        bitPositionMask = (1ull<<bitsForPosition)-1;
+
+        for (auto o : _ssa) {
+            push_back(o);
+        }
+    }
+
     CSA(std::vector<uint64_t> _ssa, BitStack const& bitstack, size_t _samplingRate, size_t _bitsForPosition)
         : ssa{std::move(_ssa)}
         , bv{bitstack.size, [&](size_t idx) {
@@ -44,10 +81,15 @@ struct CSA {
         }}
         , samplingRate{_samplingRate}
     {
+        size_t longestSequence = std::accumulate(_inputSizes.begin(), _inputSizes.end(), size_t{}, [](size_t lhs, auto rhs) {
+            auto [len, delCt] = rhs;
+            return std::max(lhs, len + delCt);
+        });
+        bitsForPosition = size_t(std::ceil(std::log2(longestSequence)));
         size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
-        assert(bitsForSeqId < 64);
-
-        bitsForPosition = 64 - bitsForSeqId;
+        if (bitsForPosition + bitsForSeqId > 64) {
+            throw std::runtime_error{"requires more than 64bit to encode sequence length and number of sequence"};
+        }
         bitPositionMask = (1ull<<bitsForPosition)-1;
 
         // Generate accumulated input
@@ -102,9 +144,17 @@ struct CSA {
         return std::make_tuple(chr, pos);
     }
 
+    void push_back(std::optional<std::tuple<size_t, size_t>> value) {
+        bv.push_back(value.has_value());
+        if (value) {
+            auto [seqNr, pos] = *value;
+            ssa.push_back((seqNr << bitsForPosition) + pos);
+        }
+    }
+
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(ssa, bv, samplingRate, bitsForPosition, bitPositionMask);
+        ar(ssa, bv, samplingRate, bitsForPosition, bitPositionMask, seqCount);
     }
 };
 static_assert(SuffixArray_c<CSA>);

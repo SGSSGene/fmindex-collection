@@ -32,6 +32,12 @@ concept SuffixArray_c = requires(T t, T t2, size_t idx) {
      * \return - optional value of tuple, first value is the sequence number, the second the position inside the sequence
      */
     { t.value(idx) } -> std::same_as<std::optional<std::tuple<uint64_t, uint64_t>>>;
+
+    /* Push another sampling suffix array entry
+     *
+     * \param seqNr, pos
+     */
+    { t.push_back(std::optional<std::tuple<size_t, size_t>>{}) };
 };
 
 }

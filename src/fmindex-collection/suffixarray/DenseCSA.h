@@ -23,6 +23,25 @@ struct DenseCSA {
     size_t samplingRate;    // distance between two samples (inside one sequence)
 
     DenseCSA() = default;
+
+    template <std::ranges::range Range>
+        requires requires(Range r) {
+            {*(r.begin())} -> std::same_as<std::optional<std::tuple<size_t, size_t>>>;
+        }
+    DenseCSA(Range _ssa, size_t sequencesCount, size_t longestSequence, size_t _samplingRate) {
+
+        samplingRate = _samplingRate; //!TODO samplingRate has to go
+
+        for (auto o : _ssa) {
+            bv.push_back(o.has_value());
+            if (o) {
+                auto [seqNr, pos] = *o;
+                ssaPos.push_back(pos);
+                ssaSeq.push_back(seqNr);
+            }
+        }
+    }
+
     DenseCSA(DenseVector _ssaPos, DenseVector _ssaSeq, BitStack const& bitstack, size_t _samplingRate)
         : ssaPos{std::move(_ssaPos)}
         , ssaSeq{std::move(_ssaSeq)}
@@ -116,6 +135,15 @@ struct DenseCSA {
         }
         auto rank = bv.rank(idx);
         return std::make_tuple(ssaSeq[rank], ssaPos[rank]);
+    }
+
+    void push_back(std::optional<std::tuple<size_t, size_t>> value) {
+        bv.push_back(value.has_value());
+        if (value) {
+            auto [seqNr, pos] = *value;
+            ssaPos.push_back(pos);
+            ssaSeq.push_back(seqNr);
+        }
     }
 
     template <typename Archive>
