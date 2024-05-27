@@ -20,13 +20,15 @@ struct DenseCSA {
     DenseVector ssaPos;             // sampled suffix array - position inside the sequence
     DenseVector ssaSeq;             // sampled suffix array  - sequence id
     bitvector::CompactBitvector bv; // indicates if and which entry the sa → ssa
+    size_t seqCount;
 
     static auto createJoinedCSA(DenseCSA const& lhs, DenseCSA const& rhs) -> DenseCSA {
         (void)lhs;
         (void)rhs;
         auto csa = DenseCSA{};
         csa.ssaPos = DenseVector(std::max(lhs.ssaPos.bits, rhs.ssaPos.bits));
-        csa.ssaSeq = DenseVector(std::max(lhs.ssaSeq.bits, rhs.ssaSeq.bits));
+        csa.ssaSeq = DenseVector(std::ceil(std::log2(lhs.seqCount + rhs.seqCount)));
+        csa.seqCount = lhs.seqCount + rhs.seqCount;
         return csa;
     }
 
@@ -39,7 +41,11 @@ struct DenseCSA {
         requires requires(Range r) {
             {*(r.begin())} -> std::same_as<std::optional<std::tuple<size_t, size_t>>>;
         }
-    DenseCSA(Range _ssa, size_t sequencesCount, size_t longestSequence) {
+    DenseCSA(Range _ssa, size_t sequencesCount, size_t longestSequence)
+        : ssaPos(std::ceil(std::log2(longestSequence)))
+        , ssaSeq(std::ceil(std::log2(sequencesCount)))
+        , seqCount{sequencesCount}
+    {
         for (auto o : _ssa) {
             bv.push_back(o.has_value());
             if (o) {
@@ -50,12 +56,13 @@ struct DenseCSA {
         }
     }
 
-    DenseCSA(DenseVector _ssaPos, DenseVector _ssaSeq, BitStack const& bitstack)
+    DenseCSA(DenseVector _ssaPos, DenseVector _ssaSeq, size_t _seqCount, BitStack const& bitstack)
         : ssaPos{std::move(_ssaPos)}
         , ssaSeq{std::move(_ssaSeq)}
         , bv{bitstack.size, [&](size_t idx) {
             return bitstack.value(idx);
-        }} {
+        }}
+        , seqCount{_seqCount} {
         assert(ssaPos.size() == ssaSeq.size());
     }
 
@@ -64,7 +71,8 @@ struct DenseCSA {
         , ssaSeq(1)
         , bv{bitstack.size, [&](size_t idx) {
             return bitstack.value(idx);
-        }} {
+        }}
+        , seqCount{1} {
         for(size_t i{0}; i < ssaPos.size(); ++i) {
             ssaSeq.push_back(0);
         }
@@ -88,7 +96,7 @@ struct DenseCSA {
 
         // Construct sampled suffix array
         size_t bitsForPos   = std::max(size_t{1}, size_t(std::ceil(std::log2(largestText))));
-
+        seqCount = _inputSizes.size();
         ssaPos = DenseVector(bitsForPos);
         ssaSeq = DenseVector(bitsForSeqId);
         ssaPos.reserve(sa.size() / samplingRate);

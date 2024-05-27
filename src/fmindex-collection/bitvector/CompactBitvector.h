@@ -134,9 +134,11 @@ struct CompactBitvector {
     }
 
     uint64_t rank(size_t idx) const noexcept {
+        assert(idx <= size());
         auto superblockId = idx / 384;
         auto bitId        = idx % 384;
         auto v = superblocks[superblockId].rank(bitId);
+        assert(v <= size());
         return v;
     }
 

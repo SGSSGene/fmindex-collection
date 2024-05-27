@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -71,6 +72,7 @@ struct DenseVector {
      * being stored.
      */
     void push_back(uint64_t value) {
+        assert(std::log2(value) < bits);
         auto empty = data.size()*64-bitCount;
         if (empty == 0) {
             data.push_back(value);

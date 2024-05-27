@@ -101,6 +101,8 @@ auto merge(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> const&
             if (loc) {
                 auto [seq, pos] = *loc;
                 csa.push_back(std::tuple{seq + seqOffset, pos});
+            } else {
+                csa.push_back(std::nullopt);
             }
         };
 
