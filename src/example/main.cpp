@@ -231,7 +231,7 @@ int main(int argc, char const* const* argv) {
                 if (algorithm.size() == 15 && algorithm.substr(0, 13)  == "pseudo_fmtree") {
                     size_t maxDepth = std::stod(algorithm.substr(13, 2));
                     for (auto const& [queryId, cursor, e] : resultCursors) {
-                        for (auto [seqId, pos] : LocateFMTree{index, cursor, maxDepth}) {
+                        for (auto [seqId, pos] : LocateFMTree{index, cursor, index.csa.samplingRate, maxDepth}) {
                             results.emplace_back(queryId, seqId, pos, e);
                         }
                         resultCt += cursor.len;
@@ -240,7 +240,7 @@ int main(int argc, char const* const* argv) {
                     for (auto const& [queryId, cursor, e] : resultCursors) {
                         locateFMTree<16>(index, cursor, [&, &queryId=queryId, &e=e](size_t seqId, size_t pos) {
                             results.emplace_back(queryId, seqId, pos, e);
-                        });
+                        }, index.csa.samplingRate);
                         resultCt += cursor.len;
                     }
 

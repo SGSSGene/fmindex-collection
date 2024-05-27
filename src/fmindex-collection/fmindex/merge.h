@@ -82,9 +82,7 @@ auto merge(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const& ind
 //!TODO swap index1 and index2 if index1 is smaller
 template <typename Res = void, typename OccLhs, typename OccRhs, typename TCSA>
 auto merge(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
-    using CSA = decltype(index1.csa);
-
-    auto csa = CSA::createJoinedCSA(index1.csa, index2.csa);
+    auto csa = TCSA::createJoinedCSA(index1.csa, index2.csa);
 
     // Interleave BWT->R and SA->ssa
     auto mergedBWT = std::vector<uint8_t>{};
