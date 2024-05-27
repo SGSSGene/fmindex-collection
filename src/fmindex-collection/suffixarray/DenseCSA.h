@@ -20,12 +20,11 @@ struct DenseCSA {
     DenseVector ssaPos;             // sampled suffix array - position inside the sequence
     DenseVector ssaSeq;             // sampled suffix array  - sequence id
     bitvector::CompactBitvector bv; // indicates if and which entry the sa → ssa
-    size_t samplingRate;            // distance between two samples (inside one sequence)
 
     static auto createJoinedCSA(DenseCSA const& lhs, DenseCSA const& rhs) -> DenseCSA {
+        (void)lhs;
+        (void)rhs;
         auto csa = DenseCSA{};
-        //!TODO sampling Rate is only required for FMTree localization, we should remove it
-        csa.samplingRate    = std::max(lhs.samplingRate, rhs.samplingRate);
         return csa;
     }
 
@@ -38,10 +37,7 @@ struct DenseCSA {
         requires requires(Range r) {
             {*(r.begin())} -> std::same_as<std::optional<std::tuple<size_t, size_t>>>;
         }
-    DenseCSA(Range _ssa, size_t sequencesCount, size_t longestSequence, size_t _samplingRate) {
-
-        samplingRate = _samplingRate; //!TODO samplingRate has to go
-
+    DenseCSA(Range _ssa, size_t sequencesCount, size_t longestSequence) {
         for (auto o : _ssa) {
             bv.push_back(o.has_value());
             if (o) {
@@ -52,25 +48,21 @@ struct DenseCSA {
         }
     }
 
-    DenseCSA(DenseVector _ssaPos, DenseVector _ssaSeq, BitStack const& bitstack, size_t _samplingRate)
+    DenseCSA(DenseVector _ssaPos, DenseVector _ssaSeq, BitStack const& bitstack)
         : ssaPos{std::move(_ssaPos)}
         , ssaSeq{std::move(_ssaSeq)}
         , bv{bitstack.size, [&](size_t idx) {
             return bitstack.value(idx);
-        }}
-        , samplingRate{_samplingRate}
-        {
+        }} {
         assert(ssaPos.size() == ssaSeq.size());
     }
 
-    DenseCSA(DenseVector _ssaPos, BitStack const& bitstack, size_t _samplingRate)
+    DenseCSA(DenseVector _ssaPos, BitStack const& bitstack)
         : ssaPos{std::move(_ssaPos)}
         , ssaSeq(1)
         , bv{bitstack.size, [&](size_t idx) {
             return bitstack.value(idx);
-        }}
-        , samplingRate{_samplingRate}
-        {
+        }} {
         for(size_t i{0}; i < ssaPos.size(); ++i) {
             ssaSeq.push_back(0);
         }
@@ -78,9 +70,7 @@ struct DenseCSA {
 
     }
 
-    DenseCSA(std::span<uint64_t const> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
-        : samplingRate{_samplingRate}
-    {
+    DenseCSA(std::span<uint64_t const> sa, size_t samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false) {
         size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
         assert(bitsForSeqId < 64);
 
@@ -100,8 +90,8 @@ struct DenseCSA {
 
         ssaPos = DenseVector(bitsForPos);
         ssaSeq = DenseVector(bitsForSeqId);
-        ssaPos.reserve(sa.size() / _samplingRate);
-        ssaSeq.reserve(sa.size() / _samplingRate);
+        ssaPos.reserve(sa.size() / samplingRate);
+        ssaSeq.reserve(sa.size() / samplingRate);
         for (size_t i{0}; i < sa.size(); ++i) {
             bool sample = (sa[i] % samplingRate) == 0;
             if (sample) {
@@ -154,7 +144,7 @@ struct DenseCSA {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(ssaPos, ssaSeq, bv, samplingRate);
+        ar(ssaPos, ssaSeq, bv);
     }
 };
 static_assert(SuffixArray_c<DenseCSA>);

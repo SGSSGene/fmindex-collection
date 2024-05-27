@@ -18,7 +18,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLTABLES) {
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push(true);
         }
-        auto csa = fmindex_collection::CSA{sa, bitStack, /*.samplingRate.=*/1, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
         auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
@@ -41,7 +41,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLTABLES) {
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.samplingRate.=*/2, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
         auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
@@ -70,7 +70,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLTABLES) {
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.samplingRate.=*/2, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
         auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
@@ -91,7 +91,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLTABLES) {
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.samplingRate.=*/2, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
         auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
@@ -107,7 +107,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLTABLES) {
             for (size_t i{0}; i < sa.size(); ++i) {
                 bitStack.push(true);
             }
-            auto csa = fmindex_collection::CSA{sa, bitStack, /*.samplingRate.=*/1, /*.threadNbr=*/63, /*.seqCount=*/1};
+            auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
             auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(index);

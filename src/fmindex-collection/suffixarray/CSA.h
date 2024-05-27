@@ -21,7 +21,6 @@ namespace fmindex_collection {
 struct CSA {
     std::vector<uint64_t> ssa;
     bitvector::CompactBitvector bv;
-    size_t samplingRate;      // distance between two samples (inside one sequence)
     size_t bitsForPosition;   // bits reserved for position
     size_t bitPositionMask;   // Bit mask, to extract the position from ssa
     size_t seqCount;          // Number of sequences
@@ -35,8 +34,6 @@ struct CSA {
             throw std::runtime_error{"Can't merge indices, requires more than 64bit"};
         }
 
-        //!TODO sampling Rate is only required for FMTree localization, we should remove it
-        csa.samplingRate    = std::max(lhs.samplingRate, rhs.samplingRate);
         csa.bitsForPosition = bitsForPosition;
         csa.bitPositionMask = (1ull<<bitsForPosition)-1;
         return csa;
@@ -51,12 +48,9 @@ struct CSA {
         requires requires(Range r) {
             {*(r.begin())} -> std::same_as<std::optional<std::tuple<size_t, size_t>>>;
         }
-    CSA(Range _ssa, size_t sequencesCount, size_t longestSequence, size_t _samplingRate)
+    CSA(Range _ssa, size_t sequencesCount, size_t longestSequence)
         : seqCount{sequencesCount}
     {
-
-        samplingRate = _samplingRate; //!TODO samplingRate has to go
-
         bitsForPosition = size_t(std::ceil(std::log2(longestSequence)));
         size_t bitsForSeqId = longestSequence;
         if (bitsForPosition + bitsForSeqId > 64) {
@@ -69,21 +63,20 @@ struct CSA {
         }
     }
 
-    CSA(std::vector<uint64_t> _ssa, BitStack const& bitstack, size_t _samplingRate, size_t _bitsForPosition, size_t _seqCount)
+    CSA(std::vector<uint64_t> _ssa, BitStack const& bitstack, size_t _bitsForPosition, size_t _seqCount)
         : ssa{std::move(_ssa)}
         , bv{bitstack.size, [&](size_t idx) {
             return bitstack.value(idx);
         }}
-        , samplingRate{_samplingRate}
         , bitsForPosition{_bitsForPosition}
         , bitPositionMask{(1ull<<bitsForPosition)-1}
         , seqCount{_seqCount}
     {}
-    CSA(std::vector<uint64_t> sa, size_t _samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
+
+    CSA(std::vector<uint64_t> sa, size_t samplingRate, std::span<std::tuple<size_t, size_t> const> _inputSizes, bool reverse=false)
         : bv {sa.size(), [&](size_t idx) {
-            return (sa[idx] % _samplingRate) == 0;
+            return (sa[idx] % samplingRate) == 0;
         }}
-        , samplingRate{_samplingRate}
         , seqCount{_inputSizes.size()}
     {
         size_t longestSequence = std::accumulate(_inputSizes.begin(), _inputSizes.end(), size_t{}, [](size_t lhs, auto rhs) {
@@ -159,7 +152,7 @@ struct CSA {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(ssa, bv, samplingRate, bitsForPosition, bitPositionMask, seqCount);
+        ar(ssa, bv, bitsForPosition, bitPositionMask, seqCount);
     }
 };
 static_assert(SuffixArray_c<CSA>);

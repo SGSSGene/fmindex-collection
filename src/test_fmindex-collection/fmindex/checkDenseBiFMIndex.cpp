@@ -20,7 +20,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", 
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push(true);
         }
-        auto csa = fmindex_collection::DenseCSA{sa, bitStack, 1};
+        auto csa = fmindex_collection::DenseCSA{sa, bitStack};
         auto index = fmindex_collection::BiFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, bwtRev, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
@@ -40,7 +40,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", 
             }
         }
 
-        auto csa = fmindex_collection::DenseCSA{sa2, bitStack, 2};
+        auto csa = fmindex_collection::DenseCSA{sa2, bitStack};
         auto index = fmindex_collection::BiFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, bwtRev, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
@@ -69,7 +69,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", 
             }
         }
 
-        auto csa = fmindex_collection::DenseCSA{sa2, bitStack, 2};
+        auto csa = fmindex_collection::DenseCSA{sa2, bitStack};
         auto index = fmindex_collection::BiFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, bwtRev, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
@@ -89,7 +89,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", 
             }
         }
 
-        auto csa = fmindex_collection::DenseCSA{sa2, bitStack, 2};
+        auto csa = fmindex_collection::DenseCSA{sa2, bitStack};
         auto index = fmindex_collection::BiFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, bwtRev, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
@@ -105,7 +105,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", 
             for (size_t i{0}; i < sa.size(); ++i) {
                 bitStack.push(true);
             }
-            auto csa = fmindex_collection::DenseCSA{sa, bitStack, 1};
+            auto csa = fmindex_collection::DenseCSA{sa, bitStack};
             auto index = fmindex_collection::BiFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, bwtRev, std::move(csa)};
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(index);
@@ -136,7 +136,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index on longer text (more t
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push(true);
         }
-        auto csa = fmindex_collection::DenseCSA{sa, bitStack, 2};
+        auto csa = fmindex_collection::DenseCSA{sa, bitStack};
         auto index = fmindex_collection::BiFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, bwtRev, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
@@ -156,7 +156,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index on longer text (more t
             }
         }
 
-        auto csa = fmindex_collection::DenseCSA{sa2, bitStack, 2};
+        auto csa = fmindex_collection::DenseCSA{sa2, bitStack};
         auto index = fmindex_collection::BiFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, bwtRev, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
@@ -176,7 +176,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index on longer text (more t
             }
         }
 
-        auto csa = fmindex_collection::DenseCSA{sa2, bitStack, 2};
+        auto csa = fmindex_collection::DenseCSA{sa2, bitStack};
         auto index = fmindex_collection::BiFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, bwtRev, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
@@ -197,7 +197,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index on longer text (more t
             }
         }
 
-        auto csa = fmindex_collection::DenseCSA{sa2, bitStack, 2};
+        auto csa = fmindex_collection::DenseCSA{sa2, bitStack};
         auto index = fmindex_collection::BiFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, bwtRev, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());

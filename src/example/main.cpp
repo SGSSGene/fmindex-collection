@@ -89,7 +89,8 @@ int main(int argc, char const* const* argv) {
         }
         fmt::print("start loading {} ...", name);
         fflush(stdout);
-        auto index = loadDenseIndex<CSA, Table>(config.indexPath, /*.samplingRate=*/16, /*.threadNbr=*/1, config.partialBuildUp, config.convertUnknownChar);
+        size_t samplingRate = 16;
+        auto index = loadDenseIndex<CSA, Table>(config.indexPath, samplingRate, /*.threadNbr=*/1, config.partialBuildUp, config.convertUnknownChar);
         fmt::print("done\n");
         for (auto const& algorithm : config.algorithms) {
             fmt::print("using algorithm {}\n", algorithm);
@@ -231,7 +232,7 @@ int main(int argc, char const* const* argv) {
                 if (algorithm.size() == 15 && algorithm.substr(0, 13)  == "pseudo_fmtree") {
                     size_t maxDepth = std::stod(algorithm.substr(13, 2));
                     for (auto const& [queryId, cursor, e] : resultCursors) {
-                        for (auto [seqId, pos] : LocateFMTree{index, cursor, index.csa.samplingRate, maxDepth}) {
+                        for (auto [seqId, pos] : LocateFMTree{index, cursor, samplingRate, maxDepth}) {
                             results.emplace_back(queryId, seqId, pos, e);
                         }
                         resultCt += cursor.len;
@@ -240,7 +241,7 @@ int main(int argc, char const* const* argv) {
                     for (auto const& [queryId, cursor, e] : resultCursors) {
                         locateFMTree<16>(index, cursor, [&, &queryId=queryId, &e=e](size_t seqId, size_t pos) {
                             results.emplace_back(queryId, seqId, pos, e);
-                        }, index.csa.samplingRate);
+                        }, samplingRate);
                         resultCt += cursor.len;
                     }
 
