@@ -62,7 +62,7 @@ struct CompactBitvector {
 
     static constexpr size_t Sigma = 2;
 
-    std::vector<Superblock> superblocks{};
+    std::vector<Superblock> superblocks{Superblock{}};
     size_t                  totalLength{};
 
     template <typename CB>
@@ -82,7 +82,6 @@ struct CompactBitvector {
     CompactBitvector(range_t&& _range) {
 
         reserve(_range.size());
-        superblocks.emplace_back();
 
         auto iter = _range.begin();
         while (totalLength < _range.size()) {
