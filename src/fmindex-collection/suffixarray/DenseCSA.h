@@ -25,6 +25,8 @@ struct DenseCSA {
         (void)lhs;
         (void)rhs;
         auto csa = DenseCSA{};
+        csa.ssaPos = DenseVector(std::max(lhs.ssaPos.bits, rhs.ssaPos.bits));
+        csa.ssaSeq = DenseVector(std::max(lhs.ssaSeq.bits, rhs.ssaSeq.bits));
         return csa;
     }
 
