@@ -18,6 +18,7 @@ struct Config {
     bool reverse{true};
     bool help{false};
     bool partialBuildUp{false};
+    size_t threads{1};
     std::set<std::string> extensions;
     bool convertUnknownChar{false};
 
@@ -59,6 +60,9 @@ auto loadConfig(int argc, char const* const* argv) {
         } else if (argv[i] == std::string{"--queries"} and i+1 < argc) {
             ++i;
             config.maxQueries = std::stod(argv[i]);
+        } else if (argv[i] == std::string{"--threads"} and i+1 < argc) {
+            ++i;
+            config.threads = std::stod(argv[i]);
         } else if (argv[i] == std::string{"--read_length"} and i+1 < argc) {
             ++i;
             config.readLength = std::stod(argv[i]);
