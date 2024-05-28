@@ -45,6 +45,7 @@
 #define ALLTABLES_IMPL \
     fmindex_collection::occtable::Naive<256>, \
     fmindex_collection::occtable::Bitvector<256>, \
+    fmindex_collection::occtable::L1Bitvector<256>, \
     fmindex_collection::occtable::CompactBitvector<256>, \
     fmindex_collection::occtable::CompactBitvector4Blocks<256>, \
     fmindex_collection::occtable::Interleaved_8<256>, \

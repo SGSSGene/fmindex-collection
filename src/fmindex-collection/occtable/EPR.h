@@ -27,6 +27,10 @@ using Bitvector = GenericOccTable<rankvector::MultiBitvector<TSigma, fmindex_col
 static_assert(checkOccTable<Bitvector>);
 
 template <size_t TSigma>
+using L1Bitvector = GenericOccTable<rankvector::MultiBitvector<TSigma, fmindex_collection::bitvector::L1Bitvector>, "l1bitvector", "l1bv">;
+static_assert(checkOccTable<L1Bitvector>);
+
+template <size_t TSigma>
 using CompactBitvector = GenericOccTable<rankvector::MultiBitvector<TSigma, fmindex_collection::bitvector::CompactBitvector>, "compact bitvector", "cbv">;
 static_assert(checkOccTable<CompactBitvector>);
 
