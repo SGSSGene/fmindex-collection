@@ -69,7 +69,7 @@ struct CSA {
             return bitstack.value(idx);
         }}
         , bitsForPosition{_bitsForPosition}
-        , bitPositionMask{(1ull<<bitsForPosition)-1}
+        , bitPositionMask{(size_t{1}<<bitsForPosition)-1}
         , seqCount{_seqCount}
     {}
 

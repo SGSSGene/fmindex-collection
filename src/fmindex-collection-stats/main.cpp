@@ -23,10 +23,10 @@ static auto generateString(size_t l) {
 }
 
 
-static size_t pow10(size_t e) {
+static size_t my_pow10(size_t e) {
     if (e == 0) return 1;
     if (e == 1) return 10;
-    auto v = pow10(e/2);
+    auto v = my_pow10(e/2);
     v = v*v;
     if (e%2 == 1) {
         v *= 10;
@@ -85,32 +85,31 @@ static void analyse_bitvectors() {
     for (auto e : {7}) {
         {
             onePercentage=50;
-            auto text = generateString<2>(pow10(e));
+            auto text = generateString<2>(my_pow10(e));
             f(text);
         }
         {
             onePercentage=25;
-            auto sparseText25 = generateString<2, 2>(pow10(e));
+            auto sparseText25 = generateString<2, 2>(my_pow10(e));
             f(sparseText25);
         }
         {
             onePercentage=10;
-            auto sparseText10 = generateString<2, 5>(pow10(e));
+            auto sparseText10 = generateString<2, 5>(my_pow10(e));
             f(sparseText10);
         }
         {
             onePercentage=5;
-            auto sparseText5 = generateString<2, 10>(pow10(e));
+            auto sparseText5 = generateString<2, 10>(my_pow10(e));
             f(sparseText5);
         }
         {
             onePercentage=0.5;
-            auto sparseText0_5 = generateString<2, 100>(pow10(e));
+            auto sparseText0_5 = generateString<2, 100>(my_pow10(e));
             f(sparseText0_5);
         }
     }
 }
-
 
 template <typename RV>
 void analyse_rankvector(std::string label, std::vector<uint8_t> const& text) {
@@ -138,7 +137,7 @@ static void analyse_rankvectors() {
     using namespace fmindex_collection::rankvector;
     for (auto e : {7}) {
         constexpr static size_t Sigma = 21;
-        auto text = generateString<Sigma>(pow10(e));
+        auto text = generateString<Sigma>(my_pow10(e));
 //        f<Naive<Sigma>>(text);
         analyse_rankvector<MultiBitvector<Sigma>>("MultiBitvector", text);
         analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<1>>>("SparseMultiBitvector 2", text);
