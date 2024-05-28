@@ -153,20 +153,95 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
             if (!partialBuildUp) {
                 return {ref, samplingRate, threadNbr};
             }
+            auto longestRef = std::accumulate(ref.begin(), ref.end(), size_t{}, [](size_t a, auto const& v) {
+                return std::max(a, v.size());
+            });
+            std::cout << "longest ref: " << longestRef << "\n";
+            #if 0
             auto refs = std::vector<std::vector<uint8_t>>{};
             refs.resize(1);
-
             auto index = std::optional<Index>{};
             for (auto& r : ref) {
                 refs[0] = std::move(r);
+                std::cout << "indexing " << refs[0].size() << "\n";
                 auto newIndex = Index{refs, samplingRate, threadNbr};
                 if (!index) {
                     index = std::move(newIndex);
                 } else {
+                    std::cout << "merging " << index->size() << " + " << refs[0].size() << "\n";
                     index = merge(*index, newIndex);
                 }
             }
             return std::move(*index);
+            #elif 1
+            auto refs = std::vector<std::vector<uint8_t>>{};
+            auto index = std::optional<Index>{};
+            size_t acc = 0;
+            auto makePartialIndex = [&]() {
+                if (refs.empty()) return;
+                std::cout << "indexing " << acc << "\n";
+                auto newIndex = Index{refs, samplingRate, threadNbr};
+                if (!index) {
+                    index = std::move(newIndex);
+                } else {
+                    std::cout << "merging " << index->size() << " + " << acc << "\n";
+                    index = merge(*index, newIndex);
+                }
+
+                acc = 0;
+                refs.clear();
+            };
+            for (size_t i{}; i < ref.size(); ++i) {
+                if (ref[i].size() + acc >= longestRef) {
+                    makePartialIndex();
+                }
+                refs.emplace_back(std::move(ref[i]));
+                acc += refs.back().size();
+            }
+            makePartialIndex();
+            return std::move(*index);
+
+            #else
+            auto refs = std::vector<std::vector<uint8_t>>{};
+            refs.resize(1);
+            auto indices = std::vector<Index>{};
+
+            auto sort = [&]() {
+                std::sort(indices.begin(), indices.end(), [](auto const& lhs, auto const& rhs) {
+                    return lhs.size() > rhs.size();
+                });
+            };
+            for (auto& r : ref) {
+                refs[0] = std::move(r);
+                std::cout << "indexing " << refs[0].size() << " " << indices.size() << "\n";
+                auto newIndex = Index{refs, samplingRate, threadNbr};
+                indices.emplace_back(std::move(newIndex));
+                sort();
+
+                while (indices.size() > 1) {
+                    auto const& l1 = *(indices.end()-1);
+                    auto const& l2 = *(indices.end()-2);
+                    if (l2.size() > l1.size()*2) {
+                        break;
+                    }
+                    std::cout << "merging " << l2.size() << " + " << l1.size() << " " << indices.size() << "\n";
+                    auto newIndex = merge(l2, l1);
+                    indices.pop_back(); indices.pop_back();
+                    indices.emplace_back(std::move(newIndex));
+                    sort();
+                }
+            }
+            while (indices.size() > 1) {
+                auto const& l1 = *(indices.end()-1);
+                auto const& l2 = *(indices.end()-2);
+                std::cout << "merging " << l2.size() << " + " << l1.size() << " " << indices.size() << "(fin)\n";
+                auto newIndex = merge(l2, l1);
+                indices.pop_back(); indices.pop_back();
+                indices.emplace_back(std::move(newIndex));
+                sort();
+            }
+            return std::move(indices.back());
+            #endif
         }();
 
         // save index here
