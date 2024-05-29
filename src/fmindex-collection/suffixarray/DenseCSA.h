@@ -91,7 +91,7 @@ struct DenseCSA {
         accInputSizes.emplace_back(0);
         for (auto len : _inputSizes) {
             accInputSizes.emplace_back(accInputSizes.back() + len);
-            largestText = std::max(largestText, len-1);
+            largestText = std::max(largestText, len);
         }
 
         // Construct sampled suffix array
