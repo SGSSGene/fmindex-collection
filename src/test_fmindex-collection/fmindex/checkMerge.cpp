@@ -22,6 +22,7 @@ TEST_CASE("checking merging of fmindices", "[FMIndex][merge]") {
     std::cout << "idx: " << "\n";
     size_t idx1{};
     for (auto _ : data1[0]) {
+        (void)_;
         char c = index1.occ.symbol(idx1);
         idx1 = index1.occ.rank(idx1, c);
         std::cout << (int)c << " " << idx1 << "\n";
@@ -75,6 +76,7 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
     std::cout << "idx: " << "\n";
     size_t idx1{};
     for (auto _ : data1[0]) {
+        (void)_;
         char c = index1.occ.symbol(idx1);
         idx1 = index1.occ.rank(idx1, c);
         std::cout << (int)c << " " << idx1 << "\n";
