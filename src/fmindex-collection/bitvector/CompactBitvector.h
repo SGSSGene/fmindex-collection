@@ -32,9 +32,11 @@ struct CompactBitvector {
             assert(idx < 384);
 
             auto blockId = idx >> 6;
-            auto block = 0b111111111ull & (blockEntries >> (blockId * 9));
-            auto keep = (idx & 63);
-            auto maskedBits = (std::bitset<64>(bits[blockId]) << (64 - keep));
+            auto block = uint64_t{0b111111111} & (blockEntries >> (blockId * 9));
+            auto keep = (uint64_t{idx} & 63);
+            if (keep == 0) return superBlockEntry + block;
+
+            auto maskedBits = bits[blockId] << (64 - keep);
             auto bitcount   = std::bitset<64>{maskedBits}.count();
 
             auto total = superBlockEntry + block + bitcount;
@@ -46,12 +48,12 @@ struct CompactBitvector {
 
             auto blockId = idx >> 6;
             auto bitId = idx & 63;
-            return bits[blockId] & (1ull << bitId);
+            return bits[blockId] & (uint64_t{1} << bitId);
         }
 
         void setBlock(size_t blockId, size_t value) {
-            blockEntries = blockEntries & ~uint64_t{0b111111111ull << blockId*9};
-            blockEntries = blockEntries | uint64_t{value << blockId*9};
+            blockEntries = blockEntries & ~(uint64_t{0b111111111} << blockId*9);
+            blockEntries = blockEntries | (uint64_t{value} << blockId*9);
         }
 
         template <typename Archive>
@@ -75,7 +77,6 @@ struct CompactBitvector {
     //!TODO helper structures, when building the vector
     uint64_t sblock_acc{};
     uint64_t block_acc{};
-
 
     template <std::ranges::sized_range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
@@ -138,7 +139,7 @@ struct CompactBitvector {
         auto superblockId = idx / 384;
         auto bitId        = idx % 384;
         auto v = superblocks[superblockId].rank(bitId);
-        assert(v <= size());
+        assert(v <= idx);
         return v;
     }
 

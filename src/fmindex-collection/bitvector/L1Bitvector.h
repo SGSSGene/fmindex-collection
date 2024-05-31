@@ -48,7 +48,7 @@ struct L1Bitvector {
         for (size_t l64{}; l64 < loop64; ++l64) {
             for (size_t i{}; i < 64; ++i) {
                 bool value         = *(iter++);
-                bits.back()        |= (size_t{value} << i);
+                bits.back()        |= (uint64_t{value} << i);
                 superblocks.back() += value;
             }
             totalLength += 64;
@@ -71,7 +71,7 @@ struct L1Bitvector {
     void push_back(bool _value) {
         if (_value) {
             auto bitId         = totalLength % 64;
-            bits.back()        |= (size_t{_value} << bitId);
+            bits.back()        |= (uint64_t{_value} << bitId);
             superblocks.back() += _value;
         }
         totalLength += 1;
