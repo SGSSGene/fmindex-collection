@@ -47,19 +47,9 @@ struct InterleavedEPRV2 {
 
     template <size_t N>
     static auto bits_have_symbols_or_less(uint64_t symb, std::array<uint64_t, N> const& bits) -> uint64_t {
-        size_t bit_set{};
-        for (uint64_t i{0}; i <= symb; ++i) {
+        uint64_t bit_set{};
+        for (size_t i{0}; i <= symb; ++i) {
             bit_set |= bits_have_symbols(i, bits);
-        }
-        return bit_set;
-    }
-
-
-    template <size_t Sigma, size_t N>
-    static auto bits_have_symbols_or_less2(uint64_t symb, std::array<uint64_t, N> const& bits) -> uint64_t {
-        size_t bit_set{};
-        for (uint64_t i{0}; i < Sigma; ++i) {
-            bit_set |= bits_have_symbols(symb, bits) * (size_t)(i <= symb);
         }
         return bit_set;
     }
@@ -76,53 +66,53 @@ struct InterleavedEPRV2 {
 //            __builtin_prefetch((const void*)(&bits), 0, 0);
         }
 
-        uint64_t rank(uint64_t idx, uint64_t symb) const {
+        uint64_t rank(size_t idx, uint64_t symb) const {
             assert(idx < 64);
             auto bits_set = bits_have_symbols(symb, bits);
             auto bits_masked = std::bitset<64>(bits_set) << (64-idx);
             return blocks[symb] + bits_masked.count();
         }
 
-        uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
+        uint64_t prefix_rank(size_t idx, uint64_t symb) const {
             auto bits_set = bits_have_symbols_or_less(symb, bits);
 
             auto bits_masked = std::bitset<64>(bits_set) << (64-idx);
             auto ct = bits_masked.count();
 
-            for (uint64_t i{0}; i <= symb; ++i) {
+            for (size_t i{0}; i <= symb; ++i) {
                 ct += blocks[i];
             }
             return ct;
         }
 
-        auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
+        auto all_ranks(size_t idx) const -> std::array<uint64_t, TSigma> {
             assert(idx < 64);
 
-            std::array<uint64_t, TSigma> rs;
+            auto rs = std::array<uint64_t, TSigma>{};
 
-            for (uint64_t i{0}; i < TSigma; ++i) {
+            for (size_t i{0}; i < TSigma; ++i) {
                 auto bits_set = bits_have_symbols(i, bits);
                 rs[i] = (std::bitset<64>(bits_set) << (64 - idx)).count() + blocks[i];
             }
             return rs;
         }
 
-        uint64_t symbol(uint64_t idx) const {
+        uint64_t symbol(size_t idx) const {
             uint64_t symb{};
-            for (uint64_t i{sigma_bits}; i > 0; --i) {
+            for (size_t i{sigma_bits}; i > 0; --i) {
                 auto b = (bits[i-1] >> idx) & 1;
                 symb = (symb<<1) | b;
             }
             return symb;
         }
 
-        auto rank_symbol(uint64_t idx) const -> std::tuple<uint64_t, uint64_t> {
+        auto rank_symbol(size_t idx) const -> std::tuple<uint64_t, uint64_t> {
             assert(idx < 64);
 
             uint64_t symb{};
             uint64_t mask{};
-            auto f = [&]<auto I>(std::integer_sequence<uint64_t, I>) {
-                auto b = (bits[uint64_t{I}] >> idx) & 1;
+            auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>) {
+                auto b = (bits[I] >> idx) & 1;
                 mask |= bits[I] ^ -b;
                 symb |= b << I;
             };
@@ -141,7 +131,7 @@ struct InterleavedEPRV2 {
         }
     };
 
-    static constexpr uint64_t block_size = sizeof(block_t) * 8;
+    static constexpr size_t block_size = sizeof(block_t) * 8;
 
     std::vector<Block> blocks;
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
@@ -159,19 +149,19 @@ struct InterleavedEPRV2 {
         auto sblock_acc = std::array<uint64_t, TSigma>{}; // accumulator for super blocks
         auto block_acc  = std::array<block_t, TSigma>{};  // accumulator for blocks
 
-        for (uint64_t size{0}; size < _symbols.size();) {
+        for (size_t size{0}; size < _symbols.size();) {
             superBlocks.emplace_back(sblock_acc);
             block_acc = {};
 
-            for (uint64_t blockId{0}; blockId < (1ull<<block_size)/64 and size < _symbols.size(); ++blockId) {
+            for (size_t blockId{0}; blockId < (uint64_t{1}<<block_size)/64 and size < _symbols.size(); ++blockId) {
                 blocks.emplace_back();
                 blocks.back().blocks = block_acc;
 
-                for (uint64_t bitId{0}; bitId < 64 and size < _symbols.size(); ++bitId, ++size) {
+                for (size_t bitId{0}; bitId < 64 and size < _symbols.size(); ++bitId, ++size) {
 
                     uint64_t symb = _symbols[size];
 
-                    for (uint64_t i{}; i < sigma_bits; ++i) {
+                    for (size_t i{}; i < sigma_bits; ++i) {
                         auto b = ((symb>>i)&1);
                         blocks.back().bits[i] |= (b << bitId);
                     }
@@ -193,67 +183,67 @@ struct InterleavedEPRV2 {
         return totalLength;
     }
 
-    void prefetch(uint64_t idx) const {
+    void prefetch(size_t idx) const {
         auto blockId      = idx >>  6;
         blocks[blockId].prefetch();
     }
 
-    uint8_t symbol(uint64_t idx) const {
+    uint8_t symbol(size_t idx) const {
         auto blockId      = idx >>  6;
         auto bitId        = idx &  63;
         return blocks[blockId].symbol(bitId);
     }
 
-    uint64_t rank(uint64_t idx, uint8_t symb) const {
+    uint64_t rank(size_t idx, uint8_t symb) const {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> block_size;
         auto bitId        = idx &  63;
         return blocks[blockId].rank(bitId, symb) + superBlocks[superBlockId][symb];
     }
 
-    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+    uint64_t prefix_rank(size_t idx, uint8_t symb) const {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> block_size;
         auto bitId        = idx &  63;
-        uint64_t a={};
-        for (uint64_t i{0}; i<= symb; ++i) {
+        uint64_t a{};
+        for (size_t i{0}; i<= symb; ++i) {
             a += superBlocks[superBlockId][i];
         }
         return blocks[blockId].prefix_rank(bitId, symb) + a;
     }
 
 
-    auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
+    auto all_ranks(size_t idx) const -> std::array<uint64_t, TSigma> {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> block_size;
         auto bitId        = idx &  63;
         auto res = std::array<uint64_t, TSigma>{};
-        for (uint64_t symb{0}; symb < TSigma; ++symb) {
+        for (size_t symb{0}; symb < TSigma; ++symb) {
             res[symb] = blocks[blockId].rank(bitId, symb) + superBlocks[superBlockId][symb];
         }
         return res;
     }
 
-    auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
+    auto all_ranks_and_prefix_ranks(size_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> block_size;
         auto bitId        = idx &  63;
 
-        std::array<uint64_t, TSigma> prs;
+        auto prs = std::array<uint64_t, TSigma>{};
         auto rs = blocks[blockId].all_ranks(bitId);
 
         rs[0] += superBlocks[superBlockId][0];
         prs[0] = rs[0];
-        for (uint64_t symb{1}; symb < TSigma; ++symb) {
+        for (size_t symb{1}; symb < TSigma; ++symb) {
             prs[symb] = prs[symb-1] + superBlocks[superBlockId][symb] + rs[symb];
             rs[symb] += superBlocks[superBlockId][symb];
         }
         return {rs, prs};
     }
 
-    uint64_t rank_symbol(uint64_t idx) const {
-        auto blockId = idx >> 6;
-        auto bitId = idx & 63;
+    uint64_t rank_symbol(size_t idx) const {
+        auto blockId      = idx >> 6;
+        auto bitId        = idx & 63;
         auto superBlockId = idx >> block_size;
         auto [rank, symb] = blocks[blockId].rank_symbol(bitId);
         return rank + superBlocks[superBlockId][symb];

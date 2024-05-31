@@ -42,6 +42,12 @@
     fmindex_collection::occtable::sdsl_wt_epr::OccTable<256>
 */
 
+#if UINT64_MAX == SIZE_MAX
+    #define setif64bit(V) V,
+#else
+    #define setif64bit(V)
+#endif
+
 #define ALLTABLES_IMPL \
     fmindex_collection::occtable::Naive<256>, \
     fmindex_collection::occtable::Bitvector<256>, \
@@ -50,25 +56,25 @@
     fmindex_collection::occtable::CompactBitvector4Blocks<256>, \
     fmindex_collection::occtable::Interleaved_8<256>, \
     fmindex_collection::occtable::Interleaved_16<256>, \
-    fmindex_collection::occtable::Interleaved_32<256>, \
+    setif64bit(fmindex_collection::occtable::Interleaved_32<256>) \
     fmindex_collection::occtable::Interleaved_8Aligned<256>, \
     fmindex_collection::occtable::Interleaved_16Aligned<256>, \
-    fmindex_collection::occtable::Interleaved_32Aligned<256>, \
+    setif64bit(fmindex_collection::occtable::Interleaved_32Aligned<256>) \
     fmindex_collection::occtable::Epr_8<256>, \
     fmindex_collection::occtable::Epr_16<256>, \
-    fmindex_collection::occtable::Epr_32<256>, \
+    setif64bit(fmindex_collection::occtable::Epr_32<256>) \
     fmindex_collection::occtable::Epr_8Aligned<256>, \
     fmindex_collection::occtable::Epr_16Aligned<256>, \
-    fmindex_collection::occtable::Epr_32Aligned<256>, \
+    setif64bit(fmindex_collection::occtable::Epr_32Aligned<256>) \
     fmindex_collection::occtable::EprV2_8<256>, \
     fmindex_collection::occtable::EprV2_16<256>, \
-    fmindex_collection::occtable::EprV2_32<256>, \
+    setif64bit(fmindex_collection::occtable::EprV2_32<256>) \
     fmindex_collection::occtable::EprV2_8Aligned<256>, \
     fmindex_collection::occtable::EprV2_16Aligned<256>, \
-    fmindex_collection::occtable::EprV2_32Aligned<256>, \
+    setif64bit(fmindex_collection::occtable::EprV2_32Aligned<256>) \
     fmindex_collection::occtable::EprV3_8<256>, \
     fmindex_collection::occtable::EprV3_16<256>, \
-    fmindex_collection::occtable::EprV3_32<256>, \
+    setif64bit(fmindex_collection::occtable::EprV3_32<256>) \
     fmindex_collection::occtable::EprV4<256>, \
     fmindex_collection::occtable::EprV5<256>, \
     fmindex_collection::occtable::EprV6<256>, \

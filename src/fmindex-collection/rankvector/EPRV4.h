@@ -151,7 +151,7 @@ struct EPRV4 {
         auto level2Id     = idx >> level1_size;
         auto superBlockId = idx >> level2_size;
         auto bitId        = idx &  63;
-        uint64_t a={};
+        uint64_t a{};
         for (uint64_t i{0}; i<= symb; ++i) {
             a +=   level0[level0Id][i]
                  + level1[level1Id][i]

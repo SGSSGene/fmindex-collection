@@ -25,19 +25,19 @@ struct InterleavedEPR {
 
     // To select a char at the even/uneven position
     static constexpr uint64_t maskEven = []() {
-        uint64_t entries = 64 / bitct;
+        size_t entries = 64 / bitct;
         auto result = uint64_t{0};
-        auto chunkMaskEven = uint64_t{(1ull << bitct)-1ull};
-        for (uint64_t i{0}; i < entries; i += 2) {
+        auto chunkMaskEven = (uint64_t{1} << bitct)-1;
+        for (size_t i{0}; i < entries; i += 2) {
             result = (result << (bitct*2)) | chunkMaskEven;
         }
         return result;
     }();
 
     static constexpr uint64_t bitMask = []() {
-        uint64_t entries = 64 / bitct;
+        auto entries = size_t{64 / bitct};
         auto result = uint64_t{0};
-        auto mask = 1<<bitct;
+        auto mask = uint64_t{1}<<bitct;
         for (uint64_t i{0}; i < entries; i += 2) {
             result = (result << (bitct*2)) | mask;
         }
@@ -49,7 +49,7 @@ struct InterleavedEPR {
         auto results = std::array<uint64_t, TSigma>{};
 
         for (uint64_t symb{0}; symb < TSigma; ++symb) {
-            uint64_t mask = symb | (1<<bitct);
+            uint64_t mask = symb | (uint64_t{1}<<bitct);
             uint64_t entries = 64 / bitct;
             for (uint64_t i{0}; i < entries; i += 2) {
                 results[symb] = (results[symb] << (bitct*2)) | mask;
@@ -75,7 +75,7 @@ struct InterleavedEPR {
 
             auto te = ((rb[symb] - (_inblock & maskEven)) & bitMask) >> bitct;
             auto to = (rb[symb] - ((_inblock>>bitct) & maskEven)) & bitMask;
-            auto epr = (te | to) & ((1ull << (idx*bitct))-1ull);
+            auto epr = (te | to) & ((uint64_t{1} << (idx*bitct))-1);
 
             auto ct = std::bitset<64>{epr}.count();
 
@@ -88,7 +88,7 @@ struct InterleavedEPR {
         uint8_t symbol(uint64_t idx) const {
             assert(idx < 64 / bitct);
 
-            auto mask = uint64_t{(1ull<<bitct)-1ull};
+            auto mask = (uint64_t{1}<<bitct)-1;
             uint64_t symb = (inBlock >> (idx*bitct)) & mask;
             return symb;
         }
@@ -100,7 +100,7 @@ struct InterleavedEPR {
     };
 
     constexpr static uint64_t letterFit = 64 / bitct;
-    static constexpr uint64_t block_size = ((1ull<<(sizeof(block_t)*8)) / letterFit)*letterFit;
+    static constexpr uint64_t block_size = ((uint64_t{1}<<(sizeof(block_t)*8)) / letterFit)*letterFit;
 
     std::vector<Block> blocks;
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
