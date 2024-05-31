@@ -25,7 +25,7 @@ template <typename T, typename SymbolType = uint8_t>
 concept RankVector =
     std::default_initializable<T>
     && std::movable<T>
-    && requires(T t, std::span<SymbolType const> symbols, uint64_t idx, SymbolType symb) {
+    && requires(T t, std::span<SymbolType const> symbols, size_t idx, SymbolType symb) {
 
     /* Compile time variable indicating the number of symbols (including the delimiter)
      */

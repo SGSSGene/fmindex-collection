@@ -109,9 +109,8 @@ struct DenseVector {
         auto startI = begin/64;
         auto endI   = end/64;
         auto startOffset = begin % 64;
-//        auto endOffset   = end % 64;
 
-        auto mask = (1ull<<(end-begin+1ull))-1ull;
+        auto mask = (uint64_t{1}<<(end-begin+size_t{1}))-1;
         if (startI == endI) {
             return (data[startI] >> startOffset) & mask;
         }

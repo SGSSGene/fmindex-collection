@@ -56,7 +56,7 @@ struct FMIndex {
 
     auto locate(size_t idx) const -> std::tuple<size_t, size_t> {
         auto opt = csa.value(idx);
-        uint64_t steps{};
+        size_t steps{};
         while(!opt) {
             idx = occ.rank(idx, occ.symbol(idx));
             steps += 1;

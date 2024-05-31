@@ -21,9 +21,9 @@ namespace fmindex_collection {
 struct CSA {
     std::vector<uint64_t> ssa;
     bitvector::CompactBitvector bv;
-    size_t bitsForPosition;   // bits reserved for position
-    size_t bitPositionMask;   // Bit mask, to extract the position from ssa
-    size_t seqCount;          // Number of sequences
+    size_t   bitsForPosition;   // bits reserved for position
+    uint64_t bitPositionMask;   // Bit mask, to extract the position from ssa
+    size_t   seqCount;          // Number of sequences
 
 
     static auto createJoinedCSA(CSA const& lhs, CSA const& rhs) -> CSA {
@@ -56,7 +56,7 @@ struct CSA {
         if (bitsForPosition + bitsForSeqId > 64) {
             throw std::runtime_error{"requires more than 64bit to encode sequence length and number of sequence"};
         }
-        bitPositionMask = (1ull<<bitsForPosition)-1;
+        bitPositionMask = (uint64_t{1}<<bitsForPosition)-1;
 
         for (auto o : _ssa) {
             push_back(o);
@@ -69,7 +69,7 @@ struct CSA {
             return bitstack.value(idx);
         }}
         , bitsForPosition{_bitsForPosition}
-        , bitPositionMask{(size_t{1}<<bitsForPosition)-1}
+        , bitPositionMask{(uint64_t{1}<<bitsForPosition)-1}
         , seqCount{_seqCount}
     {}
 
@@ -87,10 +87,10 @@ struct CSA {
         if (bitsForPosition + bitsForSeqId > 64) {
             throw std::runtime_error{"requires more than 64bit to encode sequence length and number of sequence"};
         }
-        bitPositionMask = (1ull<<bitsForPosition)-1;
+        bitPositionMask = (uint64_t{1}<<bitsForPosition)-1;
 
         // Generate accumulated input
-        auto accInputSizes = std::vector<uint64_t>{};
+        auto accInputSizes = std::vector<size_t>{};
         accInputSizes.reserve(_inputSizes.size()+1);
         accInputSizes.emplace_back(0);
         for (auto len : _inputSizes) {
