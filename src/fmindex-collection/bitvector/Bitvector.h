@@ -98,7 +98,8 @@ struct Bitvector {
                 blocks.emplace_back();
                 bits.emplace_back();
             } else {
-                blocks.emplace_back(superblocks.back());
+                assert(superblocks.back() < 256);
+                blocks.emplace_back(uint8_t(superblocks.back()));
                 bits.emplace_back();
             }
         }

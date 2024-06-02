@@ -23,7 +23,7 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
         SECTION("check that symbol() call works") {
             for (size_t i{0}; i < text.size(); ++i) {
                 INFO(i);
-                CHECK(vec.symbol(i) == text.at(i));
+                CHECK(vec.symbol(i) == bool(text.at(i)));
             }
         }
 
@@ -87,7 +87,7 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
         SECTION("check that symbol() call works") {
             for (size_t i{0}; i < text.size(); ++i) {
                 INFO(i);
-                CHECK(vec.symbol(i) == text.at(i));
+                CHECK(vec.symbol(i) == bool(text.at(i)));
             }
         }
 
@@ -129,7 +129,7 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
             REQUIRE(input.size() == vec.size());
             size_t count{};
             for (size_t i{0}; i != input.size(); ++i) {
-                CHECK(input[i] == vec.symbol(i));
+                CHECK((bool)input[i] == vec.symbol(i));
                 CHECK(count == vec.rank(i));
                 count += input[i];
             }
