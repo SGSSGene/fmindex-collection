@@ -22,7 +22,7 @@ endif()
 
 find_package(OpenMP QUIET)
 include(cmake/CPM.cmake)
-CPMAddPackage("gh:SGSSGene/WrappedCPMAddPackage@0.2.7")
+CPMAddPackage("gh:SGSSGene/WrappedCPMAddPackage@0.2.9")
 include(fmindex_collection-config.cmake)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
     target_compile_options(libsais PRIVATE -fp-model=strict -fno-strict-aliasing)
