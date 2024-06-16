@@ -20,7 +20,9 @@ struct BiFMIndex {
     TCSA   csa;
 
     BiFMIndex() = default;
-    BiFMIndex(std::span<uint8_t const> bwt, std::vector<uint8_t> const& bwtRev, TCSA _csa)
+    BiFMIndex(BiFMIndex&&) noexcept = default;
+
+    BiFMIndex(std::span<uint8_t const> bwt, std::span<uint8_t const> bwtRev, TCSA _csa)
         : occ{bwt}
         , occRev{bwtRev}
         , csa{std::move(_csa)}
@@ -75,7 +77,7 @@ struct BiFMIndex {
      * \param samplingRate rate of the sampling
      */
     BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
-        auto [totalSize, inputText, inputSizes] = createSequences(_input, samplingRate);
+        auto [totalSize, inputText, inputSizes] = createSequences(_input);
 
         // create BurrowsWheelerTransform and CompressedSuffixArray
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
@@ -97,6 +99,9 @@ struct BiFMIndex {
 
         *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
     }
+
+    auto operator=(BiFMIndex const&) -> BiFMIndex& = delete;
+    auto operator=(BiFMIndex&&) noexcept -> BiFMIndex& = default;
 
     size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
         return occ.memoryUsage() + occRev.memoryUsage() + csa.memoryUsage();

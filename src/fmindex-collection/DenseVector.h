@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -49,10 +50,10 @@ struct DenseVector {
         }
     }
 
-    DenseVector(DenseVector&&) noexcept = default;
     DenseVector(DenseVector const&) = default;
-    DenseVector& operator=(DenseVector&&) noexcept = default;
+    DenseVector(DenseVector&&) noexcept = default;
     DenseVector& operator=(DenseVector const&) = default;
+    DenseVector& operator=(DenseVector&&) noexcept = default;
 
     /** Reserve memory for a certain number of integers.
      *
@@ -71,6 +72,7 @@ struct DenseVector {
      * being stored.
      */
     void push_back(uint64_t value) {
+        assert(std::log2(value) < bits);
         auto empty = data.size()*64-bitCount;
         if (empty == 0) {
             data.push_back(value);
@@ -107,9 +109,8 @@ struct DenseVector {
         auto startI = begin/64;
         auto endI   = end/64;
         auto startOffset = begin % 64;
-//        auto endOffset   = end % 64;
 
-        auto mask = (1ull<<(end-begin+1ull))-1ull;
+        auto mask = (uint64_t{1}<<(end-begin+size_t{1}))-1;
         if (startI == endI) {
             return (data[startI] >> startOffset) & mask;
         }

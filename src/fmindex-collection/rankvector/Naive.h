@@ -32,7 +32,7 @@ struct Naive {
         return totalLength;
     }
 
-    uint8_t symbol(uint64_t idx) const noexcept {
+    uint8_t symbol(size_t idx) const noexcept {
         idx += 1;
         for (uint64_t i{0}; i < Sigma-1; ++i) {
             if (occ[idx][i] > occ[idx-1][i]) {
@@ -42,11 +42,11 @@ struct Naive {
         return Sigma-1;
     }
 
-    uint64_t rank(uint64_t idx, uint8_t symb) const noexcept {
+    uint64_t rank(size_t idx, uint8_t symb) const noexcept {
         return occ[idx][symb];
     }
 
-    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const noexcept {
+    uint64_t prefix_rank(size_t idx, uint8_t symb) const noexcept {
         uint64_t a{};
         for (uint64_t i{0}; i <= symb; ++i) {
             a += occ[idx][i];
@@ -54,11 +54,11 @@ struct Naive {
         return a;
     }
 
-    auto all_ranks(uint64_t idx) const -> std::array<uint64_t, Sigma> {
+    auto all_ranks(size_t idx) const -> std::array<uint64_t, Sigma> {
         return occ[idx];
     }
 
-    auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
+    auto all_ranks_and_prefix_ranks(size_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
         auto rs  = occ[idx];
         auto prs = rs;
         for (size_t i{1}; i < prs.size(); ++i) {

@@ -65,11 +65,10 @@ template <typename index_t, typename cursor_t>
 struct LocateFMTree {
     std::vector<std::tuple<size_t, size_t>> positions;
 
-    LocateFMTree(index_t const& index, cursor_t cursor, size_t maxDepth) {
+    LocateFMTree(index_t const& index, cursor_t cursor, size_t samplingRate, size_t maxDepth) {
         positions.reserve(cursor.count());
         auto stack = std::vector<std::tuple<cursor_t, size_t>>{};
         stack.emplace_back(cursor, 0);
-        size_t samplingRate = index.csa.samplingRate;
         while(!stack.empty()) {
             auto [cursor, depth] = stack.back();
             stack.pop_back();
@@ -120,7 +119,7 @@ struct LocateFMTree {
 
 
 template <size_t MaxDepth, typename index_t, typename cursor_t, typename CB>
-void locateFMTree(index_t const& index, cursor_t cursor, CB const& cb, size_t depth=0) {
+void locateFMTree(index_t const& index, cursor_t cursor, CB const& cb, size_t samplingRate, size_t depth=0) {
     if (depth < MaxDepth and cursor.count() > 1000) {
         for (size_t pos{cursor.lb}; pos < cursor.lb + cursor.len; ++pos) {
             auto v = index.single_locate_step(pos);
@@ -130,7 +129,7 @@ void locateFMTree(index_t const& index, cursor_t cursor, CB const& cb, size_t de
             }
         }
 
-        if (depth+1 < index.csa.samplingRate) {
+        if (depth+1 < samplingRate) {
             auto cursors = cursor.extendLeft();
             for (size_t sym{1}; sym < cursors.size(); ++sym) {
                 locateFMTree<MaxDepth>(index, cursors[sym], cb, depth+1);
@@ -138,7 +137,7 @@ void locateFMTree(index_t const& index, cursor_t cursor, CB const& cb, size_t de
         }
     } else {
         for (size_t pos{cursor.lb}; pos < cursor.lb + cursor.len; ++pos) {
-            uint64_t maxSteps = index.csa.samplingRate - depth;
+            uint64_t maxSteps = samplingRate - depth;
             uint64_t idx = pos;
 
             auto opt = index.single_locate_step(idx);

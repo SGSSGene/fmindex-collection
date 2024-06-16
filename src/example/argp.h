@@ -17,7 +17,10 @@ struct Config {
     size_t minK{0}, maxK{6}, k_stepSize{1};
     bool reverse{true};
     bool help{false};
+    bool partialBuildUp{false};
+    size_t threads{1};
     std::set<std::string> extensions;
+    bool convertUnknownChar{false};
 
     std::vector<std::string> algorithms;
 
@@ -57,6 +60,9 @@ auto loadConfig(int argc, char const* const* argv) {
         } else if (argv[i] == std::string{"--queries"} and i+1 < argc) {
             ++i;
             config.maxQueries = std::stod(argv[i]);
+        } else if (argv[i] == std::string{"--threads"} and i+1 < argc) {
+            ++i;
+            config.threads = std::stod(argv[i]);
         } else if (argv[i] == std::string{"--read_length"} and i+1 < argc) {
             ++i;
             config.readLength = std::stod(argv[i]);
@@ -76,6 +82,10 @@ auto loadConfig(int argc, char const* const* argv) {
             config.reverse = false;
         } else if (argv[i] == std::string{"--help"}) {
             config.help = true;
+        } else if (argv[i] == std::string{"--partialBuildUp"}) {
+            config.partialBuildUp = true;
+        } else if (argv[i] == std::string{"--convertUnknownChar"}) {
+            config.convertUnknownChar = true;
         } else if (argv[i] == std::string{"--mode"} and i+1 < argc) {
             ++i;
             auto s = std::string{argv[i]};

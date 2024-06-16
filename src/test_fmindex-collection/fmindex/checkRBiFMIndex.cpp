@@ -18,7 +18,7 @@ TEMPLATE_TEST_CASE("checking reversed bidirectional fm index", "[RBiFMIndex]", A
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push(true);
         }
-        auto csa = fmindex_collection::CSA{sa, bitStack, 1, 63};
+        auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
         auto index = fmindex_collection::RBiFMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
@@ -38,7 +38,7 @@ TEMPLATE_TEST_CASE("checking reversed bidirectional fm index", "[RBiFMIndex]", A
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
         auto index = fmindex_collection::RBiFMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
@@ -67,7 +67,7 @@ TEMPLATE_TEST_CASE("checking reversed bidirectional fm index", "[RBiFMIndex]", A
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
         auto index = fmindex_collection::RBiFMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
@@ -88,7 +88,7 @@ TEMPLATE_TEST_CASE("checking reversed bidirectional fm index", "[RBiFMIndex]", A
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, 2, 63};
+        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
         auto index = fmindex_collection::RBiFMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());

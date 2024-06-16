@@ -66,19 +66,19 @@ struct GenericOccTable {
         return vector.size();
     }
 
-    uint8_t symbol(uint64_t idx) const {
+    uint8_t symbol(size_t idx) const {
         return vector.symbol(idx);
     }
 
-    uint64_t rank(uint64_t idx, uint64_t symb) const {
+    uint64_t rank(size_t idx, uint64_t symb) const {
         return vector.rank(idx, symb) + C[symb];
     }
 
-    uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
+    uint64_t prefix_rank(size_t idx, uint64_t symb) const {
         return vector.prefix_rank(idx, symb);
     }
 
-    auto all_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
+    auto all_ranks(size_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
         auto [rs, prs] = vector.all_ranks_and_prefix_ranks(idx);
         for (size_t i{0}; i < rs.size(); ++i) {
             rs[i] += C[i];

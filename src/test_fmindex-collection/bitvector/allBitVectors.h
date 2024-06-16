@@ -8,6 +8,7 @@
     fmindex_collection::bitvector::Bitvector, \
     fmindex_collection::bitvector::CompactBitvector, \
     fmindex_collection::bitvector::CompactBitvector4Blocks, \
+    fmindex_collection::bitvector::L1Bitvector, \
     fmindex_collection::bitvector::SparseBLEBitvector<2>, \
     fmindex_collection::bitvector::SparseBLEBitvector<-2>, \
     (fmindex_collection::bitvector::SparseBLEBitvector<3, fmindex_collection::bitvector::SparseBLEBitvector<2>>), \

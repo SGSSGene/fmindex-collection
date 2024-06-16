@@ -6,4 +6,5 @@
 #include "Bitvector.h"
 #include "CompactBitvector.h"
 #include "CompactBitvector4Blocks.h"
+#include "L1Bitvector.h"
 #include "SparseBLEBitvector.h"

@@ -57,7 +57,7 @@ struct RBiFMIndex {
      * \param samplingRate rate of the sampling
      */
     RBiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
-        auto [totalSize, inputText, inputSizes] = createSequencesAndReverse(_input, samplingRate);
+        auto [totalSize, inputText, inputSizes] = createSequencesAndReverse(_input);
 
         // create BurrowsWheelerTransform and CompressedSuffixArray
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {

@@ -16,6 +16,7 @@ add_executable(${PROJECT_NAME}
     fmindex/checkFMIndexCursor.cpp
     fmindex/checkLeftBiFMIndexCursor.cpp
     fmindex/checkLeftRBiFMIndexCursor.cpp
+    fmindex/checkMerge.cpp
     fmindex/checkRBiFMIndex.cpp
     fmindex/checkRBiFMIndexCursor.cpp
     fmindex/checkReverseFMIndex.cpp

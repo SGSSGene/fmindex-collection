@@ -28,7 +28,7 @@ struct CompactBitvector {
         }}
     {}
 
-    CompactBitvector() {}
+    CompactBitvector() = default;
     CompactBitvector(CompactBitvector const&) = default;
     CompactBitvector(CompactBitvector&&) noexcept = default;
     auto operator=(CompactBitvector const&) -> CompactBitvector& = default;
@@ -39,11 +39,11 @@ struct CompactBitvector {
         return bitvector.size();
     }
 
-    uint8_t symbol(uint64_t idx) const noexcept {
+    uint8_t symbol(size_t idx) const noexcept {
         return bitvector.symbol(idx);
     }
 
-    uint64_t rank(uint64_t idx, uint8_t symb=1) const noexcept {
+    uint64_t rank(size_t idx, uint8_t symb=1) const noexcept {
         auto v = bitvector.rank(idx);
         if (symb == 0) {
             v = idx - v;
@@ -51,17 +51,17 @@ struct CompactBitvector {
         return v;
     }
 
-    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const noexcept {
+    uint64_t prefix_rank(size_t idx, uint8_t symb) const noexcept {
         if (symb == 1) return idx;
         return rank(idx, 0);
     }
 
-    auto all_ranks(uint64_t idx) const -> std::array<uint64_t, Sigma> {
+    auto all_ranks(size_t idx) const -> std::array<uint64_t, Sigma> {
         auto r = rank(idx);
         return {idx-r, r};
     }
 
-    auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
+    auto all_ranks_and_prefix_ranks(size_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
         auto rs  = all_ranks(idx);
         auto prs = rs;
         prs[1] = idx;

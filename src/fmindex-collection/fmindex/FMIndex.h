@@ -17,6 +17,8 @@ struct FMIndex {
     TCSA   csa;
 
     FMIndex() = default;
+    FMIndex(FMIndex const&) = delete;
+    FMIndex(FMIndex&&) noexcept = default;
     FMIndex(std::span<uint8_t const> bwt, TCSA _csa)
         : occ{bwt}
         , csa{std::move(_csa)}
@@ -28,7 +30,7 @@ struct FMIndex {
     }
 
     FMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
-        auto [totalSize, inputText, inputSizes] = createSequences(_input, samplingRate);
+        auto [totalSize, inputText, inputSizes] = createSequences(_input);
 
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
             auto sa  = createSA(inputText, threadNbr);
@@ -40,6 +42,9 @@ struct FMIndex {
 
         *this = FMIndex{bwt, std::move(csa)};
     }
+    auto operator=(FMIndex const&) -> FMIndex& = delete;
+    auto operator=(FMIndex&&) noexcept -> FMIndex& = default;
+
 
     size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
         return occ.memoryUsage() + csa.memoryUsage();
@@ -51,7 +56,7 @@ struct FMIndex {
 
     auto locate(size_t idx) const -> std::tuple<size_t, size_t> {
         auto opt = csa.value(idx);
-        uint64_t steps{};
+        size_t steps{};
         while(!opt) {
             idx = occ.rank(idx, occ.symbol(idx));
             steps += 1;

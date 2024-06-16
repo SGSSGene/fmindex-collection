@@ -12,8 +12,8 @@
 namespace fmindex_collection {
 
 struct BitStack {
-    uint64_t size{0};
-    uint64_t ones{0};
+    size_t size{0};
+    size_t ones{0};
     std::vector<uint8_t> data;
     void push(bool bit) {
         if (size % 8 == 0) {
@@ -29,7 +29,7 @@ struct BitStack {
     bool value(size_t idx) const {
         auto block  = idx / 8;
         auto bitNbr = idx % 8;
-        return (data[block] & (1ull << bitNbr));
+        return (data[block] & (size_t{1} << bitNbr));
     }
 
     void append(std::vector<uint8_t>& buffer) const {

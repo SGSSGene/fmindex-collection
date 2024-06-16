@@ -82,7 +82,7 @@ struct EPRV3 {
         auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
             assert(idx < 64);
 
-            std::array<uint64_t, TSigma> rs{0};
+            auto rs = std::array<uint64_t, TSigma>{0};
 
             auto f = [&]<uint64_t I>(uint64_t symb, std::integer_sequence<uint64_t, I>) {
                 return bits[I] ^ -((~symb>>I)&1);
@@ -142,7 +142,7 @@ struct EPRV3 {
             superBlocks.emplace_back(sblock_acc);
             block_acc = {};
 
-             for (uint64_t blockId{0}; blockId < (1ull<<block_size)/64 and size < _symbols.size(); ++blockId) {
+             for (uint64_t blockId{0}; blockId < (uint64_t{1}<<block_size)/64 and size < _symbols.size(); ++blockId) {
                 blocks_.emplace_back();
                 blocks_.back().blocks = block_acc;
                 bits.emplace_back();

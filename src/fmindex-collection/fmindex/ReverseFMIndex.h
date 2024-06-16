@@ -29,7 +29,7 @@ struct ReverseFMIndex {
 
     ReverseFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
 
-        auto [totalSize, inputText, inputSizes] = createSequences(_input, samplingRate, /*reverse*/ true);
+        auto [totalSize, inputText, inputSizes] = createSequences(_input, /*reverse*/ true);
 
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
             auto sa  = createSA(inputText, threadNbr);

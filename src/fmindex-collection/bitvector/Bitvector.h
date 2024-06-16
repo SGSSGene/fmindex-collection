@@ -56,7 +56,7 @@ struct Bitvector {
                 if (value) {
                     auto bitId = i;
                     auto& tbits  = bits.back();
-                    tbits        = tbits | (size_t{1} << bitId);
+                    tbits        = tbits | (uint64_t{1} << bitId);
                     superblocks.back() += 1;
                 }
             }
@@ -87,7 +87,7 @@ struct Bitvector {
         if (_value) {
             auto bitId   = totalLength % 64;
             auto& tbits  = bits.back();
-            tbits        = tbits | (size_t{1} << bitId);
+            tbits        = tbits | (uint64_t{1} << bitId);
             superblocks.back() += 1;
         }
         totalLength += 1;
@@ -98,7 +98,8 @@ struct Bitvector {
                 blocks.emplace_back();
                 bits.emplace_back();
             } else {
-                blocks.emplace_back(superblocks.back());
+                assert(superblocks.back() < 256);
+                blocks.emplace_back(uint8_t(superblocks.back()));
                 bits.emplace_back();
             }
         }
@@ -121,15 +122,13 @@ struct Bitvector {
         auto superblockId = blockId / 4;
         if (idx % 64 == 0) return superblocks[superblockId] + blocks[blockId];
 
-        auto maskedBits = (std::bitset<64>(bits[blockId]) << (64 - bitId));
+        auto maskedBits = (bits[blockId] << (64 - bitId));
         auto bitcount   = std::bitset<64>{maskedBits}.count();
 
         return superblocks[superblockId]
                 + blocks[blockId]
                 + bitcount;
     }
-
-
 
     template <typename Archive>
     void serialize(Archive& ar) {
