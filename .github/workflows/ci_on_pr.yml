@@ -53,3 +53,15 @@ jobs:
           cmake_flags: ${{ matrix.cmake_flags }}
           cmake_c_flags: ${{ matrix.cmake_c_flags }}
           cmake_cxx_flags: ${{ matrix.cmake_cxx_flags }}
+  final:
+    runs-on: ubuntu-22.04
+    name: final-pass
+    needs: build
+    if: always()
+    steps:
+      - name: Succeeded
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
+      - name: CI failed
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1
