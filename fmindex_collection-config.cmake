@@ -11,17 +11,7 @@ set(LIBSAIS_BUILD_SHARED_LIB OFF)
 CPMAddPackage("gh:IlyaGrebnov/libsais@2.8.4")
 
 if (FMC_USE_SDSL)
-    CPMAddPackage(
-      NAME sdsl-lite
-      GITHUB_REPOSITORY xxsds/sdsl-lite
-      GIT_TAG 206a5f725ee54e892d7cf5f17e77aad4cfb31a62
-      DOWNLOAD_ONLY TRUE
-    )
-    if(sdsl-lite_ADDED)
-        add_library(sdsl-lite INTERFACE IMPORTED)
-        target_include_directories(sdsl-lite SYSTEM INTERFACE "${sdsl-lite_SOURCE_DIR}/include")
-        add_library(sdsl-lite::sdsl-lite ALIAS sdsl-lite)
-    endif()
+    WrappedCPMAddPackage("gh:xxsds/sdsl-lite#206a5f725ee54e892d7cf5f17e77aad4cfb31a62")
 endif()
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/search_schemes ${CMAKE_CURRENT_BINARY_DIR}/search_schemes)
