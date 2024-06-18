@@ -17,7 +17,7 @@
 namespace fmindex_collection::bitvector {
 
 /**
- * L1L1Bitvector a bit vector with only bits and blocks
+ * L1Bitvector a bit vector with only bits and blocks
  *
  *   For 64bits, we need 128bits, resulting in 2bits per bit
  */
