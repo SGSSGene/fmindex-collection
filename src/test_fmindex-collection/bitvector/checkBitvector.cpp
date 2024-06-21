@@ -9,9 +9,19 @@
 
 #include "allBitVectors.h"
 
+#include <cxxabi.h>
+template <typename T>
+auto getName() {
+    int     status;
+    auto realname = abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, &status);
+    auto str = std::string{realname};
+    std::free(realname);
+    return str;
+}
+
 TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS) {
     using Vector = TestType;
-    auto vector_name = std::string{typeid(Vector).name()};
+    auto vector_name = getName<Vector>();
     INFO(vector_name);
 
     SECTION("short text") {
