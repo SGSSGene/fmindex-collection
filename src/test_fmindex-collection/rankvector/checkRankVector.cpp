@@ -25,6 +25,18 @@ TEMPLATE_TEST_CASE("check if rank on the symbol vectors is working", "[RankVecto
     }
     CHECK(Vector::Sigma >= 128);
 
+    SECTION("test complete vector on symbol()") {
+        CHECK(vec.symbol( 0) == 'H');
+        CHECK(vec.symbol( 1) == 'a');
+        CHECK(vec.symbol( 2) == 'l');
+        CHECK(vec.symbol( 3) == 'l');
+        CHECK(vec.symbol( 4) == 'o');
+        CHECK(vec.symbol( 5) == ' ');
+        CHECK(vec.symbol( 6) == 'W');
+        CHECK(vec.symbol( 7) == 'e');
+        CHECK(vec.symbol( 8) == 'l');
+        CHECK(vec.symbol( 9) == 't');
+    }
 
     SECTION("test complete vector on rank()") {
         CHECK(vec.rank( 0, ' ') == 0);
@@ -294,6 +306,14 @@ TEMPLATE_TEST_CASE("check symbol vectors construction on text longer than 256 ch
         }
         return acc;
     };
+    auto countPrefixRank = [&](size_t idx, uint8_t sym) {
+        size_t acc{};
+        for (size_t i{0}; i < idx; ++i) {
+            acc = acc + (text[i] <= sym);
+        }
+        return acc;
+    };
+
 
     SECTION("check all_ranks() is equal to prefix_rank() and rank()") {
         for (size_t idx{0}; idx <= vector.size(); ++idx) {
@@ -302,9 +322,14 @@ TEMPLATE_TEST_CASE("check symbol vectors construction on text longer than 256 ch
             for (size_t symb{1}; symb < Vector::Sigma; ++symb) {
                 INFO(idx);
                 INFO(symb);
-                CHECK(countRank(idx, symb) == rank[symb]);
+                CHECK(countRank(idx, symb) == vector.rank(idx, symb));
+                CHECK(countPrefixRank(idx, symb) == vector.prefix_rank(idx, symb));
+                vector.rank(idx, symb);
+                vector.prefix_rank(idx, symb);
                 CHECK(rank[symb] == vector.rank(idx, symb));
                 CHECK(rank2[symb] == vector.rank(idx, symb));
+                CHECK(countRank(idx, symb) == rank[symb]);
+                CHECK(countPrefixRank(idx, symb) == prefix[symb]);
                 CHECK(prefix[symb] == vector.prefix_rank(idx, symb));
             }
         }
