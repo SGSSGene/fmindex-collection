@@ -21,7 +21,7 @@ static auto getName() {
 #else
 template <typename T>
 static auto getName() {
-    return std::string{reflect::type_name<Vector>()};
+    return std::string{reflect::type_name<T>()};
 }
 #endif
 
