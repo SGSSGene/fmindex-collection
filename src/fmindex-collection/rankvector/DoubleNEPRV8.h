@@ -16,7 +16,7 @@
 
 namespace fmindex_collection::rankvector {
 
-template <size_t TSigma, size_t popcount_width>
+template <size_t TSigma, size_t popcount_width, typename blockL0_t = uint16_t, typename blockL1_t = uint32_t>
 struct DoubleNEPRV8 {
 
     static constexpr size_t Sigma = TSigma;
@@ -146,8 +146,6 @@ struct DoubleNEPRV8 {
         }
     };
 
-    using blockL0_t = uint8_t;
-    using blockL1_t = uint16_t;
     static constexpr uint64_t level0_size = sizeof(blockL0_t) * 8;
     static constexpr uint64_t level1_size = sizeof(blockL1_t) * 8;
 
@@ -428,24 +426,35 @@ struct DoubleNEPRV8 {
     template <typename Archive>
     void serialize(Archive& ar) {
         ar(bits, level0, level1, superBlocks, totalLength);
-        std::cout << "bits: " << bits.size() << " " << sizeof(bits[0]) << " -> " << bits.size() * sizeof(bits[0]) << "\n";
-        std::cout << "level0: " << level0.size() << " " << sizeof(level0[0]) << " -> " << level0.size() * sizeof(level0[0]) << "\n";
-        std::cout << "level1: " << level1.size() << " " << sizeof(level1[0]) << " -> " << level1.size() * sizeof(level1[0]) << "\n";
-        std::cout << "superBlocks: " << superBlocks.size() << " " << sizeof(superBlocks[0]) << " -> " << superBlocks.size() * sizeof(superBlocks[0]) << "\n";
+//        std::cout << "bits: " << bits.size() << " " << sizeof(bits[0]) << " -> " << bits.size() * sizeof(bits[0]) << "\n";
+//        std::cout << "level0: " << level0.size() << " " << sizeof(level0[0]) << " -> " << level0.size() * sizeof(level0[0]) << "\n";
+//        std::cout << "level1: " << level1.size() << " " << sizeof(level1[0]) << " -> " << level1.size() * sizeof(level1[0]) << "\n";
+//        std::cout << "superBlocks: " << superBlocks.size() << " " << sizeof(superBlocks[0]) << " -> " << superBlocks.size() * sizeof(superBlocks[0]) << "\n";
     }
 };
 
 template <size_t Sigma>
+using Double64ShortEPRV8 = DoubleNEPRV8<Sigma, 64, uint8_t, uint16_t>;
+static_assert(checkRankVector<Double64ShortEPRV8>);
+
+template <size_t Sigma>
+using Double128ShortEPRV8 = DoubleNEPRV8<Sigma, 128, uint8_t, uint16_t>;
+static_assert(checkRankVector<Double128ShortEPRV8>);
+
+template <size_t Sigma>
 using Double64EPRV8 = DoubleNEPRV8<Sigma, 64>;
+static_assert(checkRankVector<Double64EPRV8>);
 
 template <size_t Sigma>
 using Double128EPRV8 = DoubleNEPRV8<Sigma, 128>;
-
-//template <size_t Sigma>
-//using Double256EPRV8 = DoubleNEPRV8<Sigma, 256>;
-
-static_assert(checkRankVector<Double64EPRV8>);
 static_assert(checkRankVector<Double128EPRV8>);
-//static_assert(checkRankVector<Double256EPRV8>);
+
+template <size_t Sigma>
+using Double256EPRV8 = DoubleNEPRV8<Sigma, 256>;
+static_assert(checkRankVector<Double256EPRV8>);
+
+template <size_t Sigma>
+using Double512EPRV8 = DoubleNEPRV8<Sigma, 512>;
+static_assert(checkRankVector<Double512EPRV8>);
 
 }
