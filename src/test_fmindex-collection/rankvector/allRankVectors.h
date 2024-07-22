@@ -6,6 +6,11 @@
 #include <fmindex-collection/bitvector/all.h>
 #include <fmindex-collection/rankvector/rankvector.h>
 
+#if SIZE_MAX == UINT64_MAX
+#define AddIf64Bit(x) x,
+#else
+#define AddIf64Bit(x)
+#endif
 #define ALLRANKVECTORS_IMPL(Sigma) \
     fmindex_collection::rankvector::Naive<Sigma>, \
     (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::Bitvector>), \
@@ -36,13 +41,13 @@
     fmindex_collection::rankvector::InterleavedEPR32Aligned<Sigma>, \
     fmindex_collection::rankvector::InterleavedEPRV2_8<Sigma>, \
     fmindex_collection::rankvector::InterleavedEPRV2_16<Sigma>, \
-    fmindex_collection::rankvector::InterleavedEPRV2_32<Sigma>, \
+    AddIf64Bit(fmindex_collection::rankvector::InterleavedEPRV2_32<Sigma>) \
     fmindex_collection::rankvector::InterleavedEPRV2_8Aligned<Sigma>, \
     fmindex_collection::rankvector::InterleavedEPRV2_16Aligned<Sigma>, \
-    fmindex_collection::rankvector::InterleavedEPRV2_32Aligned<Sigma>, \
+    AddIf64Bit(fmindex_collection::rankvector::InterleavedEPRV2_32Aligned<Sigma>) \
     fmindex_collection::rankvector::EPRV3_8<Sigma>, \
     fmindex_collection::rankvector::EPRV3_16<Sigma>, \
-    fmindex_collection::rankvector::EPRV3_32<Sigma>, \
+    AddIf64Bit(fmindex_collection::rankvector::EPRV3_32<Sigma>) \
     fmindex_collection::rankvector::EPRV4<Sigma>, \
     fmindex_collection::rankvector::EPRV5<Sigma>, \
     fmindex_collection::rankvector::DenseEPRV6<Sigma>, \
