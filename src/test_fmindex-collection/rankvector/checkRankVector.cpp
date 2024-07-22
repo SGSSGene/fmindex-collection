@@ -4,12 +4,30 @@
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/utils.h>
 #include <nanobench.h>
+#include <reflect>
 
 #include "allRankVectors.h"
 
-TEMPLATE_TEST_CASE("check if rank on the symbol vectors is working", "[RankVector]", ALLRANKVECTORS) {
+#if __has_include(<cxxabi.h>)
+#include <cxxabi.h>
+template <typename T>
+static auto getName() {
+    int     status;
+    auto realname = abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, &status);
+    auto str = std::string{realname};
+    std::free(realname);
+    return str;
+}
+#else
+template <typename T>
+static auto getName() {
+    return std::string{reflect::type_name<Vector>()};
+}
+#endif
+
+TEMPLATE_TEST_CASE("check if rank on the symbol vectors is working", "[RankVector]", ALLRANKVECTORS(256)) {
     using Vector = TestType;
-    auto vector_name = std::string{typeid(Vector).name()};
+    auto vector_name = getName<Vector>();
     INFO(vector_name);
 
     auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
@@ -249,9 +267,9 @@ TEMPLATE_TEST_CASE("check if rank on the symbol vectors is working", "[RankVecto
     }
 }
 
-TEMPLATE_TEST_CASE("check symbol vectors construction on text longer than 256 characters", "[RankVector]", ALLRANKVECTORS) {
+TEMPLATE_TEST_CASE("check symbol vectors construction on text longer than 256 characters", "[RankVector]", ALLRANKVECTORS(256)) {
     using Vector = TestType;
-    auto vector_name = std::string{typeid(Vector).name()};
+    auto vector_name = getName<Vector>();
     INFO(vector_name);
 
     auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't',
@@ -334,38 +352,132 @@ TEMPLATE_TEST_CASE("check symbol vectors construction on text longer than 256 ch
             }
         }
     }
+}
+
+namespace {
+struct Bench : ankerl::nanobench::Bench {
+    std::stringstream output{};
+
+    Bench(std::string title) {
+        this->title(title)
+            .relative(true)
+            .output(&output)
+        ;
+    }
+    ~Bench() {
+        std::cout << output.str() << '\n';
+    }
+};
+
+struct Benchs {
+    Bench bench_rank{"rank()"};
+    Bench bench_symbol{"symbol()"};
+    Bench bench_ctor{"c'tor"};
+};
+}
+
+static auto benchs_256 = Benchs{};
+TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[RankVector][benchmarks]", ALLRANKVECTORS(256)) {
+    using Vector = TestType;
+    if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<256>>) {
+        return;
+    }
+
+    auto& [bench_rank, bench_symbol, bench_ctor] = benchs_256;
+
+
+    auto vector_name = getName<Vector>();
+    INFO(vector_name);
 
     SECTION("benchmarking") {
-        if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<256>>) {
-            return;
-        }
-
-        auto bench = ankerl::nanobench::Bench{};
         auto rng = ankerl::nanobench::Rng{};
 
         // generates string with values between 1-4
         auto text = std::vector<uint8_t>{};
         #ifdef NDEBUG
-        for (size_t i{0}; i<100'000'000; ++i) {
+        for (size_t i{0}; i<1'000'000; ++i) {
         #else
-        for (size_t i{0}; i<100'000; ++i) {
+        for (size_t i{0}; i<1'000; ++i) {
         #endif
-            text.push_back(rng.bounded(4)+1);
+            text.push_back(rng.bounded(256));
         }
+        auto vec = Vector{text};
 
-        bench.batch(text.size()/100).run(vector_name + "()", [&]() {
-            auto vec = Vector{std::span{text.begin(), text.size()/100}};
+
+        bench_ctor.minEpochIterations(10).batch(text.size()).run(vector_name, [&]() {
+            auto vec = Vector{text};
             ankerl::nanobench::doNotOptimizeAway(const_cast<Vector const&>(vec));
         });
-        auto vec = Vector{text};
-        bench.batch(1).run(vector_name + "::symbol()", [&]() {
+
+        bench_symbol.minEpochIterations(2'000'000).run(vector_name, [&]() {
             auto v = vec.symbol(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
-        bench.run(vector_name + "::rank()", [&]() {
+
+        bench_rank.minEpochIterations(2'000'000).run(vector_name, [&]() {
             auto v = vec.rank(rng.bounded(text.size()), rng.bounded(4)+1);
             ankerl::nanobench::doNotOptimizeAway(v);
         });
+
+        {
+            auto ofs     = std::stringstream{};
+            auto archive = cereal::BinaryOutputArchive{ofs};
+            archive(vec);
+            auto s = ofs.str().size()*8;
+            std::cout << vector_name << " - file size: " << s << "bytes, " << s/double(text.size()) << "bits/bits\n";
+        }
+    }
+}
+
+static auto benchs_5 = Benchs{};
+TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, dna4 like", "[RankVector][benchmarks]", ALLRANKVECTORS(5)) {
+    using Vector = TestType;
+    if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<5>>) {
+        return;
     }
 
+    auto& [bench_rank, bench_symbol, bench_ctor] = benchs_5;
+
+
+    auto vector_name = getName<Vector>();
+    INFO(vector_name);
+
+    SECTION("benchmarking") {
+        auto rng = ankerl::nanobench::Rng{};
+
+        // generates string with values between 1-4
+        auto text = std::vector<uint8_t>{};
+        #ifdef NDEBUG
+        for (size_t i{0}; i<1'000'000; ++i) {
+        #else
+        for (size_t i{0}; i<1'000; ++i) {
+        #endif
+            text.push_back(rng.bounded(4)+1);
+        }
+        auto vec = Vector{text};
+
+
+        bench_ctor.minEpochIterations(10).batch(text.size()).run(vector_name, [&]() {
+            auto vec = Vector{text};
+            ankerl::nanobench::doNotOptimizeAway(const_cast<Vector const&>(vec));
+        });
+
+        bench_symbol.minEpochIterations(2'000'000).run(vector_name, [&]() {
+            auto v = vec.symbol(rng.bounded(text.size()));
+            ankerl::nanobench::doNotOptimizeAway(v);
+        });
+
+        bench_rank.minEpochIterations(2'000'000).run(vector_name, [&]() {
+            auto v = vec.rank(rng.bounded(text.size()), rng.bounded(4)+1);
+            ankerl::nanobench::doNotOptimizeAway(v);
+        });
+
+        {
+            auto ofs     = std::stringstream{};
+            auto archive = cereal::BinaryOutputArchive{ofs};
+            archive(vec);
+            auto s = ofs.str().size()*8;
+            std::cout << vector_name << " - file size: " << s << "bytes, " << s/double(text.size()) << "bits/bits\n";
+        }
+    }
 }
