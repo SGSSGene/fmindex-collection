@@ -39,7 +39,6 @@ if (PROJECT_IS_TOP_LEVEL)
     if (reflect_ADDED)
         add_library(reflect INTERFACE)
         target_include_directories(reflect SYSTEM INTERFACE ${reflect_SOURCE_DIR})
-        target_compile_options(reflect INTERFACE -std=c++20)
         add_library(reflect::reflect ALIAS reflect)
     endif()
 
