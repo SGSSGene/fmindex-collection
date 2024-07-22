@@ -14,10 +14,12 @@ endif ()
 project(fmindex-collection LANGUAGES CXX
                             DESCRIPTION "fmindex-collection -- Datastructures and Algorithms for (Bi-)FMIndices and Approximate Pattern Matching")
 
+option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${PROJECT_IS_TOP_LEVEL})
+
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" OFF)
-else()
-    option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${PROJECT_IS_TOP_LEVEL})
+    set(FMC_USE_SDSL OFF)
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(FMC_USE_SDSL OFF)
 endif()
 
 find_package(OpenMP QUIET)
