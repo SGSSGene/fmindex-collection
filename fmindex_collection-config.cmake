@@ -11,7 +11,12 @@ set(LIBSAIS_BUILD_SHARED_LIB OFF)
 CPMAddPackage("gh:IlyaGrebnov/libsais@2.8.4")
 
 if (FMC_USE_SDSL)
-    WrappedCPMAddPackage("gh:xxsds/sdsl-lite#206a5f725ee54e892d7cf5f17e77aad4cfb31a62")
+    CPMAddPackage("gh:xxsds/sdsl-lite#206a5f725ee54e892d7cf5f17e77aad4cfb31a62")
+    if (sdsl-lite_ADDED)
+        add_library(sdsl-lite INTERFACE)
+        target_include_directories(sdsl-lite INTERFACE SYSTEM ${sdsl-lite_SOURCE_DIR}/include)
+        add_library(sdsl-lite::sdsl-lite ALIAS sdsl-lite)
+    endif()
 endif()
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/search_schemes ${CMAKE_CURRENT_BINARY_DIR}/search_schemes)
