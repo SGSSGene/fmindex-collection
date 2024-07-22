@@ -9,15 +9,22 @@
 
 #include "allBitVectors.h"
 
+#if __has_include(<cxxabi.h>)
 #include <cxxabi.h>
 template <typename T>
-auto getName() {
+static auto getName() {
     int     status;
     auto realname = abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, &status);
     auto str = std::string{realname};
     std::free(realname);
     return str;
 }
+#else
+template <typename T>
+static auto getName() {
+    return std::string{reflect::type_name<Vector>()};
+}
+#endif
 
 TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS) {
     using Vector = TestType;
