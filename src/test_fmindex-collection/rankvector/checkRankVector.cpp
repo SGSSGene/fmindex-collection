@@ -372,6 +372,8 @@ struct Bench : ankerl::nanobench::Bench {
 struct Benchs {
     Bench bench_rank{"rank()"};
     Bench bench_prefix_rank{"prefix_rank()"};
+    Bench bench_all_ranks{"all_ranks()"};
+    Bench bench_all_prefix_ranks{"all_prefix_ranks()"};
     Bench bench_symbol{"symbol()"};
     Bench bench_ctor{"c'tor"};
 };
@@ -384,7 +386,7 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[R
         return;
     }
 
-    auto& [bench_rank, bench_prefix_rank, bench_symbol, bench_ctor] = benchs_256;
+    auto& [bench_rank, bench_prefix_rank, bench_all_ranks, bench_all_prefix_ranks, bench_symbol, bench_ctor] = benchs_256;
 
 
     auto vector_name = getName<Vector>();
@@ -425,6 +427,16 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[R
             ankerl::nanobench::doNotOptimizeAway(v);
         });
 
+        bench_all_ranks.minEpochIterations(2'000'000).run(vector_name, [&]() {
+            auto v = vec.all_ranks(rng.bounded(text.size()));
+            ankerl::nanobench::doNotOptimizeAway(v);
+        });
+
+        bench_all_prefix_ranks.minEpochIterations(2'000'000).run(vector_name, [&]() {
+            auto v = vec.all_ranks_and_prefix_ranks(rng.bounded(text.size()));
+            ankerl::nanobench::doNotOptimizeAway(v);
+        });
+
         {
             auto ofs     = std::stringstream{};
             auto archive = cereal::BinaryOutputArchive{ofs};
@@ -441,8 +453,7 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, dna4
     if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<5>>) {
         return;
     }
-
-    auto& [bench_rank, bench_prefix_rank, bench_symbol, bench_ctor] = benchs_5;
+    auto& [bench_rank, bench_prefix_rank, bench_all_ranks, bench_all_prefix_ranks, bench_symbol, bench_ctor] = benchs_5;
 
 
     auto vector_name = getName<Vector>();
@@ -482,6 +493,17 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, dna4
             auto v = vec.prefix_rank(rng.bounded(text.size()), rng.bounded(4)+1);
             ankerl::nanobench::doNotOptimizeAway(v);
         });
+
+        bench_all_ranks.minEpochIterations(2'000'000).run(vector_name, [&]() {
+            auto v = vec.all_ranks(rng.bounded(text.size()));
+            ankerl::nanobench::doNotOptimizeAway(v);
+        });
+
+        bench_all_prefix_ranks.minEpochIterations(2'000'000).run(vector_name, [&]() {
+            auto v = vec.all_ranks_and_prefix_ranks(rng.bounded(text.size()));
+            ankerl::nanobench::doNotOptimizeAway(v);
+        });
+
         {
             auto ofs     = std::stringstream{};
             auto archive = cereal::BinaryOutputArchive{ofs};
