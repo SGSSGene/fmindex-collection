@@ -380,7 +380,7 @@ struct Benchs {
 }
 
 static auto benchs_256 = Benchs{};
-TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[RankVector][benchmarks]", ALLRANKVECTORS(256)) {
+TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[RankVector][!benchmark]", ALLRANKVECTORS(256)) {
     using Vector = TestType;
     if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<256>>) {
         return;
@@ -412,27 +412,29 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[R
             ankerl::nanobench::doNotOptimizeAway(const_cast<Vector const&>(vec));
         });
 
-        bench_symbol.minEpochIterations(2'000'000).run(vector_name, [&]() {
+        size_t minEpochIterations = 2'000'000;
+        minEpochIterations = 2'000;
+        bench_symbol.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.symbol(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
 
-        bench_rank.minEpochIterations(2'000'000).run(vector_name, [&]() {
+        bench_rank.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.rank(rng.bounded(text.size()), rng.bounded(256));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
 
-        bench_prefix_rank.minEpochIterations(2'000'000).run(vector_name, [&]() {
+        bench_prefix_rank.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.prefix_rank(rng.bounded(text.size()), rng.bounded(256));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
 
-        bench_all_ranks.minEpochIterations(2'000'000).run(vector_name, [&]() {
+        bench_all_ranks.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.all_ranks(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
 
-        bench_all_prefix_ranks.minEpochIterations(2'000'000).run(vector_name, [&]() {
+        bench_all_prefix_ranks.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.all_ranks_and_prefix_ranks(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
@@ -448,7 +450,7 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[R
 }
 
 static auto benchs_5 = Benchs{};
-TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, dna4 like", "[RankVector][benchmarks]", ALLRANKVECTORS(5)) {
+TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, dna4 like", "[RankVector][!benchmark]", ALLRANKVECTORS(5)) {
     using Vector = TestType;
     if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<5>>) {
         return;
