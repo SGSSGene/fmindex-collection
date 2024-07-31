@@ -226,6 +226,7 @@ auto reconstructText(Index const& index, size_t seqNbr) -> std::vector<uint8_t> 
         idx = index.occ.rank(idx, c);
         r.push_back(c);
     } while (c != 0);
+    r.pop_back(); // remove last zero
     std::ranges::reverse(r);
     return r;
 }

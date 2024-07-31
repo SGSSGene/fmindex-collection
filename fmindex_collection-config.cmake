@@ -11,7 +11,7 @@ set(LIBSAIS_BUILD_SHARED_LIB OFF)
 CPMAddPackage("gh:IlyaGrebnov/libsais@2.8.4")
 
 if (FMC_USE_SDSL)
-    WrappedCPMAddPackage("gh:xxsds/sdsl-lite#206a5f725ee54e892d7cf5f17e77aad4cfb31a62")
+    CPMAddPackage("gh:SGSSGene/sdsl-lite@3.0.3-2")
 endif()
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/search_schemes ${CMAKE_CURRENT_BINARY_DIR}/search_schemes)

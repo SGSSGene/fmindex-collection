@@ -156,16 +156,16 @@ static void analyse_rankvectors() {
 
         analyse_rankvector<InterleavedBitvector8<Sigma>>("InterleavedBitvector8", text);
         analyse_rankvector<InterleavedBitvector16<Sigma>>("InterleavedBitvector16", text);
-        analyse_rankvector<InterleavedBitvector32<Sigma>>("InterleavedBitvector32", text);
+        //analyse_rankvector<InterleavedBitvector32<Sigma>>("InterleavedBitvector32", text);
         analyse_rankvector<InterleavedEPR8<Sigma>>("InterleavedEPR8", text);
         analyse_rankvector<InterleavedEPR16<Sigma>>("InterleavedEPR16", text);
-        analyse_rankvector<InterleavedEPR32<Sigma>>("InterleavedEPR32", text);
+        //analyse_rankvector<InterleavedEPR32<Sigma>>("InterleavedEPR32", text);
         analyse_rankvector<InterleavedEPRV2_8<Sigma>>("InterleavedEPRV2_8", text);
         analyse_rankvector<InterleavedEPRV2_16<Sigma>>("InterleavedEPRV2_16", text);
-        analyse_rankvector<InterleavedEPRV2_32<Sigma>>("InterleavedEPRV2_32", text);
+        //analyse_rankvector<InterleavedEPRV2_32<Sigma>>("InterleavedEPRV2_32", text);
         analyse_rankvector<EPRV3_8<Sigma>> ("EPRV3_8", text);
         analyse_rankvector<EPRV3_16<Sigma>>("EPRV3_16", text);
-        analyse_rankvector<EPRV3_32<Sigma>>("EPRV3_32", text);
+        //analyse_rankvector<EPRV3_32<Sigma>>("EPRV3_32", text);
         analyse_rankvector<EPRV4<Sigma>> ("EPRV4", text);
         analyse_rankvector<EPRV5<Sigma>> ("EPRV5", text);
         analyse_rankvector<DenseEPRV6<Sigma>> ("DenseEPRV6", text);
