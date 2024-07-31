@@ -54,7 +54,11 @@ auto mergeImpl(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const&
         if (loc) {
             auto [seq, pos] = *loc;
             csa.push_back(std::tuple{seq + seqOffset, pos});
+        } else {
+            csa.push_back(std::nullopt);
         }
+
+
     };
 
     size_t idx1{}, idx2{};
@@ -95,16 +99,6 @@ auto mergeImpl(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> co
     // compute normal forward bwt
     {
         auto R = computeInterleavingR(index1.occ, index2.occ);
-/*
-        // The right hand index sequences, require adjusted sequence number
-        auto [seqOffset1, seqOffset2] = [&]() -> std::tuple<size_t, size_t> {
-            if (swapOffsets) {
-                return {index2.occ.rank(index2.size(), 0), 0};
-            }
-            return {0, index1.occ.rank(index1.size(), 0)};
-        }();
-*/
-
         auto addSSAEntry = [&csa](auto const& index, size_t idx, size_t seqOffset) {
             auto loc = index.csa.value(idx);
             if (loc) {
@@ -114,39 +108,36 @@ auto mergeImpl(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> co
                 csa.push_back(std::nullopt);
             }
         };
-
-        size_t idx1{};
-        for (size_t idx2{}; idx2 < R.size(); ++idx2) {
-            for (; idx1 < R[idx2]; ++idx1) {
+        size_t idx1{}, idx2{};
+        for (bool v : R) {
+            if (!v) {
                 mergedBWT.push_back(index1.occ.symbol(idx1));
                 addSSAEntry(index1, idx1, seqOffset1);
+                idx1 += 1;
+            } else {
+                mergedBWT.push_back(index2.occ.symbol(idx2));
+                addSSAEntry(index2, idx2, seqOffset2);
+                idx2 += 1;
             }
-            mergedBWT.push_back(index2.occ.symbol(idx2));
-            addSSAEntry(index2, idx2, seqOffset2);
-        }
-        for (; idx1 < index1.size(); ++idx1) {
-            mergedBWT.push_back(index1.occ.symbol(idx1));
-            addSSAEntry(index1, idx1, seqOffset1);
         }
     }
 
     // Interleave BWT->R and SA->ssa
     auto mergedBWTRev = std::vector<uint8_t>{};
-    mergedBWTRev.reserve(index1.size() + index2.size());
+    mergedBWTRev.reserve(mergedBWT.size());
 
     // compute reversed bwt
     {
         auto R = computeInterleavingR(index1.occRev, index2.occRev);
-
-        size_t idx1{};
-        for (size_t idx2{}; idx2 < R.size(); ++idx2) {
-            for (; idx1 < R[idx2]; ++idx1) {
+        size_t idx1{}, idx2{};
+        for (bool v : R) {
+            if (!v) {
                 mergedBWTRev.push_back(index1.occRev.symbol(idx1));
+                idx1 += 1;
+            } else {
+                mergedBWTRev.push_back(index2.occRev.symbol(idx2));
+                idx2 += 1;
             }
-            mergedBWTRev.push_back(index2.occRev.symbol(idx2));
-        }
-        for (; idx1 < index1.size(); ++idx1) {
-            mergedBWTRev.push_back(index1.occRev.symbol(idx1));
         }
     }
 
