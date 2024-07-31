@@ -365,7 +365,9 @@ struct Bench : ankerl::nanobench::Bench {
         ;
     }
     ~Bench() {
-        std::cout << output.str() << '\n';
+        if (output.str().size() > 0) {
+            std::cout << output.str() << '\n';
+        }
     }
 };
 
