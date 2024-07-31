@@ -19,45 +19,66 @@ TEST_CASE("checking merging of fmindices", "[FMIndex][merge]") {
     auto index1 = Index{data1, /*.samplingRate =*/ 1, /*.threadNbr =*/ 1};
     auto index2 = Index{data2, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1};
 
-    std::cout << "idx: " << "\n";
-    size_t idx1{};
-    for (auto _ : data1[0]) {
-        (void)_;
-        char c = index1.occ.symbol(idx1);
-        idx1 = index1.occ.rank(idx1, c);
-        std::cout << (int)c << " " << idx1 << "\n";
-    }
-
-    std::cout << "Occ index1:\n";
-    for (size_t i{0}; i < index1.size(); ++i) {
-        auto idx0 = index1.occ.rank(i, 0);
-        auto idx1 = index1.occ.rank(i, 1);
-        auto idx2 = index1.occ.rank(i, 2);
-
-        std::cout << idx0 << " " << idx1 << " " << idx2 << "\n";
-    }
-
     auto index12 = merge(index1, index2);
 
-    std::cout << "Occ index12:\n";
+    auto expectedRanks = std::vector<std::tuple<size_t, size_t, size_t>> {
+        { 0, 2,  9},
+        { 0, 2, 10},
+        { 0, 2, 11},
+        { 1, 2, 11},
+        { 1, 3, 11},
+        { 1, 4, 11},
+        { 1, 4, 12},
+        { 1, 4, 13},
+        { 1, 4, 14},
+        { 1, 5, 14},
+        { 1, 5, 15},
+        { 1, 5, 16},
+        { 2, 5, 16},
+        { 2, 6, 16},
+        { 2, 7, 16},
+        { 2, 8, 16},
+        { 2, 8, 17},
+        { 2, 8, 18},
+    };
+    auto expectedSA = std::vector<std::tuple<size_t, size_t>> {
+        {0, 8},
+        {1, 8},
+        {0, 0},
+        {0, 1},
+        {0, 2},
+        {0, 3},
+        {0, 7},
+        {1, 0},
+        {1, 2},
+        {1, 4},
+        {1, 6},
+        {0, 6},
+        {0, 5},
+        {0, 4},
+        {1, 1},
+        {1, 5},
+        {1, 4},
+        {1, 3},
+    };
     for (size_t i{0}; i < index12.size(); ++i) {
         auto idx0 = index12.occ.rank(i, 0);
         auto idx1 = index12.occ.rank(i, 1);
         auto idx2 = index12.occ.rank(i, 2);
         auto [seq, pos] = index12.locate(i);
-
-        std::cout << idx0 << " " << idx1 << " " << idx2 << " : " << seq << " " << pos << "\n";
+        INFO(i);
+        CHECK(std::get<0>(expectedRanks[i]) == idx0);
+        CHECK(std::get<1>(expectedRanks[i]) == idx1);
+        CHECK(std::get<2>(expectedRanks[i]) == idx2);
+        CHECK(std::get<0>(expectedSA[i]) == seq);
+        CHECK(std::get<1>(expectedSA[i]) == pos);
     }
 
 
-    std::cout << "reconstruct:\n";
     auto texts = reconstructText(index12);
-    for (auto const& t : texts) {
-        for (auto c : t) {
-            std::cout << (int)c;
-        }
-        std::cout << "\n";
-    }
+    REQUIRE(texts.size() == 2);
+    CHECK(texts[0] == std::vector<uint8_t>{0, 2, 1, 2, 1, 2, 1, 2, 2});
+    CHECK(texts[1] == std::vector<uint8_t>{0, 1, 1, 1, 1, 2, 2, 2, 2});
 }
 
 TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
