@@ -31,6 +31,12 @@ struct FMIndex {
 
     FMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
         auto [totalSize, inputText, inputSizes] = createSequences(_input);
+        assert([&]() {
+            for (auto c : inputText) {
+                if (c >= Sigma) return false;
+            }
+            return true;
+        }());
 
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
             auto sa  = createSA(inputText, threadNbr);
