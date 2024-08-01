@@ -42,8 +42,8 @@ TEST_CASE("checking merging of fmindices", "[FMIndex][merge]") {
         { 2, 8, 18},
     };
     auto expectedSA = std::vector<std::tuple<size_t, size_t>> {
-        {0, 8},
         {1, 8},
+        {0, 8},
         {0, 0},
         {0, 1},
         {0, 2},
@@ -77,8 +77,8 @@ TEST_CASE("checking merging of fmindices", "[FMIndex][merge]") {
 
     auto texts = reconstructText(index12);
     REQUIRE(texts.size() == 2);
-    CHECK(texts[0] == data2[0]);
-    CHECK(texts[1] == data1[0]);
+    CHECK(texts[0] == data1[0]);
+    CHECK(texts[1] == data2[0]);
 }
 
 TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
@@ -118,8 +118,8 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
             { 2, 8, 18},
         };
         auto expectedSA = std::vector<std::tuple<size_t, size_t>> {
-            {0, 8},
             {1, 8},
+            {0, 8},
             {0, 0},
             {0, 1},
             {0, 2},
@@ -153,8 +153,8 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
 
         auto texts = reconstructText(index12);
         REQUIRE(texts.size() == 2);
-        CHECK(texts[0] == data2[0]);
-        CHECK(texts[1] == data1[0]);
+        CHECK(texts[0] == data1[0]);
+        CHECK(texts[1] == data2[0]);
 
         SECTION("merging index12 and index3 into index123") {
             auto index123 = merge(index12, index3);
@@ -189,9 +189,9 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
                 {3, 13, 27},
             };
             auto expectedSA = std::vector<std::tuple<size_t, size_t>> {
-                {0, 8},
                 {2, 8},
                 {1, 8},
+                {0, 8},
                 {0, 0},
                 {0, 1},
                 {2, 4},
@@ -233,9 +233,9 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
 
             auto texts = reconstructText(index123);
             REQUIRE(texts.size() == 3);
-            CHECK(texts[0] == data3[0]);
+            CHECK(texts[0] == data1[0]);
             CHECK(texts[1] == data2[0]);
-            CHECK(texts[2] == data1[0]);
+            CHECK(texts[2] == data3[0]);
         }
     }
 }

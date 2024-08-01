@@ -6,13 +6,14 @@
 #include "FMIndex.h"
 #include "BiFMIndex.h"
 
+#include <cassert>
 #include <type_traits>
 #include <vector>
 
 namespace fmindex_collection {
 
 /**
- * creates the R array for interleaving FMIndices
+ * creates the R array for interleaving FM-Indices
  */
 template <typename OccLhs, typename OccRhs, typename value_t = size_t>
 auto computeInterleavingR(OccLhs const& lhsOcc, OccRhs const& rhsOcc) -> std::vector<bool> {
@@ -21,18 +22,29 @@ auto computeInterleavingR(OccLhs const& lhsOcc, OccRhs const& rhsOcc) -> std::ve
     }
 
     auto R = std::vector<bool>{};
-//    auto R = std::vector<value_t>{};
     R.resize(lhsOcc.size() + rhsOcc.size(), false);
 
-    size_t idx1{};
-    size_t idx2{};
-
-    for (size_t i{0}; i < rhsOcc.size(); ++i) {
-        auto c = rhsOcc.symbol(idx2);
-        idx1 = lhsOcc.rank(idx1, c);
-        idx2 = rhsOcc.rank(idx2, c);
-        R[idx1 + idx2] = true;
+    auto nbrOfSeqRhs = rhsOcc.rank(rhsOcc.size(), 0);
+    for (size_t n{}; n < nbrOfSeqRhs; ++n) {
+        size_t idx1{};
+        size_t idx2{n};
+        uint8_t c{};
+        do {
+            assert(idx1 + idx2 < R.size());
+            assert(R[idx1 + idx2] == false);
+            R[idx1 + idx2] = true;
+            c = rhsOcc.symbol(idx2);
+            idx1 = lhsOcc.rank(idx1, c);
+            idx2 = rhsOcc.rank(idx2, c);
+        } while(c != 0);
     }
+    assert([&]() {
+        size_t a{};
+        for (auto b : R) {
+            a += b;
+        }
+        return a;
+    }() == rhsOcc.size());
     return R;
 }
 
@@ -64,10 +76,12 @@ auto mergeImpl(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const&
     size_t idx1{}, idx2{};
     for (bool v : R) {
         if (!v) {
+            assert(idx1 < index1.occ.size());
             mergedBWT.push_back(index1.occ.symbol(idx1));
             addSSAEntry(index1, idx1, seqOffset1);
             idx1 += 1;
         } else {
+            assert(idx2 < index2.occ.size());
             mergedBWT.push_back(index2.occ.symbol(idx2));
             addSSAEntry(index2, idx2, seqOffset2);
             idx2 += 1;
@@ -75,16 +89,15 @@ auto mergeImpl(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const&
     }
     R.clear();
 
-
     return {mergedBWT, std::move(csa)};
 }
 
 template <typename Res = void, typename OccLhs, typename OccRhs, typename TCSA>
 auto merge(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const& index2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
-    if (index1.size() >= index2.size()) {
+//    if (index1.size() >= index2.size()) {
         return mergeImpl<Res>(index1, index2, 0, index1.occ.rank(index1.size(), 0));
-    }
-    return mergeImpl<Res>(index2, index1, index2.occ.rank(index2.size(), 0), 0);
+//    }
+//    return mergeImpl<Res>(index2, index1, index2.occ.rank(index2.size(), 0), 0);
 }
 
 
@@ -111,10 +124,12 @@ auto mergeImpl(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> co
         size_t idx1{}, idx2{};
         for (bool v : R) {
             if (!v) {
+                assert(idx1 < index1.occ.size());
                 mergedBWT.push_back(index1.occ.symbol(idx1));
                 addSSAEntry(index1, idx1, seqOffset1);
                 idx1 += 1;
             } else {
+                assert(idx2 < index2.occ.size());
                 mergedBWT.push_back(index2.occ.symbol(idx2));
                 addSSAEntry(index2, idx2, seqOffset2);
                 idx2 += 1;
@@ -132,9 +147,11 @@ auto mergeImpl(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> co
         size_t idx1{}, idx2{};
         for (bool v : R) {
             if (!v) {
+                assert(idx1 < index1.occRev.size());
                 mergedBWTRev.push_back(index1.occRev.symbol(idx1));
                 idx1 += 1;
             } else {
+                assert(idx2 < index2.occRev.size());
                 mergedBWTRev.push_back(index2.occRev.symbol(idx2));
                 idx2 += 1;
             }
@@ -146,10 +163,10 @@ auto mergeImpl(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> co
 
 template <typename Res = void, typename OccLhs, typename OccRhs, typename TCSA>
 auto merge(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
-    if (index1.size() >= index2.size()) {
+//    if (index1.size() >= index2.size()) {
         return mergeImpl(index1, index2, 0, index1.occ.rank(index1.size(), 0));
-    }
-    return mergeImpl(index2, index1, index2.occ.rank(index2.size(), 0), 0);
+//    }
+//    return mergeImpl(index2, index1, index2.occ.rank(index2.size(), 0), 0);
 }
 
 }

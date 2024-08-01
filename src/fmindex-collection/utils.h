@@ -235,10 +235,17 @@ template <typename Index>
 auto reconstructText(Index const& index) -> std::vector<std::vector<uint8_t>> {
     auto nbrOfSeq = index.occ.rank(index.size(), 0);
     auto texts = std::vector<std::vector<uint8_t>>{};
+    auto seqIds = std::vector<std::tuple<size_t, size_t>>{};
     for (size_t i{}; i < nbrOfSeq; ++i) {
         texts.push_back(reconstructText(index, i));
+        seqIds.emplace_back(std::get<0>(index.locate(i)), i);
     }
-    return texts;
+    std::ranges::sort(seqIds);
+    auto res = std::vector<std::vector<uint8_t>>{};
+    for (auto [seqId, idx] : seqIds) {
+        res.emplace_back(std::move(texts[idx]));
+    }
+    return res;
 }
 
 }
