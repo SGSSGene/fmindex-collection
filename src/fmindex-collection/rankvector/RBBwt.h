@@ -5,7 +5,7 @@
 
 #include "../builtins.h"
 #include "../bitvector/CompactBitvector.h"
-#include "Naive.h"
+#include "Wavelet.h"
 #include "concepts.h"
 
 #include <algorithm>
@@ -22,7 +22,7 @@
  */
 namespace fmindex_collection::rankvector {
 
-template <size_t TSigma, size_t encodingBlockSize, typename RankVector = Naive<TSigma>, typename RecRankVector = Naive<TSigma>>
+template <size_t TSigma, size_t encodingBlockSize, typename RankVector = Wavelet<TSigma>, typename RecRankVector = Wavelet<TSigma>>
 struct RBBwt {
     using BitVector  = bitvector::CompactBitvector;
     static constexpr size_t Sigma = TSigma;
@@ -163,7 +163,7 @@ struct RBBwt {
 template <size_t TSigma> using RBBwtInstance = RBBwt<TSigma, 4>;
 static_assert(checkRankVector<RBBwtInstance>);
 
-template <uint64_t TSigma, size_t encodingBlockSize, typename RankVector = Naive<TSigma>, size_t depth = 0>
+template <uint64_t TSigma, size_t encodingBlockSize, typename RankVector = Wavelet<TSigma>, size_t depth = 0>
 struct rRBBwt : RBBwt<TSigma, encodingBlockSize, RankVector, rRBBwt<TSigma, encodingBlockSize, RankVector, depth-1>>
 {};
 
@@ -171,7 +171,7 @@ template <uint64_t TSigma, size_t encodingBlockSize, typename RankVector>
 struct rRBBwt<TSigma, encodingBlockSize, RankVector, 0> : RBBwt<TSigma, encodingBlockSize, RankVector, RankVector>
 {};
 
-template <size_t TSigma> using rRBBwtInstance = rRBBwt<TSigma, 2, Naive<TSigma>, 2>;
+template <size_t TSigma> using rRBBwtInstance = rRBBwt<TSigma, 2, Wavelet<TSigma>, 2>;
 static_assert(checkRankVector<rRBBwtInstance>);
 
 }
