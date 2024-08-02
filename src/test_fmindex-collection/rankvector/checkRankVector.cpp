@@ -445,8 +445,8 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[R
             auto ofs     = std::stringstream{};
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(vec);
-            auto s = ofs.str().size()*8;
-            std::cout << vector_name << " - file size: " << s << "bytes, " << s/double(text.size()) << "bits/bits\n";
+            auto s = ofs.str().size();
+            std::cout << vector_name << " - file size: " << s << "bytes, " << s/double(text.size()) << "bytes/char\n";
         }
     }
 }
@@ -512,8 +512,8 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, dna4
             auto ofs     = std::stringstream{};
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(vec);
-            auto s = ofs.str().size()*8;
-            std::cout << vector_name << " - file size: " << s << "bytes, " << s/double(text.size()) << "bits/bits\n";
+            auto s = ofs.str().size();
+            std::cout << vector_name << " - file size: " << s << "bytes, " << s/double(text.size()) << "bytes/char\n";
         }
     }
 }
