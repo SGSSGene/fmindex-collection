@@ -23,7 +23,7 @@
 namespace fmindex_collection::rankvector {
 
 template <size_t TSigma, size_t encodingBlockSize, typename RankVector = Naive<TSigma>, typename RecRankVector = Naive<TSigma>>
-struct RLE {
+struct RBBwt {
     using BitVector  = bitvector::CompactBitvector;
     static constexpr size_t Sigma = TSigma;
 
@@ -32,8 +32,8 @@ struct RLE {
     RecRankVector bitvector2{};
     BitVector     partition{};
 
-    RLE() = default;
-    RLE(std::span<uint8_t const> _symbols/*, size_t _encodingBlockSize*/)
+    RBBwt() = default;
+    RBBwt(std::span<uint8_t const> _symbols/*, size_t _encodingBlockSize*/)
 //        : encodingBlockSize{_encodingBlockSize}
     {
         assert(encodingBlockSize > 1);
@@ -160,18 +160,18 @@ struct RLE {
 
 };
 
-template <size_t TSigma> using RLEInstance = RLE<TSigma, 4>;
-static_assert(checkRankVector<RLEInstance>);
+template <size_t TSigma> using RBBwtInstance = RBBwt<TSigma, 4>;
+static_assert(checkRankVector<RBBwtInstance>);
 
 template <uint64_t TSigma, size_t encodingBlockSize, typename RankVector = Naive<TSigma>, size_t depth = 0>
-struct rRLE : RLE<TSigma, encodingBlockSize, RankVector, rRLE<TSigma, encodingBlockSize, RankVector, depth-1>>
+struct rRBBwt : RBBwt<TSigma, encodingBlockSize, RankVector, rRBBwt<TSigma, encodingBlockSize, RankVector, depth-1>>
 {};
 
 template <uint64_t TSigma, size_t encodingBlockSize, typename RankVector>
-struct rRLE<TSigma, encodingBlockSize, RankVector, 0> : RLE<TSigma, encodingBlockSize, RankVector, RankVector>
+struct rRBBwt<TSigma, encodingBlockSize, RankVector, 0> : RBBwt<TSigma, encodingBlockSize, RankVector, RankVector>
 {};
 
-template <size_t TSigma> using rRLEInstance = rRLE<TSigma, 2, Naive<TSigma>, 2>;
-static_assert(checkRankVector<rRLEInstance>);
+template <size_t TSigma> using rRBBwtInstance = rRBBwt<TSigma, 2, Naive<TSigma>, 2>;
+static_assert(checkRankVector<rRBBwtInstance>);
 
 }
