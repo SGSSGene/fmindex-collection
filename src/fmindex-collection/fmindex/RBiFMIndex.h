@@ -59,6 +59,14 @@ struct RBiFMIndex {
     RBiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
         auto [totalSize, inputText, inputSizes] = createSequencesAndReverse(_input);
 
+        // Check only valid characters are used
+        assert([&]() {
+            for (auto c : inputText) {
+                if (c >= Sigma) return false;
+            }
+            return true;
+        }());
+
         // create BurrowsWheelerTransform and CompressedSuffixArray
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
             auto sa  = createSA(inputText, threadNbr);

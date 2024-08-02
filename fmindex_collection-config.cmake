@@ -8,7 +8,7 @@ endif()
 
 set(LIBSAIS_USE_OPENMP ${OpenMP_C_FOUND})
 set(LIBSAIS_BUILD_SHARED_LIB OFF)
-CPMAddPackage("gh:IlyaGrebnov/libsais@2.8.4")
+CPMAddPackage("gh:IlyaGrebnov/libsais@2.8.5")
 
 if (FMC_USE_SDSL)
     CPMAddPackage("gh:SGSSGene/sdsl-lite@3.0.3-2")
