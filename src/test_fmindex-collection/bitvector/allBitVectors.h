@@ -14,9 +14,11 @@
     fmindex_collection::bitvector::L1_64Bitvector, \
     fmindex_collection::bitvector::L1_128Bitvector, \
     fmindex_collection::bitvector::L1_256Bitvector, \
+    fmindex_collection::bitvector::L1_512Bitvector, \
     fmindex_collection::bitvector::DoubleL1_64Bitvector, \
     fmindex_collection::bitvector::DoubleL1_128Bitvector, \
     fmindex_collection::bitvector::DoubleL1_256Bitvector, \
+    fmindex_collection::bitvector::DoubleL1_512Bitvector, \
     fmindex_collection::bitvector::SparseBLEBitvector<2>, \
     fmindex_collection::bitvector::SparseBLEBitvector<-2>, \
     (fmindex_collection::bitvector::SparseBLEBitvector<3, fmindex_collection::bitvector::SparseBLEBitvector<2>>), \

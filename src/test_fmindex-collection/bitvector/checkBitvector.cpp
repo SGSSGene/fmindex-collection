@@ -154,10 +154,38 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
         }
     }
 }
+
+namespace {
+struct Bench : ankerl::nanobench::Bench {
+    std::stringstream output{};
+
+    Bench(std::string title) {
+        this->title(title)
+            .relative(true)
+            .output(&output)
+        ;
+    }
+    ~Bench() {
+        if (output.str().size() > 0) {
+            std::cout << output.str() << '\n';
+        }
+    }
+};
+
+struct Benchs {
+    Bench bench_rank{"rank()"};
+    Bench bench_symbol{"symbol()"};
+    Bench bench_ctor{"c'tor"};
+};
+}
+
+static auto benchs = Benchs{};
 TEMPLATE_TEST_CASE("benchmark bit vectors run times", "[BitVector][!benchmark][time]", ALLBITVECTORS) {
     using Vector = TestType;
     auto vector_name = getName<Vector>();
     INFO(vector_name);
+
+    auto& [bench_rank, bench_symbol, bench_ctor] = benchs;
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -173,15 +201,15 @@ TEMPLATE_TEST_CASE("benchmark bit vectors run times", "[BitVector][!benchmark][t
         }
 
         auto vec = Vector{text};
-        bench.batch(text.size()).run(vector_name + "()", [&]() {
+        bench_ctor.batch(text.size()).run(vector_name, [&]() {
             auto vec = Vector{text};
             ankerl::nanobench::doNotOptimizeAway(vec);
         });
-        bench.batch(1).run(vector_name + "::symbol()", [&]() {
+        bench_symbol.run(vector_name, [&]() {
             auto v = vec.symbol(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
-        bench.run(vector_name + "::rank()", [&]() {
+        bench_rank.run(vector_name, [&]() {
             auto v = vec.rank(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
