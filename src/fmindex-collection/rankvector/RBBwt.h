@@ -65,6 +65,8 @@ struct RBBwt {
                 symbols1.push_back(_symbols[i]);
             }
         }
+        symbols1.push_back(0);
+        symbols2.push_back(0);
 
         bitvector1 = RankVector{symbols1};
         bitvector2 = RecRankVector{symbols2};
@@ -74,8 +76,8 @@ struct RBBwt {
     }
 
     size_t size() const {
-        return bitvector1.size()
-            + bitvector2.size() * encodingBlockSize;
+        return bitvector1.size() - 1
+            + (bitvector2.size() - 1) * encodingBlockSize;
     }
 
     uint8_t symbol(uint64_t idx) const {
