@@ -17,6 +17,7 @@
 #include "DoubleNEPRV8.h"
 #include "InterleavedWavelet.h"
 #include "Wavelet.h"
-#include "RLE.h"
+#include "RBBwt.h"
+#include "RBBwtV2.h"
 #include "Sdsl_wt_bldc.h"
 #include "Sdsl_wt_epr.h"

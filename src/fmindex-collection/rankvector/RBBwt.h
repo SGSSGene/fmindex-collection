@@ -5,7 +5,7 @@
 
 #include "../builtins.h"
 #include "../bitvector/CompactBitvector.h"
-#include "Naive.h"
+#include "Wavelet.h"
 #include "concepts.h"
 
 #include <algorithm>
@@ -22,8 +22,8 @@
  */
 namespace fmindex_collection::rankvector {
 
-template <size_t TSigma, size_t encodingBlockSize, typename RankVector = Naive<TSigma>, typename RecRankVector = Naive<TSigma>>
-struct RLE {
+template <size_t TSigma, size_t encodingBlockSize, typename RankVector = Wavelet<TSigma>, typename RecRankVector = Wavelet<TSigma>>
+struct RBBwt {
     using BitVector  = bitvector::CompactBitvector;
     static constexpr size_t Sigma = TSigma;
 
@@ -32,8 +32,8 @@ struct RLE {
     RecRankVector bitvector2{};
     BitVector     partition{};
 
-    RLE() = default;
-    RLE(std::span<uint8_t const> _symbols/*, size_t _encodingBlockSize*/)
+    RBBwt() = default;
+    RBBwt(std::span<uint8_t const> _symbols/*, size_t _encodingBlockSize*/)
 //        : encodingBlockSize{_encodingBlockSize}
     {
         assert(encodingBlockSize > 1);
@@ -65,6 +65,8 @@ struct RLE {
                 symbols1.push_back(_symbols[i]);
             }
         }
+        symbols1.push_back(0);
+        symbols2.push_back(0);
 
         bitvector1 = RankVector{symbols1};
         bitvector2 = RecRankVector{symbols2};
@@ -74,8 +76,8 @@ struct RLE {
     }
 
     size_t size() const {
-        return bitvector1.size()
-            + bitvector2.size() * encodingBlockSize;
+        return bitvector1.size() - 1
+            + (bitvector2.size() - 1) * encodingBlockSize;
     }
 
     uint8_t symbol(uint64_t idx) const {
@@ -160,18 +162,18 @@ struct RLE {
 
 };
 
-template <size_t TSigma> using RLEInstance = RLE<TSigma, 4>;
-static_assert(checkRankVector<RLEInstance>);
+template <size_t TSigma> using RBBwtInstance = RBBwt<TSigma, 4>;
+static_assert(checkRankVector<RBBwtInstance>);
 
-template <uint64_t TSigma, size_t encodingBlockSize, typename RankVector = Naive<TSigma>, size_t depth = 0>
-struct rRLE : RLE<TSigma, encodingBlockSize, RankVector, rRLE<TSigma, encodingBlockSize, RankVector, depth-1>>
+template <uint64_t TSigma, size_t encodingBlockSize, typename RankVector = Wavelet<TSigma>, size_t depth = 0>
+struct rRBBwt : RBBwt<TSigma, encodingBlockSize, RankVector, rRBBwt<TSigma, encodingBlockSize, RankVector, depth-1>>
 {};
 
 template <uint64_t TSigma, size_t encodingBlockSize, typename RankVector>
-struct rRLE<TSigma, encodingBlockSize, RankVector, 0> : RLE<TSigma, encodingBlockSize, RankVector, RankVector>
+struct rRBBwt<TSigma, encodingBlockSize, RankVector, 0> : RBBwt<TSigma, encodingBlockSize, RankVector, RankVector>
 {};
 
-template <size_t TSigma> using rRLEInstance = rRLE<TSigma, 2, Naive<TSigma>, 2>;
-static_assert(checkRankVector<rRLEInstance>);
+template <size_t TSigma> using rRBBwtInstance = rRBBwt<TSigma, 2, Wavelet<TSigma>, 2>;
+static_assert(checkRankVector<rRBBwtInstance>);
 
 }

@@ -165,24 +165,24 @@ static_assert(checkOccTable<InterleavedWavelet>);
  *
  */
 template <size_t TSigma>
-using RuntimeLengthEncoded2 = GenericOccTable<rankvector::RLE<TSigma, 2>, "runtime length encoded 2", "rle2">;
-static_assert(checkOccTable<RuntimeLengthEncoded2>);
+using RunBlockEncoded2 = GenericOccTable<rankvector::RBBwt<TSigma, 2>, "run block encoded 2", "rbbwt">;
+static_assert(checkOccTable<RunBlockEncoded2>);
 
 template <size_t TSigma>
-using RuntimeLengthEncoded3 = GenericOccTable<rankvector::RLE<TSigma, 3>, "runtime length encoded 3", "rle3">;
-static_assert(checkOccTable<RuntimeLengthEncoded3>);
+using RunBlockEncoded3 = GenericOccTable<rankvector::RBBwt<TSigma, 3>, "run block encoded 3", "rbbwt3">;
+static_assert(checkOccTable<RunBlockEncoded3>);
 
 template <size_t TSigma>
-using RuntimeLengthEncoded4 = GenericOccTable<rankvector::RLE<TSigma, 4>, "runtime length encoded 4", "rle4">;
-static_assert(checkOccTable<RuntimeLengthEncoded4>);
+using RunBlockEncoded4 = GenericOccTable<rankvector::RBBwt<TSigma, 4>, "run block encoded 4", "rbbwt4">;
+static_assert(checkOccTable<RunBlockEncoded4>);
 
 /**
  * A run length encoded bwt, see unpublished paper, but with recursive bitvectors
  *
  */
 template <size_t TSigma>
-using RecursiveRuntimeLengthEncodedD2 = GenericOccTable<rankvector::rRLE<TSigma, 2>, "runtime length encoded, depth 2", "rrle2">;
-static_assert(checkOccTable<RecursiveRuntimeLengthEncodedD2>);
+using RecursiveRunBlockEncodedD2 = GenericOccTable<rankvector::rRBBwt<TSigma, 2>, "recursive run block encoded, depth 2", "rec_rbbwt2">;
+static_assert(checkOccTable<RecursiveRunBlockEncodedD2>);
 
 #ifdef FMC_USE_SDSL
 

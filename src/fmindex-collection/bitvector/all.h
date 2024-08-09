@@ -4,9 +4,10 @@
 #pragma once
 
 #include "Bitvector.h"
+#include "PrunedBitvector.h"
 #include "CompactBitvector.h"
 #include "CompactBitvector4Blocks.h"
 #include "L1Bitvector.h"
-#include "L1_128Bitvector.h"
-#include "DoubleL1_128Bitvector.h"
+#include "L1_NBitvector.h"
+#include "DoubleL1_NBitvector.h"
 #include "SparseBLEBitvector.h"

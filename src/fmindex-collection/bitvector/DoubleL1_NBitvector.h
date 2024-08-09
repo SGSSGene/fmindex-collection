@@ -129,16 +129,51 @@ struct DoubleL1_NBitvector {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(superblocks, bits, totalLength);
+    void save(Archive& ar) const {
+        ar(superblocks, totalLength);
+        size_t ct = bits.size();
+        ar(ct);
+
+        auto mask = std::bitset<bits_ct>{~uint64_t{0}};
+
+        for (auto const& b : bits) {
+            // saving in 64bit blocks
+            for (size_t i{0}; i < bits_ct; i += 64) {
+                auto v = ((b >> i) & mask).to_ullong();
+                ar(v);
+            }
+        }
+        //ar(superblocks, bits, totalLength);
     }
+
+    template <typename Archive>
+    void load(Archive& ar) {
+        ar(superblocks, totalLength);
+        size_t ct{};
+        ar(ct);
+
+        for (size_t j{0}; j < ct; ++j) {
+            auto b = std::bitset<bits_ct>{};
+            // saving in 64bit blocks
+            for (size_t i{0}; i < bits_ct; i += 64) {
+                uint64_t v{};
+                ar(v);
+                b = b | (std::bitset<bits_ct>{v} << i);
+            }
+            bits.push_back(b);
+        }
+        //ar(superblocks, bits, totalLength);
+    }
+
 };
 using DoubleL1_64Bitvector  = DoubleL1_NBitvector<64>;
 using DoubleL1_128Bitvector = DoubleL1_NBitvector<128>;
 using DoubleL1_256Bitvector = DoubleL1_NBitvector<256>;
+using DoubleL1_512Bitvector = DoubleL1_NBitvector<512>;
 
 static_assert(BitVector_c<DoubleL1_64Bitvector>);
 static_assert(BitVector_c<DoubleL1_128Bitvector>);
 static_assert(BitVector_c<DoubleL1_256Bitvector>);
+static_assert(BitVector_c<DoubleL1_512Bitvector>);
 
 }
