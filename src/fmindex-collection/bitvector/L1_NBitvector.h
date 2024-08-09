@@ -34,6 +34,17 @@ struct L1_NBitvector {
     std::vector<std::bitset<bits_ct>> bits{0};
     size_t totalLength{};
 
+    static std::array<std::bitset<bits_ct>, bits_ct+1> const masks;/* = []() {
+        auto m = std::array<std::bitset<bits_ct>, bits_ct+1>{};
+        auto a = std::bitset<bits_ct>{};
+
+        for (size_t i{0}; i < bits_ct; ++i) {
+            a.set(i);
+            m[i+1] = a;
+        }
+        return m;
+    }();*/
+
     L1_NBitvector() = default;
     L1_NBitvector(L1_NBitvector const&) = default;
     L1_NBitvector(L1_NBitvector&&) noexcept = default;
@@ -105,8 +116,9 @@ struct L1_NBitvector {
         auto bitId        = idx % bits_ct;
         auto superblockId = idx / bits_ct;
 
-        auto maskedBits = (bits[superblockId] << (bits_ct - bitId));
-        auto bitcount   = maskedBits.count();
+        auto bitcount = (bits[superblockId] & masks[bitId]).count();
+//        auto maskedBits = (bits[superblockId] << (bits_ct - bitId));
+//        auto bitcount   = maskedBits.count();
 
         return superblocks[superblockId]
                 + bitcount;
@@ -148,8 +160,20 @@ struct L1_NBitvector {
         }
         //ar(superblocks, bits, totalLength);
     }
-
 };
+
+template <size_t bits_ct>
+std::array<std::bitset<bits_ct>, bits_ct+1> const L1_NBitvector<bits_ct>::masks = []() {
+    auto m = std::array<std::bitset<bits_ct>, bits_ct+1>{};
+    auto a = std::bitset<bits_ct>{};
+
+    for (size_t i{0}; i < bits_ct; ++i) {
+        a.set(i);
+        m[i+1] = a;
+    }
+    return m;
+}();
+
 using L1_64Bitvector  = L1_NBitvector<64>;
 using L1_128Bitvector = L1_NBitvector<128>;
 using L1_256Bitvector = L1_NBitvector<256>;
