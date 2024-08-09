@@ -56,10 +56,8 @@ struct PrunedBitvector {
         }();
         if (allZeros) {
             totalLengthAllZeros = _range.size();
-            std::cout << "all zeros: " << totalLengthAllZeros << "\n";
             return;
         }
-        std::cout << "not all all zeros\n";
 
         auto iter = _range.begin();
 
