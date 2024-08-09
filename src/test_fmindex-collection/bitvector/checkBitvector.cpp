@@ -6,7 +6,6 @@
 #include <fstream>
 #include <nanobench.h>
 #include <reflect>
-#include <thread>
 
 #include "allBitVectors.h"
 
