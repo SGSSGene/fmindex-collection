@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Bitvector.h"
+#include "PrunedBitvector.h"
 #include "CompactBitvector.h"
 #include "CompactBitvector4Blocks.h"
 #include "L1Bitvector.h"
