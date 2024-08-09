@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: CC0-1.0
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/utils.h>
+#include <fstream>
 #include <nanobench.h>
 #include <reflect>
 
