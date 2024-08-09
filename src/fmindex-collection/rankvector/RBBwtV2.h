@@ -22,7 +22,7 @@
  */
 namespace fmindex_collection::rankvector {
 
-template <size_t TSigma, size_t encodingBlockSize, size_t DifferentBlocks = 16, template <size_t> typename RankVector = Wavelet, template <size_t> typename MixedVector = RankVector>
+template <size_t TSigma, size_t encodingBlockSize, size_t DifferentBlocks = 16, template <size_t> typename RankVector = Wavelet_Default, template <size_t> typename MixedVector = RankVector>
 struct RBBwtV2 {
     static constexpr size_t Sigma = TSigma;
 
