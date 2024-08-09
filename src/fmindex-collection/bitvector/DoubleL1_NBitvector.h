@@ -136,9 +136,11 @@ struct DoubleL1_NBitvector {
 using DoubleL1_64Bitvector  = DoubleL1_NBitvector<64>;
 using DoubleL1_128Bitvector = DoubleL1_NBitvector<128>;
 using DoubleL1_256Bitvector = DoubleL1_NBitvector<256>;
+using DoubleL1_512Bitvector = DoubleL1_NBitvector<512>;
 
 static_assert(BitVector_c<DoubleL1_64Bitvector>);
 static_assert(BitVector_c<DoubleL1_128Bitvector>);
 static_assert(BitVector_c<DoubleL1_256Bitvector>);
+static_assert(BitVector_c<DoubleL1_512Bitvector>);
 
 }
