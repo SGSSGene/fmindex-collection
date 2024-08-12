@@ -201,15 +201,19 @@ TEMPLATE_TEST_CASE("benchmark bit vectors run times", "[BitVector][!benchmark][t
         }
 
         auto vec = Vector{text};
-        bench_ctor.batch(text.size()).run(vector_name, [&]() {
+
+        size_t minEpochIterations = 2'000'000;
+        minEpochIterations = 1;
+
+        bench_ctor.minEpochIterations(1).batch(text.size()).run(vector_name, [&]() {
             auto vec = Vector{text};
             ankerl::nanobench::doNotOptimizeAway(vec);
         });
-        bench_symbol.run(vector_name, [&]() {
+        bench_symbol.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.symbol(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
-        bench_rank.run(vector_name, [&]() {
+        bench_rank.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.rank(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });

@@ -399,7 +399,7 @@ struct Benchs {
 }
 
 static auto benchs_256 = Benchs{};
-TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[RankVector][!benchmark][256]", ALLRANKVECTORS(256)) {
+TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[RankVector][!benchmark][256][time]", ALLRANKVECTORS(256)) {
     using Vector = TestType;
     if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<256>>) {
         return;
@@ -425,14 +425,14 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[R
         }
         auto vec = Vector{text};
 
+        size_t minEpochIterations = 2'000'000;
+        minEpochIterations = 1;
 
         bench_ctor.minEpochIterations(10).batch(text.size()).run(vector_name, [&]() {
             auto vec = Vector{text};
             ankerl::nanobench::doNotOptimizeAway(const_cast<Vector const&>(vec));
         });
 
-        size_t minEpochIterations = 2'000'000;
-        minEpochIterations = 2'000;
         bench_symbol.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.symbol(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
@@ -457,6 +457,32 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[R
             auto v = vec.all_ranks_and_prefix_ranks(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
+    }
+}
+
+TEMPLATE_TEST_CASE("benchmark vectors alphabet=256 size", "[RankVector][!benchmark][256][size]", ALLRANKVECTORS(256)) {
+    using Vector = TestType;
+    if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<256>>) {
+        return;
+    }
+
+    auto vector_name = getName<Vector>();
+    INFO(vector_name);
+
+    SECTION("benchmarking") {
+        auto rng = ankerl::nanobench::Rng{};
+
+        // generates string with values between 1-4
+        auto text = std::vector<uint8_t>{};
+        #ifdef NDEBUG
+        for (size_t i{0}; i<1'000'000; ++i) {
+        #else
+        for (size_t i{0}; i<1'000; ++i) {
+        #endif
+            text.push_back(rng.bounded(256));
+        }
+        auto vec = Vector{text};
+
 
         {
             auto ofs     = std::stringstream{};
@@ -468,8 +494,9 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[R
     }
 }
 
+
 static auto benchs_5 = Benchs{};
-TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, dna4 like", "[RankVector][!benchmark][5]", ALLRANKVECTORS(5)) {
+TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, dna4 like", "[RankVector][!benchmark][5][time]", ALLRANKVECTORS(5)) {
     using Vector = TestType;
     if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<5>>) {
         return;
@@ -494,36 +521,64 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, dna4
         }
         auto vec = Vector{text};
 
+        size_t minEpochIterations = 2'000'000;
+        minEpochIterations = 1;
+
 
         bench_ctor.minEpochIterations(10).batch(text.size()).run(vector_name, [&]() {
             auto vec = Vector{text};
             ankerl::nanobench::doNotOptimizeAway(const_cast<Vector const&>(vec));
         });
 
-        bench_symbol.minEpochIterations(2'000'000).run(vector_name, [&]() {
+        bench_symbol.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.symbol(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
 
-        bench_rank.minEpochIterations(2'000'000).run(vector_name, [&]() {
+        bench_rank.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.rank(rng.bounded(text.size()), rng.bounded(4)+1);
             ankerl::nanobench::doNotOptimizeAway(v);
         });
 
-        bench_prefix_rank.minEpochIterations(2'000'000).run(vector_name, [&]() {
+        bench_prefix_rank.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.prefix_rank(rng.bounded(text.size()), rng.bounded(4)+1);
             ankerl::nanobench::doNotOptimizeAway(v);
         });
 
-        bench_all_ranks.minEpochIterations(2'000'000).run(vector_name, [&]() {
+        bench_all_ranks.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.all_ranks(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
 
-        bench_all_prefix_ranks.minEpochIterations(2'000'000).run(vector_name, [&]() {
+        bench_all_prefix_ranks.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.all_ranks_and_prefix_ranks(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
+    }
+}
+
+TEMPLATE_TEST_CASE("benchmark vectors alphabet=5 (dna4 like) in size", "[RankVector][!benchmark][5][size]", ALLRANKVECTORS(5)) {
+    using Vector = TestType;
+    if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<5>>) {
+        return;
+    }
+
+    auto vector_name = getName<Vector>();
+    INFO(vector_name);
+
+    SECTION("benchmarking") {
+        auto rng = ankerl::nanobench::Rng{};
+
+        // generates string with values between 1-4
+        auto text = std::vector<uint8_t>{};
+        #ifdef NDEBUG
+        for (size_t i{0}; i<1'000'000; ++i) {
+        #else
+        for (size_t i{0}; i<1'000; ++i) {
+        #endif
+            text.push_back(rng.bounded(4)+1);
+        }
+        auto vec = Vector{text};
 
         {
             auto ofs     = std::stringstream{};
@@ -580,7 +635,7 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, on h
 
 
         size_t minEpochIterations = 2'000'000;
-        minEpochIterations = 2'00;
+        minEpochIterations = 1;
         bench_ctor.minEpochIterations(10).batch(text.size()).run(vector_name, [&]() {
             auto vec = Vector{text};
             ankerl::nanobench::doNotOptimizeAway(const_cast<Vector const&>(vec));
