@@ -148,6 +148,8 @@ struct L1_NBitvector {
         size_t ct{};
         ar(ct);
 
+        bits.resize(ct);
+
         for (size_t j{0}; j < ct; ++j) {
             auto b = std::bitset<bits_ct>{};
             // saving in 64bit blocks
@@ -156,7 +158,7 @@ struct L1_NBitvector {
                 ar(v);
                 b = b | (std::bitset<bits_ct>{v} << i);
             }
-            bits.push_back(b);
+            bits[j] = b;
         }
         //ar(superblocks, bits, totalLength);
     }
