@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#include "../bitset_popcount.h"
 #include "concepts.h"
 
 #include <array>
@@ -114,57 +115,28 @@ struct DoubleL1_NBitvector {
         auto superblockId = idx / bits_ct;
 
         if (superblockId % 2 == 0) {
-            auto maskedBits = (bits[superblockId] >> bitId);
-            auto bitcount   = maskedBits.count();
+            auto count = rshift_and_count(bits[superblockId], bitId);
 
             return superblocks[superblockId/2]
-                    - bitcount;
+                    - count;
         } else {
-            auto maskedBits = (bits[superblockId] << (bits_ct - bitId));
-            auto bitcount   = maskedBits.count();
+            auto count = lshift_and_count(bits[superblockId], bits_ct - bitId);
 
             return superblocks[superblockId/2]
-                    + bitcount;
+                    + count;
         }
     }
 
     template <typename Archive>
     void save(Archive& ar) const {
         ar(superblocks, totalLength);
-        size_t ct = bits.size();
-        ar(ct);
-
-        auto mask = std::bitset<bits_ct>{~uint64_t{0}};
-
-        for (auto const& b : bits) {
-            // saving in 64bit blocks
-            for (size_t i{0}; i < bits_ct; i += 64) {
-                auto v = ((b >> i) & mask).to_ullong();
-                ar(v);
-            }
-        }
-        //ar(superblocks, bits, totalLength);
+        saveBV(bits, ar);
     }
 
     template <typename Archive>
     void load(Archive& ar) {
         ar(superblocks, totalLength);
-        size_t ct{};
-        ar(ct);
-
-        bits.resize(ct);
-
-        for (size_t j{0}; j < ct; ++j) {
-            auto b = std::bitset<bits_ct>{};
-            // saving in 64bit blocks
-            for (size_t i{0}; i < bits_ct; i += 64) {
-                uint64_t v{};
-                ar(v);
-                b = b | (std::bitset<bits_ct>{v} << i);
-            }
-            bits[j] = b;
-        }
-        //ar(superblocks, bits, totalLength);
+        loadBV(bits, ar);
     }
 
 };

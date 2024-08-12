@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#include "../bitset_popcount.h"
 #include "concepts.h"
 #include "utils.h"
 #include "EPRV3.h"
 
+#include <bit>
 #include <vector>
 
 #if __has_include(<cereal/types/bitset.hpp>)
@@ -21,12 +23,12 @@ struct DoubleNEPRV8 {
 
     static constexpr size_t Sigma = TSigma;
 
-    // number of full length bitvectors needed `2^bitct ≥ TSigma`
-    static constexpr auto bitct = required_bits(TSigma-1);
+    // number of full length bit vectors needed `2^bitct > TSigma`
+    static constexpr auto bitct = std::bit_width(TSigma-1);
     // next full power of 2
-    static constexpr auto bvct  = pow(2, bitct);
+    static constexpr auto bvct  = (1ull << bitct);
 
-    static constexpr auto popcount_width_bits = required_bits(popcount_width-1);
+    static constexpr auto popcount_width_bits = std::bit_width(popcount_width-1);
 
     struct InBits {
         std::array<std::bitset<popcount_width>, bitct> bits;
@@ -55,11 +57,9 @@ struct DoubleNEPRV8 {
             }(std::make_integer_sequence<uint64_t, bitct>{});
 
             if constexpr (reverse) {
-                auto bitset = mask >> idx;
-                return bitset.count();
+                return rshift_and_count(mask, idx);
             }
-            auto bitset = mask << (popcount_width-idx);
-            return bitset.count();
+            return lshift_and_count(mask, popcount_width-idx);
         }
 
         template <bool reverse=false>
@@ -81,12 +81,9 @@ struct DoubleNEPRV8 {
             }
 
             if constexpr (reverse) {
-                auto bitset = mask >> idx;
-                return bitset.count();
+                return rshift_and_count(mask, idx);
             }
-
-            auto bitset = mask << (popcount_width-idx);
-            return bitset.count();
+            return lshift_and_count(mask, popcount_width-idx);
         }
 
         template <bool reverse=false>
@@ -108,9 +105,9 @@ struct DoubleNEPRV8 {
                     return (f(i, std::integer_sequence<uint64_t, Is>{})&...);
                 }(std::make_integer_sequence<uint64_t, bitct>{});
                 if constexpr (reverse) {
-                    rs[i] = (mask >> idx).count();
+                    rs[i] = rshift_and_count(mask, idx);
                 } else {
-                    rs[i] = (mask << (popcount_width - idx)).count();
+                    rs[i] = lshift_and_count(mask, popcount_width-idx);
                 }
             }
             return rs;
@@ -132,18 +129,29 @@ struct DoubleNEPRV8 {
             }(std::make_integer_sequence<uint64_t, bitct>{});
 
             if constexpr (reverse) {
-                auto bitset = (~mask) >> idx;
-                return {bitset.count(), symb};
+                auto count = rshift_and_count(~mask, idx);
+                return {count, symb};
             }
-
-            auto bitset = (~mask) << (popcount_width-idx);
-            return {bitset.count(), symb};
+            auto count = lshift_and_count(~mask, popcount_width-idx);
+            return {count, symb};
         }
 
         template <typename Archive>
-        void serialize(Archive& ar) {
-            ar(bits);
+        void load(Archive& ar) {
+            for (auto& v : bits) {
+                (void)v;
+                loadBV(v, ar);
+            }
         }
+        template <typename Archive>
+        void save(Archive& ar) const {
+            (void)ar;
+            for (auto const& v : bits) {
+                (void)v;
+                saveBV(v, ar);
+            }
+        }
+
     };
 
     static constexpr uint64_t level0_size = sizeof(blockL0_t) * 8;
