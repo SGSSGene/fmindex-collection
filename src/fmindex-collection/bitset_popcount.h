@@ -2,6 +2,8 @@
 
 #include <array>
 #include <bitset>
+#include <cstdint>
+#include <vector>
 
 namespace fmindex_collection {
 
