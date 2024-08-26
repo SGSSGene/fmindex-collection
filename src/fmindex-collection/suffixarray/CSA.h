@@ -73,7 +73,8 @@ struct CSA {
         , seqCount{_seqCount}
     {}
 
-    CSA(std::vector<uint64_t> sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false)
+    template <typename T>
+    CSA(std::vector<T> sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false)
         : bv {sa.size(), [&](size_t idx) {
             return (sa[idx] % samplingRate) == 0;
         }}
@@ -119,7 +120,14 @@ struct CSA {
             }
         }
         sa.resize(ssaI);
-        ssa = std::move(sa);
+        if constexpr (std::same_as<T, uint64_t>) {
+            ssa = std::move(sa);
+        } else {
+            ssa.resize(sa.size());
+            for (size_t i{0}; i < sa.size(); ++i) {
+                ssa[i] = sa[i];
+            }
+        }
     }
 
     auto operator=(CSA const&) -> CSA& = delete;

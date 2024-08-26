@@ -31,22 +31,29 @@ struct FMIndex {
 
     FMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
         auto [totalSize, inputText, inputSizes] = createSequences(_input);
-        assert([&]() {
-            for (auto c : inputText) {
-                if (c >= Sigma) return false;
-            }
-            return true;
-        }());
 
-        auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
-            auto sa  = createSA(inputText, threadNbr);
-            auto bwt = createBWT(inputText, sa);
-            auto csa = TCSA{std::move(sa), samplingRate, inputSizes};
+        if (totalSize < std::numeric_limits<int32_t>::max()) { // only 32bit SA required
+            auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
+                auto sa  = createSA32(inputText, threadNbr);
+                auto bwt = createBWT32(inputText, sa);
+                auto csa = TCSA{std::move(sa), samplingRate, inputSizes};
 
-            return std::make_tuple(std::move(bwt), std::move(csa));
-        }();
+                return std::make_tuple(std::move(bwt), std::move(csa));
+            }();
 
-        *this = FMIndex{bwt, std::move(csa)};
+            *this = FMIndex{bwt, std::move(csa)};
+
+        } else { // required 64bit SA required
+            auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
+                auto sa  = createSA64(inputText, threadNbr);
+                auto bwt = createBWT64(inputText, sa);
+                auto csa = TCSA{std::move(sa), samplingRate, inputSizes};
+
+                return std::make_tuple(std::move(bwt), std::move(csa));
+            }();
+
+            *this = FMIndex{bwt, std::move(csa)};
+        }
     }
     auto operator=(FMIndex const&) -> FMIndex& = delete;
     auto operator=(FMIndex&&) noexcept -> FMIndex& = default;

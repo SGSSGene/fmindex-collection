@@ -79,25 +79,47 @@ struct BiFMIndex {
     BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
         auto [totalSize, inputText, inputSizes] = createSequences(_input);
 
-        // create BurrowsWheelerTransform and CompressedSuffixArray
-        auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
-            auto sa  = createSA(inputText, threadNbr);
-            auto bwt = createBWT(inputText, sa);
-            auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
-            return std::make_tuple(std::move(bwt), std::move(csa));
-        }();
+        if (totalSize < std::numeric_limits<int32_t>::max()) { // only 32bit SA required
+            // create BurrowsWheelerTransform and CompressedSuffixArray
+            auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
+                auto sa  = createSA32(inputText, threadNbr);
+                auto bwt = createBWT32(inputText, sa);
+                auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
+                return std::make_tuple(std::move(bwt), std::move(csa));
+            }();
 
-        // create BurrowsWheelerTransform on reversed text
-        auto bwtRev = [&, &inputText=inputText]() {
-            std::ranges::reverse(inputText);
-            auto saRev  = createSA(inputText, threadNbr);
-            auto bwtRev = createBWT(inputText, saRev);
-            return bwtRev;
-        }();
+            // create BurrowsWheelerTransform on reversed text
+            auto bwtRev = [&, &inputText=inputText]() {
+                std::ranges::reverse(inputText);
+                auto saRev  = createSA32(inputText, threadNbr);
+                auto bwtRev = createBWT32(inputText, saRev);
+                return bwtRev;
+            }();
 
-        decltype(inputText){}.swap(inputText); // inputText memory can be deleted
+            decltype(inputText){}.swap(inputText); // inputText memory can be deleted
 
-        *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
+            *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
+        } else { // required 64bit SA required
+            // create BurrowsWheelerTransform and CompressedSuffixArray
+            auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
+                auto sa  = createSA64(inputText, threadNbr);
+                auto bwt = createBWT64(inputText, sa);
+                auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
+                return std::make_tuple(std::move(bwt), std::move(csa));
+            }();
+
+            // create BurrowsWheelerTransform on reversed text
+            auto bwtRev = [&, &inputText=inputText]() {
+                std::ranges::reverse(inputText);
+                auto saRev  = createSA64(inputText, threadNbr);
+                auto bwtRev = createBWT64(inputText, saRev);
+                return bwtRev;
+            }();
+
+            decltype(inputText){}.swap(inputText); // inputText memory can be deleted
+
+            *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
+        }
     }
 
     auto operator=(BiFMIndex const&) -> BiFMIndex& = delete;

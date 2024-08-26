@@ -80,7 +80,8 @@ struct DenseCSA {
 
     }
 
-    DenseCSA(std::span<uint64_t const> sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false) {
+    template <typename T>
+    DenseCSA(std::vector<T> const& sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false) {
         size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
         assert(bitsForSeqId < 64);
 
