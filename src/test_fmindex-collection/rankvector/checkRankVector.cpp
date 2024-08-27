@@ -704,7 +704,7 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor operation, on human dna5 data", "[Ra
     }
 }
 
-TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human dna5 data", "[RankVector][bwt][!benchmark][time]", ALLRANKVECTORS(6)) {
+TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human dna5 data", "[RankVector][bwt][!benchmark][time][.]", ALLRANKVECTORS(6)) {
     using Vector = TestType;
     if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<6>>) {
         return;
@@ -775,7 +775,7 @@ TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human d
     }
 }
 
-TEMPLATE_TEST_CASE("benchmark vectors size, on human dna5 data", "[RankVector][bwt][!benchmark][size]", ALLRANKVECTORS(6)) {
+TEMPLATE_TEST_CASE("benchmark vectors size, on human dna5 data", "[RankVector][bwt][!benchmark][size][.]", ALLRANKVECTORS(6)) {
     using Vector = TestType;
     if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<6>>) {
         return;
