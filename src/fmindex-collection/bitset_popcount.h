@@ -13,7 +13,7 @@ inline std::array<std::bitset<N>, N+1> const leftshift_masks = []() {
     m[0].flip();
 
     for (size_t i{1}; i < N+1; ++i) {
-        m[i] = m[i-1] << 1;
+        m[i] = m[i-1] >> 1;
     }
     return m;
 }();
@@ -24,7 +24,7 @@ inline std::array<std::bitset<N>, N+1> const rightshift_masks = []() {
     m[0].flip();
 
     for (size_t i{1}; i < N+1; ++i) {
-        m[i] = m[i-1] >> 1;
+        m[i] = m[i-1] << 1;
     }
     return m;
 }();
@@ -36,7 +36,8 @@ size_t lshift_and_count(std::bitset<N> const& b, size_t shift) {
 
 template <size_t N>
 size_t rshift_and_count(std::bitset<N> const& b, size_t shift) {
-    return (b & (rightshift_masks<N>[shift])).count();
+    auto const& mask = rightshift_masks<N>[shift];
+    return (b & mask).count();
 }
 
 
