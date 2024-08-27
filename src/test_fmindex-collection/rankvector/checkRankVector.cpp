@@ -399,7 +399,42 @@ struct Benchs {
 }
 
 static auto benchs_256 = Benchs{};
-TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[RankVector][!benchmark][256][time]", ALLRANKVECTORS(256)) {
+
+TEMPLATE_TEST_CASE("benchmark vectors c'tor", "[RankVector][!benchmark][256][time][ctor][.]", ALLRANKVECTORS(256)) {
+    using Vector = TestType;
+    if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<256>>) {
+        return;
+    }
+
+    auto& [bench_rank, bench_prefix_rank, bench_all_ranks, bench_all_prefix_ranks, bench_symbol, bench_ctor] = benchs_256;
+
+
+    auto vector_name = getName<Vector>();
+    INFO(vector_name);
+
+    SECTION("benchmarking") {
+        auto rng = ankerl::nanobench::Rng{};
+
+        // generates string with values between 1-4
+        auto text = std::vector<uint8_t>{};
+        #ifdef NDEBUG
+        for (size_t i{0}; i<1'000'000; ++i) {
+        #else
+        for (size_t i{0}; i<1'000; ++i) {
+        #endif
+            text.push_back(rng.bounded(256));
+        }
+        size_t minEpochIterations = 2'000'000;
+        minEpochIterations = 1;
+
+        bench_ctor.minEpochIterations(minEpochIterations).batch(text.size()).run(vector_name, [&]() {
+            auto vec = Vector{text};
+            ankerl::nanobench::doNotOptimizeAway(const_cast<Vector const&>(vec));
+        });
+    }
+}
+
+TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations", "[RankVector][!benchmark][256][time]", ALLRANKVECTORS(256)) {
     using Vector = TestType;
     if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<256>>) {
         return;
@@ -427,11 +462,6 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations", "[R
 
         size_t minEpochIterations = 2'000'000;
         minEpochIterations = 1;
-
-        bench_ctor.minEpochIterations(10).batch(text.size()).run(vector_name, [&]() {
-            auto vec = Vector{text};
-            ankerl::nanobench::doNotOptimizeAway(const_cast<Vector const&>(vec));
-        });
 
         bench_symbol.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.symbol(rng.bounded(text.size()));
@@ -496,7 +526,8 @@ TEMPLATE_TEST_CASE("benchmark vectors alphabet=256 size", "[RankVector][!benchma
 
 
 static auto benchs_5 = Benchs{};
-TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, dna4 like", "[RankVector][!benchmark][5][time]", ALLRANKVECTORS(5)) {
+
+TEMPLATE_TEST_CASE("benchmark vectors c'tor) operation, dna4 like", "[RankVector][!benchmark][5][time][ctor][.]", ALLRANKVECTORS(5)) {
     using Vector = TestType;
     if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<5>>) {
         return;
@@ -524,11 +555,41 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, dna4
         size_t minEpochIterations = 2'000'000;
         minEpochIterations = 1;
 
-
-        bench_ctor.minEpochIterations(10).batch(text.size()).run(vector_name, [&]() {
+        bench_ctor.minEpochIterations(minEpochIterations).batch(text.size()).run(vector_name, [&]() {
             auto vec = Vector{text};
             ankerl::nanobench::doNotOptimizeAway(const_cast<Vector const&>(vec));
         });
+    }
+}
+
+TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, dna4 like", "[RankVector][!benchmark][5][time]", ALLRANKVECTORS(5)) {
+    using Vector = TestType;
+    if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<5>>) {
+        return;
+    }
+    auto& [bench_rank, bench_prefix_rank, bench_all_ranks, bench_all_prefix_ranks, bench_symbol, bench_ctor] = benchs_5;
+
+
+    auto vector_name = getName<Vector>();
+    INFO(vector_name);
+
+    SECTION("benchmarking") {
+        auto rng = ankerl::nanobench::Rng{};
+
+        // generates string with values between 1-4
+        auto text = std::vector<uint8_t>{};
+        #ifdef NDEBUG
+        for (size_t i{0}; i<1'000'000; ++i) {
+        #else
+        for (size_t i{0}; i<1'000; ++i) {
+        #endif
+            text.push_back(rng.bounded(4)+1);
+        }
+        auto vec = Vector{text};
+
+        size_t minEpochIterations = 2'000'000;
+        minEpochIterations = 1;
+
 
         bench_symbol.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.symbol(rng.bounded(text.size()));
@@ -592,7 +653,7 @@ TEMPLATE_TEST_CASE("benchmark vectors alphabet=5 (dna4 like) in size", "[RankVec
 
 static auto benchs_6 = Benchs{};
 static auto benchs_6_text = std::vector<uint8_t>{};
-TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, on human dna5 data", "[RankVector][bwt][!benchmark][time]", ALLRANKVECTORS(6)) {
+TEMPLATE_TEST_CASE("benchmark vectors c'tor operation, on human dna5 data", "[RankVector][bwt][!benchmark][time][ctor][.]", ALLRANKVECTORS(6)) {
     using Vector = TestType;
     if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<6>>) {
         return;
@@ -636,11 +697,57 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, on h
 
         size_t minEpochIterations = 2'000'000;
         minEpochIterations = 1;
-        bench_ctor.minEpochIterations(10).batch(text.size()).run(vector_name, [&]() {
+        bench_ctor.minEpochIterations(minEpochIterations).batch(text.size()).run(vector_name, [&]() {
             auto vec = Vector{text};
             ankerl::nanobench::doNotOptimizeAway(const_cast<Vector const&>(vec));
         });
+    }
+}
 
+TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human dna5 data", "[RankVector][bwt][!benchmark][time]", ALLRANKVECTORS(6)) {
+    using Vector = TestType;
+    if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<6>>) {
+        return;
+    }
+    auto& [bench_rank, bench_prefix_rank, bench_all_ranks, bench_all_prefix_ranks, bench_symbol, bench_ctor] = benchs_6;
+
+
+    auto vector_name = getName<Vector>();
+    INFO(vector_name);
+
+    SECTION("benchmarking") {
+        auto rng = ankerl::nanobench::Rng{};
+
+        // generates string with values between 1-4
+        auto& text = benchs_6_text;
+        if (text.empty()) {
+            auto fs = std::ifstream{"bwt.bwt"};
+            std::string line;
+            std::getline(fs, line);
+            fs.close();
+            text.resize(line.size());
+            std::memcpy(text.data(), line.data(), line.size());
+            for (auto& c : text) {
+                switch(c) {
+                case '$': c = 0; break;
+                case 'A': c = 1; break;
+                case 'C': c = 2; break;
+                case 'G': c = 3; break;
+                case 'T': c = 4; break;
+                case 'N': c = 5; break;
+                default:
+                    throw std::runtime_error{"unknown char " + std::to_string((int)c)};
+
+                }
+            }
+            std::cout << "done loading file\n";
+        }
+
+        auto vec = Vector{text};
+
+
+        size_t minEpochIterations = 2'000'000;
+        minEpochIterations = 1;
         bench_symbol.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.symbol(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
@@ -668,7 +775,7 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, on h
     }
 }
 
-TEMPLATE_TEST_CASE("benchmark vectors c'tor,symbol() and rank() operations, on human dna5 data", "[RankVector][bwt][!benchmark][size]", ALLRANKVECTORS(6)) {
+TEMPLATE_TEST_CASE("benchmark vectors size, on human dna5 data", "[RankVector][bwt][!benchmark][size]", ALLRANKVECTORS(6)) {
     using Vector = TestType;
     if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<6>>) {
         return;

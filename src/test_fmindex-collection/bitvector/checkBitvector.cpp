@@ -180,7 +180,37 @@ struct Benchs {
 }
 
 static auto benchs = Benchs{};
-TEMPLATE_TEST_CASE("benchmark bit vectors run times", "[BitVector][!benchmark][time]", ALLBITVECTORS) {
+TEMPLATE_TEST_CASE("benchmark bit vectors ctor run times", "[BitVector][!benchmark][time][ctor][.]", ALLBITVECTORS) {
+    using Vector = TestType;
+    auto vector_name = getName<Vector>();
+    INFO(vector_name);
+
+    auto& [bench_rank, bench_symbol, bench_ctor] = benchs;
+
+    SECTION("benchmarking") {
+        auto bench = ankerl::nanobench::Bench{};
+        auto rng = ankerl::nanobench::Rng{};
+
+        auto text = std::vector<uint8_t>{};
+        #ifdef NDEBUG
+        for (size_t i{0}; i<100'000'000; ++i) {
+        #else
+        for (size_t i{0}; i<100'000; ++i) {
+        #endif
+            text.push_back(rng.bounded(4) == 0);
+        }
+
+        size_t minEpochIterations = 2'000'000;
+        minEpochIterations = 1;
+
+        bench_ctor.minEpochIterations(minEpochIterations).batch(text.size()).run(vector_name, [&]() {
+            auto vec = Vector{text};
+            ankerl::nanobench::doNotOptimizeAway(vec);
+        });
+    }
+}
+
+TEMPLATE_TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!benchmark][time]", ALLBITVECTORS) {
     using Vector = TestType;
     auto vector_name = getName<Vector>();
     INFO(vector_name);
@@ -205,10 +235,6 @@ TEMPLATE_TEST_CASE("benchmark bit vectors run times", "[BitVector][!benchmark][t
         size_t minEpochIterations = 2'000'000;
         minEpochIterations = 1;
 
-        bench_ctor.minEpochIterations(1).batch(text.size()).run(vector_name, [&]() {
-            auto vec = Vector{text};
-            ankerl::nanobench::doNotOptimizeAway(vec);
-        });
         bench_symbol.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.symbol(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
