@@ -5,7 +5,6 @@
 
 #include "../builtins.h"
 #include "concepts.h"
-#include "utils.h"
 
 #include <algorithm>
 #include <array>
@@ -28,11 +27,6 @@ struct Bitvector {
     size_t sigma{};
     size_t bitct{size_t(std::ceil(std::log2(sigma)))};
     size_t bvct{size_t(std::exp2(bitct))};
-
-    // number of full length bitvectors needed `2^bitct ≥ TSigma`
-//    static constexpr auto bitct = required_bits(TSigma-1);
-    // next full power of 2
-//    static constexpr auto bvct  = pow(2, bitct);
 
     struct InBitsView {
         uint64_t const* bits;

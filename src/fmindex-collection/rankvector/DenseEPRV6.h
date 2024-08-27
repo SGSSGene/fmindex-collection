@@ -5,8 +5,8 @@
 
 #include "../DenseVector.h"
 #include "concepts.h"
-#include "utils.h"
 
+#include <bit>
 #include <bitset>
 #include <vector>
 
@@ -16,9 +16,9 @@ template <size_t TSigma>
 struct DenseEPRV6 {
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
-    static constexpr auto bitct = required_bits(TSigma-1);
+    static constexpr auto bitct = std::bit_width(TSigma-1);
     // next full power of 2
-    static constexpr auto bvct  = pow(2, bitct);
+    static constexpr auto bvct  = std::bit_ceil(TSigma);
 
     struct InBits {
         std::array<uint64_t, bitct> bits{};

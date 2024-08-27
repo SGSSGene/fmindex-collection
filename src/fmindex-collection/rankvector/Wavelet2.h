@@ -6,10 +6,10 @@
 #include "../builtins.h"
 #include "../bitvector/Bitvector.h"
 #include "concepts.h"
-#include "utils.h"
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <bitset>
 #include <cassert>
 #include <cstdint>
@@ -27,8 +27,8 @@ template <size_t TSigma, BitVector_c Bitvector = ::fmindex_collection::bitvector
 struct Wavelet2 {
     static constexpr size_t Sigma = TSigma;
 
-    static constexpr auto bits = required_bits(TSigma-1);
-    static constexpr auto bvct = pow(2, bits);
+    static constexpr auto bits = std::bit_width(TSigma-1);
+    static constexpr auto bvct = std::bit_ceil(TSigma);
 
     std::array<Bitvector, bvct> bitvector;
     size_t                      totalLength;
@@ -134,7 +134,7 @@ struct Wavelet2 {
         if (nbr == 1) return 0;
         if (nbr == 2) return 1;
 
-        auto bits = required_bits(nbr-1);
+        auto bits = std::bit_width(nbr-1);
         auto leftNbr = pow(2, bits-1);
         auto rightNbr = nbr-leftNbr;
         auto cl = divide(leftNbr);
@@ -155,8 +155,8 @@ struct Wavelet2 {
             auto res = std::vector<std::tuple<uint8_t, uint8_t>>{};
             auto bit = (symb >> (bits-Depth)) & 1;
 
-            constexpr auto bits = required_bits(Sigma-1);
-            constexpr auto leftNbr = pow(2, bits-1);
+            constexpr auto bits = std::bit_width(Sigma-1);
+            constexpr auto leftNbr = std::bit_ceil(Sigma-1);
             constexpr auto rightNbr = Sigma - leftNbr;
             if (symb < leftNbr) {
                 assert(bit == 0);

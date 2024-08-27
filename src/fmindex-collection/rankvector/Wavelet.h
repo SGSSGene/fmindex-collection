@@ -7,10 +7,10 @@
 #include "../bitvector/Bitvector.h"
 #include "../bitvector/PrunedBitvector.h"
 #include "concepts.h"
-#include "utils.h"
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <bitset>
 #include <cassert>
 #include <cstdint>
@@ -28,8 +28,8 @@ template <size_t TSigma, BitVector_c Bitvector = ::fmindex_collection::bitvector
 struct Wavelet {
     static constexpr size_t Sigma = TSigma;
 
-    static constexpr auto bits = required_bits(TSigma-1);
-    static constexpr auto bvct = pow(2, bits);
+    static constexpr auto bits = std::bit_width(TSigma-1);
+    static constexpr auto bvct = std::bit_ceil(TSigma);
 
     std::array<Bitvector, bvct> bitvector;
     size_t                      totalLength;
