@@ -24,7 +24,7 @@
 namespace fmindex_collection {
 
 inline auto createSA64(std::span<uint8_t const> input, size_t threadNbr) -> std::vector<uint64_t> {
-    assert(input.size() < std::numeric_limits<int64_t>::max());
+    assert(uint64_t{input.size()} < std::numeric_limits<int64_t>::max());
     auto sa = std::vector<uint64_t>(input.size());
     if (input.size() == 0) {
         return sa;

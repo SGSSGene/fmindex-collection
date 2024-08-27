@@ -5,7 +5,6 @@
 #include <fmindex-collection/utils.h>
 #include <fstream>
 #include <nanobench.h>
-#include <reflect>
 
 #include "allBitVectors.h"
 
@@ -20,6 +19,7 @@ static auto getName() {
     return str;
 }
 #else
+#include <reflect>
 template <typename T>
 static auto getName() {
     return std::string{reflect::type_name<T>()};
