@@ -155,7 +155,6 @@ struct Wavelet2 {
             auto res = std::vector<std::tuple<uint8_t, uint8_t>>{};
             auto bit = (symb >> (bits-Depth)) & 1;
 
-            constexpr auto bits = std::bit_width(Sigma-1);
             constexpr auto leftNbr = std::bit_ceil(Sigma-1);
             constexpr auto rightNbr = Sigma - leftNbr;
             if (symb < leftNbr) {
