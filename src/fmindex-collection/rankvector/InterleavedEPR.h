@@ -5,6 +5,7 @@
 
 #include "concepts.h"
 
+#include <bit>
 #include <bitset>
 #include <cassert>
 #include <vector>
