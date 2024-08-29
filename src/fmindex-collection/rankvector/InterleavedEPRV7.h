@@ -4,8 +4,8 @@
 #pragma once
 
 #include "concepts.h"
-#include "utils.h"
 
+#include <bit>
 #include <bitset>
 #include <cassert>
 #include <vector>
@@ -18,7 +18,7 @@ struct InterleavedEPRV7 {
     static constexpr size_t Sigma = TSigma;
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
-    static constexpr auto bitct = required_bits(TSigma-1);
+    static constexpr auto bitct = std::bit_width(TSigma-1);
 
     #pragma pack(push, 1)
     struct InBits {

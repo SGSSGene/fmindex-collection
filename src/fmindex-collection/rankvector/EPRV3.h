@@ -4,8 +4,8 @@
 #pragma once
 
 #include "concepts.h"
-#include "utils.h"
 
+#include <bit>
 #include <bitset>
 #include <cassert>
 #include <vector>
@@ -18,9 +18,9 @@ struct EPRV3 {
     static constexpr size_t Sigma = TSigma;
 
     // number of full length bitvectors needed `2^bitct ≥ TSigma`
-    static constexpr auto bitct = required_bits(TSigma-1);
+    static constexpr auto bitct = std::bit_width(TSigma-1);
     // next full power of 2
-    static constexpr auto bvct  = pow(2, bitct);
+    static constexpr auto bvct  = std::bit_ceil(TSigma);
 
     struct Block {
         std::array<block_t, TSigma> blocks{};

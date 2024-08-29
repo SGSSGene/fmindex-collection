@@ -23,7 +23,8 @@
 
 namespace fmindex_collection {
 
-inline auto createSA(std::span<uint8_t const> input, size_t threadNbr) -> std::vector<uint64_t> {
+inline auto createSA64(std::span<uint8_t const> input, size_t threadNbr) -> std::vector<uint64_t> {
+    assert(uint64_t{input.size()} < std::numeric_limits<int64_t>::max());
     auto sa = std::vector<uint64_t>(input.size());
     if (input.size() == 0) {
         return sa;
@@ -39,8 +40,34 @@ inline auto createSA(std::span<uint8_t const> input, size_t threadNbr) -> std::v
     return sa;
 }
 
+inline auto createSA32(std::span<uint8_t const> input, size_t threadNbr) -> std::vector<uint32_t> {
+    assert(input.size() < std::numeric_limits<int32_t>::max());
+    auto sa = std::vector<uint32_t>(input.size());
+    if (input.size() == 0) {
+        return sa;
+    }
+#if LIBSAIS_OPENMP
+    auto r = libsais_omp(input.data(), reinterpret_cast<int32_t*>(sa.data()), input.size(), 0, nullptr, threadNbr);
+#else
+    (void)threadNbr; // Unused if no openmp is available
+    auto r = libsais(input.data(), reinterpret_cast<int32_t*>(sa.data()), input.size(), 0, nullptr);
+#endif
 
-inline auto createBWT(std::span<uint8_t const> input, std::span<uint64_t const> sa) -> std::vector<uint8_t> {
+    if (r != 0) { throw std::runtime_error("something went wrong constructing the SA"); }
+    return sa;
+}
+
+inline auto createBWT64(std::span<uint8_t const> input, std::span<uint64_t const> sa) -> std::vector<uint8_t> {
+    assert(input.size() == sa.size());
+    auto bwt = std::vector<uint8_t>{};
+    bwt.resize(input.size());
+    for (size_t i{0}; i < sa.size(); ++i) {
+        bwt[i] = input[(sa[i] + input.size() - 1) % input.size()];
+    }
+    return bwt;
+}
+
+inline auto createBWT32(std::span<uint8_t const> input, std::span<uint32_t const> sa) -> std::vector<uint8_t> {
     assert(input.size() == sa.size());
     auto bwt = std::vector<uint8_t>{};
     bwt.resize(input.size());

@@ -51,10 +51,10 @@ struct L1Bitvector {
                 bits.back()        |= (uint64_t{value} << i);
                 superblocks.back() += value;
             }
-            totalLength += 64;
             superblocks.emplace_back(superblocks.back());
             bits.emplace_back();
         }
+        totalLength = loop64 * 64;
         while(totalLength < _range.size()) {
             push_back(*(iter++));
         }

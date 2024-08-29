@@ -5,8 +5,6 @@
 #include <fmindex-collection/utils.h>
 #include <fstream>
 #include <nanobench.h>
-#include <reflect>
-#include <thread>
 
 #include "allBitVectors.h"
 
@@ -21,6 +19,7 @@ static auto getName() {
     return str;
 }
 #else
+#include <reflect>
 template <typename T>
 static auto getName() {
     return std::string{reflect::type_name<T>()};
@@ -154,6 +153,39 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
             CHECK(count == vec.rank(input.size()));
         }
     }
+}
+
+namespace {
+struct Bench : ankerl::nanobench::Bench {
+    std::stringstream output{};
+
+    Bench(std::string title) {
+        this->title(title)
+            .relative(true)
+            .output(&output)
+        ;
+    }
+    ~Bench() {
+        if (output.str().size() > 0) {
+            std::cout << output.str() << '\n';
+        }
+    }
+};
+
+struct Benchs {
+    Bench bench_rank{"rank()"};
+    Bench bench_symbol{"symbol()"};
+    Bench bench_ctor{"c'tor"};
+};
+}
+
+static auto benchs = Benchs{};
+TEMPLATE_TEST_CASE("benchmark bit vectors ctor run times", "[BitVector][!benchmark][time][ctor][.]", ALLBITVECTORS) {
+    using Vector = TestType;
+    auto vector_name = getName<Vector>();
+    INFO(vector_name);
+
+    auto& [bench_rank, bench_symbol, bench_ctor] = benchs;
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -168,18 +200,77 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
             text.push_back(rng.bounded(4) == 0);
         }
 
-        bench.batch(text.size()).run(vector_name + "()", [&]() {
+        size_t minEpochIterations = 2'000'000;
+        minEpochIterations = 1;
+
+        bench_ctor.minEpochIterations(minEpochIterations).batch(text.size()).run(vector_name, [&]() {
             auto vec = Vector{text};
             ankerl::nanobench::doNotOptimizeAway(vec);
         });
+    }
+}
+
+TEMPLATE_TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!benchmark][time]", ALLBITVECTORS) {
+    using Vector = TestType;
+    auto vector_name = getName<Vector>();
+    INFO(vector_name);
+
+    auto& [bench_rank, bench_symbol, bench_ctor] = benchs;
+
+    SECTION("benchmarking") {
+        auto bench = ankerl::nanobench::Bench{};
+        auto rng = ankerl::nanobench::Rng{};
+
+        auto text = std::vector<uint8_t>{};
+        #ifdef NDEBUG
+        for (size_t i{0}; i<100'000'000; ++i) {
+        #else
+        for (size_t i{0}; i<100'000; ++i) {
+        #endif
+            text.push_back(rng.bounded(4) == 0);
+        }
+
         auto vec = Vector{text};
-        bench.batch(1).run(vector_name + "::symbol()", [&]() {
+
+        size_t minEpochIterations = 2'000'000;
+        minEpochIterations = 1;
+
+        bench_symbol.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.symbol(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
-        bench.run(vector_name + "::rank()", [&]() {
+        bench_rank.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.rank(rng.bounded(text.size()));
             ankerl::nanobench::doNotOptimizeAway(v);
         });
+    }
+}
+
+TEMPLATE_TEST_CASE("benchmark bit vectors memory consumption", "[BitVector][!benchmark][size]", ALLBITVECTORS) {
+    using Vector = TestType;
+    auto vector_name = getName<Vector>();
+    INFO(vector_name);
+
+    SECTION("benchmarking") {
+        auto bench = ankerl::nanobench::Bench{};
+        auto rng = ankerl::nanobench::Rng{};
+
+        auto text = std::vector<uint8_t>{};
+        #ifdef NDEBUG
+        for (size_t i{0}; i<100'000'000; ++i) {
+        #else
+        for (size_t i{0}; i<100'000; ++i) {
+        #endif
+            text.push_back(rng.bounded(4) == 0);
+        }
+        auto vec = Vector{text};
+        {
+            auto ofs     = std::stringstream{};
+            auto archive = cereal::BinaryOutputArchive{ofs};
+            archive(vec);
+            auto s = ofs.str().size();
+            std::cout << vector_name << " - file size: " << s << "bytes, " << (s*8)/double(text.size()) << "bits/char\n";
+        }
+
     }
 }

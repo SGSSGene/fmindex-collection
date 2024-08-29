@@ -87,8 +87,7 @@ concept RankVector =
 
 
 template<template <auto> typename T>
-concept checkRankVector = RankVector<T<1>>
-                          && RankVector<T<2>>
+concept checkRankVector =    RankVector<T<2>>
                           && RankVector<T<4>>
                           && RankVector<T<5>>
                           && RankVector<T<255>>

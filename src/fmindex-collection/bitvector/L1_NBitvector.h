@@ -34,6 +34,17 @@ struct L1_NBitvector {
     std::vector<std::bitset<bits_ct>> bits{0};
     size_t totalLength{};
 
+    static std::array<std::bitset<bits_ct>, bits_ct+1> const masks;/* = []() {
+        auto m = std::array<std::bitset<bits_ct>, bits_ct+1>{};
+        auto a = std::bitset<bits_ct>{};
+
+        for (size_t i{0}; i < bits_ct; ++i) {
+            a.set(i);
+            m[i+1] = a;
+        }
+        return m;
+    }();*/
+
     L1_NBitvector() = default;
     L1_NBitvector(L1_NBitvector const&) = default;
     L1_NBitvector(L1_NBitvector&&) noexcept = default;
@@ -105,24 +116,74 @@ struct L1_NBitvector {
         auto bitId        = idx % bits_ct;
         auto superblockId = idx / bits_ct;
 
-        auto maskedBits = (bits[superblockId] << (bits_ct - bitId));
-        auto bitcount   = maskedBits.count();
+        auto bitcount = (bits[superblockId] & masks[bitId]).count();
+//        auto maskedBits = (bits[superblockId] << (bits_ct - bitId));
+//        auto bitcount   = maskedBits.count();
 
         return superblocks[superblockId]
                 + bitcount;
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(superblocks, bits, totalLength);
+    void save(Archive& ar) const {
+        ar(superblocks, totalLength);
+        size_t ct = bits.size();
+        ar(ct);
+
+        auto mask = std::bitset<bits_ct>{~uint64_t{0}};
+
+        for (auto const& b : bits) {
+            // saving in 64bit blocks
+            for (size_t i{0}; i < bits_ct; i += 64) {
+                auto v = ((b >> i) & mask).to_ullong();
+                ar(v);
+            }
+        }
+        //ar(superblocks, bits, totalLength);
+    }
+
+    template <typename Archive>
+    void load(Archive& ar) {
+        ar(superblocks, totalLength);
+        size_t ct{};
+        ar(ct);
+
+        bits.resize(ct);
+
+        for (size_t j{0}; j < ct; ++j) {
+            auto b = std::bitset<bits_ct>{};
+            // saving in 64bit blocks
+            for (size_t i{0}; i < bits_ct; i += 64) {
+                uint64_t v{};
+                ar(v);
+                b = b | (std::bitset<bits_ct>{v} << i);
+            }
+            bits[j] = b;
+        }
+        //ar(superblocks, bits, totalLength);
     }
 };
+
+template <size_t bits_ct>
+std::array<std::bitset<bits_ct>, bits_ct+1> const L1_NBitvector<bits_ct>::masks = []() {
+    auto m = std::array<std::bitset<bits_ct>, bits_ct+1>{};
+    auto a = std::bitset<bits_ct>{};
+
+    for (size_t i{0}; i < bits_ct; ++i) {
+        a.set(i);
+        m[i+1] = a;
+    }
+    return m;
+}();
+
 using L1_64Bitvector  = L1_NBitvector<64>;
 using L1_128Bitvector = L1_NBitvector<128>;
 using L1_256Bitvector = L1_NBitvector<256>;
+using L1_512Bitvector = L1_NBitvector<512>;
 
 static_assert(BitVector_c<L1_64Bitvector>);
 static_assert(BitVector_c<L1_128Bitvector>);
 static_assert(BitVector_c<L1_256Bitvector>);
+static_assert(BitVector_c<L1_512Bitvector>);
 
 }

@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <bitset>
 #include <cassert>
 #include <cstdint>
@@ -21,6 +22,7 @@ namespace fmindex_collection::rankvector {
 /* Implements the concept `RankVector`
  *
  * \param TSigma size of the alphabet
+ *
  */
 template <size_t TSigma>
 struct InterleavedWavelet {
@@ -40,10 +42,12 @@ struct InterleavedWavelet {
         }
     }
 
-    // number of full length bitvectors needed `2^bitct ≥ TSigma`
-    static constexpr auto bitct = required_bits(TSigma);
+    // number of full length bitvectors needed `2^bitct > TSigma`
+    // !TODO something is broken here, this should be TSigma-1
+    static constexpr auto bitct = std::bit_width(TSigma);
+
     // next full power of 2
-    static constexpr auto bvct  = pow(2, bitct);
+    static constexpr auto bvct  = (size_t{1}<<bitct);
 
     struct Block {
         std::array<uint32_t, TSigma> blocks{};

@@ -5,8 +5,8 @@
 
 #include "../builtins.h"
 #include "concepts.h"
-#include "utils.h"
 
+#include <bit>
 #include <bitset>
 #include <cassert>
 #include <cstdint>
@@ -55,7 +55,7 @@ struct InterleavedEPRV2 {
     }
 
     // number of full length bitvectors needed `2^sigma_bits ≥ TSigma`
-    static constexpr auto sigma_bits = required_bits(TSigma-1);
+    static constexpr auto sigma_bits = std::bit_width(TSigma-1);
 
     struct alignas(TAlignment) Block {
         std::array<block_t, TSigma> blocks{};

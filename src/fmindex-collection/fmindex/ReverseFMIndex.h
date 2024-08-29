@@ -32,8 +32,8 @@ struct ReverseFMIndex {
         auto [totalSize, inputText, inputSizes] = createSequences(_input, /*reverse*/ true);
 
         auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
-            auto sa  = createSA(inputText, threadNbr);
-            auto bwt = createBWT(inputText, sa);
+            auto sa  = createSA64(inputText, threadNbr);
+            auto bwt = createBWT64(inputText, sa);
             auto csa = TCSA{std::move(sa), samplingRate, inputSizes, /*reverse*/ true};
 
             return std::make_tuple(std::move(bwt), std::move(csa));

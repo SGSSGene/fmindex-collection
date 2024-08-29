@@ -262,8 +262,8 @@ TEMPLATE_TEST_CASE("check if occ table is working for all lengths between 60 and
             INFO("length=" << length);
             auto text = std::vector<uint8_t>{97, 16, 93,  2, 12, 63, 73, 20, 84, 25, 79, 90, 67, 58, 49, 60, 77, 32, 14, 44, 34, 35, 36, 45,  1, 70,  6, 27, 74, 22, 61, 69, 42, 95, 99, 50, 47, 75,  4, 89, 56, 51, 39, 29, 11, 21, 26, 17, 30, 65, 59, 33, 18,  9, 76, 23, 78, 96, 10, 82, 31, 83, 37, 28, 68, 91, 46, 48, 88, 54,  5, 40,  7, 38, 72, 94, 19, 64, 87, 71, 52, 55,100, 92, 13, 62, 43, 80, 24, 57, 81,  8, 41, 15, 53, 85, 98,  3, 86, 66};
             text.resize(length);
-            auto sa = fmindex_collection::createSA(text, /*samplingRate*/ 1);
-            auto bwt = fmindex_collection::createBWT(text, sa);
+            auto sa = fmindex_collection::createSA64(text, /*samplingRate*/ 1);
+            auto bwt = fmindex_collection::createBWT64(text, sa);
             auto table = OccTable{bwt};
             REQUIRE(table.size() == text.size());
 

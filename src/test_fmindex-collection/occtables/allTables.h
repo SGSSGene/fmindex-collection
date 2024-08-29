@@ -81,10 +81,10 @@
     fmindex_collection::occtable::EprV7<256>, \
     fmindex_collection::occtable::InterleavedWavelet<256>, \
     fmindex_collection::occtable::Wavelet<256>, \
-    fmindex_collection::occtable::RuntimeLengthEncoded2<256>, \
-    fmindex_collection::occtable::RuntimeLengthEncoded3<256>, \
-    fmindex_collection::occtable::RuntimeLengthEncoded4<256>, \
-    fmindex_collection::occtable::RecursiveRuntimeLengthEncodedD2<256>
+    fmindex_collection::occtable::RunBlockEncoded2<256>, \
+    fmindex_collection::occtable::RunBlockEncoded3<256>, \
+    fmindex_collection::occtable::RunBlockEncoded4<256>, \
+    fmindex_collection::occtable::RecursiveRunBlockEncodedD2<256>
 
 #if FMC_USE_SDSL
 #define ALLTABLES \
