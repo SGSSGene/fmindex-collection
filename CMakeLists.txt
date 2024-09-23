@@ -61,6 +61,19 @@ if (PROJECT_IS_TOP_LEVEL)
         cereal::cereal
     )
 
+    # example executable
+    add_executable(search_scheme_generator
+        src/search_scheme_generator/main.cpp
+    )
+
+    target_link_libraries(search_scheme_generator
+        PRIVATE
+        fmindex-collection::fmindex-collection
+        fmt::fmt-header-only
+        cereal::cereal
+    )
+
+
 
     # easyExample executable
     add_executable(easyExample
