@@ -210,6 +210,21 @@ TEMPLATE_TEST_CASE("benchmark bit vectors ctor run times", "[BitVector][!benchma
     }
 }
 
+static auto seed = ankerl::nanobench::Rng{0}();
+static auto text_time = []() -> std::vector<uint8_t> {
+    auto rng = ankerl::nanobench::Rng{seed};
+
+    auto text = std::vector<uint8_t>{};
+    #ifdef NDEBUG
+    for (size_t i{0}; i<10'000'000; ++i) {
+    #else
+    for (size_t i{0}; i<100'000; ++i) {
+    #endif
+        text.push_back(rng.bounded(4) == 0);
+    }
+    return text;
+}();
+
 TEMPLATE_TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!benchmark][time]", ALLBITVECTORS) {
     using Vector = TestType;
     auto vector_name = getName<Vector>();
@@ -221,19 +236,16 @@ TEMPLATE_TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVecto
         auto bench = ankerl::nanobench::Bench{};
         auto rng = ankerl::nanobench::Rng{};
 
-        auto text = std::vector<uint8_t>{};
-        #ifdef NDEBUG
-        for (size_t i{0}; i<100'000'000; ++i) {
-        #else
-        for (size_t i{0}; i<100'000; ++i) {
-        #endif
-            text.push_back(rng.bounded(4) == 0);
+        for (size_t i{0}; i < 10; ++i) {
+            std::cout << rng.bounded(10) << " ";
         }
+        std::cout << "\n";
 
+        auto const& text = text_time;
         auto vec = Vector{text};
 
-        size_t minEpochIterations = 2'000'000;
-        minEpochIterations = 1;
+        size_t minEpochIterations = 10'000'000;
+//        minEpochIterations = 1;
 
         bench_symbol.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.symbol(rng.bounded(text.size()));
@@ -244,6 +256,54 @@ TEMPLATE_TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVecto
             ankerl::nanobench::doNotOptimizeAway(v);
         });
     }
+}
+
+namespace {
+struct BenchSize {
+    struct Entry {
+        std::string name;
+        size_t      size;
+        size_t      text_size;
+        double      bits_per_char;
+        double      relative{};
+    };
+
+    void addEntry(Entry e) {
+        entries.push_back(e);
+        entries.back().relative = double(entries.back().size) / entries[0].size * 100.;
+    }
+
+    std::vector<Entry> entries;
+
+    ~BenchSize() {
+        if (entries.empty()) return;
+        auto lines = std::vector<std::string>{};
+        lines.resize(entries.size());
+
+        auto addColumn = [&]<typename T>(std::format_string<T&, size_t&> fmt, T BenchSize::Entry::*ptr) {
+            size_t longestLine{};
+            for (size_t i{0}; i < lines.size(); ++i) {
+                size_t x = 1;
+                auto t = std::format(fmt, entries[i].*ptr, x);
+                longestLine = std::max(longestLine, t.size());
+            }
+            for (size_t i{0}; i < lines.size(); ++i) {
+                auto t = std::format(fmt, entries[i].*ptr, longestLine);
+                lines[i] = std::format("{} | {}", lines[i], t);
+            }
+        };
+
+        addColumn("{:> {}.1f}%", &BenchSize::Entry::relative);
+        addColumn("{:> {}}", &BenchSize::Entry::size);
+        addColumn("{:> {}.3f}", &BenchSize::Entry::bits_per_char);
+        addColumn("{:<{}}", &BenchSize::Entry::name);
+
+        for (size_t i{0}; i < lines.size(); ++i) {
+            std::cout << lines[i] << "\n";
+        }
+    }
+};
+BenchSize benchSize;
 }
 
 TEMPLATE_TEST_CASE("benchmark bit vectors memory consumption", "[BitVector][!benchmark][size]", ALLBITVECTORS) {
@@ -269,7 +329,13 @@ TEMPLATE_TEST_CASE("benchmark bit vectors memory consumption", "[BitVector][!ben
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(vec);
             auto s = ofs.str().size();
-            std::cout << vector_name << " - file size: " << s << "bytes, " << (s*8)/double(text.size()) << "bits/char\n";
+            benchSize.addEntry({
+                .name = vector_name,
+                .size = s,
+                .text_size = text.size(),
+                .bits_per_char = (s*8)/double(text.size())
+            });
+//            std::cout << vector_name << " - file size: " << s << "bytes, " << (s*8)/double(text.size()) << "bits/char\n";
         }
 
     }
