@@ -465,4 +465,13 @@ template <size_t Sigma>
 using Double512EPRV8 = DoubleNEPRV8<Sigma, 512>;
 static_assert(checkRankVector<Double512EPRV8>);
 
+template <size_t Sigma>
+using Double1024EPRV8 = DoubleNEPRV8<Sigma, 1024>;
+static_assert(checkRankVector<Double1024EPRV8>);
+
+template <size_t Sigma>
+using Double2048EPRV8 = DoubleNEPRV8<Sigma, 2048>;
+static_assert(checkRankVector<Double2048EPRV8>);
+
+
 }
