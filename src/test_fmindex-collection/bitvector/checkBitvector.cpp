@@ -236,11 +236,6 @@ TEMPLATE_TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVecto
         auto bench = ankerl::nanobench::Bench{};
         auto rng = ankerl::nanobench::Rng{};
 
-        for (size_t i{0}; i < 10; ++i) {
-            std::cout << rng.bounded(10) << " ";
-        }
-        std::cout << "\n";
-
         auto const& text = text_time;
         auto vec = Vector{text};
 
@@ -335,7 +330,6 @@ TEMPLATE_TEST_CASE("benchmark bit vectors memory consumption", "[BitVector][!ben
                 .text_size = text.size(),
                 .bits_per_char = (s*8)/double(text.size())
             });
-//            std::cout << vector_name << " - file size: " << s << "bytes, " << (s*8)/double(text.size()) << "bits/char\n";
         }
 
     }
