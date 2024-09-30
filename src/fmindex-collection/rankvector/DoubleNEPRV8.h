@@ -36,7 +36,7 @@ struct DoubleNEPRV8 {
         uint8_t symbol(uint64_t idx) const {
             uint8_t symb{};
             for (uint64_t i{bitct}; i > 0; --i) {
-                auto b = (bits[i-1] >> idx).test(0);
+                auto b = bits[i-1].test(idx);
                 symb = (symb<<1) | b;
             }
             return symb;
