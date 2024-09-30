@@ -77,9 +77,11 @@ struct Sdsl_wt_bldc {
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
         std::array<uint64_t, Sigma> rs{0};
         std::array<uint64_t, Sigma> prs{0};
+        size_t a{};
         for (size_t i{0}; i < Sigma; ++i) {
             rs[i] = rank(idx, i);
-            prs[i] = prefix_rank(idx, i);
+            a += rs[i];
+            prs[i] = a;
         }
         return {rs, prs};
     }
