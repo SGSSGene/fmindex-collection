@@ -16,6 +16,8 @@
 
 #include <iostream>
 
+#include "../ternarylogic.h"
+
 namespace fmindex_collection::rankvector {
 
 template <size_t TSigma, size_t popcount_width, typename blockL0_t = uint16_t, typename blockL1_t = uint32_t>
@@ -71,15 +73,20 @@ struct DoubleNEPRV8 {
 
         uint64_t signed_rank(uint64_t idx, uint8_t symb) const {
             assert(idx < popcount_width*2);
-            auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>) {
-                return flip_masks[(symb>>I) & 1] ^ bits[I];
-            };
+            if constexpr (bitct == 3 && false) {
+                auto mask = ternarylogic<popcount_width>(symb, bits[2], bits[1], bits[0]);
+                return signed_rshift_and_count(mask, idx);
+            } else {
+                auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>) {
+                    return flip_masks[(symb>>I) & 1] ^ bits[I];
+                };
 
-            auto mask = [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
-                return (f(std::integer_sequence<uint64_t, Is>{})&...);
-            }(std::make_integer_sequence<uint64_t, bitct>{});
+                auto mask = [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
+                    return (f(std::integer_sequence<uint64_t, Is>{})&...);
+                }(std::make_integer_sequence<uint64_t, bitct>{});
 
-            return signed_rshift_and_count(mask, idx);
+                return signed_rshift_and_count(mask, idx);
+            }
         }
 
 
@@ -106,7 +113,8 @@ struct DoubleNEPRV8 {
 
             auto mask = [&]() -> std::bitset<popcount_width> {
                 #if __AVX512F__
-                if constexpr (Sigma == 3) {
+                if constexpr (bitct == 3) {
+                    return ternarylogic<popcount_width>(symb, bits[2], bits[1], bits[0]);
 //                    _mm512_ternarylogic_epi32(
                 }
                 #endif
@@ -121,20 +129,25 @@ struct DoubleNEPRV8 {
 
         uint64_t signed_prefix_rank(uint64_t idx, uint64_t symb) const {
             assert(idx < popcount_width*2);
-            auto mask = [&]() -> std::bitset<popcount_width> {
-                auto mask = std::bitset<popcount_width>{};
-                auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>, uint64_t _symb) {
-                    return flip_masks[(_symb>>I) & 1] ^ bits[I];
-                };
+            if constexpr (bitct == 3) {
+                auto mask = ternarylogic<popcount_width>(symb, bits[2], bits[1], bits[0]);
+                return signed_rshift_and_count(mask, idx);
+            } else {
+                auto mask = [&]() -> std::bitset<popcount_width> {
+                    auto mask = std::bitset<popcount_width>{};
+                    auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>, uint64_t _symb) {
+                        return flip_masks[(_symb>>I) & 1] ^ bits[I];
+                    };
 
-                for (uint64_t i{0}; i <= symb; ++i) {
-                    mask |= [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
-                        return (f(std::integer_sequence<uint64_t, Is>{}, i)&...);
-                    }(std::make_integer_sequence<uint64_t, bitct>{});
-                }
-                return mask;
-            }();
-            return signed_rshift_and_count(mask, idx);
+                    for (uint64_t i{0}; i <= symb; ++i) {
+                        mask |= [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
+                            return (f(std::integer_sequence<uint64_t, Is>{}, i)&...);
+                        }(std::make_integer_sequence<uint64_t, bitct>{});
+                    }
+                    return mask;
+                }();
+                return signed_rshift_and_count(mask, idx);
+            }
         }
 
 
