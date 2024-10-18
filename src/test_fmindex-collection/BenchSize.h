@@ -39,9 +39,9 @@ struct BenchSize {
             }
         };
 
-        addColumn("{:> {}.1f}%", &BenchSize::Entry::relative);
-        addColumn("{:> {}}", &BenchSize::Entry::size);
-        addColumn("{:> {}.3f}", &BenchSize::Entry::bits_per_char);
+        addColumn("{: >{}.1f}%", &BenchSize::Entry::relative);
+        addColumn("{: >{}}", &BenchSize::Entry::size);
+        addColumn("{: >{}.3f}", &BenchSize::Entry::bits_per_char);
         addColumn("{:<{}}", &BenchSize::Entry::name);
 
         for (size_t i{0}; i < lines.size(); ++i) {
