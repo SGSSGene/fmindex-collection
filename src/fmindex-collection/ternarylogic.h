@@ -1,6 +1,9 @@
 #pragma once
 
+#include <array>
 #include <bitset>
+#include <cstdint>
+#include <functional>
 
 template <size_t R, size_t N, typename T=std::bitset<N>>
 auto ternarylogic_impl(T const& a, T const& b, T const& c) -> T {
