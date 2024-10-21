@@ -42,8 +42,8 @@ template <RankVector Vector, StringLiteral Name, StringLiteral Extension>
 struct GenericOccTable {
     static constexpr size_t Sigma = Vector::Sigma;
 
-    Vector                    vector;
-    std::array<size_t, Sigma> C{};
+    Vector                      vector;
+    std::array<size_t, Sigma+1> C{};
 
     GenericOccTable() = default;
     GenericOccTable(std::span<uint8_t const> _symbols)

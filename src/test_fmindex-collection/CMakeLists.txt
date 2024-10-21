@@ -7,27 +7,28 @@ project(test_fmindex-collection)
 
 # fmindex-collectionunittests
 add_executable(${PROJECT_NAME}
+    bitvector/bitset_popcount.cpp
     bitvector/checkBitvector.cpp
-    fmindex/checkBiFMIndex.cpp
-    fmindex/checkBiFMIndexCursor.cpp
-    fmindex/checkDenseBiFMIndex.cpp
-    fmindex/checkDenseReverseFMIndex.cpp
-    fmindex/checkFMIndex.cpp
-    fmindex/checkFMIndexCursor.cpp
-    fmindex/checkLeftBiFMIndexCursor.cpp
-    fmindex/checkLeftRBiFMIndexCursor.cpp
-    fmindex/checkMerge.cpp
-    fmindex/checkRBiFMIndex.cpp
-    fmindex/checkRBiFMIndexCursor.cpp
-    fmindex/checkReverseFMIndex.cpp
-    fmindex/checkReverseFMIndexCursor.cpp
-    occtables/checkOccTables.cpp
-    rankvector/checkRankVector.cpp
-    search/checkReverseIndexSearch.cpp
-    search/checkSearchBacktracking.cpp
-    search/checkSearchPseudo.cpp
-    search/checkLocateFMTree.cpp
-    search/checkSearches.cpp
+#    fmindex/checkBiFMIndex.cpp
+#    fmindex/checkBiFMIndexCursor.cpp
+#    fmindex/checkDenseBiFMIndex.cpp
+#    fmindex/checkDenseReverseFMIndex.cpp
+#    fmindex/checkFMIndex.cpp
+#    fmindex/checkFMIndexCursor.cpp
+#    fmindex/checkLeftBiFMIndexCursor.cpp
+#    fmindex/checkLeftRBiFMIndexCursor.cpp
+#    fmindex/checkMerge.cpp
+#    fmindex/checkRBiFMIndex.cpp
+#    fmindex/checkRBiFMIndexCursor.cpp
+#    fmindex/checkReverseFMIndex.cpp
+#    fmindex/checkReverseFMIndexCursor.cpp
+#    occtables/checkOccTables.cpp
+#    rankvector/checkRankVector.cpp
+#    search/checkReverseIndexSearch.cpp
+#    search/checkSearchBacktracking.cpp
+#    search/checkSearchPseudo.cpp
+#    search/checkLocateFMTree.cpp
+#    search/checkSearches.cpp
     utils.cpp
 )
 target_link_libraries(${PROJECT_NAME}

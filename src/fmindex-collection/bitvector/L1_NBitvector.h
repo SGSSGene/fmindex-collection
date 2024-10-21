@@ -180,10 +180,14 @@ using L1_64Bitvector  = L1_NBitvector<64>;
 using L1_128Bitvector = L1_NBitvector<128>;
 using L1_256Bitvector = L1_NBitvector<256>;
 using L1_512Bitvector = L1_NBitvector<512>;
+using L1_1024Bitvector = L1_NBitvector<1024>;
+using L1_2048Bitvector = L1_NBitvector<2048>;
 
 static_assert(BitVector_c<L1_64Bitvector>);
 static_assert(BitVector_c<L1_128Bitvector>);
 static_assert(BitVector_c<L1_256Bitvector>);
 static_assert(BitVector_c<L1_512Bitvector>);
+static_assert(BitVector_c<L1_1024Bitvector>);
+static_assert(BitVector_c<L1_2048Bitvector>);
 
 }

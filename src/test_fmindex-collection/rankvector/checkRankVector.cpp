@@ -6,6 +6,7 @@
 #include <fstream>
 #include <nanobench.h>
 
+#include "../BenchSize.h"
 #include "allRankVectors.h"
 
 #if __has_include(<cxxabi.h>)
@@ -399,6 +400,7 @@ struct Benchs {
 }
 
 static auto benchs_256 = Benchs{};
+static auto benchSize_256 = BenchSize{};
 
 TEMPLATE_TEST_CASE("benchmark vectors c'tor", "[RankVector][!benchmark][256][time][ctor][.]", ALLRANKVECTORS(256)) {
     using Vector = TestType;
@@ -519,13 +521,19 @@ TEMPLATE_TEST_CASE("benchmark vectors alphabet=256 size", "[RankVector][!benchma
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(vec);
             auto s = ofs.str().size();
-            std::cout << vector_name << " - file size: " << s << "bytes, " << s/double(text.size()) << "bytes/char\n";
+            benchSize_256.addEntry({
+                .name = vector_name,
+                .size = s,
+                .text_size = text.size(),
+                .bits_per_char = (s*8)/double(text.size())
+            });
         }
     }
 }
 
 
 static auto benchs_5 = Benchs{};
+static auto benchSize_5 = BenchSize{};
 
 TEMPLATE_TEST_CASE("benchmark vectors c'tor) operation, dna4 like", "[RankVector][!benchmark][5][time][ctor][.]", ALLRANKVECTORS(5)) {
     using Vector = TestType;
@@ -646,13 +654,19 @@ TEMPLATE_TEST_CASE("benchmark vectors alphabet=5 (dna4 like) in size", "[RankVec
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(vec);
             auto s = ofs.str().size();
-            std::cout << vector_name << " - file size: " << s << "bytes, " << s/double(text.size()) << "bytes/char\n";
+            benchSize_5.addEntry({
+                .name = vector_name,
+                .size = s,
+                .text_size = text.size(),
+                .bits_per_char = (s*8)/double(text.size())
+            });
         }
     }
 }
 
 static auto benchs_6 = Benchs{};
 static auto benchs_6_text = std::vector<uint8_t>{};
+static auto benchSize_bwt = BenchSize{};
 TEMPLATE_TEST_CASE("benchmark vectors c'tor operation, on human dna5 data", "[RankVector][bwt][!benchmark][time][ctor][.]", ALLRANKVECTORS(6)) {
     using Vector = TestType;
     if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<6>>) {
@@ -818,6 +832,11 @@ TEMPLATE_TEST_CASE("benchmark vectors size, on human dna5 data", "[RankVector][b
         auto archive = cereal::BinaryOutputArchive{ofs};
         archive(vec);
         auto s = ofs.str().size();
-        std::cout << vector_name << " - file size: " << s << "bytes, " << s/double(text.size()) << "bytes/char\n";
+        benchSize_bwt.addEntry({
+            .name = vector_name,
+            .size = s,
+            .text_size = text.size(),
+            .bits_per_char = (s*8)/double(text.size())
+        });
     }
 }
