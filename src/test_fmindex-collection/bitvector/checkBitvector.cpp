@@ -45,6 +45,24 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
             }
         }
 
+        SECTION("test complete vector on symbol()") {
+            CHECK(vec.symbol( 0) == 0);
+            CHECK(vec.symbol( 1) == 1);
+            CHECK(vec.symbol( 2) == 1);
+            CHECK(vec.symbol( 3) == 0);
+            CHECK(vec.symbol( 4) == 0);
+            CHECK(vec.symbol( 5) == 1);
+            CHECK(vec.symbol( 6) == 0);
+            CHECK(vec.symbol( 7) == 1);
+            CHECK(vec.symbol( 8) == 1);
+            CHECK(vec.symbol( 9) == 1);
+            CHECK(vec.symbol(10) == 0);
+            CHECK(vec.symbol(11) == 0);
+            CHECK(vec.symbol(12) == 0);
+            CHECK(vec.symbol(13) == 1);
+        }
+
+
         SECTION("test complete vector on rank()") {
             CHECK(vec.rank( 0) == 0);
             CHECK(vec.rank( 1) == 0);

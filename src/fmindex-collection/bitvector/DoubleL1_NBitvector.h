@@ -118,7 +118,10 @@ struct DoubleL1_NBitvector {
 
         auto right = (superblockId%2);
         auto count = signed_rshift_and_count(bits[superblockId], bitId);
-        return l0[superblockId/2] + (right*2-1) * count;
+
+        // Implicit conversions, because emcc can't handle over/underflow correctly
+        auto ct = static_cast<int64_t>(l0[superblockId/2]) + (static_cast<int64_t>(right)*2-1) * static_cast<int64_t>(count);
+        return ct;
     }
 
     template <typename Archive>
