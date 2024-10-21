@@ -121,7 +121,23 @@ struct DoubleL1_NBitvector {
         auto right = (superblockId%2);
         auto count = signed_rshift_and_count(bits[superblockId], bitId);
 
+        fmt::print("mask: ");
+        for (size_t i{0}; i < bits_ct; ++i) {
+            auto const& mask = signed_rightshift_masks<bits_ct>[bitId];
+            fmt::print("{}", int(mask.test(i)));
+        } fmt::print("\n");
+
+        fmt::print("b & m: ");
+        for (size_t i{0}; i < bits_ct; ++i) {
+            auto const& mask = signed_rightshift_masks<bits_ct>[bitId];
+            auto c = bits[superblockId] & mask;
+            fmt::print("{}", int(c.test(i)));
+        } fmt::print("\n");
+
+
+
         fmt::print("{} {} {} {}\n", bitId, superblockId, right, count);
+        fmt::print("bits: ");
         for (size_t i{0}; i < bits_ct; ++i) {
             fmt::print("{}", int(bits[superblockId].test(i)));
         }
