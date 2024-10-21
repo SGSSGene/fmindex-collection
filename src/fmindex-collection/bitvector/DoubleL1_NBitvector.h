@@ -19,6 +19,8 @@
 #include <cereal/types/bitset.hpp>
 #endif
 
+#include <fmt/format.h>
+
 namespace fmindex_collection::bitvector {
 
 /**
@@ -119,8 +121,15 @@ struct DoubleL1_NBitvector {
         auto right = (superblockId%2);
         auto count = signed_rshift_and_count(bits[superblockId], bitId);
 
+        fmt::print("{} {} {} {}\n", bitId, superblockId, right, count);
+        for (size_t i{0}; i < bits_ct; ++i) {
+            fmt::print("{}", int(bits[superblockId].test(i)));
+        }
+        fmt::print("\n");
+
         // Implicit conversions, because emcc can't handle over/underflow correctly
         auto ct = static_cast<int64_t>(l0[superblockId/2]) + (static_cast<int64_t>(right)*2-1) * static_cast<int64_t>(count);
+        fmt::print("{} = {} + {} * {}\n", ct, l0[superblockId/2], right*2-1, count);
         return ct;
     }
 
