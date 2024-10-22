@@ -6,6 +6,7 @@
 #include <fstream>
 #include <nanobench.h>
 
+#include "../BenchSize.h"
 #include "allBitVectors.h"
 
 #if __has_include(<cxxabi.h>)
@@ -43,6 +44,24 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
                 CHECK(vec.symbol(i) == bool(text.at(i)));
             }
         }
+
+        SECTION("test complete vector on symbol()") {
+            CHECK(vec.symbol( 0) == 0);
+            CHECK(vec.symbol( 1) == 1);
+            CHECK(vec.symbol( 2) == 1);
+            CHECK(vec.symbol( 3) == 0);
+            CHECK(vec.symbol( 4) == 0);
+            CHECK(vec.symbol( 5) == 1);
+            CHECK(vec.symbol( 6) == 0);
+            CHECK(vec.symbol( 7) == 1);
+            CHECK(vec.symbol( 8) == 1);
+            CHECK(vec.symbol( 9) == 1);
+            CHECK(vec.symbol(10) == 0);
+            CHECK(vec.symbol(11) == 0);
+            CHECK(vec.symbol(12) == 0);
+            CHECK(vec.symbol(13) == 1);
+        }
+
 
         SECTION("test complete vector on rank()") {
             CHECK(vec.rank( 0) == 0);
@@ -210,6 +229,21 @@ TEMPLATE_TEST_CASE("benchmark bit vectors ctor run times", "[BitVector][!benchma
     }
 }
 
+static auto seed = ankerl::nanobench::Rng{0}();
+static auto text_time = []() -> std::vector<uint8_t> {
+    auto rng = ankerl::nanobench::Rng{seed};
+
+    auto text = std::vector<uint8_t>{};
+    #ifdef NDEBUG
+    for (size_t i{0}; i<10'000'000; ++i) {
+    #else
+    for (size_t i{0}; i<100'000; ++i) {
+    #endif
+        text.push_back(rng.bounded(4) == 0);
+    }
+    return text;
+}();
+
 TEMPLATE_TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!benchmark][time]", ALLBITVECTORS) {
     using Vector = TestType;
     auto vector_name = getName<Vector>();
@@ -221,19 +255,11 @@ TEMPLATE_TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVecto
         auto bench = ankerl::nanobench::Bench{};
         auto rng = ankerl::nanobench::Rng{};
 
-        auto text = std::vector<uint8_t>{};
-        #ifdef NDEBUG
-        for (size_t i{0}; i<100'000'000; ++i) {
-        #else
-        for (size_t i{0}; i<100'000; ++i) {
-        #endif
-            text.push_back(rng.bounded(4) == 0);
-        }
-
+        auto const& text = text_time;
         auto vec = Vector{text};
 
-        size_t minEpochIterations = 2'000'000;
-        minEpochIterations = 1;
+        size_t minEpochIterations = 10'000'000;
+//        minEpochIterations = 1;
 
         bench_symbol.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
             auto v = vec.symbol(rng.bounded(text.size()));
@@ -244,6 +270,10 @@ TEMPLATE_TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVecto
             ankerl::nanobench::doNotOptimizeAway(v);
         });
     }
+}
+
+namespace {
+BenchSize benchSize;
 }
 
 TEMPLATE_TEST_CASE("benchmark bit vectors memory consumption", "[BitVector][!benchmark][size]", ALLBITVECTORS) {
@@ -269,7 +299,12 @@ TEMPLATE_TEST_CASE("benchmark bit vectors memory consumption", "[BitVector][!ben
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(vec);
             auto s = ofs.str().size();
-            std::cout << vector_name << " - file size: " << s << "bytes, " << (s*8)/double(text.size()) << "bits/char\n";
+            benchSize.addEntry({
+                .name = vector_name,
+                .size = s,
+                .text_size = text.size(),
+                .bits_per_char = (s*8)/double(text.size())
+            });
         }
 
     }

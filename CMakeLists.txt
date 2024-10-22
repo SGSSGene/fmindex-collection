@@ -30,7 +30,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
 endif()
 
 if (PROJECT_IS_TOP_LEVEL)
-    CPMAddPackage("gh:fmtlib/fmt#11.0.1@11.0.1")
+    CPMAddPackage("gh:fmtlib/fmt#cc2ba8f9ede4e5ae3262f43f3e4d07a22a9acdfc@11.0.2.1")
     CPMAddPackage("gh:catchorg/Catch@3.6.0")
     CPMAddPackage("gh:SGSSGene/nanobench@4.3.11-2")
     set(BUILD_DOC OFF)
@@ -60,6 +60,19 @@ if (PROJECT_IS_TOP_LEVEL)
         fmt::fmt-header-only
         cereal::cereal
     )
+
+    # example executable
+    add_executable(search_scheme_generator
+        src/search_scheme_generator/main.cpp
+    )
+
+    target_link_libraries(search_scheme_generator
+        PRIVATE
+        fmindex-collection::fmindex-collection
+        fmt::fmt-header-only
+        cereal::cereal
+    )
+
 
 
     # easyExample executable

@@ -27,10 +27,12 @@ namespace fmindex_collection::bitvector {
  *   (64) For 128bits, we need 192bits, resulting in 1.5bits per bit
  *   (128) for 256bits, we need 320bits, resulting in 1.25bits per bit
  *   (256) for 512bits, we need 576bits, resulting in 1.125bits per bit
+ *   (512) for 1024bits, we need 1088bits, resulting in 1.0625bits per bit
+ *   (1024) for 2048bits, we need 2112bits, resulting in 1.0312bits per bit
  */
 template <size_t bits_ct>
 struct DoubleL1_NBitvector {
-    std::vector<uint64_t> superblocks{0};
+    std::vector<uint64_t> l0{0};
     std::vector<std::bitset<bits_ct>> bits{0};
     size_t totalLength{};
 
@@ -58,14 +60,14 @@ struct DoubleL1_NBitvector {
             for (size_t i{}; i < bits_ct; ++i) {
                 bool value         = *(iter++);
                 bits.back()[i]     = value;
-                superblocks.back() += value;
+                l0.back() += value;
             }
             bits.emplace_back();
-            superblocks.emplace_back(superblocks.back());
+            l0.emplace_back(l0.back());
             for (size_t i{}; i < bits_ct; ++i) {
                 bool value         = *(iter++);
                 bits.back()[i]     = value;
-                superblocks.back() += value;
+                l0.back() += value;
             }
             bits.emplace_back();
         }
@@ -79,7 +81,7 @@ struct DoubleL1_NBitvector {
     auto operator=(DoubleL1_NBitvector&&) noexcept -> DoubleL1_NBitvector& = default;
 
     void reserve(size_t _length) {
-        superblocks.reserve((_length+1)/(bits_ct*2) + 1);
+        l0.reserve((_length+1)/(bits_ct*2) + 1);
         bits.reserve(_length/bits_ct + 1);
     }
 
@@ -87,13 +89,13 @@ struct DoubleL1_NBitvector {
         if (_value) {
             auto bitId         = totalLength % bits_ct;
             bits.back()[bitId] = _value;
-            superblocks.back() += _value;
+            l0.back() += _value;
         }
         totalLength += 1;
         if (totalLength % (bits_ct*2) == 0) { // new superblock
             bits.emplace_back();
         } else if (totalLength % (bits_ct*2) == bits_ct) { // new superblock
-            superblocks.emplace_back(superblocks.back());
+            l0.emplace_back(l0.back());
             bits.emplace_back();
         }
 
@@ -111,31 +113,26 @@ struct DoubleL1_NBitvector {
     }
 
     uint64_t rank(size_t idx) const noexcept {
-        auto bitId        = idx % bits_ct;
+        auto bitId = idx % (bits_ct*2);
         auto superblockId = idx / bits_ct;
 
-        if (superblockId % 2 == 0) {
-            auto count = rshift_and_count(bits[superblockId], bitId);
+        auto right = (superblockId%2);
+        auto count = signed_rshift_and_count(bits[superblockId], bitId);
 
-            return superblocks[superblockId/2]
-                    - count;
-        } else {
-            auto count = lshift_and_count(bits[superblockId], bits_ct - bitId);
-
-            return superblocks[superblockId/2]
-                    + count;
-        }
+        // Implicit conversions, because emcc can't handle over/underflow correctly
+        auto ct = static_cast<int64_t>(l0[superblockId/2]) + (static_cast<int64_t>(right)*2-1) * static_cast<int64_t>(count);
+        return ct;
     }
 
     template <typename Archive>
     void save(Archive& ar) const {
-        ar(superblocks, totalLength);
+        ar(l0, totalLength);
         saveBV(bits, ar);
     }
 
     template <typename Archive>
     void load(Archive& ar) {
-        ar(superblocks, totalLength);
+        ar(l0, totalLength);
         loadBV(bits, ar);
     }
 
@@ -144,10 +141,14 @@ using DoubleL1_64Bitvector  = DoubleL1_NBitvector<64>;
 using DoubleL1_128Bitvector = DoubleL1_NBitvector<128>;
 using DoubleL1_256Bitvector = DoubleL1_NBitvector<256>;
 using DoubleL1_512Bitvector = DoubleL1_NBitvector<512>;
+using DoubleL1_1024Bitvector = DoubleL1_NBitvector<1024>;
+using DoubleL1_2048Bitvector = DoubleL1_NBitvector<2048>;
 
 static_assert(BitVector_c<DoubleL1_64Bitvector>);
 static_assert(BitVector_c<DoubleL1_128Bitvector>);
 static_assert(BitVector_c<DoubleL1_256Bitvector>);
 static_assert(BitVector_c<DoubleL1_512Bitvector>);
+static_assert(BitVector_c<DoubleL1_1024Bitvector>);
+static_assert(BitVector_c<DoubleL1_2048Bitvector>);
 
 }
