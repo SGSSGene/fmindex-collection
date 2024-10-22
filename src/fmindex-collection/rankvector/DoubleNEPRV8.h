@@ -16,6 +16,8 @@
 
 #include <iostream>
 
+#include "../ternarylogic.h"
+
 namespace fmindex_collection::rankvector {
 
 template <size_t TSigma, size_t popcount_width, typename blockL0_t = uint16_t, typename blockL1_t = uint32_t>
@@ -36,7 +38,7 @@ struct DoubleNEPRV8 {
         uint8_t symbol(uint64_t idx) const {
             uint8_t symb{};
             for (uint64_t i{bitct}; i > 0; --i) {
-                auto b = (bits[i-1] >> idx).test(0);
+                auto b = bits[i-1].test(idx);
                 symb = (symb<<1) | b;
             }
             return symb;
@@ -62,29 +64,92 @@ struct DoubleNEPRV8 {
             return lshift_and_count(mask, popcount_width-idx);
         }
 
+        static inline std::array<std::bitset<popcount_width>, 2> flip_masks = []() {
+            auto r = std::array<std::bitset<popcount_width>, 2>{};
+            r[0].flip();
+            return r;
+        }();
+
+
+        uint64_t signed_rank(uint64_t idx, uint8_t symb) const {
+            assert(idx < popcount_width*2);
+            if constexpr (bitct == 3 && false) {
+                auto mask = ternarylogic<popcount_width>(symb, bits[2], bits[1], bits[0]);
+                return signed_rshift_and_count(mask, idx);
+            } else {
+                auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>) {
+                    return flip_masks[(symb>>I) & 1] ^ bits[I];
+                };
+
+                auto mask = [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
+                    return (f(std::integer_sequence<uint64_t, Is>{})&...);
+                }(std::make_integer_sequence<uint64_t, bitct>{});
+
+                return signed_rshift_and_count(mask, idx);
+            }
+        }
+
+
         template <bool reverse=false>
         uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
             assert(idx < popcount_width);
-            auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>, uint64_t _symb) {
-                if (_symb & (1<<I)) {
-                    return bits[I];
-                } else {
-                    return ~bits[I];
-                }
-            };
-            auto mask = std::bitset<popcount_width>{};
+            auto fallback_mask = [&]() -> std::bitset<popcount_width> {
+                auto mask = std::bitset<popcount_width>{};
+                auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>, uint64_t _symb) {
+                    if (_symb & (1<<I)) {
+                        return bits[I];
+                    } else {
+                        return ~bits[I];
+                    }
+                };
 
-            for (uint64_t i{0}; i <= symb; ++i) {
-                mask |= [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
-                    return (f(std::integer_sequence<uint64_t, Is>{}, i)&...);
-                }(std::make_integer_sequence<uint64_t, bitct>{});
-            }
+                for (uint64_t i{0}; i <= symb; ++i) {
+                    mask |= [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
+                        return (f(std::integer_sequence<uint64_t, Is>{}, i)&...);
+                    }(std::make_integer_sequence<uint64_t, bitct>{});
+                }
+                return mask;
+            };
+
+            auto mask = [&]() -> std::bitset<popcount_width> {
+                #if __AVX512F__
+                if constexpr (bitct == 3) {
+                    return ternarylogic<popcount_width>(symb, bits[2], bits[1], bits[0]);
+//                    _mm512_ternarylogic_epi32(
+                }
+                #endif
+                return fallback_mask();
+            }();
 
             if constexpr (reverse) {
                 return rshift_and_count(mask, idx);
             }
             return lshift_and_count(mask, popcount_width-idx);
         }
+
+        uint64_t signed_prefix_rank(uint64_t idx, uint64_t symb) const {
+            assert(idx < popcount_width*2);
+            if constexpr (bitct == 3) {
+                auto mask = ternarylogic<popcount_width>(symb, bits[2], bits[1], bits[0]);
+                return signed_rshift_and_count(mask, idx);
+            } else {
+                auto mask = [&]() -> std::bitset<popcount_width> {
+                    auto mask = std::bitset<popcount_width>{};
+                    auto f = [&]<uint64_t I>(std::integer_sequence<uint64_t, I>, uint64_t _symb) {
+                        return flip_masks[(_symb>>I) & 1] ^ bits[I];
+                    };
+
+                    for (uint64_t i{0}; i <= symb; ++i) {
+                        mask |= [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
+                            return (f(std::integer_sequence<uint64_t, Is>{}, i)&...);
+                        }(std::make_integer_sequence<uint64_t, bitct>{});
+                    }
+                    return mask;
+                }();
+                return signed_rshift_and_count(mask, idx);
+            }
+        }
+
 
         template <bool reverse=false>
         auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
@@ -112,6 +177,35 @@ struct DoubleNEPRV8 {
             }
             return rs;
         }
+
+
+        template <bool reverse=false>
+        auto signed_all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
+            assert(idx < popcount_width*2);
+
+            auto rs = std::array<uint64_t, TSigma>{0};
+
+            auto bits2 = bits;
+            for (auto& b : bits2) {
+                b = b & signed_rightshift_masks<popcount_width>[idx];
+            }
+
+            auto f = [&]<uint64_t I>(uint64_t _symb, std::integer_sequence<uint64_t, I>) {
+                return flip_masks[(_symb>>I) & 1] ^ bits2[I];
+            };
+
+            for (uint64_t i{0}; i < TSigma; ++i) {
+                auto mask = [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
+                    return (f(i, std::integer_sequence<uint64_t, Is>{})&...);
+                }(std::make_integer_sequence<uint64_t, bitct>{});
+                rs[i] = mask.count();
+            }
+            return rs;
+        }
+
+
+
+
 
         template <bool reverse=false>
         auto rank_symbol(uint64_t idx) const -> std::tuple<uint64_t, uint64_t> {
@@ -281,7 +375,9 @@ struct DoubleNEPRV8 {
         auto level0Id     = idx >> popcount_width_bits;
         auto level1Id     = idx >> level0_size;
         auto superBlockId = idx >> level1_size;
+        #if 0
         auto bitId        = idx &  (popcount_width - 1);
+
         if ((idx / popcount_width) % 2 == 1) {
             return  size_t{}
                     + bits[level0Id].rank(bitId, symb)
@@ -295,6 +391,16 @@ struct DoubleNEPRV8 {
                     + superBlocks[superBlockId][symb]
                     - bits[level0Id].template rank</*reverse = */true>(bitId, symb);
         }
+        #else
+        auto bitId        = idx &  (popcount_width*2 - 1);
+        auto sign         = (level0Id % 2)*2-1;
+        return  size_t{}
+                + bits[level0Id].signed_rank(bitId, symb)*sign
+                + level0[level0Id/2][symb]
+                + level1[level1Id][symb]
+                + superBlocks[superBlockId][symb];
+        #endif
+
     }
 
     uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
@@ -303,10 +409,10 @@ struct DoubleNEPRV8 {
         auto level0Id     = idx >>  popcount_width_bits;
         auto level1Id     = idx >> level0_size;
         auto superBlockId = idx >> level1_size;
+        #if 0
         auto bitId        = idx &  (popcount_width - 1);
-        uint64_t a={};
-
         if ((idx / popcount_width) % 2 == 1) {
+            uint64_t a={};
             for (uint64_t i{0}; i <= symb; ++i) {
                 a += size_t{}
                      + level0[level0Id/2][i]
@@ -316,6 +422,7 @@ struct DoubleNEPRV8 {
             }
             return a + bits[level0Id].prefix_rank(bitId, symb);
         } else {
+            uint64_t a={};
             for (uint64_t i{0}; i <= symb; ++i) {
                 a += size_t{}
                      + level0[level0Id/2][i]
@@ -325,8 +432,20 @@ struct DoubleNEPRV8 {
             }
             auto c = bits[level0Id].template prefix_rank</*reverse = */true>(bitId, symb);
             return a - c;
+        }
+        #else
+        auto bitId        = idx &  (popcount_width*2 - 1);
+        auto sign         = (level0Id % 2)*2-1;
+        uint64_t a={};
+        for (uint64_t i{0}; i <= symb; ++i) {
+            a += size_t{}
+                 + level0[level0Id/2][i]
+                 + level1[level1Id][i]
+                 + superBlocks[superBlockId][i];
 
         }
+        return a + bits[level0Id].signed_prefix_rank(bitId, symb)*sign;
+        #endif
     }
 
 
@@ -336,6 +455,7 @@ struct DoubleNEPRV8 {
         auto level0Id     = idx >>  popcount_width_bits;
         auto level1Id     = idx >> level0_size;
         auto superBlockId = idx >> level1_size;
+        #if 0
         auto bitId        = idx &  (popcount_width - 1);
         auto res = std::array<uint64_t, TSigma>{};
         if ((idx / popcount_width) % 2 == 1) {
@@ -354,6 +474,19 @@ struct DoubleNEPRV8 {
             }
 
         }
+        #else
+        auto bitId        = idx &  (popcount_width*2 - 1);
+        auto sign         = (level0Id % 2)*2-1;
+        //auto res = std::array<uint64_t, TSigma>{};
+        auto res = bits[level0Id].signed_all_ranks(bitId);
+        for (uint64_t symb{0}; symb < TSigma; ++symb) {
+            res[symb] =   level0[level0Id/2][symb]
+                        + level1[level1Id][symb]
+                        + superBlocks[superBlockId][symb]
+                        + res[symb]*sign;
+        }
+
+        #endif
         return res;
     }
 
@@ -363,10 +496,11 @@ struct DoubleNEPRV8 {
         auto level0Id     = idx >>  popcount_width_bits;
         auto level1Id     = idx >> level0_size;
         auto superBlockId = idx >> level1_size;
-        auto bitId        = idx &  (popcount_width - 1);
 
         auto prs = std::array<uint64_t, TSigma>{};
 
+    #if 0
+        auto bitId        = idx &  (popcount_width - 1);
         if ((idx / popcount_width) % 2 >= 1) {
             auto rs = bits[level0Id].all_ranks(bitId);
 
@@ -405,6 +539,26 @@ struct DoubleNEPRV8 {
             }
             return {rs, prs};
         }
+    #else
+        auto bitId        = idx &  (popcount_width*2 - 1);
+        auto sign         = (level0Id % 2)*2-1;
+        //auto res = std::array<uint64_t, TSigma>{};
+        auto res = bits[level0Id].signed_all_ranks(bitId);
+        for (uint64_t symb{0}; symb < TSigma; ++symb) {
+            res[symb] =   level0[level0Id/2][symb]
+                        + level1[level1Id][symb]
+                        + superBlocks[superBlockId][symb]
+                        + res[symb]*sign;
+            if (symb > 0) {
+                prs[symb] = prs[symb-1] + res[symb];
+            } else {
+                prs[symb] = 0;
+            }
+        }
+        return {res, prs};
+
+
+    #endif
     }
 
     uint64_t rank_symbol(uint64_t idx) const {
@@ -464,5 +618,14 @@ static_assert(checkRankVector<Double256EPRV8>);
 template <size_t Sigma>
 using Double512EPRV8 = DoubleNEPRV8<Sigma, 512>;
 static_assert(checkRankVector<Double512EPRV8>);
+
+template <size_t Sigma>
+using Double1024EPRV8 = DoubleNEPRV8<Sigma, 1024>;
+static_assert(checkRankVector<Double1024EPRV8>);
+
+template <size_t Sigma>
+using Double2048EPRV8 = DoubleNEPRV8<Sigma, 2048>;
+static_assert(checkRankVector<Double2048EPRV8>);
+
 
 }
