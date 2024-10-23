@@ -5,6 +5,7 @@
 #include <search_schemes/generator/backtracking.h>
 #include <search_schemes/generator/bestKnown.h>
 #include <search_schemes/generator/h2.h>
+#include <search_schemes/generator/hato.h>
 #include <search_schemes/generator/kianfar.h>
 #include <search_schemes/generator/kucherov.h>
 #include <search_schemes/generator/optimum.h>
@@ -54,6 +55,13 @@ TEST_CASE("check search scheme generator h2", "[isValid][h2]") {
                 CHECK(ss::isValid(gen::h2(N, minK, maxK)));
             }
         }
+    }
+}
+
+TEST_CASE("check search scheme generator hato", "[isValid][hato]") {
+    // hato only exists for certain k's
+    for (size_t k{0}; k < 8; ++k) {
+        CHECK(ss::isValid(gen::kianfar(k)));
     }
 }
 
