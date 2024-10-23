@@ -1,0 +1,71 @@
+{
+  "format_version": "1",
+  "packages": [
+    {
+      "name": "libsais",
+      "version": "2.8.5",
+      "github_repository": "IlyaGrebnov/libsais",
+      "options": [
+        "LIBSAIS_USE_OPENMP ${OpenMP_C_FOUND}",
+        "LIBSAIS_BUILD_SHARED_LIB OFF"
+      ]
+    },
+    {
+      "if": "FMC_USE_SDSL",
+      "name": "sdsl-lite",
+      "version": "3.0.3",
+      "github_repository": "xxsds/sdsl-lite",
+      "download_only": true,
+      "cmake_commands": [
+        "add_library(sdsl-lite INTERFACE)",
+        "target_include_directories(sdsl-lite INTERFACE SYSTEM ${CPM_CURRENT_SOURCE_DIR}/include)",
+        "add_library(sdsl-lite::sdsl-lite ALIAS sdsl-lite)"
+      ],
+      "git_tag_ignore": [
+        "[Cc]++.*"
+      ]
+    },
+    {
+      "if": "PROJECT_IS_TOP_LEVEL",
+      "name": "fmt",
+      "version": "11.0.2.1",
+      "github_repository": "fmtlib/fmt",
+      "git_tag": "cc2ba8f9ede4e5ae3262f43f3e4d07a22a9acdfc"
+    },
+    {
+      "if": "PROJECT_IS_TOP_LEVEL",
+      "name": "Catch2",
+      "version": "3.7.1",
+      "github_repository": "catchorg/Catch2"
+    },
+    {
+      "if": "PROJECT_IS_TOP_LEVEL",
+      "name": "nanobench",
+      "version": "4.3.11",
+      "github_repository": "martinus/nanobench"
+    },
+    {
+      "if": "PROJECT_IS_TOP_LEVEL",
+      "name": "cereal",
+      "version": "1.3.2",
+      "github_repository": "USCiLab/cereal",
+      "options": [
+        "BUILD_DOC OFF",
+        "BUILD_SANDBOX OFF",
+        "SKIP_PERFORMANCE_COMPARISON ON"
+      ]
+    },
+    {
+      "if": "PROJECT_IS_TOP_LEVEL",
+      "name": "reflect",
+      "version": "1.2.4",
+      "github_repository": "boost-ext/reflect",
+      "cmake_commands": [
+        "add_library(reflect INTERFACE)",
+        "target_include_directories(reflect SYSTEM INTERFACE ${CPM_CURRENT_SOURCE_DIR})",
+        "target_compile_options(reflect INTERFACE -std=c++20)",
+        "add_library(reflect::reflect ALIAS reflect)"
+      ]
+    }
+  ]
+}
