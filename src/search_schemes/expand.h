@@ -137,8 +137,6 @@ inline auto expandUpperBound(std::vector<size_t> const& pi, std::vector<size_t> 
     return expandUpperBound(pi, bound, counts);
 }
 
-
-
 inline auto expand(Search s, size_t newLen) -> std::optional<Search> {
     auto r = Search{};
     r.pi = expandPI(s.pi, newLen);
@@ -232,6 +230,26 @@ auto expandByWNC(Scheme ss, size_t _newLen, size_t sigma, size_t N) -> Scheme {
     }
 
     return expand(ss, counts);
+}
+
+inline auto limitToHamming(Search s) -> Search {
+    auto len = s.pi.size();
+    // limit can only be increased by one
+    for (size_t i{len-1}; i>0; --i) {
+        if (s.l[i] == 0) break;
+        s.l[i-1] = std::max(s.l[i-1], s.l[i]-1);
+    }
+    // upper limit can only be increased by one
+    for (size_t i{1}; i < len; ++i) {
+        s.u[i] = std::min(s.u[i], s.u[i-1]+1);
+    }
+    return s;
+}
+inline auto limitToHamming(Scheme ss) -> Scheme {
+    for (auto& s : ss) {
+        s = limitToHamming(s);
+    }
+    return ss;
 }
 
 }
