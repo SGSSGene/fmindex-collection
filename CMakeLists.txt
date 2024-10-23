@@ -3,15 +3,7 @@
 # SPDX-License-Identifier: CC0-1.0
 cmake_minimum_required (VERSION 3.25)
 
-
-# check if this is the main project
-if (NOT DEFINED PROJECT_NAME)
-    set(ROOT_PROJECT TRUE)
-else ()
-    set(ROOT_PROJECT FALSE)
-endif ()
-
-project(fmindex-collection LANGUAGES CXX
+project(fmindex-collection LANGUAGES CXX C
                             DESCRIPTION "fmindex-collection -- Datastructures and Algorithms for (Bi-)FMIndices and Approximate Pattern Matching")
 
 option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${PROJECT_IS_TOP_LEVEL})
@@ -24,26 +16,14 @@ endif()
 
 find_package(OpenMP QUIET)
 include(cmake/CPM.cmake)
+CPMAddPackage("gh:SGSSGene/cpm.dependencies@1.0.0")
+CPMLoadDependenciesFile("${CMAKE_CURRENT_SOURCE_DIR}/cpm.dependencies")
 include(fmindex_collection-config.cmake)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
     target_compile_options(libsais PRIVATE -fp-model=strict -fno-strict-aliasing)
 endif()
 
 if (PROJECT_IS_TOP_LEVEL)
-    CPMAddPackage("gh:fmtlib/fmt#cc2ba8f9ede4e5ae3262f43f3e4d07a22a9acdfc@11.0.2.1")
-    CPMAddPackage("gh:catchorg/Catch@3.6.0")
-    CPMAddPackage("gh:SGSSGene/nanobench@4.3.11-2")
-    set(BUILD_DOC OFF)
-    set(BUILD_SANDBOX OFF)
-    set(SKIP_PERFORMANCE_COMPARISON ON)
-    CPMAddPackage("gh:USCiLab/cereal@1.3.2")
-    CPMAddPackage("gh:boost-ext/reflect@1.2.2")
-    if (reflect_ADDED)
-        add_library(reflect INTERFACE)
-        target_include_directories(reflect SYSTEM INTERFACE ${reflect_SOURCE_DIR})
-        add_library(reflect::reflect ALIAS reflect)
-    endif()
-
     enable_testing()
     add_subdirectory(src/test_fmindex-collection)
     add_subdirectory(src/test_search_schemes)
