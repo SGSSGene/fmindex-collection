@@ -6,6 +6,7 @@
 #include "backtracking.h"
 #include "bestKnown.h"
 #include "h2.h"
+#include "hato.h"
 #include "kianfar.h"
 #include "kucherov.h"
 #include "optimum.h"
@@ -84,6 +85,10 @@ inline auto all = []() {
     add({ .name        = "h2-k3",
           .description = "designed by gottlieb, divided into k+3 pieces",
           .generator   = []([[maybe_unused]] int minError, [[maybe_unused]] int maxError, [[maybe_unused]] int sigma, [[maybe_unused]] int dbSize) { return h2(maxError+3, minError, maxError); }
+    });
+    add({ .name        = "hato",
+          .description = "designed by hato",
+          .generator   = []([[maybe_unused]] int minError, [[maybe_unused]] int maxError, [[maybe_unused]] int sigma, [[maybe_unused]] int dbSize) { return hato(maxError); }
     });
     return res;
 }();

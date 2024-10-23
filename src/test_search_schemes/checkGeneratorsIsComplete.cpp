@@ -5,6 +5,7 @@
 #include <search_schemes/generator/backtracking.h>
 #include <search_schemes/generator/bestKnown.h>
 #include <search_schemes/generator/h2.h>
+#include <search_schemes/generator/hato.h>
 #include <search_schemes/generator/kianfar.h>
 #include <search_schemes/generator/kucherov.h>
 #include <search_schemes/generator/optimum.h>
@@ -54,6 +55,13 @@ TEST_CASE("check search scheme generator h2 for completness", "[isComplete][h2]"
                 CHECK(ss::isComplete(gen::h2(N, minK, maxK), minK, maxK));
             }
         }
+    }
+}
+
+TEST_CASE("check search scheme generator hato for completness", "[isComplete][hato]") {
+    for (size_t maxK{0}; maxK < 8; ++maxK) {
+        INFO("maxK " << maxK);
+        CHECK(ss::isComplete(gen::hato(maxK), 0, maxK));
     }
 }
 
