@@ -28,9 +28,9 @@
     {
       "if": "PROJECT_IS_TOP_LEVEL",
       "name": "fmt",
-      "version": "11.0.2",
+      "version": "11.0.2.1",
       "github_repository": "fmtlib/fmt",
-      "git_tag": "{VERSION}"
+      "git_tag": "cc2ba8f9ede4e5ae3262f43f3e4d07a22a9acdfc"
     },
     {
       "if": "PROJECT_IS_TOP_LEVEL",
