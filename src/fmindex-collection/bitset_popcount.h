@@ -1,3 +1,5 @@
+//SPDX-FileCopyrightText: 2024 Simon Gene Gottlieb
+//SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
 #include <array>

@@ -1,3 +1,6 @@
+//SPDX-FileCopyrightText: Tristen Brown
+//SPDX-License-Identifier: MIT
+
 // Dot separated values. E.g. IP addresses or version numbers.
 Tablesort.extend('dotsep', function(item) {
   return /^(\d+\.)+\d+$/.test(item);
