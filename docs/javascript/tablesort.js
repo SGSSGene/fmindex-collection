@@ -1,3 +1,6 @@
+//SPDX-FileCopyrightText: Tristen Brown
+//SPDX-License-Identifier: MIT
+
 ;(function() {
   function Tablesort(el, options) {
     if (!(this instanceof Tablesort)) return new Tablesort(el, options);

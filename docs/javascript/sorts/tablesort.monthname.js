@@ -1,3 +1,6 @@
+//SPDX-FileCopyrightText: Tristen Brown
+//SPDX-License-Identifier: MIT
+
 (function(){
 
   Tablesort.extend('monthname', function(item) {

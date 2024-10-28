@@ -21,7 +21,6 @@ target_link_libraries(${PROJECT_NAME}
     libsais
     search_schemes::search_schemes
     cereal::cereal
-    fmt::fmt
 )
 
 if (FMC_USE_SDSL)

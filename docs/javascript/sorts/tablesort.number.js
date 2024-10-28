@@ -1,3 +1,6 @@
+//SPDX-FileCopyrightText: Tristen Brown
+//SPDX-License-Identifier: MIT
+
 (function(){
   var cleanNumber = function(i) {
     return i.replace(/[^\-?0-9.]/g, '');
