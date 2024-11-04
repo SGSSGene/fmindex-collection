@@ -28,7 +28,7 @@ jobs:
           - {os: ubuntu-22.04, compiler: gcc14-cpp20-release-open_issue}
     steps:
       - name: Standard IV-project testing
-        uses: iv-project/IVaction@v9.21
+        uses: iv-project/IVaction@v9.22
         with:
           compiler: ${{ matrix.compiler }}
           threads: 2
