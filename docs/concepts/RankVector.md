@@ -74,7 +74,7 @@ All implementation are located inside the namespace `fmindex_collection::rankvec
 | `#!c++ EPRV5`                              | Similar to `EPRV3` but using one additional layer of blocks. (8bit and 16bit). |
 | `#!c++ DenseEPRV6`                         | Same as `EPRV5` but using a dense vector for the super blocks instead of 64bit values. (Not worth it). |
 | `#!c++ InterleavedEPRV7`                   | Similar to `EPRV5` but blocks and lowest layer are interleaved. |
-| `#!c++ InterleavedWavelet`                 | Special version of Wavelet-trees (!TODO I think this was a combination fo EPR and Wavelet, not sure)|
+| `#!c++ InterleavedWavelet`                 | Special version of Wavelet-trees (!TODO I think this was a combination of EPR and Wavelet, not sure)|
 | `#!c++ RLE`                                | (!TODO some parameters are missing) |
 | `#!c++ rRLE`                               | (!TODO some parameters are missing) |
 | `#!c++ Sdsl_wt_bldc`                       | Wrapper of the Wavelet-Tree implementation of the SDSL library. |

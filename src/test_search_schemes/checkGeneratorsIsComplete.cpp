@@ -18,7 +18,7 @@
 namespace ss = search_schemes;
 namespace gen = ss::generator;
 
-TEST_CASE("check search scheme generator backtracking for completness", "[isComplete][backtracking]") {
+TEST_CASE("check search scheme generator backtracking for completeness", "[isComplete][backtracking]") {
     for (size_t N{1}; N < 10; ++N) { // Number of pieces
         INFO("N " << N);
         for (size_t minK{0}; minK < 5ull; ++minK) {
@@ -31,7 +31,7 @@ TEST_CASE("check search scheme generator backtracking for completness", "[isComp
     }
 }
 
-TEST_CASE("check search scheme generator bestKnown for completness", "[isComplete][bestKnown]") {
+TEST_CASE("check search scheme generator bestKnown for completeness", "[isComplete][bestKnown]") {
     for (size_t N{1}; N < 10; ++N) { // Number of pieces
         INFO("N " << N);
         for (size_t minK{0}; minK < 5ull; ++minK) {
@@ -44,7 +44,7 @@ TEST_CASE("check search scheme generator bestKnown for completness", "[isComplet
     }
 }
 
-TEST_CASE("check search scheme generator h2 for completness", "[isComplete][h2]") {
+TEST_CASE("check search scheme generator h2 for completeness", "[isComplete][h2]") {
     // Note N must be larger than maxK
     for (size_t N{1}; N < 10ull; ++N) { // Number of pieces
         INFO("N " << N);
@@ -58,21 +58,21 @@ TEST_CASE("check search scheme generator h2 for completness", "[isComplete][h2]"
     }
 }
 
-TEST_CASE("check search scheme generator hato for completness", "[isComplete][hato]") {
+TEST_CASE("check search scheme generator hato for completeness", "[isComplete][hato]") {
     for (size_t maxK{0}; maxK < 8; ++maxK) {
         INFO("maxK " << maxK);
         CHECK(ss::isComplete(gen::hato(maxK), 0, maxK));
     }
 }
 
-TEST_CASE("check search scheme generator kianfar for completness", "[isComplete][kianfar]") {
+TEST_CASE("check search scheme generator kianfar for completeness", "[isComplete][kianfar]") {
     // Kianfar only exists for certain k's
     for (size_t k{0}; k < 4; ++k) {
         CHECK(ss::isComplete(gen::kianfar(k), 0, k));
     }
 }
 
-TEST_CASE("check search scheme generator kucherov for completness", "[isComplete][kucherov]") {
+TEST_CASE("check search scheme generator kucherov for completeness", "[isComplete][kucherov]") {
     // Kucherov only exists for certain N and k combinations
     for (size_t k{0}; k < 5; ++k) {
         CHECK(ss::isComplete(gen::kucherov(k+1, k), 0, k));
@@ -82,7 +82,7 @@ TEST_CASE("check search scheme generator kucherov for completness", "[isComplete
     }
 }
 
-TEST_CASE("check search scheme generator optimum for completness", "[isComplete][optimum]") {
+TEST_CASE("check search scheme generator optimum for completeness", "[isComplete][optimum]") {
     for (size_t minK{0}; minK < 4; ++minK) {
         for (size_t maxK{minK}; maxK < 4; ++maxK) {
             CHECK(ss::isComplete(gen::optimum(minK, maxK), minK, maxK));
@@ -90,7 +90,7 @@ TEST_CASE("check search scheme generator optimum for completness", "[isComplete]
     }
 }
 
-TEST_CASE("check search scheme generator pigeon for completness", "[isComplete][pigeon]") {
+TEST_CASE("check search scheme generator pigeon for completeness", "[isComplete][pigeon]") {
     for (size_t minK{0}; minK < 10; ++minK) {
         for (size_t maxK{minK}; maxK < 10; ++maxK) {
             CHECK(ss::isComplete(gen::pigeon_trivial(minK, maxK), minK, maxK));
@@ -103,7 +103,7 @@ TEST_CASE("check search scheme generator pigeon for completness", "[isComplete][
     }
 }
 
-TEST_CASE("check search scheme generator suffixFilter for completness", "[isComplete][suffixFilter]") {
+TEST_CASE("check search scheme generator suffixFilter for completeness", "[isComplete][suffixFilter]") {
     // Note N must be larger than maxK
     for (size_t N{1}; N < 10; ++N) { // Number of pieces
         INFO("N " << N);
@@ -117,7 +117,7 @@ TEST_CASE("check search scheme generator suffixFilter for completness", "[isComp
     }
 }
 
-TEST_CASE("check search scheme generator 01*0 (zeroOnesZero) for completness", "[isComplete][zeroOnesZero]") {
+TEST_CASE("check search scheme generator 01*0 (zeroOnesZero) for completeness", "[isComplete][zeroOnesZero]") {
     for (size_t minK{0}; minK < 10; ++minK) {
         for (size_t maxK{minK}; maxK < 10; ++maxK) {
             CHECK(ss::isComplete(gen::zeroOnesZero_trivial(minK, maxK), minK, maxK));
