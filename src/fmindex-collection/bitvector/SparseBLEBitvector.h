@@ -67,7 +67,7 @@ struct SparseBLEBitvector {
             if constexpr (!CompressOnes) {
                 if (first) allTheSame = false; // Don't compress ones
             } else {
-                if (!first) allTheSame = false; // Don't compres zeros
+                if (!first) allTheSame = false; // Don't compress zeros
             }
             indicatorBitvector.push_back(allTheSame);
             if (!allTheSame) {

@@ -17,7 +17,7 @@ functionality:
 | `#!c++ T(size_t length, Proj proj)`           |             |
 | `#!c++ auto size() const -> size_t`           | Returns the number of bits of this vector. |
 | `#!c++ auto symbol(size_t idx) const -> bool` | Returns the bit at position `idx`. Parameter must be 0 ≤ idx < size(). |
-| `#!c++ auto rank(size_t idx) const -> bool`   | Returns the number of ones in the first `idx` bits. Paremeter must be 0 ≤ idx ≤ size(). |
+| `#!c++ auto rank(size_t idx) const -> bool`   | Returns the number of ones in the first `idx` bits. Parameter must be 0 ≤ idx ≤ size(). |
 
 ## Examples usages
 === "Construction and Usage"
