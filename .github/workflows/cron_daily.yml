@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 # SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 # SPDX-License-Identifier: CC0-1.0
-name: "Daily CI - check main has tag"
+name: "Daily CI - check CPM versions"
 
 on:
   schedule:
@@ -11,7 +11,7 @@ env:
   TZ: Europe/Berlin
 
 concurrency:
-  group: daily_check_tag
+  group: daily
   cancel-in-progress: true
 
 jobs:
@@ -23,6 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - {os: ubuntu-22.04, compiler: cpm_update_version}
           - {os: ubuntu-22.04, compiler: check_tag-open_issue}
     steps:
       - name: Standard IV-project testing
@@ -31,4 +32,4 @@ jobs:
           compiler: ${{ matrix.compiler }}
           threads: 2
           cmake_flags: ${{ matrix.cmake_flags }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
