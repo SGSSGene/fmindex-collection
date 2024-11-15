@@ -81,9 +81,7 @@ struct Search {
         // cursors extended by one character
         auto cursors = std::array<cursor_t, Sigma>{};
         if (e+1 <= u[pos]) {
-            for (size_t i{1}; i < Sigma; ++i) {
-                cursors[i] = extend(cur, i, pos);
-            }
+            cursors = extend(cur, pos);
         } else {
             cursors[rank] = extend(cur, rank, pos);
         }
