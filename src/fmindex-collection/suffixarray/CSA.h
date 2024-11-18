@@ -75,10 +75,7 @@ struct CSA {
 
     template <typename T>
     CSA(std::vector<T> sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false)
-        : bv {sa.size(), [&](size_t idx) {
-            return (sa[idx] % samplingRate) == 0;
-        }}
-        , seqCount{_inputSizes.size()}
+        : seqCount{_inputSizes.size()}
     {
         size_t longestSequence = std::accumulate(_inputSizes.begin(), _inputSizes.end(), size_t{}, [](size_t lhs, auto rhs) {
             return std::max(lhs, rhs);
@@ -100,12 +97,14 @@ struct CSA {
 
         // Construct sampled suffix array
         size_t ssaI{}; // Index of the ssa that is inside of sa
+        bv.reserve((sa.size()+samplingRate-1) / samplingRate);
         for (size_t i{0}; i < sa.size(); ++i) {
-            bool sample = (sa[i] % samplingRate) == 0;
-            if (sample) {
+            auto [subjId, subjPos] = [&]() -> std::tuple<size_t, size_t> {
                 // find subject id
                 auto iter = std::upper_bound(accInputSizes.begin(), accInputSizes.end(), sa[i]);
                 size_t subjId = std::distance(accInputSizes.begin(), iter) - 1;
+
+                // compute subj position
                 auto subjPos = sa[i] - accInputSizes[subjId];
                 if (reverse) {
                     auto len = _inputSizes[subjId];
@@ -115,9 +114,28 @@ struct CSA {
                         subjPos = len;
                     }
                 }
+                return {subjId, subjPos};
+            }();
+
+            //bool sample = (sa[i] % samplingRate) == 0;
+            bool sample = (subjPos % samplingRate) == 0;
+            if (sample) {
+                // find subject id
+/*                auto iter = std::upper_bound(accInputSizes.begin(), accInputSizes.end(), sa[i]);
+                size_t subjId = std::distance(accInputSizes.begin(), iter) - 1;
+                auto subjPos = sa[i] - accInputSizes[subjId];
+                if (reverse) {
+                    auto len = _inputSizes[subjId];
+                    if (subjPos < len-1) {
+                        subjPos = len - subjPos - 1;
+                    } else {
+                        subjPos = len;
+                    }
+                }*/
                 sa[ssaI] = subjPos | (subjId << bitsForPosition);
                 ++ssaI;
             }
+            bv.push_back(sample);
         }
         sa.resize(ssaI);
         if constexpr (std::same_as<T, uint64_t>) {

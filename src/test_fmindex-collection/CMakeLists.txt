@@ -11,6 +11,7 @@ add_executable(${PROJECT_NAME}
     bitvector/checkBitvector.cpp
     fmindex/checkBiFMIndex.cpp
     fmindex/checkBiFMIndexCursor.cpp
+    fmindex/checkCSA.cpp
     fmindex/checkDenseBiFMIndex.cpp
     fmindex/checkDenseReverseFMIndex.cpp
     fmindex/checkFMIndex.cpp

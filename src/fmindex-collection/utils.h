@@ -275,4 +275,21 @@ auto reconstructText(Index const& index) -> std::vector<std::vector<uint8_t>> {
     return res;
 }
 
+namespace test {
+
+/**
+ * unittest helper function
+ */
+inline auto createInputData(std::vector<std::string> args) -> std::vector<std::vector<uint8_t>> {
+    auto ret = std::vector<std::vector<uint8_t>>{};
+    for (auto const& s : args) {
+        ret.emplace_back();
+        for (auto c : s) {
+            ret.back().push_back(static_cast<uint8_t>(c));
+        }
+    }
+    return ret;
+}
+}
+
 }
