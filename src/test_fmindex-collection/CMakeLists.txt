@@ -31,6 +31,7 @@ add_executable(${PROJECT_NAME}
     search/checkLocateFMTree.cpp
     search/checkSearches.cpp
     utils.cpp
+    search/checkSearchHammingSM.cpp
 )
 target_link_libraries(${PROJECT_NAME}
     Catch2::Catch2WithMain

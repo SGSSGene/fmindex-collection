@@ -171,6 +171,7 @@ void search(index_t const & index, queries_t && queries, search_schemes_t const 
 
     for (qidx = {0}; qidx < queries.size(); ++qidx) {
         for (size_t j{0}; j < search_scheme.size(); ++j) {
+            assert(queries[qidx].size() == search_scheme[j].pi.size()); // search scheme must have same length as query
             Search<EditDistance, std::decay_t<decltype(index)>, std::decay_t<decltype(search_scheme[j])>, std::decay_t<decltype(queries[qidx])>, std::decay_t<decltype(internal_delegate)>> {index, search_scheme[j], queries[qidx], internal_delegate};
         }
     }

@@ -112,7 +112,6 @@ struct BiFMIndexCursor {
         newCursor.prefetchRight();
         return newCursor;
     }
-
 };
 
 template <typename Index>
