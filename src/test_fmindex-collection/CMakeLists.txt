@@ -11,6 +11,7 @@ add_executable(${PROJECT_NAME}
     bitvector/checkBitvector.cpp
     fmindex/checkBiFMIndex.cpp
     fmindex/checkBiFMIndexCursor.cpp
+    fmindex/checkCSA.cpp
     fmindex/checkDenseBiFMIndex.cpp
     fmindex/checkDenseReverseFMIndex.cpp
     fmindex/checkFMIndex.cpp
@@ -30,6 +31,7 @@ add_executable(${PROJECT_NAME}
     search/checkLocateFMTree.cpp
     search/checkSearches.cpp
     utils.cpp
+    search/checkSearchHammingSM.cpp
 )
 target_link_libraries(${PROJECT_NAME}
     Catch2::Catch2WithMain
