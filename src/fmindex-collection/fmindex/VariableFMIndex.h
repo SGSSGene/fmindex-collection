@@ -7,6 +7,7 @@
 #include "../occtable/all.h"
 #include "../rankvector/InterleavedBitvector.h"
 #include "../search/SearchNoErrors.h"
+#include "../search/Backtracking.h"
 #include "FMIndex.h"
 
 #include <variant>
@@ -74,7 +75,7 @@ struct VariableFMIndex {
         }
     }
 
-    auto search(std::string const& _query) const {
+    auto search(std::string const& _query, size_t k) const {
         // convert query to compact rank representation
         auto query = std::vector<uint8_t>{};
         query.resize(_query.size());
@@ -94,18 +95,34 @@ struct VariableFMIndex {
             }
         }
 
-        std::visit([&]<typename I>(I const& index) {
-            if constexpr (std::same_as<I, std::monostate>) {
-                return;
-            } else {
-                auto cursor = search_no_errors::search(index, query);
-                for (auto [seqId, pos] : LocateLinear{index, cursor}) {
-                    result.emplace_back(seqId, pos);
+        if (k == 0) {
+            std::visit([&]<typename I>(I const& index) {
+                if constexpr (std::same_as<I, std::monostate>) {
+                    return;
+                } else {
+                    auto cursor = search_no_errors::search(index, query);
+                    for (auto [seqId, pos] : LocateLinear{index, cursor}) {
+                        result.emplace_back(seqId, pos);
+                    }
                 }
-            }
-        }, index);
+            }, index);
+        } else {
+            std::visit([&]<typename I>(I const& index) {
+                if constexpr (std::same_as<I, std::monostate>) {
+                    return;
+                } else {
+                    search_backtracking::search(index, query, k, [&](auto cursor, auto errors) {
+                        (void)errors;
+                        for (auto [seqId, pos] : LocateLinear{index, cursor}) {
+                            result.emplace_back(seqId, pos);
+                        }
+                    });
+                }
+            }, index);
+        }
         return result;
     }
+
 
     template <typename Archive>
     void save(Archive& ar) const {
