@@ -40,6 +40,8 @@ jobs:
           - {os: ubuntu-22.04, compiler: clang18-cpp20-release}
           - {os: macos-13,     compiler: gcc14-cpp20-release,      cmake_flags: "-DFMC_USE_SDSL=NO"}
           - {os: macos-13,     compiler: clang17-cpp20-release,    cmake_flags: "-DFMC_USE_SDSL=NO"}
+          - {os: macos-14,     compiler: gcc14-cpp20-release,      cmake_flags: "-DFMC_USE_SDSL=NO"}
+          - {os: macos-14,     compiler: clang17-cpp20-release,    cmake_flags: "-DFMC_USE_SDSL=NO"}
           - {os: windows-2022, compiler: msvc-cpp20-release,       cmake_flags: "-DFMC_USE_SDSL=NO"}
           # not running any tests, since it takes to long
           - {os: windows-2022, compiler: msvc-cpp20-debug-notests, cmake_flags: "-DFMC_USE_SDSL=NO"}
