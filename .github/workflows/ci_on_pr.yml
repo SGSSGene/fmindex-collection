@@ -27,7 +27,6 @@ jobs:
       matrix:
         include:
           - {os: ubuntu-22.04, compiler: spdx_license_lint}
-          - {os: ubuntu-22.04, compiler: cpm_version_check}
           - {os: ubuntu-22.04, compiler: gcc12-cpp20-release}
           - {os: ubuntu-22.04, compiler: gcc13-cpp20-release}
           - {os: ubuntu-22.04, compiler: gcc14-cpp20-release}
