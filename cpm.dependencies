@@ -11,6 +11,16 @@
       ]
     },
     {
+      "name": "cereal",
+      "version": "1.3.2",
+      "github_repository": "USCiLab/cereal",
+      "options": [
+        "BUILD_DOC OFF",
+        "BUILD_SANDBOX OFF",
+        "SKIP_PERFORMANCE_COMPARISON ON"
+      ]
+    },
+    {
       "if": "FMC_USE_SDSL",
       "name": "sdsl-lite",
       "version": "3.0.3",
@@ -43,17 +53,6 @@
       "name": "nanobench",
       "version": "4.3.11",
       "github_repository": "martinus/nanobench"
-    },
-    {
-      "if": "PROJECT_IS_TOP_LEVEL",
-      "name": "cereal",
-      "version": "1.3.2",
-      "github_repository": "USCiLab/cereal",
-      "options": [
-        "BUILD_DOC OFF",
-        "BUILD_SANDBOX OFF",
-        "SKIP_PERFORMANCE_COMPARISON ON"
-      ]
     },
     {
       "if": "PROJECT_IS_TOP_LEVEL",
