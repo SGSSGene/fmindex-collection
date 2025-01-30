@@ -41,4 +41,8 @@ target_link_libraries(${PROJECT_NAME}
     fmt::fmt
 )
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_link_options(${PROJECT_NAME} PUBLIC /STACK:4194304)
+endif()
+
 add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})
