@@ -9,6 +9,21 @@
 
 #include <algorithm>
 
+#define GCC_COMPILER (defined(__GNUC__) && !defined(__clang__))
+
+#if defined(__GNUC__) && !defined(__clang__) && defined(__MACH__)
+    #define WORKAROUND_GCC_MACOS14
+#else
+#endif
+
+//!WORKAROUND: only triggers on macos-14 with gcc
+#ifdef WORKAROUND_GCC_MACOS14
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
+
+
+
 namespace fmindex_collection {
 
 template <OccTable Table, SuffixArray_c TCSA = CSA>
@@ -174,3 +189,6 @@ struct BiFMIndex {
 };
 
 }
+#ifdef WORKAROUND_GCC_MACOS14
+    #pragma GCC diagnostic pop
+#endif
