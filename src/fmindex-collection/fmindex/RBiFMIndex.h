@@ -68,7 +68,7 @@ struct RBiFMIndex {
         }());
 
         // create BurrowsWheelerTransform and CompressedSuffixArray
-        auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
+        auto [bwt, csa] = [&]() {
             auto sa  = createSA64(inputText, threadNbr);
             auto bwt = createBWT64(inputText, sa);
             auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
