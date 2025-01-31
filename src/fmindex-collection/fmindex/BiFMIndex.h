@@ -9,6 +9,21 @@
 
 #include <algorithm>
 
+#define GCC_COMPILER (defined(__GNUC__) && !defined(__clang__))
+
+#if defined(__GNUC__) && !defined(__clang__) && defined(__MACH__)
+    #define WORKAROUND_GCC_MACOS14
+#else
+#endif
+
+//!WORKAROUND: only triggers on macos-14 with gcc
+#ifdef WORKAROUND_GCC_MACOS14
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
+
+
+
 namespace fmindex_collection {
 
 template <OccTable Table, SuffixArray_c TCSA = CSA>
@@ -81,7 +96,7 @@ struct BiFMIndex {
 
         if (totalSize < std::numeric_limits<int32_t>::max()) { // only 32bit SA required
             // create BurrowsWheelerTransform and CompressedSuffixArray
-            auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
+            auto [bwt, csa] = [&]() {
                 auto sa  = createSA32(inputText, threadNbr);
                 auto bwt = createBWT32(inputText, sa);
                 auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
@@ -89,7 +104,7 @@ struct BiFMIndex {
             }();
 
             // create BurrowsWheelerTransform on reversed text
-            auto bwtRev = [&, &inputText=inputText]() {
+            auto bwtRev = [&]() {
                 std::ranges::reverse(inputText);
                 auto saRev  = createSA32(inputText, threadNbr);
                 auto bwtRev = createBWT32(inputText, saRev);
@@ -101,7 +116,7 @@ struct BiFMIndex {
             *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
         } else { // required 64bit SA required
             // create BurrowsWheelerTransform and CompressedSuffixArray
-            auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
+            auto [bwt, csa] = [&]() {
                 auto sa  = createSA64(inputText, threadNbr);
                 auto bwt = createBWT64(inputText, sa);
                 auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
@@ -109,7 +124,7 @@ struct BiFMIndex {
             }();
 
             // create BurrowsWheelerTransform on reversed text
-            auto bwtRev = [&, &inputText=inputText]() {
+            auto bwtRev = [&]() {
                 std::ranges::reverse(inputText);
                 auto saRev  = createSA64(inputText, threadNbr);
                 auto bwtRev = createBWT64(inputText, saRev);
@@ -174,3 +189,6 @@ struct BiFMIndex {
 };
 
 }
+#ifdef WORKAROUND_GCC_MACOS14
+    #pragma GCC diagnostic pop
+#endif

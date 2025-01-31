@@ -95,6 +95,15 @@ struct DenseCSA {
             largestText = std::max(largestText, len);
         }
 
+        // Construct bit vector, indicating sequence start in text
+        auto textSeqStart = bitvector::CompactBitvector{};
+        for (auto sizes : _inputSizes) {
+            textSeqStart.push_back(true);
+            for (size_t i{1}; i < sizes; ++i) {
+                textSeqStart.push_back(false);
+            }
+        }
+
         // Construct sampled suffix array
         size_t bitsForPos   = std::max(size_t{1}, size_t(std::ceil(std::log2(largestText))));
         seqCount = _inputSizes.size();
@@ -103,11 +112,11 @@ struct DenseCSA {
         ssaPos.reserve(sa.size() / samplingRate);
         ssaSeq.reserve(sa.size() / samplingRate);
         for (size_t i{0}; i < sa.size(); ++i) {
-            bool sample = (sa[i] % samplingRate) == 0;
-            if (sample) {
+            auto [subjId, subjPos] = [&]() -> std::tuple<size_t, size_t> {
                 // find subject id
-                auto iter = std::upper_bound(accInputSizes.begin(), accInputSizes.end(), sa[i]);
-                size_t subjId = std::distance(accInputSizes.begin(), iter) - 1;
+                auto subjId = textSeqStart.rank(sa[i]+1) - 1;
+
+                // compute subj position
                 auto subjPos = sa[i] - accInputSizes[subjId];
                 if (reverse) {
                     auto len = _inputSizes[subjId];
@@ -117,14 +126,16 @@ struct DenseCSA {
                         subjPos = len;
                     }
                 }
+                return {subjId, subjPos};
+            }();
+
+            bool sample = (subjPos % samplingRate) == 0;
+            if (sample) {
                 ssaSeq.push_back(subjId);
                 ssaPos.push_back(subjPos);
             }
+            bv.push_back(sample);
         }
-
-        this->bv  = bitvector::CompactBitvector{sa.size(), [&](size_t idx) {
-            return (sa[idx] % samplingRate) == 0;
-        }};
     }
 
 
