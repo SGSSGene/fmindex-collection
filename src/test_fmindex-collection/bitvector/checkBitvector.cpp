@@ -149,6 +149,34 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
             }
         }
     }
+
+    SECTION("very longer text") {
+        srand(0);
+        auto text = std::vector<uint8_t>{};
+        auto rank = std::vector<size_t>{0};
+        for (size_t i{}; i < 65536ull*10; ++i) {
+            text.push_back(rand()%2);
+            rank.push_back(rank.back() + text.back());
+        }
+
+        auto vec = Vector{text};
+        REQUIRE(vec.size() == text.size());
+
+        SECTION("check that symbol() call works") {
+            for (size_t i{0}; i < text.size(); ++i) {
+                INFO(i);
+                CHECK(vec.symbol(i) == bool(text.at(i)));
+            }
+        }
+
+        SECTION("test complete vector on rank()") {
+            for (size_t i{0}; i < text.size(); ++i) {
+                INFO(i);
+                CHECK(vec.rank(i) == rank.at(i));
+            }
+        }
+    }
+
     SECTION("serialization/deserialization") {
         auto input = std::vector<uint8_t>{0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1};
         SECTION("serialize") {

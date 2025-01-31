@@ -110,6 +110,7 @@ struct Bitvector {
     }
 
     bool symbol(size_t idx) const noexcept {
+        assert(idx <= totalLength);
         auto bitId        = idx % 64;
         auto blockId      = idx / 64;
         auto bit = (bits[blockId] >> bitId) & 1;
@@ -117,17 +118,24 @@ struct Bitvector {
     }
 
     uint64_t rank(size_t idx) const noexcept {
+        assert(idx <= totalLength);
         auto bitId        = idx % 64;
         auto blockId      = idx / 64;
         auto superblockId = blockId / 4;
-        if (idx % 64 == 0) return superblocks[superblockId] + blocks[blockId];
+        if (idx % 64 == 0) {
+            auto r = superblocks[superblockId] + blocks[blockId];
+            assert(r <= idx);
+            return r;
+        }
 
         auto maskedBits = (bits[blockId] << (64 - bitId));
         auto bitcount   = std::bitset<64>{maskedBits}.count();
 
-        return superblocks[superblockId]
+        auto r = superblocks[superblockId]
                 + blocks[blockId]
                 + bitcount;
+        assert(r <= idx);
+        return r;
     }
 
     template <typename Archive>

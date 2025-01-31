@@ -27,7 +27,7 @@ namespace fmindex_collection::bitvector {
  */
 template <size_t bits_ct, size_t bits_ct2>
 struct DoubleL1L2_NBitvector {
-    std::vector<uint64_t> l0{0};
+    std::vector<uint64_t> l0{0, 0};
     std::vector<uint16_t> l1{0};
     std::vector<std::bitset<bits_ct>> bits{0};
     size_t totalLength{};
@@ -77,7 +77,7 @@ struct DoubleL1L2_NBitvector {
     auto operator=(DoubleL1L2_NBitvector&&) noexcept -> DoubleL1L2_NBitvector& = default;
 
     void reserve(size_t _length) {
-        l0.reserve((_length+1)/(bits_ct*2) + 1);
+        l0.reserve((_length+1)/(bits_ct) + 1);
         l1.reserve((_length+1)/(bits_ct2*2) + 1);
         bits.reserve(_length/bits_ct + 1);
     }
@@ -90,9 +90,9 @@ struct DoubleL1L2_NBitvector {
             l1.back() += _value;
         }
         totalLength += 1;
-        if (totalLength % (bits_ct2*2) == bits_ct2) { // new l0 block
+        if (totalLength % bits_ct2 == 0) { // new l0 block
             l0.emplace_back(l0.back());
-            l1.emplace_back();
+            l1.back() = 0;
             bits.emplace_back();
         } else if (totalLength % (bits_ct*2) == bits_ct) { // new l1 block
             l1.emplace_back(l1.back());
@@ -107,6 +107,7 @@ struct DoubleL1L2_NBitvector {
     }
 
     bool symbol(size_t idx) const noexcept {
+        assert(idx < totalLength);
         auto bitId = idx % bits_ct;
         auto l1Id  = idx / bits_ct;
         auto bit = bits[l1Id][bitId];
@@ -114,16 +115,18 @@ struct DoubleL1L2_NBitvector {
     }
 
     uint64_t rank(size_t idx) const noexcept {
+        assert(idx <= totalLength);
         auto bitId = idx % (bits_ct*2);
         auto l1Id = idx / bits_ct;
         auto l0Id = idx / bits_ct2;
 
         auto right_l1 = (l1Id%2);
-        auto right_l0 = (l0Id%2);
 
         auto count = signed_rshift_and_count(bits[l1Id], bitId);
 
-        return l0[l0Id/2] + (right_l0*2-1) * l1[l1Id/2] + (right_l1*2-1) * count;
+        auto r = l0[l0Id] + l1[l1Id/2] + (right_l1*2-1) * count;
+        assert(r <= idx);
+        return r;
     }
 
     template <typename Archive>

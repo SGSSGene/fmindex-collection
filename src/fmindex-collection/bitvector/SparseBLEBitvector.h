@@ -85,6 +85,7 @@ struct SparseBLEBitvector {
     }
 
     bool symbol(size_t idx) const noexcept {
+        assert(idx < size());
         if (idx >= totalLength) {
             return trailing[idx-totalLength];
         }
@@ -102,7 +103,9 @@ struct SparseBLEBitvector {
     }
 
     uint64_t rank(size_t idx) const noexcept {
-        if (idx >= totalLength) {
+        if (idx == 0) return 0;
+        assert(idx <= size());
+        if (idx > totalLength) {
             auto r = uncompressedBitvector.rank(uncompressedBitvector.size());
             if constexpr (CompressOnes) {
                 auto compBlocks = indicatorBitvector.rank(indicatorBitvector.size());
@@ -111,13 +114,14 @@ struct SparseBLEBitvector {
             for (size_t i{0}; i < idx-totalLength; ++i) {
                 r += trailing[i];
             }
+            assert(r <= idx);
             return r;
         }
 
         auto blockId        = idx >> BlockLengthE;
 
-        // If target block is compressed
-        if (indicatorBitvector.symbol(blockId)) {
+        // If perfect multiple of blocks OR target block is compressed
+        if (idx % (1 << BlockLengthE) == 0 || indicatorBitvector.symbol(blockId)) {
             auto compBlocks     = indicatorBitvector.rank(blockId);
             auto detailedSymbId = ((idx >> BlockLengthE) - compBlocks) << BlockLengthE;
             auto r = uncompressedBitvector.rank(detailedSymbId);
@@ -126,6 +130,7 @@ struct SparseBLEBitvector {
                 r += (compBlocks * (1 << BlockLengthE));
                 r += idx % (1 << BlockLengthE);
             }
+            assert(r <= idx);
             return r;
         } else {
             auto compBlocks     = indicatorBitvector.rank(blockId);
@@ -134,6 +139,7 @@ struct SparseBLEBitvector {
             if constexpr (CompressOnes) {
                 r += (compBlocks * (1 << BlockLengthE));
             }
+            assert(r <= idx);
             return r;
         }
     }
