@@ -119,10 +119,10 @@ struct SparseBLEBitvector {
         }
 
         auto blockId        = idx >> BlockLengthE;
+        auto compBlocks     = indicatorBitvector.rank(blockId);
 
         // If perfect multiple of blocks OR target block is compressed
         if (idx % (1 << BlockLengthE) == 0 || indicatorBitvector.symbol(blockId)) {
-            auto compBlocks     = indicatorBitvector.rank(blockId);
             auto detailedSymbId = ((idx >> BlockLengthE) - compBlocks) << BlockLengthE;
             auto r = uncompressedBitvector.rank(detailedSymbId);
 
@@ -133,7 +133,6 @@ struct SparseBLEBitvector {
             assert(r <= idx);
             return r;
         } else {
-            auto compBlocks     = indicatorBitvector.rank(blockId);
             auto detailedSymbId = idx - (compBlocks * (1 << BlockLengthE));
             auto r = uncompressedBitvector.rank(detailedSymbId);
             if constexpr (CompressOnes) {
