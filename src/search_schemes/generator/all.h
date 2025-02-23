@@ -9,6 +9,7 @@
 #include "hato.h"
 #include "kianfar.h"
 #include "kucherov.h"
+#include "lam.h"
 #include "optimum.h"
 #include "pigeon.h"
 #include "suffixFilter.h"
@@ -61,6 +62,10 @@ inline auto all = []() {
     add({ .name        = "suffix",
           .description = "based on suffix filter",
           .generator   = []([[maybe_unused]] int minError, [[maybe_unused]] int maxError, [[maybe_unused]] int sigma, [[maybe_unused]] int dbSize) { return suffixFilter(maxError+1, minError, maxError); }
+    });
+    add({ .name        = "lam",
+          .description = "designed by kucherov, firstly designed by lam",
+          .generator   = []([[maybe_unused]] int minError, [[maybe_unused]] int maxError, [[maybe_unused]] int sigma, [[maybe_unused]] int dbSize) { return lam(maxError); }
     });
     add({ .name        = "kianfar",
           .description = "designed by kianfar (?)",
