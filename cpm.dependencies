@@ -51,8 +51,8 @@
     {
       "if": "PROJECT_IS_TOP_LEVEL",
       "name": "nanobench",
-      "version": "4.3.11",
-      "github_repository": "martinus/nanobench"
+      "version": "4.3.11-2",
+      "github_repository": "SGSSGene/nanobench"
     },
     {
       "if": "PROJECT_IS_TOP_LEVEL",

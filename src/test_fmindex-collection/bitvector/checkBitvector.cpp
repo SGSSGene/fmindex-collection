@@ -235,7 +235,6 @@ TEMPLATE_TEST_CASE("benchmark bit vectors ctor run times", "[BitVector][!benchma
     auto& [bench_rank, bench_symbol, bench_ctor] = benchs;
 
     SECTION("benchmarking") {
-        auto bench = ankerl::nanobench::Bench{};
         auto rng = ankerl::nanobench::Rng{};
 
         auto text = std::vector<uint8_t>{};
@@ -280,7 +279,6 @@ TEMPLATE_TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVecto
     auto& [bench_rank, bench_symbol, bench_ctor] = benchs;
 
     SECTION("benchmarking") {
-        auto bench = ankerl::nanobench::Bench{};
         auto rng = ankerl::nanobench::Rng{};
 
         auto const& text = text_time;
@@ -310,7 +308,6 @@ TEMPLATE_TEST_CASE("benchmark bit vectors memory consumption", "[BitVector][!ben
     INFO(vector_name);
 
     SECTION("benchmarking") {
-        auto bench = ankerl::nanobench::Bench{};
         auto rng = ankerl::nanobench::Rng{};
 
         auto text = std::vector<uint8_t>{};
