@@ -26,16 +26,16 @@ namespace fmindex_collection::bitvector {
  * CompactDoubleL1L2_NBitvector a bit vector with only bits and blocks
  *
  */
-template <size_t bits_ct, size_t bits_ct2>
+template <size_t l1_bits_ct, size_t l0_bits_ct>
 struct CompactDoubleL1L2_NBitvector {
+    static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static constexpr size_t word_width_l0 = 64;
-    static constexpr size_t word_width_l1 = std::bit_width(bits_ct2);
-    FixedSuccinctVector<word_width_l0> l0{0, 0};
+    static constexpr size_t word_width_l1 = std::bit_width(l0_bits_ct-l1_bits_ct);
+    FixedSuccinctVector<word_width_l0> l0{0};
     FixedSuccinctVector<word_width_l1> l1{0};
-//    std::vector<uint64_t> l0{0, 0};
-//    std::vector<uint16_t> l1{0};
-    std::vector<std::bitset<bits_ct>> bits{0};
+    std::vector<std::bitset<l1_bits_ct>> bits{0};
     size_t totalLength{};
+    bool finalized{};
 
     CompactDoubleL1L2_NBitvector() = default;
     CompactDoubleL1L2_NBitvector(CompactDoubleL1L2_NBitvector const&) = default;
@@ -54,35 +54,8 @@ struct CompactDoubleL1L2_NBitvector {
         reserve(_range.size());
 
         auto iter = _range.begin();
-
-/*        size_t const loop64  = _range.size() / (bits_ct*2);
-
-        for (size_t l64{}; l64 < loop64; ++l64) {
-            for (size_t i{}; i < bits_ct; ++i) {
-                bool value         = *(iter++);
-                bits.back()[i]     = value;
-                l0.back() += value;
-            }
-            bits.emplace_back();
-            l0.emplace_back(l0.back());
-            for (size_t i{}; i < bits_ct; ++i) {
-                bool value         = *(iter++);
-                bits.back()[i]     = value;
-                l0.back() += value;
-            }
-            bits.emplace_back();
-        }
-        totalLength = bits_ct * (loop64*2);*/
-        size_t acc{};
         while(totalLength < _range.size()) {
-            auto v = *(iter++);
-            acc += v;
-            push_back(v);
-            if (rank(totalLength) != acc) {
-                auto s = rank(totalLength);
-                (void)s;
-            }
-            assert(rank(totalLength) == acc);
+            push_back(*(iter++));
         }
     }
 
@@ -90,30 +63,79 @@ struct CompactDoubleL1L2_NBitvector {
     auto operator=(CompactDoubleL1L2_NBitvector&&) noexcept -> CompactDoubleL1L2_NBitvector& = default;
 
     void reserve(size_t _length) {
-        l0.reserve((_length+1)/(bits_ct) + 1);
-        l1.reserve((_length+1)/(bits_ct2*2) + 1);
-        bits.reserve(_length/bits_ct + 1);
+        l0.reserve(_length/(l1_bits_ct*2) + 2);
+        l1.reserve(_length/(l0_bits_ct*2) + 2);
+        bits.reserve(_length/l1_bits_ct + 2);
     }
 
+    void finalize() const {
+        const_cast<CompactDoubleL1L2_NBitvector*>(this)->impl_finalize();
+    }
+
+    void impl_finalize() {
+        if (finalized) return;
+        finalized = true;
+
+        size_t l0BlockCt = (totalLength + (l0_bits_ct*2)) / (l0_bits_ct*2);
+        size_t l1BlockCt = l0BlockCt * (l0_bits_ct / l1_bits_ct);
+        size_t inbitsCt  = l0BlockCt * ((l0_bits_ct*2) / l1_bits_ct);
+
+        l0.resize(l0BlockCt);
+        l1.resize(l1BlockCt);
+        bits.resize(inbitsCt);
+
+        constexpr size_t b1 = l1_bits_ct;
+        constexpr size_t b0 = l0_bits_ct;
+
+        constexpr size_t l1_block_ct = b0 / b1;
+
+
+        size_t l0_acc{};
+        // walk through all superblocks
+        for (size_t l0I{0}; l0I < l0BlockCt; ++l0I) {
+            // walk left to right and set l1 values (as if they are the begining of a superblock)
+
+            // left part
+            size_t acc{};
+            for (size_t i{0}; i < l1_block_ct; ++i) {
+                acc += bits[l0I*l1_block_ct*2 + i].count();
+                if (i % 2 == 0) {
+                    l1.set(l0I*l1_block_ct + i/2, acc);
+                }
+            }
+            l0_acc += acc;
+            // update l0 (reached center)
+            l0.set(l0I, l0_acc);//acc + [&]() { if(l0I > 0) return l0[l0I-1]; return size_t{0};}();
+            // walk backwards through left part and revert l0
+            for (size_t i{0}; i < l1_block_ct; ++i) {
+                if (i % 2 == 0) {
+                    auto idx = l0I*l1_block_ct + i/2;
+                    l1.set(idx, acc - l1.at(idx));
+                }
+            }
+
+            // right part
+            acc = 0;
+            for (size_t i{l1_block_ct}; i < l1_block_ct*2; ++i) {
+                acc += bits[l0I*l1_block_ct*2 + i].count();
+                if (i % 2 == 0) {
+                    auto idx = l0I*l1_block_ct + i/2;
+                    l1.set(idx, acc);
+                }
+            }
+            l0_acc += acc;
+        }
+    }
+
+
     void push_back(bool _value) {
+        if (finalized) throw std::runtime_error{"DS is finalized, can not call push_back after calling `rank`"};
         if (_value) {
-            auto bitId         = totalLength % bits_ct;
+            auto bitId         = totalLength % l1_bits_ct;
             bits.back()[bitId] = _value;
-            assert(l1.back() < 4096);
-            { auto t = l0.back(); l0.pop_back(); l0.push_back(t + _value); }
-            { auto t = l1.back(); l1.pop_back(); l1.push_back(t + _value); }
         }
         totalLength += 1;
-        if (totalLength % bits_ct2 == 0) { // new l0 block
-            l0.emplace_back(l0.back());
-            l1.pop_back();
-            l1.push_back(0);
-            assert(l1.back() == 0);
-            bits.emplace_back();
-        } else if (totalLength % (bits_ct*2) == bits_ct) { // new l1 block
-            l1.emplace_back(l1.back());
-            bits.emplace_back();
-        } else if (totalLength % (bits_ct*2) == 0) { // new in-bits block
+        if (totalLength % l1_bits_ct == 0) { // next bit will require a new in-bits block
             bits.emplace_back();
         }
     }
@@ -124,36 +146,42 @@ struct CompactDoubleL1L2_NBitvector {
 
     bool symbol(size_t idx) const noexcept {
         assert(idx < totalLength);
-        auto bitId = idx % bits_ct;
-        auto l1Id  = idx / bits_ct;
+        auto bitId = idx % l1_bits_ct;
+        auto l1Id  = idx / l1_bits_ct;
+        assert(l1Id/2 < bits.size());
         auto bit = bits[l1Id][bitId];
         return bit;
     }
 
     uint64_t rank(size_t idx) const noexcept {
+        finalize();
         assert(idx <= totalLength);
-        auto bitId = idx % (bits_ct*2);
-        auto l1Id = idx / bits_ct;
-        auto l0Id = idx / bits_ct2;
+        auto bitId = idx % (l1_bits_ct*2);
+        auto l1Id = idx / l1_bits_ct;
+        auto l0Id = idx / l0_bits_ct;
+        assert(l1Id/2 < bits.size());
+        assert(l0Id/2 < l0.size());
 
-        auto right_l1 = (l1Id%2);
+        int64_t right_l1 = (l1Id%2)*2-1;
+        int64_t right_l0 = (l0Id%2)*2-1;
 
-        auto count = signed_rshift_and_count(bits[l1Id], bitId);
+        auto count = skip_first_or_last_n_bits_and_count(bits[l1Id], bitId);
 
-        auto r = l0[l0Id] + l1[l1Id/2] + (right_l1*2-1) * count;
+        auto r = l0[l0Id/2] + right_l0 * l1[l1Id/2] + right_l1 * count;
         assert(r <= idx);
         return r;
     }
 
     template <typename Archive>
     void save(Archive& ar) const {
-        ar(l0, l1, totalLength);
+        finalize();
+        ar(l0, l1, totalLength, finalized);
         saveBV(bits, ar);
     }
 
     template <typename Archive>
     void load(Archive& ar) {
-        ar(l0, l1, totalLength);
+        ar(l0, l1, totalLength, finalized);
         loadBV(bits, ar);
     }
 
