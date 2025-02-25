@@ -42,7 +42,12 @@ struct FixedSuccinctVector {
     void reserve(size_t s) {
         auto a = WordWidth*s;
 
-        data.reserve(a/64+((a % 64)>0?1:0));
+        data.reserve((a+63)/64);
+    }
+
+    void resize(size_t s) {
+        bitCount = WordWidth*s;
+        data.resize((bitCount+63)/64);
     }
 
 
@@ -73,6 +78,7 @@ struct FixedSuccinctVector {
         bitCount += WordWidth;
         assert(back() == value);
     }
+
     void emplace_back(uint64_t value) {
         push_back(value);
     }
@@ -103,7 +109,6 @@ struct FixedSuccinctVector {
         std::tie(data[startI], data[endI])
             = writeValue({data[startI], data[endI]}, startOffset, value);
         //
-
     }
 
 private:

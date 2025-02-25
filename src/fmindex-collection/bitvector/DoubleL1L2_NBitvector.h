@@ -28,6 +28,7 @@ namespace fmindex_collection::bitvector {
 template <size_t l1_bits_ct, size_t l0_bits_ct>
 struct DoubleL1L2_NBitvector {
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
+    static_assert(l0_bits_ct-l1_bits_ct <= std::numeric_limits<uint16_t>::max(), "l0_bits_ct can only hold up to uint16_t bits");
     std::vector<uint64_t> l0{0};
     std::vector<uint16_t> l1{0};
     std::vector<std::bitset<l1_bits_ct>> bits{0};
@@ -51,25 +52,6 @@ struct DoubleL1L2_NBitvector {
         reserve(_range.size());
 
         auto iter = _range.begin();
-
-/*        size_t const loop64  = _range.size() / (bits_ct*2);
-
-        for (size_t l64{}; l64 < loop64; ++l64) {
-            for (size_t i{}; i < bits_ct; ++i) {
-                bool value         = *(iter++);
-                bits.back()[i]     = value;
-                l0.back() += value;
-            }
-            bits.emplace_back();
-            l0.emplace_back(l0.back());
-            for (size_t i{}; i < bits_ct; ++i) {
-                bool value         = *(iter++);
-                bits.back()[i]     = value;
-                l0.back() += value;
-            }
-            bits.emplace_back();
-        }
-        totalLength = bits_ct * (loop64*2);*/
         while(totalLength < _range.size()) {
             push_back(*(iter++));
         }
@@ -101,9 +83,7 @@ struct DoubleL1L2_NBitvector {
         bits.resize(inbitsCt);
 
         constexpr size_t b1 = l1_bits_ct;
-        //constexpr size_t db1 = b1*2;
         constexpr size_t b0 = l0_bits_ct;
-        //constexpr size_t db0 = b0*2;
 
         constexpr size_t l1_block_ct = b0 / b1;
 
@@ -143,13 +123,6 @@ struct DoubleL1L2_NBitvector {
             }
             l0_acc += acc;
         }
-
-/*        bits.emplace_back();
-
-        size_t acc{};
-        for (size_t i{0}; i < bits.size(); ++i) {
-            acc += bits[i].count();
-        }*/
     }
 
     void push_back(bool _value) {
@@ -157,22 +130,9 @@ struct DoubleL1L2_NBitvector {
         if (_value) {
             auto bitId         = totalLength % l1_bits_ct;
             bits.back()[bitId] = _value;
-/*            if ((totalLength / (l1_bits_ct*2) % 2) == 0) {
-                l1.back() += _value;
-            }
-            if ((totalLength / (l0_bits_ct*2) % 2) == 0) {
-                l0.back() += _value;
-            }*/
         }
         totalLength += 1;
-/*        if (totalLength % (l0_bits_ct*2) == 0) { // next bit will reqire a new l1 block accumlator
-            l1.emplace_back(l1.back() + l0.back() + bits.back().count());
-            l0.emplace_back();
-            bits.emplace_back();
-        } else if (totalLength % (l1_bits_ct*2) == 0) { // next bit will require a new l0 block accumulator
-            l0.emplace_back(l0.back() + bits.back().count());
-            bits.emplace_back();
-        } else */if (totalLength % l1_bits_ct == 0) { // next bit will require a new in-bits block
+        if (totalLength % l1_bits_ct == 0) { // next bit will require a new in-bits block
             bits.emplace_back();
         }
     }
