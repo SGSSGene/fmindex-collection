@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <tuple>
 #include <vector>
 
 namespace fmindex_collection {
