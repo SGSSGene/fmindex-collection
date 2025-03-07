@@ -225,7 +225,7 @@ TEST_CASE("mark_exact - test to ternary logic function", "[mark_exact]") {
     }
 }
 
-TEST_CASE("mark_exact - testing and benchmarking", "[misc][!benchmark]") {
+TEST_CASE("mark_exact - testing and benchmarking", "[mark_exact][!benchmark]") {
     auto rng = ankerl::nanobench::Rng{};
     SECTION("test all of it") {
         auto benchmark = [&]<size_t Bits>() {
@@ -344,7 +344,7 @@ TEST_CASE("mark_exact_or_less - test to ternary logic function", "[mark_exact_or
     }
 }
 
-TEST_CASE("mark_exact_or_less_or_less - testing and benchmarking", "[misc][!benchmark]") {
+TEST_CASE("mark_exact_or_less_or_less - testing and benchmarking", "[mark_exact_or_less][!benchmark]") {
     auto rng = ankerl::nanobench::Rng{};
     SECTION("test all of it") {
         auto benchmark = [&]<size_t Bits>() {
