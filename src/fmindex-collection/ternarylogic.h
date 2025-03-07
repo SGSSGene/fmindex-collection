@@ -577,6 +577,12 @@ auto ternarylogic_v3(size_t R, T const& a, T const& b, T const& c) -> T {
     return lut_ternarylogic2<N, T>[R](a, b, c);
 }
 
+template <size_t N>
+auto ternarylogic(size_t R, std::bitset<N> const& a, std::bitset<N> const& b, std::bitset<N> const& c) -> std::bitset<N> {
+    return ternarylogic_v3<N>(R, a, b, c);
+}
+
+
 /** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
  *  has the same bit value as Value
  */
@@ -658,30 +664,9 @@ template <size_t N>
 auto mark_exact_or_less_v2(size_t value, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
     assert(value < 8);
 
-    switch(value) {
-    case 0x00: return ~_a & ~_b & ~_c;
-    case 0x01: return ~_a & ~_b;
-    case 0x02: return ~_a & (~_b | ~_c);
-    case 0x03: return ~_a;
-    case 0x04: return ~_a | (~_b & ~_c);
-    case 0x05: return ~_a | ~_b;
-    case 0x06: return ~_a | ~_b | ~_c;
-    case 0x07: {
-        static auto r = []() {
-            auto r = std::bitset<N>{};
-            r.flip();
-            return r;
-        }();
-        return r;
-    }
-    default:
-    __builtin_unreachable();
-    }
-/*
-
     static std::array<std::bitset<N>, 2> mask = []() {
         auto a = std::array<std::bitset<N>, 2>{};
-        a[0].set();
+        a[1].set();
         return a;
     }();
 
@@ -689,13 +674,19 @@ auto mark_exact_or_less_v2(size_t value, std::bitset<N> const& _a, std::bitset<N
     auto bit1 = (value>>1) & 1;
     auto bit2 = (value>>2) & 1;
 
-    (mask[bit2] | ~_a)
-    (~_a & mask[bit2]) |
+    auto const& r3 = mask[bit2];
+    auto const& r2 = mask[bit1];
+    auto const& r1 = mask[bit0];
 
-    auto r  = (_c ^ mask[bit0])
-            & (_b ^ mask[bit1])
-            & (_a ^ mask[bit2]);
-    return r;*/
+    auto const& b1 = _c;
+    auto const& b2 = _b;
+    auto const& b3 = _a;
+
+    auto r = r3 & ~b3;
+    auto t= r3 ^~ b3;
+    r |= t & (r2 & ~b2);
+    r |= t & (r2 ^~ b2) & (r1 | ~b1);
+    return r;
 };
 
 /** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
