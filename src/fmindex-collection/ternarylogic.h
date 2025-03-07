@@ -531,7 +531,8 @@ auto ternarylogic_impl2(uint8_t R, T const& a, T const& b, T const& c) -> T {
     case 0xfe: return a | b | c;
     case 0xff: return ~T{};
     }
-    //unreachable();
+//    unreachable();
+//    __builtin_unreachable();
     return T{};
 }
 
@@ -621,9 +622,11 @@ auto mark_exact_v3(size_t value, std::bitset<N> const& _a, std::bitset<N> const&
         case 5: return  _a & ~_b &  _c;
         case 6: return  _a &  _b & ~_c;
         case 7: return  _a &  _b &  _c;
-        default:
-        __builtin_unreachable();
     };
+//    unreachable();
+//    __builtin_unreachable();
+    return {};
+
 };
 
 template <size_t N, typename T=std::bitset<N>>
@@ -712,9 +715,10 @@ auto mark_exact_or_less_v3(size_t value, std::bitset<N> const& _a, std::bitset<N
         }();
         return r;
     }
-    default:
-    __builtin_unreachable();
     }
+//    unreachable();
+//    __builtin_unreachable();
+    return {};
 };
 
 template <size_t N, typename T=std::bitset<N>>
