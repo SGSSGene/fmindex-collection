@@ -528,6 +528,8 @@ auto ternarylogic_impl2(uint8_t R, T const& a, T const& b, T const& c) -> T {
     case 0xfe: return a | b | c;
     case 0xff: return ~T{};
     }
+    //unreachable();
+    return T{};
 }
 
 
