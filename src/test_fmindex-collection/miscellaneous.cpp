@@ -231,7 +231,11 @@ TEST_CASE("mark_exact - testing and benchmarking", "[mark_exact][!benchmark]") {
         auto benchmark = [&]<size_t Bits>() {
             using BS = std::bitset<Bits>;
             auto bitsets = std::vector<BS>{};
+            #ifdef NDEBUG
             bitsets.reserve(10'000'000*64 / Bits);
+            #else
+            bitsets.reserve(1'000*64 / Bits);
+            #endif
             for (size_t i{0}; i < bitsets.capacity(); ++i) {
                 auto b = BS{};
                 for (size_t j{0}; j < Bits/64; ++j) {
@@ -350,7 +354,11 @@ TEST_CASE("mark_exact_or_less_or_less - testing and benchmarking", "[mark_exact_
         auto benchmark = [&]<size_t Bits>() {
             using BS = std::bitset<Bits>;
             auto bitsets = std::vector<BS>{};
+            #ifdef NDEBUG
             bitsets.reserve(10'000'000*64 / Bits);
+            #else
+            bitsets.reserve(1'000*64 / Bits);
+            #endif
             for (size_t i{0}; i < bitsets.capacity(); ++i) {
                 auto b = BS{};
                 for (size_t j{0}; j < Bits/64; ++j) {
