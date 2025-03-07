@@ -235,6 +235,9 @@ TEST_CASE("mark_exact - testing and benchmarking", "[mark_exact][!benchmark]") {
             bitsets.reserve(10'000'000*64 / Bits);
             #else
             bitsets.reserve(1'000*64 / Bits);
+            if (bitsets.capacity() == 0) {
+                bitsets.reserve(1);
+            }
             #endif
             for (size_t i{0}; i < bitsets.capacity(); ++i) {
                 auto b = BS{};
@@ -358,6 +361,9 @@ TEST_CASE("mark_exact_or_less_or_less - testing and benchmarking", "[mark_exact_
             bitsets.reserve(10'000'000*64 / Bits);
             #else
             bitsets.reserve(1'000*64 / Bits);
+            if (bitsets.capacity() == 0) {
+                bitsets.reserve(1);
+            }
             #endif
             for (size_t i{0}; i < bitsets.capacity(); ++i) {
                 auto b = BS{};
