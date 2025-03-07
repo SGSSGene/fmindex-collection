@@ -23,6 +23,7 @@ add_executable(${PROJECT_NAME}
     fmindex/checkRBiFMIndexCursor.cpp
     fmindex/checkReverseFMIndex.cpp
     fmindex/checkReverseFMIndexCursor.cpp
+    miscellaneous.cpp
     occtables/checkOccTables.cpp
     rankvector/checkRankVector.cpp
     search/checkReverseIndexSearch.cpp
