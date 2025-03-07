@@ -87,12 +87,20 @@ struct VariableFMIndex {
 
         // check for invalid mapping characters
         {
+            #if _LIBCPP_VERSION // hack to work with libc++
+            auto iter = std::find(query.begin(), query.end(), 255);
+            if (iter != query.end()) {
+                // We will not find this query
+                return result;
+            }
+            #else
             auto str = std::basic_string_view<uint8_t>{query.begin(), query.end()};
             auto pos = str.find(255);
             if (pos != std::string_view::npos) {
                 // We will not find this query
                 return result;
             }
+            #endif
         }
 
         if (k == 0) {
