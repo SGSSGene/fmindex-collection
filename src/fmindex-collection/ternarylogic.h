@@ -16,10 +16,10 @@ auto ternarylogic_impl(T const& a, T const& b, T const& c) -> T {
     if constexpr (R == 0x03) return ~(a | b);
     if constexpr (R == 0x04) return b & ~(a | c);
     if constexpr (R == 0x05) return ~(a | c);
-    if constexpr (R == 0x06) return ~a & (b ^~ c);
+    if constexpr (R == 0x06) return ~a & (b ^ c);
     if constexpr (R == 0x07) return ~a & (~b | ~c);
     if constexpr (R == 0x08) return b & c & ~a;
-    if constexpr (R == 0x09) return ~a & (b ^ c);
+    if constexpr (R == 0x09) return ~a & (b ^~ c);
     if constexpr (R == 0x0a) return c & ~a;
     if constexpr (R == 0x0b) return ~a & (c | ~b);
     if constexpr (R == 0x0c) return b & ~a;
