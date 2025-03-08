@@ -22,6 +22,8 @@
 
 namespace fmindex_collection::bitvector {
 
+#if !__clang__ || __clang_major >= 19 // !TODO workaround (weird optimization bug?)
+
 /**
  * CompactDoubleL1L2_NBitvector a bit vector with only bits and blocks
  *
@@ -184,8 +186,8 @@ struct CompactDoubleL1L2_NBitvector {
         ar(l0, l1, totalLength, finalized);
         loadBV(bits, ar);
     }
-
 };
+
 using CompactDoubleL1L2_64_4kBitvector   = CompactDoubleL1L2_NBitvector<64, 4096>;
 using CompactDoubleL1L2_128_4kBitvector  = CompactDoubleL1L2_NBitvector<128, 4096>;
 using CompactDoubleL1L2_256_4kBitvector  = CompactDoubleL1L2_NBitvector<256, 4096>;
@@ -213,6 +215,6 @@ static_assert(BitVector_c<CompactDoubleL1L2_256_64kBitvector>);
 static_assert(BitVector_c<CompactDoubleL1L2_512_64kBitvector>);
 static_assert(BitVector_c<CompactDoubleL1L2_1024_64kBitvector>);
 static_assert(BitVector_c<CompactDoubleL1L2_2048_64kBitvector>);
-
+#endif
 
 }
