@@ -4,8 +4,11 @@
 
 #include <array>
 #include <bitset>
+#include <cassert>
 #include <cstdint>
 #include <functional>
+
+namespace fmindex_collection {
 
 template <size_t R, size_t N, typename T=std::bitset<N>>
 auto ternarylogic_impl(T const& a, T const& b, T const& c) -> T {
@@ -16,10 +19,10 @@ auto ternarylogic_impl(T const& a, T const& b, T const& c) -> T {
     if constexpr (R == 0x03) return ~(a | b);
     if constexpr (R == 0x04) return b & ~(a | c);
     if constexpr (R == 0x05) return ~(a | c);
-    if constexpr (R == 0x06) return ~a & (b ^~ c);
+    if constexpr (R == 0x06) return ~a & (b ^ c);
     if constexpr (R == 0x07) return ~a & (~b | ~c);
     if constexpr (R == 0x08) return b & c & ~a;
-    if constexpr (R == 0x09) return ~a & (b ^ c);
+    if constexpr (R == 0x09) return ~a & (b ^~ c);
     if constexpr (R == 0x0a) return c & ~a;
     if constexpr (R == 0x0b) return ~a & (c | ~b);
     if constexpr (R == 0x0c) return b & ~a;
@@ -528,6 +531,9 @@ auto ternarylogic_impl2(uint8_t R, T const& a, T const& b, T const& c) -> T {
     case 0xfe: return a | b | c;
     case 0xff: return ~T{};
     }
+//    unreachable();
+//    __builtin_unreachable();
+    return T{};
 }
 
 
@@ -559,9 +565,191 @@ static std::array<T(*)(T const&, T const&, T const&), 256> lut_ternarylogic2 = [
 
 
 
+template <size_t R, size_t N, typename T=std::bitset<N>>
+auto ternarylogic_v1(T const& a, T const& b, T const& c) -> T {
+    return ternarylogic_impl<R, N, T>(a, b, c);
+}
 template <size_t N, typename T=std::bitset<N>>
-auto ternarylogic(size_t R, T const& a, T const& b, T const& c) -> T {
-//    return ternarylogic_impl2<N, T>(static_cast<uint8_t>(R), a, b, c);
+auto ternarylogic_v2(size_t R, T const& a, T const& b, T const& c) -> T {
+    return ternarylogic_impl2<N, T>(static_cast<uint8_t>(R), a, b, c);
+}
+template <size_t N, typename T=std::bitset<N>>
+auto ternarylogic_v3(size_t R, T const& a, T const& b, T const& c) -> T {
     return lut_ternarylogic2<N, T>[R](a, b, c);
 }
 
+template <size_t N>
+auto ternarylogic(size_t R, std::bitset<N> const& a, std::bitset<N> const& b, std::bitset<N> const& c) -> std::bitset<N> {
+    return ternarylogic_v3<N>(R, a, b, c);
+}
+
+
+/** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
+ *  has the same bit value as Value
+ */
+template <size_t N>
+auto mark_exact_v2(size_t value, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
+    assert(value < 8);
+
+    static std::array<std::bitset<N>, 2> mask = []() {
+        auto a = std::array<std::bitset<N>, 2>{};
+        a[0].set();
+        return a;
+    }();
+    auto bit0 = (value>>0) & 1;
+    auto bit1 = (value>>1) & 1;
+    auto bit2 = (value>>2) & 1;
+
+    auto r  = (_c ^ mask[bit0])
+            & (_b ^ mask[bit1])
+            & (_a ^ mask[bit2]);
+    return r;
+};
+
+/** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
+ *  has the same bit value as Value
+ */
+template <size_t N>
+auto mark_exact_v3(size_t value, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
+    assert(value < 8);
+
+    switch(value) {
+        case 0: return ~_a & ~_b & ~_c;
+        case 1: return ~_a & ~_b &  _c;
+        case 2: return ~_a &  _b & ~_c;
+        case 3: return ~_a &  _b &  _c;
+        case 4: return  _a & ~_b & ~_c;
+        case 5: return  _a & ~_b &  _c;
+        case 6: return  _a &  _b & ~_c;
+        case 7: return  _a &  _b &  _c;
+    };
+//    unreachable();
+//    __builtin_unreachable();
+    return {};
+
+};
+
+template <size_t N, typename T=std::bitset<N>>
+static std::array<T(*)(T const&, T const&, T const&), 8> lut_mark_exact = []() {
+    auto r = std::array<T(*)(T const&, T const&, T const&), 8>{};
+    r[0] = lut_ternarylogic2<N, T>[1];
+    r[1] = lut_ternarylogic2<N, T>[2];
+    r[2] = lut_ternarylogic2<N, T>[4];
+    r[3] = lut_ternarylogic2<N, T>[8];
+    r[4] = lut_ternarylogic2<N, T>[16];
+    r[5] = lut_ternarylogic2<N, T>[32];
+    r[6] = lut_ternarylogic2<N, T>[64];
+    r[7] = lut_ternarylogic2<N, T>[128];
+    return r;
+}();
+
+
+
+/** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
+ *  has the same bit value as Value
+ */
+template <size_t N>
+auto mark_exact_v4(size_t value, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
+    assert(value < 8);
+    return lut_mark_exact<N>[value](_a, _b, _c);
+};
+
+template <size_t N>
+auto mark_exact_fast(size_t value, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
+    assert(value < 8);
+    return mark_exact_v4(value, _a, _b, _c);
+};
+
+/** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
+ *  has the same bit value as Value
+ */
+template <size_t N>
+auto mark_exact_or_less_v2(size_t value, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
+    assert(value < 8);
+
+    static std::array<std::bitset<N>, 2> mask = []() {
+        auto a = std::array<std::bitset<N>, 2>{};
+        a[1].set();
+        return a;
+    }();
+
+    auto bit0 = (value>>0) & 1;
+    auto bit1 = (value>>1) & 1;
+    auto bit2 = (value>>2) & 1;
+
+    auto const& r3 = mask[bit2];
+    auto const& r2 = mask[bit1];
+    auto const& r1 = mask[bit0];
+
+    auto const& b1 = _c;
+    auto const& b2 = _b;
+    auto const& b3 = _a;
+
+    auto r = r3 & ~b3;
+    auto t= r3 ^~ b3;
+    r |= t & (r2 & ~b2);
+    r |= t & (r2 ^~ b2) & (r1 | ~b1);
+    return r;
+};
+
+/** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
+ *  has the same bit value as Value
+ */
+template <size_t N>
+auto mark_exact_or_less_v3(size_t value, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
+    assert(value < 8);
+
+    switch(value) {
+    case 0x00: return ~_a & ~_b & ~_c;
+    case 0x01: return ~_a & ~_b;
+    case 0x02: return ~_a & (~_b | ~_c);
+    case 0x03: return ~_a;
+    case 0x04: return ~_a | (~_b & ~_c);
+    case 0x05: return ~_a | ~_b;
+    case 0x06: return ~_a | ~_b | ~_c;
+    case 0x07: {
+        static auto r = []() {
+            auto r = std::bitset<N>{};
+            r.flip();
+            return r;
+        }();
+        return r;
+    }
+    }
+//    unreachable();
+//    __builtin_unreachable();
+    return {};
+};
+
+template <size_t N, typename T=std::bitset<N>>
+static std::array<T(*)(T const&, T const&, T const&), 8> lut_mark_exact_or_less = []() {
+    auto r = std::array<T(*)(T const&, T const&, T const&), 8>{};
+    r[0] = lut_ternarylogic2<N, T>[1];
+    r[1] = lut_ternarylogic2<N, T>[3];
+    r[2] = lut_ternarylogic2<N, T>[7];
+    r[3] = lut_ternarylogic2<N, T>[15];
+    r[4] = lut_ternarylogic2<N, T>[31];
+    r[5] = lut_ternarylogic2<N, T>[63];
+    r[6] = lut_ternarylogic2<N, T>[127];
+    r[7] = lut_ternarylogic2<N, T>[255];
+    return r;
+}();
+
+
+
+/** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
+ *  has the same bit value as Value
+ */
+template <size_t N>
+auto mark_exact_or_less_v4(size_t value, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
+    assert(value < 8);
+    return lut_mark_exact_or_less<N>[value](_a, _b, _c);
+};
+
+template <size_t N>
+auto mark_exact_or_less_fast(size_t value, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
+    assert(value < 8);
+    return mark_exact_or_less_v4(value, _a, _b, _c);
+};
+
+}
