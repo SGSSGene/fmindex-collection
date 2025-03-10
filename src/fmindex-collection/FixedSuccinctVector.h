@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <tuple>
 #include <vector>
 
 namespace fmindex_collection {
@@ -42,7 +43,12 @@ struct FixedSuccinctVector {
     void reserve(size_t s) {
         auto a = WordWidth*s;
 
-        data.reserve(a/64+((a % 64)>0?1:0));
+        data.reserve((a+63)/64);
+    }
+
+    void resize(size_t s) {
+        bitCount = WordWidth*s;
+        data.resize((bitCount+63)/64);
     }
 
 
@@ -73,9 +79,67 @@ struct FixedSuccinctVector {
         bitCount += WordWidth;
         assert(back() == value);
     }
+
     void emplace_back(uint64_t value) {
         push_back(value);
     }
+
+    void set(size_t idx, uint64_t value) {
+        assert(value <= MaxValue);
+        assert(std::log2(value) < WordWidth);
+
+        size_t begin = idx*WordWidth;
+        size_t end   = (idx+1)*WordWidth-1;
+
+        assert(begin == end || begin < bitCount);
+        assert(end <= bitCount);
+        assert(end >= begin);
+        assert(end-begin <= 64);
+
+        auto startI = begin/64;
+        auto endI   = end/64;
+        auto startOffset = begin % 64;
+
+        // Single entry must be changed
+        if (startI == endI) {
+            data[startI] = writeValue(data[startI], startOffset, value);
+            return;
+        }
+
+        // two neighbouring entries must be changed
+        std::tie(data[startI], data[endI])
+            = writeValue({data[startI], data[endI]}, startOffset, value);
+        //
+    }
+
+private:
+    // bits start at position 0
+    static auto writeBits(uint64_t oldValue, size_t bitStart, size_t bitEnd, size_t bits) -> size_t {
+        auto width = bitEnd-bitStart;
+        auto mask = (uint64_t{1} << width)-1;
+        mask = mask << bitStart;
+        return (oldValue & ~mask) | (bits << bitStart);
+    }
+
+
+    static auto writeValue(uint64_t v, size_t bitStart, size_t newValue) -> size_t {
+        assert(bitStart+WordWidth <= 64);
+        return writeBits(v, bitStart, bitStart+WordWidth, newValue);
+    }
+
+    static auto writeValue(std::tuple<uint64_t, uint64_t> values, size_t bitStart, size_t newValue) -> std::tuple<uint64_t, uint64_t> {
+        assert(bitStart+WordWidth >= 64);
+        assert(bitStart < 64);
+        auto bitsFirstPart = 64-bitStart;
+
+        auto& [v1, v2] = values;
+        v1 = writeBits(v1, bitStart, 64, newValue);
+        v2 = writeBits(v2, 0, WordWidth-bitsFirstPart, newValue >> bitsFirstPart);
+
+        return {v1, v2};
+    }
+
+public:
 
     /** Read integer at a certain position
      */
