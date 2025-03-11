@@ -626,8 +626,33 @@ auto mark_exact_v3(size_t value, std::bitset<N> const& _a, std::bitset<N> const&
 //    unreachable();
 //    __builtin_unreachable();
     return {};
-
 };
+
+template <size_t N>
+auto mark_exact_all(std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::array<std::bitset<N>, 8> {
+    auto r = std::array<std::bitset<N>, 8>{};
+    auto na = ~_a;
+    auto nb = ~_b;
+    auto nc = ~_c;
+    r[1] = na & nb;
+    r[0] = r[1] & nc;
+    r[1] = r[1] & _c;
+
+    r[3] = na & _b;
+    r[2] = r[3] & nc;
+    r[3] = r[3] & _c;
+
+    r[5] = _a & nb;
+    r[4] = r[5] & nc;
+    r[5] = r[5] & _c;
+
+    r[7] = _a & _b;
+    r[6] = r[7] & nc;
+    r[7] = r[7] & _c;
+    return r;
+}
+
+
 
 template <size_t N, typename T=std::bitset<N>>
 static std::array<T(*)(T const&, T const&, T const&), 8> lut_mark_exact = []() {
@@ -736,7 +761,6 @@ static std::array<T(*)(T const&, T const&, T const&), 8> lut_mark_exact_or_less 
 }();
 
 
-
 /** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
  *  has the same bit value as Value
  */
@@ -751,5 +775,20 @@ auto mark_exact_or_less_fast(size_t value, std::bitset<N> const& _a, std::bitset
     assert(value < 8);
     return mark_exact_or_less_v4(value, _a, _b, _c);
 };
+
+template <size_t N>
+auto mark_exact_or_less_all(std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::array<std::bitset<N>, 8> {
+    auto r = std::array<std::bitset<N>, 8>{};
+    r[3] = ~_a;
+    r[1] = r[3] & ~_b;
+    r[0] = r[1] & ~_c;
+    r[7] = ~_b | ~_c;
+    r[2] = r[3] & r[7];
+    r[4] = r[3] | ~(_b | _c);
+    r[5] = r[3] | ~_b;
+    r[6] = r[3] | r[7];
+    r[7] |= ~r[7];
+    return r;
+}
 
 }

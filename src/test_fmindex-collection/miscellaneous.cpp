@@ -196,10 +196,12 @@ TEST_CASE("mark_exact - test to ternary logic function", "[mark_exact]") {
             auto r3       = fmindex_collection::mark_exact_v3<Bits>(N1, a, b, c);
             auto r4       = fmindex_collection::mark_exact_v4<Bits>(N1, a, b, c);
             auto rfast    = fmindex_collection::mark_exact_fast<Bits>(N1, a, b, c);
+            auto r_all    = fmindex_collection::mark_exact_all<Bits>(a, b, c)[N1];
             CHECK(expected == r2);
             CHECK(expected == r3);
             CHECK(expected == r4);
             CHECK(expected == rfast);
+            CHECK(expected == r_all);
         };
         f.template operator()<0,   1>();
         f.template operator()<1,   2>();
@@ -293,6 +295,15 @@ TEST_CASE("mark_exact - testing and benchmarking", "[mark_exact][!benchmark]") {
                 });
                 }
             });
+            bench.run("mark_exact_all " + bits_as_str, [&]() {
+                for (size_t i{0}; i < 32; ++i) {
+                auto v = fmindex_collection::mark_exact_all(bitsets[i1], bitsets[i2], bitsets[i3]);
+                fmindex_collection::for_constexpr<0, 8>([&]<size_t I>() {
+                    ankerl::nanobench::doNotOptimizeAway(v[(I+offset)%8]);
+                });
+                }
+            });
+
         };
         benchmark.operator()<32>();
         benchmark.operator()<64>();
@@ -321,10 +332,12 @@ TEST_CASE("mark_exact_or_less - test to ternary logic function", "[mark_exact_or
             auto r3       = fmindex_collection::mark_exact_or_less_v3<Bits>(N1, a, b, c);
             auto r4       = fmindex_collection::mark_exact_or_less_v4<Bits>(N1, a, b, c);
             auto rfast    = fmindex_collection::mark_exact_or_less_fast<Bits>(N1, a, b, c);
+            auto r_all    = fmindex_collection::mark_exact_or_less_all<Bits>(a, b, c)[N1];
             CHECK(expected == r2);
             CHECK(expected == r3);
             CHECK(expected == r4);
             CHECK(expected == rfast);
+            CHECK(expected == r_all);
         };
         f.template operator()<0,   1>();
         f.template operator()<1,   3>();
@@ -351,7 +364,7 @@ TEST_CASE("mark_exact_or_less - test to ternary logic function", "[mark_exact_or
     }
 }
 
-TEST_CASE("mark_exact_or_less_or_less - testing and benchmarking", "[mark_exact_or_less][!benchmark]") {
+TEST_CASE("mark_exact_or_less - testing and benchmarking", "[mark_exact_or_less][!benchmark]") {
     auto rng = ankerl::nanobench::Rng{};
     SECTION("test all of it") {
         auto benchmark = [&]<size_t Bits>() {
@@ -419,6 +432,16 @@ TEST_CASE("mark_exact_or_less_or_less - testing and benchmarking", "[mark_exact_
                 });
                 }
             });
+
+            bench.run("mark_exact_or_less_all " + bits_as_str, [&]() {
+                for (size_t i{0}; i < 32; ++i) {
+                    auto v = fmindex_collection::mark_exact_or_less_all(bitsets[i1], bitsets[i2], bitsets[i3]);
+                    fmindex_collection::for_constexpr<0, 8>([&]<size_t I>() {
+                        ankerl::nanobench::doNotOptimizeAway(v[(I+offset)%8]);
+                    });
+                }
+            });
+
         };
         benchmark.operator()<32>();
         benchmark.operator()<64>();
