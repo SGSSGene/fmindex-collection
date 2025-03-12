@@ -699,14 +699,16 @@ static std::array<std::bitset<N>, 2> mask_positive_or_negative = []() {
  */
 template <size_t N1, size_t N2>
 auto mark_exact_large(size_t value, std::array<std::bitset<N1>, N2> const& _arr) -> std::bitset<N1> {
-//    assert(value < 8);
-
-    auto const& mask = mask_positive_or_negative<N1>;
-    auto r = _arr[0] ^ mask[value & 1];
-    for (size_t i{1}; i < N2; ++i) {
-        r = r & (_arr[i] ^ mask[(value>>i) & 1]);
+    if constexpr (N2 == 3) {
+        return mark_exact_v3(value, _arr[2], _arr[1], _arr[0]);
+    } else {
+        auto const& mask = mask_positive_or_negative<N1>;
+        auto r = _arr[0] ^ mask[value & 1];
+        for (size_t i{1}; i < N2; ++i) {
+            r = r & (_arr[i] ^ mask[(value>>i) & 1]);
+        }
+        return r;
     }
-    return r;
 };
 
 

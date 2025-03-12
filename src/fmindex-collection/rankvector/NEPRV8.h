@@ -271,6 +271,7 @@ struct NEPRV8 {
             sblock_acc[symb] += 1;
         }
 
+        // Compute prefix accumulators
         level0_prefix = level0;
         level1_prefix = level1;
         superBlocks_prefix = superBlocks;
