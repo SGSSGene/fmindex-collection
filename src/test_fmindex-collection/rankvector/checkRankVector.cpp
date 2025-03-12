@@ -703,7 +703,6 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor operation, on human dna5 data", "[Ra
 
                 }
             }
-            std::cout << "done loading file\n";
         }
 
         auto vec = Vector{text};
@@ -754,7 +753,6 @@ TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human d
 
                 }
             }
-            std::cout << "done loading file\n";
         }
 
         auto vec = Vector{text};
@@ -823,7 +821,6 @@ TEMPLATE_TEST_CASE("benchmark vectors size, on human dna5 data", "[RankVector][b
 
                 }
             }
-            std::cout << "done loading file\n";
         }
 
         auto vec = Vector{text};

@@ -128,7 +128,7 @@ auto fast_ternarylogic(size_t shift, std::bitset<N> const& _a, std::bitset<N> co
         };
     }
 }*/
-
+#if 1
 TEST_CASE("testing ternary Logic functions are equivalent", "[ternary_logic]") {
     auto check_equality = [&]<size_t Bits>() {
         INFO(Bits);
@@ -363,6 +363,95 @@ TEST_CASE("mark_exact_or_less - test to ternary logic function", "[mark_exact_or
         check_equality.operator()<65536>();
     }
 }
+#endif
+
+TEST_CASE("mark_exact_or_less_large - test to ternary logic function", "[mark_exact_or_less_large]") {
+    auto check_equality = [&]<size_t Bits, size_t BitWidth=4>() {
+        for (size_t loop{0}; loop < 1<<BitWidth; loop += Bits) {
+            auto b = std::array<std::bitset<Bits>, BitWidth>{};
+            for (size_t i{loop}; i < loop + Bits; ++i) {
+                for (size_t j{0}; j < b.size(); ++j) {
+                    b[j].set(i-loop, (i>>j)&1);
+                }
+            }
+
+            auto f = [&]<size_t CheckValue>() {
+                auto dumbTernary = [&]() {
+                    auto reconstructValue = [&](size_t idx) {
+                        size_t v{};
+                        for (size_t i{0}; i<b.size(); ++i) {
+                            v = v | (b[i].test(idx) << i);
+                        }
+                        return v;
+                    };
+                    auto r = std::bitset<Bits>{};
+                    for (size_t i{0}; i < Bits; ++i) {
+                        auto v = reconstructValue(i);
+                        r.set(i, v <= CheckValue);
+                    }
+                    return r;
+                };
+                INFO(b[0]);
+                INFO(CheckValue);
+
+                auto expected = dumbTernary();
+                auto r        = fmindex_collection::mark_exact_or_less_large<Bits>(CheckValue, b);
+                auto r_exact  = [&]() {
+                    auto r = fmindex_collection::mark_exact_large(0, b);
+                    for (size_t i{1}; i <= CheckValue; ++i) {
+                        r = r | fmindex_collection::mark_exact_large(i, b);
+                    }
+                    return r;
+                }();
+                CHECK(expected == r);
+                CHECK(expected == r_exact);
+
+                if constexpr (BitWidth == 3) {
+                    auto r_ternary = fmindex_collection::mark_exact_or_less_v3<Bits>(CheckValue, b[2], b[1], b[0]);
+                    CHECK(expected == r_ternary);
+                }
+            };
+            fmindex_collection::for_constexpr<0, (1<<BitWidth)>([&]<size_t I>() {
+                f.template operator()<I>();
+            });
+        }
+    };
+    SECTION("check mark_exact_or_less_large and ternary are equal") {
+        fmindex_collection::for_constexpr<1, 9>([&]<size_t I>() {
+            INFO(I << "info I: ");
+            check_equality.operator()<64, I>();
+            check_equality.operator()<256, I>();
+            check_equality.operator()<512>();
+            check_equality.operator()<1024>();
+            check_equality.operator()<2048>();
+            check_equality.operator()<4096>();
+            check_equality.operator()<8192>();
+            check_equality.operator()<16384>();
+            check_equality.operator()<32768>();
+            check_equality.operator()<65536>();
+        });
+    }
+    SECTION("check specific errornous configuration") {
+        uint8_t symb = 32;
+        auto arr = std::array<std::bitset<64>, 8>{};
+        for (auto p : {1, 4, 6, 7}) arr[0].set(p);
+        for (auto p : {4, 6}) arr[1].set(p);
+        for (auto p : {2, 3, 4, 6, 7, 8, 9}) arr[2].set(p);
+        for (auto p : {0, 2, 3, 4, 8}) arr[3].set(p);
+        for (auto p : {6, 9}) arr[4].set(p);
+        for (auto p : {1, 2, 3, 4, 5, 7, 8, 9}) arr[5].set(p);
+        for (auto p : {0, 1, 2, 3, 4, 6, 7, 8, 9}) arr[6].set(p);
+//        for (auto p : {}) arr[7].set(p);
+
+        auto v = fmindex_collection::mark_exact_or_less_large(symb, arr);
+        auto mask = fmindex_collection::mark_exact_large(0, arr);
+        for (uint64_t i{1}; i <= symb; ++i) {
+            mask |= fmindex_collection::mark_exact_large(i, arr);
+        }
+        CHECK(v == mask);
+    }
+}
+#if 1
 
 TEST_CASE("mark_exact_or_less - testing and benchmarking", "[mark_exact_or_less][!benchmark]") {
     auto rng = ankerl::nanobench::Rng{};
@@ -457,3 +546,4 @@ TEST_CASE("mark_exact_or_less - testing and benchmarking", "[mark_exact_or_less]
         benchmark.operator()<65536>();
     }
 }
+#endif

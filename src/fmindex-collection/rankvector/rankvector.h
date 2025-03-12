@@ -15,6 +15,7 @@
 #include "DenseEPRV6.h"
 #include "InterleavedEPRV7.h"
 #include "DoubleNEPRV8.h"
+#include "NEPRV8.h"
 #include "InterleavedWavelet.h"
 #include "Wavelet.h"
 #include "RBBwt.h"
