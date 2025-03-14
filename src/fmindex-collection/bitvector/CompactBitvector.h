@@ -32,7 +32,7 @@ struct CompactBitvector {
             assert(idx < 384);
 
             auto blockId = idx >> 6;
-            auto block = uint64_t{0b111111111} & (blockEntries >> (blockId * 9));
+            auto block = getBlock(blockId);
             auto keep = (uint64_t{idx} & 63);
             if (keep == 0) return superBlockEntry + block;
 
@@ -55,6 +55,29 @@ struct CompactBitvector {
             blockEntries = blockEntries & ~(uint64_t{0b111111111} << blockId*9);
             blockEntries = blockEntries | (uint64_t{value} << blockId*9);
         }
+        auto getBlock(size_t blockId) const -> size_t{
+            return uint64_t{0b111111111} & (blockEntries >> (blockId * 9));
+        }
+
+
+        struct Proxy {
+            Superblock& sb;
+            size_t      bid;
+            auto operator=(size_t v) {
+                sb.setBlock(bid, v);
+            }
+
+            friend auto operator+(Proxy const& p, size_t v) -> size_t {
+                return v + p.sb.getBlock(p.bid);
+            }
+            friend auto operator+(size_t v, Proxy const& p) -> size_t {
+                return v + p.sb.getBlock(p.bid);
+            }
+
+        };
+        auto block(size_t blockId) {
+            return Proxy{*this, blockId};
+        }
 
         template <typename Archive>
         void serialize(Archive& ar) {
@@ -68,15 +91,20 @@ struct CompactBitvector {
     size_t                  totalLength{};
 
     template <typename CB>
+    struct Layer {
+        CB get;
+
+        auto operator[](size_t i) -> decltype(auto) {
+            return get(i);
+        }
+    };
+
+    template <typename CB>
     CompactBitvector(size_t length, CB cb)
         : CompactBitvector{std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
             return cb(i);
         })}
     {}
-
-    //!TODO helper structures, when building the vector
-    uint64_t sblock_acc{};
-    uint64_t block_acc{};
 
     template <std::ranges::sized_range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
@@ -84,9 +112,57 @@ struct CompactBitvector {
 
         reserve(_range.size());
 
-        auto iter = _range.begin();
-        while (totalLength < _range.size()) {
-            push_back(*(iter++));
+        auto _length = _range.size();
+        superblocks.resize(_length/(64*6) + 1);
+
+        auto l0 = Layer{[&](size_t i) -> uint64_t& {
+            return superblocks[i].superBlockEntry;
+        }};
+        auto l1 = Layer{[&](size_t i) {
+            auto sbid = i / 6;
+            auto& sb = superblocks[sbid];
+
+            auto bid = i % 6;
+            return sb.block(bid);
+        }};
+        auto l2 = Layer{[&](size_t i) -> uint64_t& {
+            auto sbid = i / 6;
+            auto& sb = superblocks[sbid];
+
+            auto bid = i % 6;
+            return sb.bits[bid];
+        }};
+
+//        auto acc = Accumulator<64, 384>{};
+
+        for (auto iter = _range.begin(); iter != _range.end(); ++iter) {
+            // run only if full block
+            auto restBits = std::min(size_t{64}, _range.size() - totalLength);
+
+            // concatenate next full block
+            uint64_t bits = *iter;
+            for (size_t i{1}; i < restBits; ++i) {
+                bool value = *(++iter);
+                bits = bits | (uint64_t{value} << i);
+            }
+
+            // update bits and blocks
+            auto l0_id = totalLength / 384;
+            auto l1_id = totalLength / 64;
+            l2[l1_id] = bits;
+            totalLength += restBits;
+
+            // abort - if block not full,
+            if (restBits < 64) {
+                break;
+            }
+            l1[l1_id+1] = l1[l1_id] + std::popcount(bits);
+
+            // check if next superblock is full
+            if (totalLength % 384 == 0) {
+                l0[l0_id+1] = l0[l0_id] + l1[l1_id+1];
+                l1[l1_id+1] = 0;
+            }
         }
     }
 
@@ -97,28 +173,24 @@ struct CompactBitvector {
     auto operator=(CompactBitvector&&) noexcept -> CompactBitvector& = default;
 
     void reserve(size_t _length) {
-        superblocks.reserve((_length+1)/(64*6) + 1);
+        superblocks.reserve(_length/(64*6) + 1);
     }
 
     void push_back(bool _value) {
-        if (_value) {
-            auto blockId      = (totalLength >>  6) % 6;
-            auto bitId        = totalLength &  63;
-
-            auto& bits = superblocks.back().bits[blockId];
-            bits = bits | (1ull << bitId);
-
-            block_acc  += 1;
-            sblock_acc += 1;
-        }
+        auto blockId = (totalLength >>  6) % 6;
+        auto bitId   = totalLength % 64;
+        auto& bits   = superblocks.back().bits[blockId];
+        bits         = bits | (size_t{_value} << bitId);
         totalLength += 1;
+
         if (totalLength % 64 == 0) { // new block
+            auto newS = superblocks.back().getBlock(blockId) + std::popcount(superblocks.back().bits[blockId]);
             if (totalLength % 384 == 0) { // new super block + new block
+                auto s = superblocks.back().superBlockEntry;
                 superblocks.emplace_back();
-                superblocks.back().superBlockEntry = sblock_acc;
-                block_acc = 0;
+                superblocks.back().superBlockEntry = s + newS;
             } else {
-                superblocks.back().setBlock((totalLength % 384) / 64, block_acc);
+                superblocks.back().setBlock(blockId + 1, newS);
             }
         }
     }
@@ -147,7 +219,7 @@ struct CompactBitvector {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(totalLength, superblocks, sblock_acc, block_acc);
+        ar(totalLength, superblocks);
     }
 };
 static_assert(BitVector_c<CompactBitvector>);

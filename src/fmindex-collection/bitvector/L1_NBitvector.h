@@ -30,7 +30,7 @@ namespace fmindex_collection::bitvector {
  */
 template <size_t bits_ct>
 struct L1_NBitvector {
-    std::vector<uint64_t> superblocks{0, 0};
+    std::vector<uint64_t> superblocks{0};
     std::vector<std::bitset<bits_ct>> bits{0};
     size_t totalLength{};
 
@@ -56,27 +56,62 @@ struct L1_NBitvector {
         })}
     {}
 
+    template <typename CB>
+    struct Layer {
+        CB get;
+
+        auto operator[](size_t i) -> decltype(auto) {
+            return get(i);
+        }
+    };
+
     template <std::ranges::sized_range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
     L1_NBitvector(range_t&& _range) {
         reserve(_range.size());
 
-        auto iter = _range.begin();
+        auto _length = _range.size();
+        superblocks.resize(_length/bits_ct + 1);
+        bits.resize(_length/bits_ct + 1);
 
-        size_t const loop64  = _range.size() / bits_ct;
+        auto l0 = Layer{[&](size_t i) -> uint64_t& {
+            return superblocks[i];
+        }};
+        auto l1 = Layer{[&](size_t i) -> decltype(auto) {
+            return bits[i];
+        }};
 
-        for (size_t l64{}; l64 < loop64; ++l64) {
-            for (size_t i{}; i < bits_ct; ++i) {
-                bool value         = *(iter++);
-                bits.back()[i]     = value;
-                superblocks.back() += value;
+        for (auto iter = _range.begin(); iter != _range.end(); ++iter) {
+            // run only if full block
+            auto restBits = std::min(size_t{bits_ct}, _range.size() - totalLength);
+
+            // concatenate next full block
+            auto l0_id = totalLength / bits_ct;
+            auto& bits = l1[l0_id];
+            bits = *iter;
+            if (restBits == bits_ct) {
+                for (size_t j{0}; j < bits_ct/64; ++j) {
+                    uint64_t v{};
+                    for (size_t i{(j==0)?1ull:0ull}; i < 64; ++i) {
+                        bool value = *(++iter);
+                        v |= (uint64_t{value} << i);
+                    }
+                    bits = bits | (std::bitset<bits_ct>{v} << (j*64));
+                }
+            } else {
+                for (size_t i{1}; i < restBits; ++i) {
+                    bool value = *(++iter);
+                    bits = bits | (std::bitset<bits_ct>{value} << i);
+                }
             }
-            superblocks.emplace_back(superblocks.back());
-            bits.emplace_back();
-        }
-        totalLength = bits_ct * loop64;
-        while(totalLength < _range.size()) {
-            push_back(*(iter++));
+
+            totalLength += restBits;
+
+            // abort - if block not full,
+            if (restBits < bits_ct) {
+                break;
+            }
+            l0[l0_id+1] = l0[l0_id] + bits.count();
         }
     }
 
@@ -84,19 +119,17 @@ struct L1_NBitvector {
     auto operator=(L1_NBitvector&&) noexcept -> L1_NBitvector& = default;
 
     void reserve(size_t _length) {
-        superblocks.reserve((_length+1)/bits_ct + 1);
+        superblocks.reserve(_length/bits_ct + 1);
         bits.reserve(_length/bits_ct + 1);
     }
 
     void push_back(bool _value) {
-        if (_value) {
-            auto bitId         = totalLength % bits_ct;
-            bits.back()[bitId] = _value;
-            superblocks.back() += _value;
-        }
+        auto bitId         = totalLength % bits_ct;
+        bits.back()[bitId] = _value;
+
         totalLength += 1;
         if (totalLength % bits_ct == 0) { // new superblock
-            superblocks.emplace_back(superblocks.back());
+            superblocks.emplace_back(superblocks.back() + bits.back().count());
             bits.emplace_back();
         }
     }
