@@ -6,6 +6,7 @@
 #include "concepts.h"
 
 #include <array>
+#include <bit>
 #include <bitset>
 #include <cassert>
 #include <cstddef>
