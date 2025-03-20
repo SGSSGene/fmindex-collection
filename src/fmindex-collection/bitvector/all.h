@@ -12,4 +12,5 @@
 #include "L1_NBitvector.h"
 #include "DoubleL1_NBitvector.h"
 #include "DoubleL1L2_NBitvector.h"
+#include "InterleavedDoubleL1L2_NBitvector.h"
 #include "SparseBLEBitvector.h"
