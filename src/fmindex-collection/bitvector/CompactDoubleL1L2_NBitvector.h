@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../FixedSuccinctVector.h"
+#include "../FixedSuccinctVector2.h"
 #include "../bitset_popcount.h"
 #include "concepts.h"
 
@@ -33,8 +33,9 @@ struct CompactDoubleL1L2_NBitvector {
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static constexpr size_t word_width_l0 = 64;
     static constexpr size_t word_width_l1 = std::bit_width(l0_bits_ct-l1_bits_ct);
-    FixedSuccinctVector<word_width_l0> l0{0};
-    FixedSuccinctVector<word_width_l1> l1{0};
+    std::vector<uint64_t> l0{0};
+//    FixedSuccinctVector2<word_width_l0> l0{0};
+    FixedSuccinctVector2<word_width_l1> l1{0};
     std::vector<std::bitset<l1_bits_ct>> bits{0};
     size_t totalLength{};
     bool finalized{};
@@ -107,7 +108,8 @@ struct CompactDoubleL1L2_NBitvector {
             }
             l0_acc += acc;
             // update l0 (reached center)
-            l0.set(l0I, l0_acc);//acc + [&]() { if(l0I > 0) return l0[l0I-1]; return size_t{0};}();
+            l0[l0I] = l0_acc;
+//            l0.set(l0I, l0_acc);//acc + [&]() { if(l0I > 0) return l0[l0I-1]; return size_t{0};}();
             // walk backwards through left part and revert l0
             for (size_t i{0}; i < l1_block_ct; ++i) {
                 if (i % 2 == 0) {
