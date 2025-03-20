@@ -12,6 +12,7 @@
 #include <pasta/bit_vector/support/flat_rank.hpp>
 #include <pasta/bit_vector/support/wide_rank.hpp>
 #include <rank9.h>
+#include <sdsl/bit_vectors.hpp>
 
 #include "../BenchSize.h"
 #include "allBitVectors.h"
@@ -437,7 +438,68 @@ struct Rank9 {
         return 0;
 //        bitvector.size() * 8 + rank9.
     }
+};
 
+struct SDSL_V {
+    sdsl::bit_vector bitvector;
+    sdsl::bit_vector::rank_1_type bv;
+
+    SDSL_V() = default;
+    SDSL_V(SDSL_V&&) = default;
+    SDSL_V(std::vector<bool> input)
+        : bitvector{[&]() {
+            auto bv = sdsl::bit_vector(input.size(), 0);
+            for (size_t i = 0; i < input.size(); ++i) {
+                bv[i] = input[i];
+            }
+            return bv;
+        }()}
+        , bv{&bitvector}
+    {}
+
+    auto symbol(size_t i) const -> bool {
+        return bitvector[i];
+    }
+
+    auto rank(size_t i) const -> size_t {
+        return bv.rank(i);
+    }
+
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(bitvector, bv);
+    }
+};
+
+struct SDSL_V5 {
+    sdsl::bit_vector bitvector;
+    sdsl::rank_support_v5<> bv;
+
+    SDSL_V5() = default;
+    SDSL_V5(SDSL_V5&&) = default;
+    SDSL_V5(std::vector<bool> input)
+        : bitvector{[&]() {
+            auto bv = sdsl::bit_vector(input.size(), 0);
+            for (size_t i = 0; i < input.size(); ++i) {
+                bv[i] = input[i];
+            }
+            return bv;
+        }()}
+        , bv{&bitvector}
+    {}
+
+    auto symbol(size_t i) const -> bool {
+        return bitvector[i];
+    }
+
+    auto rank(size_t i) const -> size_t {
+        return bv.rank(i);
+    }
+
+    template <typename Archive>
+    void serialize(Archive& ar) {
+        ar(bitvector, bv);
+    }
 };
 
 template <typename ...T>
@@ -483,14 +545,17 @@ TEST_CASE("benchmark bit vectors ctor run times", "[BitVector][!benchmark][time]
             ALLBITVECTORS,
             FlatRank,
             WideRank,
-            Rank9>([&]<typename Vector>() {
+            SDSL_V,
+            SDSL_V5,
+            Rank9
+            >([&]<typename Vector>() {
 
             auto vector_name = getName<Vector>();
             INFO(vector_name);
 
             bench_ctor.batch(text.size()).run(vector_name, [&]() {
                 auto vec = Vector{text};
-                ankerl::nanobench::doNotOptimizeAway(vec);
+                ankerl::nanobench::doNotOptimizeAway(vec.rank(0));
             });
         });
     }
@@ -511,6 +576,8 @@ TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!bench
             ALLBITVECTORS,
             FlatRank,
             WideRank,
+            SDSL_V,
+            SDSL_V5,
             Rank9>([&]<typename Vector>() {
 
             auto vector_name = getName<Vector>();
@@ -545,6 +612,8 @@ TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!bench
             ALLBITVECTORS,
             FlatRank,
             WideRank,
+            SDSL_V,
+            SDSL_V5,
             Rank9>([&]<typename Vector>() {
 
             auto vector_name = getName<Vector>();
@@ -571,6 +640,8 @@ TEST_CASE("benchmark bit vectors memory consumption", "[BitVector][!benchmark][s
             ALLBITVECTORS,
             FlatRank,
             WideRank,
+            SDSL_V,
+            SDSL_V5,
             Rank9>([&]<typename Vector>() {
 
             auto vector_name = getName<Vector>();
