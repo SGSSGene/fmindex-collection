@@ -4,6 +4,7 @@
 #pragma once
 
 #include "concepts.h"
+#include "../bitset_popcount.h"
 
 #include <array>
 #include <bit>

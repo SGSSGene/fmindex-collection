@@ -2,9 +2,16 @@
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
 #include <catch2/catch_all.hpp>
+#include <cstdlib>
 #include <fmindex-collection/utils.h>
 #include <fstream>
 #include <nanobench.h>
+
+#include <pasta/bit_vector/bit_vector.hpp>
+#include <pasta/bit_vector/support/rank.hpp>
+#include <pasta/bit_vector/support/flat_rank.hpp>
+#include <pasta/bit_vector/support/wide_rank.hpp>
+#include <rank9.h>
 
 #include "../BenchSize.h"
 #include "allBitVectors.h"
@@ -342,134 +349,250 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
 }
 
 namespace {
-struct Bench : ankerl::nanobench::Bench {
-    std::stringstream output{};
 
-    Bench(std::string title) {
-        this->title(title)
-            .relative(true)
-            .output(&output)
-        ;
+// Wrapper for other bitvectors
+struct FlatRank {
+    pasta::BitVector bv;
+    pasta::FlatRank<pasta::OptimizedFor::DONT_CARE, pasta::BitVector> rs{bv};
+    FlatRank() = default;
+    FlatRank(FlatRank&&) = default;
+    FlatRank(std::vector<bool> const& input)
+        : bv{[&]() {
+            pasta::BitVector bv{input.size(), 0};
+            for (size_t i = 0; i < bv.size(); ++i) {
+                bv[i] = input[i];
+            }
+            return bv;
+        }()}
+    {
     }
-    ~Bench() {
-        if (output.str().size() > 0) {
-            std::cout << output.str() << '\n';
-        }
+    auto symbol(size_t i) const -> bool {
+        return bv[i];
     }
+    auto rank(size_t i) const -> size_t {
+        return rs.rank1(i);
+    }
+    auto space_usage() const -> size_t {
+        return bv.space_usage() + rs.space_usage();
+    }
+
 };
 
-struct Benchs {
-    Bench bench_rank{"rank()"};
-    Bench bench_symbol{"symbol()"};
-    Bench bench_ctor{"c'tor"};
+struct WideRank {
+    pasta::BitVector bv;
+    pasta::WideRank<pasta::OptimizedFor::DONT_CARE, pasta::BitVector> rs{bv};
+    WideRank() = default;
+    WideRank(WideRank&&) = default;
+    WideRank(std::vector<bool> const& input)
+        : bv{[&]() {
+            pasta::BitVector bv{input.size(), 0};
+            for (size_t i = 0; i < bv.size(); ++i) {
+                bv[i] = input[i];
+            }
+            return bv;
+        }()}
+    {
+    }
+    auto symbol(size_t i) const -> bool {
+        return bv[i];
+    }
+    auto rank(size_t i) const -> size_t {
+        return rs.rank1(i);
+    }
+    auto space_usage() const -> size_t {
+        return bv.space_usage() + rs.space_usage();
+    }
 };
+struct Rank9 {
+    std::vector<uint64_t> bitvector;
+    rank9 bv;
+
+    Rank9() = default;
+    Rank9(Rank9&&) = default;
+    Rank9(std::vector<bool> input)
+        : bitvector{[&]() {
+            auto bitvector = std::vector<uint64_t>{};
+            bitvector.resize(input.size()/64 + 1);
+            for (size_t i = 0; i < input.size(); ++i) {
+                auto id = i / 64;
+                auto offset = i % 64;
+                bitvector[id] |= (input[i]<<offset);
+            }
+            return bitvector;
+        }()}
+        , bv{bitvector.data(), input.size()+1}
+    {}
+
+    auto symbol(size_t i) const -> bool {
+        auto id = i / 64;
+        auto offset = i % 64;
+        return (bitvector[id] >> offset) & 1;
+    }
+
+    auto rank(size_t i) const -> size_t {
+        //hack, since rank9 is not const correct
+        return const_cast<rank9&>(bv).rank(i);
+    }
+    auto space_usage() const -> size_t {
+        return 0;
+//        bitvector.size() * 8 + rank9.
+    }
+
+};
+
+template <typename ...T>
+void call_with_templates(auto f) {
+    (f.template operator()<T>(), ...);
 }
 
-static auto benchs = Benchs{};
-TEMPLATE_TEST_CASE("benchmark bit vectors ctor run times", "[BitVector][!benchmark][time][ctor][.]", ALLBITVECTORS) {
-    using Vector = TestType;
-    auto vector_name = getName<Vector>();
-    INFO(vector_name);
-
-    auto& [bench_rank, bench_symbol, bench_ctor] = benchs;
-
-    SECTION("benchmarking") {
+auto generateText() -> std::vector<bool> const& {
+    static auto text = []() -> std::vector<bool> {
         auto rng = ankerl::nanobench::Rng{};
 
-        auto text = std::vector<uint8_t>{};
-        #ifdef NDEBUG
-        for (size_t i{0}; i<100'000'000; ++i) {
-        #else
-        for (size_t i{0}; i<100'000; ++i) {
-        #endif
+        auto size = []() -> size_t {
+            auto ptr = std::getenv("BITVECTORSIZE");
+            if (ptr) {
+                return std::stoull(ptr);
+            }
+            #ifdef NDEBUG
+                return 10'000'000;
+            #else
+                return 100'000;
+            #endif
+        }();
+
+        auto text = std::vector<bool>{};
+        for (size_t i{0}; i<size; ++i) {
             text.push_back(rng.bounded(4) == 0);
         }
-
-        size_t minEpochIterations = 2'000'000;
-        minEpochIterations = 1;
-
-        bench_ctor.minEpochIterations(minEpochIterations).batch(text.size()).run(vector_name, [&]() {
-            auto vec = Vector{text};
-            ankerl::nanobench::doNotOptimizeAway(vec);
-        });
-    }
-}
-
-static auto seed = ankerl::nanobench::Rng{0}();
-static auto text_time = []() -> std::vector<uint8_t> {
-    auto rng = ankerl::nanobench::Rng{seed};
-
-    auto text = std::vector<uint8_t>{};
-    #ifdef NDEBUG
-    for (size_t i{0}; i<10'000'000; ++i) {
-    #else
-    for (size_t i{0}; i<100'000; ++i) {
-    #endif
-        text.push_back(rng.bounded(4) == 0);
-    }
+        return text;
+    }();
     return text;
-}();
+}
+}
 
-TEMPLATE_TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!benchmark][time]", ALLBITVECTORS) {
-    using Vector = TestType;
-    auto vector_name = getName<Vector>();
-    INFO(vector_name);
+TEST_CASE("benchmark bit vectors ctor run times", "[BitVector][!benchmark][time][ctor][.]") {
+    auto bench_ctor = ankerl::nanobench::Bench{};
+    bench_ctor.title("c'tor()")
+              .relative(true);
 
-    auto& [bench_rank, bench_symbol, bench_ctor] = benchs;
+    auto& text = generateText();
 
     SECTION("benchmarking") {
-        auto rng = ankerl::nanobench::Rng{};
+        call_with_templates<
+            ALLBITVECTORS,
+            FlatRank,
+            WideRank,
+            Rank9>([&]<typename Vector>() {
 
-        auto const& text = text_time;
-        auto vec = Vector{text};
+            auto vector_name = getName<Vector>();
+            INFO(vector_name);
 
-        size_t minEpochIterations = 10'000'000;
-//        minEpochIterations = 1;
-
-        bench_symbol.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
-            auto v = vec.symbol(rng.bounded(text.size()));
-            ankerl::nanobench::doNotOptimizeAway(v);
-        });
-        bench_rank.minEpochIterations(minEpochIterations).run(vector_name, [&]() {
-            auto v = vec.rank(rng.bounded(text.size()));
-            ankerl::nanobench::doNotOptimizeAway(v);
+            bench_ctor.batch(text.size()).run(vector_name, [&]() {
+                auto vec = Vector{text};
+                ankerl::nanobench::doNotOptimizeAway(vec);
+            });
         });
     }
 }
 
-namespace {
-BenchSize benchSize;
+TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!benchmark][time][rank][symbol]") {
+
+    auto& text = generateText();
+
+    SECTION("benchmarking - symbol") {
+        auto bench_symbol = ankerl::nanobench::Bench{};
+        bench_symbol.title("symbol()")
+                    .relative(true);
+
+        bench_symbol.epochs(10);
+        bench_symbol.minEpochTime(std::chrono::milliseconds{10});
+        call_with_templates<
+            ALLBITVECTORS,
+            FlatRank,
+            WideRank,
+            Rank9>([&]<typename Vector>() {
+
+            auto vector_name = getName<Vector>();
+            INFO(vector_name);
+
+            auto rng = ankerl::nanobench::Rng{};
+
+            auto vec = Vector{text};
+
+            bench_symbol.run(vector_name, [&]() {
+                auto v = vec.symbol(rng.bounded(text.size()));
+                ankerl::nanobench::doNotOptimizeAway(v);
+            });
+        });
+    }
+
+    SECTION("benchmarking - rank") {
+        auto bench_rank = ankerl::nanobench::Bench{};
+        bench_rank.title("rank()")
+                  .relative(true);
+
+        bench_rank.epochs(20);
+        bench_rank.minEpochTime(std::chrono::milliseconds{1});
+        bench_rank.minEpochIterations(1'000'000);
+
+        call_with_templates<
+            ALLBITVECTORS,
+            FlatRank,
+            WideRank,
+            Rank9>([&]<typename Vector>() {
+
+            auto vector_name = getName<Vector>();
+            INFO(vector_name);
+
+            auto rng = ankerl::nanobench::Rng{};
+
+            auto vec = Vector{text};
+
+            bench_rank.run(vector_name, [&]() {
+                auto v = vec.rank(rng.bounded(text.size()));
+                ankerl::nanobench::doNotOptimizeAway(v);
+            });
+        });
+    }
 }
 
-TEMPLATE_TEST_CASE("benchmark bit vectors memory consumption", "[BitVector][!benchmark][size]", ALLBITVECTORS) {
-    using Vector = TestType;
-    auto vector_name = getName<Vector>();
-    INFO(vector_name);
+TEST_CASE("benchmark bit vectors memory consumption", "[BitVector][!benchmark][size]") {
+    BenchSize benchSize;
 
     SECTION("benchmarking") {
-        auto rng = ankerl::nanobench::Rng{};
+        call_with_templates<
+            ALLBITVECTORS,
+            FlatRank,
+            WideRank,
+            Rank9>([&]<typename Vector>() {
 
-        auto text = std::vector<uint8_t>{};
-        #ifdef NDEBUG
-        for (size_t i{0}; i<100'000'000; ++i) {
-        #else
-        for (size_t i{0}; i<100'000; ++i) {
-        #endif
-            text.push_back(rng.bounded(4) == 0);
-        }
-        auto vec = Vector{text};
-        {
-            auto ofs     = std::stringstream{};
-            auto archive = cereal::BinaryOutputArchive{ofs};
-            archive(vec);
-            auto s = ofs.str().size();
-            benchSize.addEntry({
-                .name = vector_name,
-                .size = s,
-                .text_size = text.size(),
-                .bits_per_char = (s*8)/double(text.size())
-            });
-        }
+            auto vector_name = getName<Vector>();
+            INFO(vector_name);
 
+            auto& text = generateText();
+
+            auto vec = Vector{text};
+            if constexpr (requires() { vec.space_usage(); }) {
+                auto s = vec.space_usage();
+                benchSize.addEntry({
+                    .name = vector_name,
+                    .size = s,
+                    .text_size = text.size(),
+                    .bits_per_char = (s*8)/double(text.size())
+                });
+            } else {
+                auto ofs     = std::stringstream{};
+                auto archive = cereal::BinaryOutputArchive{ofs};
+                archive(vec);
+                auto s = ofs.str().size();
+                benchSize.addEntry({
+                    .name = vector_name,
+                    .size = s,
+                    .text_size = text.size(),
+                    .bits_per_char = (s*8)/double(text.size())
+                });
+            }
+        });
     }
 }

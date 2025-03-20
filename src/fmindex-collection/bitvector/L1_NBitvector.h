@@ -88,7 +88,7 @@ struct L1_NBitvector {
             // concatenate next full block
             auto l0_id = totalLength / bits_ct;
             auto& bits = l1[l0_id];
-            bits = *iter;
+            bits = bool(*iter);
             if (restBits == bits_ct) {
                 for (size_t j{0}; j < bits_ct/64; ++j) {
                     uint64_t v{};

@@ -8,6 +8,18 @@
 #include <vector>
 
 struct BenchSize {
+    // # 4 columns:
+    // - relative
+    // - total size (in bits)
+    // - bits per entry
+    // - name
+    std::vector<std::array<std::string, 4>> entries {
+        {"relative", "size", "bits/bit", "name"}
+    };
+    std::array<size_t, 4> sizesPerColumn{
+        entries.back()[0].size(), entries.back()[1].size(), entries.back()[2].size(), entries.back()[3].size()
+    };
+
     struct Entry {
         std::string name;
         size_t      size;
@@ -15,39 +27,36 @@ struct BenchSize {
         double      bits_per_char;
         double      relative{};
     };
+    size_t firstEntrySize{};
 
     void addEntry(Entry e) {
-        entries.push_back(e);
-        entries.back().relative = double(entries.back().size) / entries[0].size * 100.;
-    }
+        if (entries.size() == 1) {
+            firstEntrySize = e.size;
+        }
 
-    std::vector<Entry> entries;
+        entries.push_back({
+            fmt::format("{:.1f}%", double(e.size) / firstEntrySize*100.),
+            fmt::format(std::locale("en_US.UTF-8"), "{:L}", e.size),
+            fmt::format("{:.3f}", e.bits_per_char),
+            fmt::format("{}", e.name)
+        });
+
+        auto& c = sizesPerColumn;
+        for (size_t i{0}; i < c.size(); ++i) {
+            c[i] = std::max(c[i], entries.back()[i].size());
+        }
+    }
 
     ~BenchSize() {
         if (entries.empty()) return;
-        auto lines = std::vector<std::string>{};
-        lines.resize(entries.size());
-
-        auto addColumn = [&]<typename T>(fmt::format_string<T&, size_t&> fmt, T BenchSize::Entry::*ptr) {
-            size_t longestLine{};
-            for (size_t i{0}; i < lines.size(); ++i) {
-                size_t x = 1;
-                auto t = fmt::format(fmt, entries[i].*ptr, x);
-                longestLine = std::max(longestLine, t.size());
+        for (size_t i{0}; i < entries.size(); ++i) {
+            auto& e = entries[i];
+            auto sc = sizesPerColumn;
+            if (i == 1) {
+                fmt::print("|-{0:->{1}}-|-{0:->{2}}-|-{0:->{3}}-|-{0:-<{4}}-|\n", "", sc[0], sc[1], sc[2], sc[3]);
             }
-            for (size_t i{0}; i < lines.size(); ++i) {
-                auto t = fmt::format(fmt, entries[i].*ptr, longestLine);
-                lines[i] = fmt::format("{} | {}", lines[i], t);
-            }
-        };
 
-        addColumn("{: >{}.1f}%", &BenchSize::Entry::relative);
-        addColumn("{: >{}}", &BenchSize::Entry::size);
-        addColumn("{: >{}.3f}", &BenchSize::Entry::bits_per_char);
-        addColumn("{:<{}}", &BenchSize::Entry::name);
-
-        for (size_t i{0}; i < lines.size(); ++i) {
-            std::cout << fmt::format("{}\n", lines[i]);
+            fmt::print("| {: >{}} | {: >{}} | {: >{}} | {: <{}} |\n", e[0], sc[0], e[1], sc[1], e[2], sc[2], e[3], sc[3]);
         }
     }
 };
