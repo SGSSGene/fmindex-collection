@@ -496,7 +496,7 @@ TEST_CASE("benchmark bit vectors ctor run times", "[BitVector][!benchmark][time]
     }
 }
 
-TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!benchmark][time][rank][symbol]") {
+TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!benchmark][time][symbol]") {
 
     auto& text = generateText();
 
@@ -526,6 +526,11 @@ TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!bench
             });
         });
     }
+}
+
+TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!benchmark][time][rank]") {
+
+    auto& text = generateText();
 
     SECTION("benchmarking - rank") {
         auto bench_rank = ankerl::nanobench::Bench{};
@@ -556,6 +561,7 @@ TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!bench
         });
     }
 }
+
 
 TEST_CASE("benchmark bit vectors memory consumption", "[BitVector][!benchmark][size]") {
     BenchSize benchSize;
