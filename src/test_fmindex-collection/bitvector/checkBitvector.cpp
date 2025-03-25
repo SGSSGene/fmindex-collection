@@ -222,15 +222,16 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
             vec1.push_back(text.back());
 
             auto vec2 = Vector{text};
+            auto vec3 = vec1;
             SECTION("check vec2 and vec are the same") {
                 for (size_t i{0}; i < text.size(); ++i) {
                     INFO(i);
-                    CHECK(vec1.symbol(i) == bool(text.at(i)));
+                    CHECK(vec3.symbol(i) == bool(text.at(i)));
                     CHECK(vec2.symbol(i) == bool(text.at(i)));
-                    CHECK(vec1.rank(i) == rank.at(i));
+                    CHECK(vec3.rank(i) == rank.at(i));
                     CHECK(vec2.rank(i) == rank.at(i));
                 }
-                CHECK(vec1.rank(text.size()) == rank.back());
+                CHECK(vec3.rank(text.size()) == rank.back());
                 CHECK(vec2.rank(text.size()) == rank.back());
 
 

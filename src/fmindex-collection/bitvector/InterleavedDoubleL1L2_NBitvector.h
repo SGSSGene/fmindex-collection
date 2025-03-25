@@ -41,8 +41,6 @@ struct InterleavedDoubleL1L2_NBitvector {
         }
     };
     std::vector<Entries> l0l1{Entries{{0}, 0}};
-//    std::vector<uint64_t> l0{0};
-//    std::vector<uint16_t> l1{0};
     std::vector<std::bitset<l1_bits_ct>> bits{0};
     size_t totalLength{};
     bool finalized{};
