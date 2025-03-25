@@ -6,7 +6,7 @@
 #include <fmindex-collection/bitvector/all.h>
 
 
-#if !__clang__ || __clang_major >= 19 // !TODO workaround (weird optimization bug?)
+#if !__clang__ || __clang_major__ >= 19 // !TODO workaround (weird optimization bug?)
 #define AddIfNotClang18OrOlder(x) x,
 #else
 #define AddIfNotClang18OrOlder(x)
