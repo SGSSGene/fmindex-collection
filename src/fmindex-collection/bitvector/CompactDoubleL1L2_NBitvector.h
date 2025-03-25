@@ -22,7 +22,7 @@
 
 namespace fmindex_collection::bitvector {
 
-#if !__clang__ || __clang_major >= 19 // !TODO workaround (weird optimization bug?)
+#if !__clang__ || __clang_major__ >= 19 // !TODO workaround (weird optimization bug?)
 
 /**
  * CompactDoubleL1L2_NBitvector a bit vector with only bits and blocks
@@ -34,7 +34,6 @@ struct CompactDoubleL1L2_NBitvector {
     static constexpr size_t word_width_l0 = 64;
     static constexpr size_t word_width_l1 = std::bit_width(l0_bits_ct-l1_bits_ct);
     std::vector<uint64_t> l0{0};
-//    FixedSuccinctVector2<word_width_l0> l0{0};
     FixedSuccinctVector2<word_width_l1> l1{0};
     std::vector<std::bitset<l1_bits_ct>> bits{0};
     size_t totalLength{};
