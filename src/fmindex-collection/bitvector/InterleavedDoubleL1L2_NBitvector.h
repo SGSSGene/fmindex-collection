@@ -40,7 +40,7 @@ struct InterleavedDoubleL1L2_NBitvector {
             ar(l0, l1);
         }
     };
-    std::vector<Entries> l0l1{Entries{{0}, 0}};
+    std::vector<Entries> l0l1{Entries{{0}, {0}}};
     std::vector<std::bitset<l1_bits_ct>> bits{0};
     size_t totalLength{};
     bool finalized{};
