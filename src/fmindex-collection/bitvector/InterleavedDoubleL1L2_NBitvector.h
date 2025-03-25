@@ -26,9 +26,8 @@ namespace fmindex_collection::bitvector {
  * InterleavedDoubleL1L2_NBitvector a bit vector with only bits and blocks
  *
  */
-template <size_t l1_bits_ct>
+template <size_t l1_bits_ct, size_t l0_bits_ct>
 struct InterleavedDoubleL1L2_NBitvector {
-    static constexpr size_t l0_bits_ct = 65536;
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static_assert(l0_bits_ct-l1_bits_ct <= std::numeric_limits<uint16_t>::max(), "l0_bits_ct can only hold up to uint16_t bits");
 
@@ -201,19 +200,33 @@ struct InterleavedDoubleL1L2_NBitvector {
     }
 
 };
-using InterleavedDoubleL1L2_64Bitvector   = InterleavedDoubleL1L2_NBitvector<64>;
-using InterleavedDoubleL1L2_128Bitvector  = InterleavedDoubleL1L2_NBitvector<128>;
-using InterleavedDoubleL1L2_256Bitvector  = InterleavedDoubleL1L2_NBitvector<256>;
-using InterleavedDoubleL1L2_512Bitvector  = InterleavedDoubleL1L2_NBitvector<512>;
-using InterleavedDoubleL1L2_1024Bitvector = InterleavedDoubleL1L2_NBitvector<1024>;
-using InterleavedDoubleL1L2_2048Bitvector = InterleavedDoubleL1L2_NBitvector<2048>;
 
-static_assert(BitVector_c<InterleavedDoubleL1L2_64Bitvector>);
-static_assert(BitVector_c<InterleavedDoubleL1L2_128Bitvector>);
-static_assert(BitVector_c<InterleavedDoubleL1L2_256Bitvector>);
-static_assert(BitVector_c<InterleavedDoubleL1L2_512Bitvector>);
-static_assert(BitVector_c<InterleavedDoubleL1L2_1024Bitvector>);
-static_assert(BitVector_c<InterleavedDoubleL1L2_2048Bitvector>);
+using InterleavedDoubleL1L2_64_4kBitvector   = InterleavedDoubleL1L2_NBitvector<64, 4096>;
+using InterleavedDoubleL1L2_128_4kBitvector  = InterleavedDoubleL1L2_NBitvector<128, 4096>;
+using InterleavedDoubleL1L2_256_4kBitvector  = InterleavedDoubleL1L2_NBitvector<256, 4096>;
+using InterleavedDoubleL1L2_512_4kBitvector  = InterleavedDoubleL1L2_NBitvector<512, 4096>;
+using InterleavedDoubleL1L2_1024_4kBitvector = InterleavedDoubleL1L2_NBitvector<1024, 4096>;
+using InterleavedDoubleL1L2_2048_4kBitvector = InterleavedDoubleL1L2_NBitvector<2048, 4096>;
 
+static_assert(BitVector_c<InterleavedDoubleL1L2_64_4kBitvector>);
+static_assert(BitVector_c<InterleavedDoubleL1L2_128_4kBitvector>);
+static_assert(BitVector_c<InterleavedDoubleL1L2_256_4kBitvector>);
+static_assert(BitVector_c<InterleavedDoubleL1L2_512_4kBitvector>);
+static_assert(BitVector_c<InterleavedDoubleL1L2_1024_4kBitvector>);
+static_assert(BitVector_c<InterleavedDoubleL1L2_2048_4kBitvector>);
+
+using InterleavedDoubleL1L2_64_64kBitvector   = InterleavedDoubleL1L2_NBitvector<64, 65536>;
+using InterleavedDoubleL1L2_128_64kBitvector  = InterleavedDoubleL1L2_NBitvector<128, 65536>;
+using InterleavedDoubleL1L2_256_64kBitvector  = InterleavedDoubleL1L2_NBitvector<256, 65536>;
+using InterleavedDoubleL1L2_512_64kBitvector  = InterleavedDoubleL1L2_NBitvector<512, 65536>;
+using InterleavedDoubleL1L2_1024_64kBitvector = InterleavedDoubleL1L2_NBitvector<1024, 65536>;
+using InterleavedDoubleL1L2_2048_64kBitvector = InterleavedDoubleL1L2_NBitvector<2048, 65536>;
+
+static_assert(BitVector_c<InterleavedDoubleL1L2_64_64kBitvector>);
+static_assert(BitVector_c<InterleavedDoubleL1L2_128_64kBitvector>);
+static_assert(BitVector_c<InterleavedDoubleL1L2_256_64kBitvector>);
+static_assert(BitVector_c<InterleavedDoubleL1L2_512_64kBitvector>);
+static_assert(BitVector_c<InterleavedDoubleL1L2_1024_64kBitvector>);
+static_assert(BitVector_c<InterleavedDoubleL1L2_2048_64kBitvector>);
 
 }
