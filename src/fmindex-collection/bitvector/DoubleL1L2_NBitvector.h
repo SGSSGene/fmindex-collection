@@ -146,7 +146,7 @@ struct DoubleL1L2_NBitvector {
         assert(idx < totalLength);
         auto bitId = idx % l1_bits_ct;
         auto l1Id  = idx / l1_bits_ct;
-        assert(l1Id/2 < bits.size());
+        assert(l1Id < bits.size());
         auto bit = bits[l1Id][bitId];
         return bit;
     }
@@ -157,7 +157,8 @@ struct DoubleL1L2_NBitvector {
         auto bitId = idx % (l1_bits_ct*2);
         auto l1Id = idx / l1_bits_ct;
         auto l0Id = idx / l0_bits_ct;
-        assert(l1Id/2 < bits.size());
+        assert(l1Id < bits.size());
+        assert(l1Id/2 < l1.size());
         assert(l0Id/2 < l0.size());
 
         int64_t right_l1 = (l1Id%2)*2-1;
