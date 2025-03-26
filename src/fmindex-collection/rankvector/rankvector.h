@@ -17,6 +17,7 @@
 #include "DoubleNEPRV8.h"
 #include "NEPRV8.h"
 #include "L1L2_NEPRV9.h"
+#include "PairedL1L2_NEPRV9.h"
 #include "InterleavedWavelet.h"
 #include "Wavelet.h"
 #include "RBBwt.h"
