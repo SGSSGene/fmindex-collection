@@ -26,7 +26,7 @@ namespace fmindex_collection::bitvector {
  * L1L2_NBitvector a bit vector with only bits and blocks
  *
  */
-template <size_t l1_bits_ct, size_t l0_bits_ct>
+template <size_t l1_bits_ct, size_t l0_bits_ct, bool shift_and_count=false>
 struct L1L2_NBitvector {
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static_assert(l0_bits_ct-l1_bits_ct <= std::numeric_limits<uint16_t>::max(), "l0_bits_ct can only hold up to uint16_t bits");
@@ -140,7 +140,13 @@ struct L1L2_NBitvector {
         assert(l1Id < bits.size());
         assert(l0Id < l0.size());
 
-        auto count = skip_first_or_last_n_bits_and_count(bits[l1Id], bitId + l1_bits_ct);
+        auto count = [&]() {
+            if constexpr (shift_and_count) {
+                return (bits[l1Id] << (l1_bits_ct - bitId)).count();
+            } else {
+                return skip_first_or_last_n_bits_and_count(bits[l1Id], bitId + l1_bits_ct);
+            }
+        }();
 
         auto r = l0[l0Id] + l1[l1Id] + count;
         assert(r <= idx);
@@ -189,5 +195,9 @@ static_assert(BitVector_c<L1L2_512_64kBitvector>);
 static_assert(BitVector_c<L1L2_1024_64kBitvector>);
 static_assert(BitVector_c<L1L2_2048_64kBitvector>);
 
+using L1L2_64_64kBitvector_ShiftAndCount   = L1L2_NBitvector<64, 65536, true>;
+using L1L2_512_64kBitvector_ShiftAndCount  = L1L2_NBitvector<512, 65536, true>;
+static_assert(BitVector_c<L1L2_64_64kBitvector_ShiftAndCount>);
+static_assert(BitVector_c<L1L2_512_64kBitvector_ShiftAndCount>);
 
 }
