@@ -571,7 +571,7 @@ TEMPLATE_TEST_CASE("benchmark vectors alphabet=256 size", "[RankVector][!benchma
 
 #if 1
 TEST_CASE("benchmark vectors c'tor operation, dna4 like", "[RankVector][!benchmark][5][time][ctor][.]") {
-    auto const& text = generateText();
+    auto const& text = generateText<1, 4>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -597,7 +597,7 @@ TEST_CASE("benchmark vectors c'tor operation, dna4 like", "[RankVector][!benchma
 }
 
 TEST_CASE("benchmark vectors symbol() operations, dna4 like", "[RankVector][!benchmark][5][time][symbol]") {
-    auto const& text = generateText();
+    auto const& text = generateText<1, 4>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -627,7 +627,7 @@ TEST_CASE("benchmark vectors symbol() operations, dna4 like", "[RankVector][!ben
 }
 #endif
 TEST_CASE("benchmark vectors rank() operations, dna4 like", "[RankVector][!benchmark][5][time][rank]") {
-    auto const& text = generateText();
+    auto const& text = generateText<1, 4>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -656,7 +656,7 @@ TEST_CASE("benchmark vectors rank() operations, dna4 like", "[RankVector][!bench
 }
 #if 1
 TEST_CASE("benchmark vectors prefix_rank() operations, dna4 like", "[RankVector][!benchmark][5][time][prefix_rank]") {
-    auto const& text = generateText();
+    auto const& text = generateText<1, 4>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -685,7 +685,7 @@ TEST_CASE("benchmark vectors prefix_rank() operations, dna4 like", "[RankVector]
 }
 
 TEST_CASE("benchmark vectors all_ranks() operations, dna4 like", "[RankVector][!benchmark][5][time][all_ranks]") {
-    auto const& text = generateText();
+    auto const& text = generateText<1, 4>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -713,7 +713,7 @@ TEST_CASE("benchmark vectors all_ranks() operations, dna4 like", "[RankVector][!
     }
 }
 TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations, dna4 like", "[RankVector][!benchmark][5][time][all_ranks_and_prefix_ranks]") {
-    auto const& text = generateText();
+    auto const& text = generateText<1, 4>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -742,7 +742,7 @@ TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations, dna4 like"
 }
 
 TEST_CASE("benchmark vectors in size, dna4 like", "[RankVector][!benchmark][5][size]") {
-    auto const& text = generateText();
+    auto const& text = generateText<1, 4>();
 
     SECTION("benchmarking") {
         BenchSize benchSize;

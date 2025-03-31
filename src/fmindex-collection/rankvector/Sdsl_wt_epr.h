@@ -46,6 +46,16 @@ struct Sdsl_wt_epr {
     }
 
     uint8_t symbol(uint64_t idx) const {
+        assert([&]() {
+            for (size_t s{0}; s < Sigma; ++s) {
+                auto diff = rank(idx+1, s) - rank(idx, s);
+                if (diff != 0) {
+                    return index[idx] == s;
+                }
+            }
+            return true;
+        }());
+
         return index[idx];
     }
 

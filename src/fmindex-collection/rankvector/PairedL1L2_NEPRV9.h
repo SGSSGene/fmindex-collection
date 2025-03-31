@@ -221,15 +221,33 @@ struct PairedL1L2_NEPRV9 {
     }
 
     uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
-        (void)idx;
-        (void)symb;
-        return 0; //!TODO
+        assert(idx <= totalLength);
+        auto bitId = idx % (l1_bits_ct*2);
+        auto l1Id = idx / l1_bits_ct;
+        auto l0Id = idx / l0_bits_ct;
+        assert(l1Id < bits.size());
+        assert(l1Id/2 < l1.size());
+        assert(l0Id/2 < l0.size());
+
+        int64_t right_l1 = (l1Id%2)*2-1;
+        int64_t right_l0 = (l0Id%2)*2-1;
+
+        size_t r{};
+        for (size_t s{0}; s <= symb; ++s) {
+            auto count = bits[l1Id].rank(bitId, s);
+            r += l0[l0Id/2][s] + right_l0 * l1[l1Id/2][s] + right_l1 * count;
+            assert(r <= idx);
+        }
+        return r;
     }
 
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
-        (void)idx;
-        return {}; //!TODO
+        auto r = std::array<uint64_t, TSigma>{};
+        for (size_t symb{0}; symb < TSigma; ++symb) {
+            r[symb] = rank(idx, symb);
+        }
+        return r;
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
