@@ -16,9 +16,6 @@ struct BenchSize {
     std::vector<std::array<std::string, 4>> entries {
         {"relative", "size", "bits/bit", "name"}
     };
-    std::array<size_t, 4> sizesPerColumn{
-        entries.back()[0].size(), entries.back()[1].size(), entries.back()[2].size(), entries.back()[3].size()
-    };
 
     struct Entry {
         std::string name;
@@ -40,18 +37,24 @@ struct BenchSize {
             fmt::format("{:.3f}", e.bits_per_char),
             fmt::format("{}", e.name)
         });
-
-        auto& c = sizesPerColumn;
-        for (size_t i{0}; i < c.size(); ++i) {
-            c[i] = std::max(c[i], entries.back()[i].size());
-        }
     }
 
     ~BenchSize() {
-        if (entries.empty()) return;
+        if (entries.size() < 2) return;
+        fmt::print("\n");
+
+        auto sizesPerColumn = std::array<size_t, 4>{};
+
+        auto& c = sizesPerColumn;
+        for (auto const& e : entries) {
+            for (size_t i{0}; i < c.size(); ++i) {
+                c[i] = std::max(c[i], e[i].size());
+            }
+        }
+
         for (size_t i{0}; i < entries.size(); ++i) {
-            auto& e = entries[i];
-            auto sc = sizesPerColumn;
+            auto const& e = entries[i];
+            auto const& sc = sizesPerColumn;
             if (i == 1) {
                 fmt::print("|-{0:->{1}}-|-{0:->{2}}-|-{0:->{3}}-|-{0:-<{4}}-|\n", "", sc[0], sc[1], sc[2], sc[3]);
             }
