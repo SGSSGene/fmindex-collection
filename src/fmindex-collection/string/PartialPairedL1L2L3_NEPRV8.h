@@ -21,8 +21,11 @@
 
 namespace fmindex_collection::string {
 
+/*
+ * PartialPairedL1L2L3 EPRv2 Implementation
+ */
 template <size_t TSigma, size_t popcount_width, typename blockL0_t = uint16_t, typename blockL1_t = uint32_t>
-struct DoubleNEPRV8 {
+struct PartialPairedL1L2L3_NEPRV8 {
 
     static constexpr size_t Sigma = TSigma;
 
@@ -111,8 +114,8 @@ struct DoubleNEPRV8 {
 
     size_t totalLength;
 
-    DoubleNEPRV8() = default;
-    DoubleNEPRV8(std::span<uint8_t const> _symbols) {
+    PartialPairedL1L2L3_NEPRV8() = default;
+    PartialPairedL1L2L3_NEPRV8(std::span<uint8_t const> _symbols) {
         totalLength = _symbols.size();
         auto const length = _symbols.size();
         level1.reserve(length/(1ull<<level1_size)+2);
@@ -303,36 +306,36 @@ struct DoubleNEPRV8 {
 };
 
 template <size_t Sigma>
-using Double64ShortEPRV8 = DoubleNEPRV8<Sigma, 64, uint8_t, uint16_t>;
-static_assert(checkRankVector<Double64ShortEPRV8>);
+using PartialPairedL1L2L3_64ShortEPRV8 = PartialPairedL1L2L3_NEPRV8<Sigma, 64, uint8_t, uint16_t>;
+static_assert(checkRankVector<PartialPairedL1L2L3_64ShortEPRV8>);
 
 template <size_t Sigma>
-using Double128ShortEPRV8 = DoubleNEPRV8<Sigma, 128, uint8_t, uint16_t>;
-static_assert(checkRankVector<Double128ShortEPRV8>);
+using PartialPairedL1L2L3_128ShortEPRV8 = PartialPairedL1L2L3_NEPRV8<Sigma, 128, uint8_t, uint16_t>;
+static_assert(checkRankVector<PartialPairedL1L2L3_128ShortEPRV8>);
 
 template <size_t Sigma>
-using Double64EPRV8 = DoubleNEPRV8<Sigma, 64>;
-static_assert(checkRankVector<Double64EPRV8>);
+using PartialPairedL1L2L3_64EPRV8 = PartialPairedL1L2L3_NEPRV8<Sigma, 64>;
+static_assert(checkRankVector<PartialPairedL1L2L3_64EPRV8>);
 
 template <size_t Sigma>
-using Double128EPRV8 = DoubleNEPRV8<Sigma, 128>;
-static_assert(checkRankVector<Double128EPRV8>);
+using PartialPairedL1L2L3_128EPRV8 = PartialPairedL1L2L3_NEPRV8<Sigma, 128>;
+static_assert(checkRankVector<PartialPairedL1L2L3_128EPRV8>);
 
 template <size_t Sigma>
-using Double256EPRV8 = DoubleNEPRV8<Sigma, 256>;
-static_assert(checkRankVector<Double256EPRV8>);
+using PartialPairedL1L2L3_256EPRV8 = PartialPairedL1L2L3_NEPRV8<Sigma, 256>;
+static_assert(checkRankVector<PartialPairedL1L2L3_256EPRV8>);
 
 template <size_t Sigma>
-using Double512EPRV8 = DoubleNEPRV8<Sigma, 512>;
-static_assert(checkRankVector<Double512EPRV8>);
+using PartialPairedL1L2L3_512EPRV8 = PartialPairedL1L2L3_NEPRV8<Sigma, 512>;
+static_assert(checkRankVector<PartialPairedL1L2L3_512EPRV8>);
 
 template <size_t Sigma>
-using Double1024EPRV8 = DoubleNEPRV8<Sigma, 1024>;
-static_assert(checkRankVector<Double1024EPRV8>);
+using PartialPairedL1L2L3_1024EPRV8 = PartialPairedL1L2L3_NEPRV8<Sigma, 1024>;
+static_assert(checkRankVector<PartialPairedL1L2L3_1024EPRV8>);
 
 template <size_t Sigma>
-using Double2048EPRV8 = DoubleNEPRV8<Sigma, 2048>;
-static_assert(checkRankVector<Double2048EPRV8>);
+using PartialPairedL1L2L3_2048EPRV8 = PartialPairedL1L2L3_NEPRV8<Sigma, 2048>;
+static_assert(checkRankVector<PartialPairedL1L2L3_2048EPRV8>);
 
 
 }
