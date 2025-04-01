@@ -22,7 +22,7 @@
 namespace fmindex_collection::bitvector {
 
 /**
- * DoubleL1_NBitvector a bit vector with only bits and blocks
+ * PairedL1_NBitvector a bit vector with only bits and blocks
  *
  *   (64) For 128bits, we need 192bits, resulting in 1.5bits per bit
  *   (128) for 256bits, we need 320bits, resulting in 1.25bits per bit
@@ -31,25 +31,25 @@ namespace fmindex_collection::bitvector {
  *   (1024) for 2048bits, we need 2112bits, resulting in 1.0312bits per bit
  */
 template <size_t bits_ct>
-struct DoubleL1_NBitvector {
+struct PairedL1_NBitvector {
     std::vector<uint64_t> l0{0};
     std::vector<std::bitset<bits_ct>> bits{0};
     size_t totalLength{};
 
-    DoubleL1_NBitvector() = default;
-    DoubleL1_NBitvector(DoubleL1_NBitvector const&) = default;
-    DoubleL1_NBitvector(DoubleL1_NBitvector&&) noexcept = default;
+    PairedL1_NBitvector() = default;
+    PairedL1_NBitvector(PairedL1_NBitvector const&) = default;
+    PairedL1_NBitvector(PairedL1_NBitvector&&) noexcept = default;
 
     template <typename CB>
-    DoubleL1_NBitvector(size_t length, CB cb)
-        : DoubleL1_NBitvector{std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
+    PairedL1_NBitvector(size_t length, CB cb)
+        : PairedL1_NBitvector{std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
             return cb(i);
         })}
     {}
 
     template <std::ranges::sized_range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
-    DoubleL1_NBitvector(range_t&& _range) {
+    PairedL1_NBitvector(range_t&& _range) {
         reserve(_range.size());
 
         auto iter = _range.begin();
@@ -77,8 +77,8 @@ struct DoubleL1_NBitvector {
         }
     }
 
-    auto operator=(DoubleL1_NBitvector const&) -> DoubleL1_NBitvector& = default;
-    auto operator=(DoubleL1_NBitvector&&) noexcept -> DoubleL1_NBitvector& = default;
+    auto operator=(PairedL1_NBitvector const&) -> PairedL1_NBitvector& = default;
+    auto operator=(PairedL1_NBitvector&&) noexcept -> PairedL1_NBitvector& = default;
 
     void reserve(size_t _length) {
         l0.reserve((_length+1)/(bits_ct*2) + 1);
@@ -137,18 +137,18 @@ struct DoubleL1_NBitvector {
     }
 
 };
-using DoubleL1_64Bitvector  = DoubleL1_NBitvector<64>;
-using DoubleL1_128Bitvector = DoubleL1_NBitvector<128>;
-using DoubleL1_256Bitvector = DoubleL1_NBitvector<256>;
-using DoubleL1_512Bitvector = DoubleL1_NBitvector<512>;
-using DoubleL1_1024Bitvector = DoubleL1_NBitvector<1024>;
-using DoubleL1_2048Bitvector = DoubleL1_NBitvector<2048>;
+using PairedL1_64Bitvector  = PairedL1_NBitvector<64>;
+using PairedL1_128Bitvector = PairedL1_NBitvector<128>;
+using PairedL1_256Bitvector = PairedL1_NBitvector<256>;
+using PairedL1_512Bitvector = PairedL1_NBitvector<512>;
+using PairedL1_1024Bitvector = PairedL1_NBitvector<1024>;
+using PairedL1_2048Bitvector = PairedL1_NBitvector<2048>;
 
-static_assert(BitVector_c<DoubleL1_64Bitvector>);
-static_assert(BitVector_c<DoubleL1_128Bitvector>);
-static_assert(BitVector_c<DoubleL1_256Bitvector>);
-static_assert(BitVector_c<DoubleL1_512Bitvector>);
-static_assert(BitVector_c<DoubleL1_1024Bitvector>);
-static_assert(BitVector_c<DoubleL1_2048Bitvector>);
+static_assert(BitVector_c<PairedL1_64Bitvector>);
+static_assert(BitVector_c<PairedL1_128Bitvector>);
+static_assert(BitVector_c<PairedL1_256Bitvector>);
+static_assert(BitVector_c<PairedL1_512Bitvector>);
+static_assert(BitVector_c<PairedL1_1024Bitvector>);
+static_assert(BitVector_c<PairedL1_2048Bitvector>);
 
 }
