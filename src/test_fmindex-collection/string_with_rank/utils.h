@@ -7,7 +7,7 @@
 #include <nanobench.h>
 
 #include "../BenchSize.h"
-#include "allRankVectors.h"
+#include "allStrings.h"
 
 namespace {
 

@@ -1,0 +1,114 @@
+// SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
+// SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
+// SPDX-License-Identifier: CC0-1.0
+#pragma once
+
+#include <fmindex-collection/bitvector/all.h>
+#include <fmindex-collection/string/all.h>
+
+#if 0
+
+#if SIZE_MAX == UINT64_MAX
+#define AddIf64Bit(x) x,
+#else
+#define AddIf64Bit(x)
+#endif
+#define ALLRANKVECTORS_IMPL(Sigma) \
+    fmindex_collection::string::Naive<Sigma>, \
+    (fmindex_collection::string::MultiBitvector<Sigma, fmindex_collection::bitvector::Bitvector>), \
+    (fmindex_collection::string::MultiBitvector<Sigma, fmindex_collection::bitvector::CompactBitvector>), \
+    (fmindex_collection::string::MultiBitvector<Sigma, fmindex_collection::bitvector::CompactBitvector4Blocks>), \
+    (fmindex_collection::string::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<>>), \
+    (fmindex_collection::string::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<3>>), \
+    (fmindex_collection::string::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<4>>), \
+    (fmindex_collection::string::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<4, fmindex_collection::bitvector::Bitvector, fmindex_collection::bitvector::SparseBLEBitvector<>>>), \
+    (fmindex_collection::string::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<5>>), \
+    (fmindex_collection::string::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<6>>), \
+    (fmindex_collection::string::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<6, fmindex_collection::bitvector::Bitvector, fmindex_collection::bitvector::SparseBLEBitvector<>>>), \
+    (fmindex_collection::string::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<6, fmindex_collection::bitvector::Bitvector, fmindex_collection::bitvector::SparseBLEBitvector<3>>>), \
+    (fmindex_collection::string::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<6, fmindex_collection::bitvector::Bitvector, fmindex_collection::bitvector::SparseBLEBitvector<4>>>), \
+    (fmindex_collection::string::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<7>>), \
+    (fmindex_collection::string::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<8>>), \
+    fmindex_collection::string::InterleavedBitvector8<Sigma>, \
+    fmindex_collection::string::InterleavedBitvector16<Sigma>, \
+    fmindex_collection::string::InterleavedBitvector32<Sigma>, \
+    fmindex_collection::string::InterleavedBitvector8Aligned<Sigma>, \
+    fmindex_collection::string::InterleavedBitvector16Aligned<Sigma>, \
+    fmindex_collection::string::InterleavedBitvector32Aligned<Sigma>, \
+    fmindex_collection::string::InterleavedEPR8<Sigma>, \
+    fmindex_collection::string::InterleavedEPR16<Sigma>, \
+    fmindex_collection::string::InterleavedEPR32<Sigma>, \
+    fmindex_collection::string::InterleavedEPR8Aligned<Sigma>, \
+    fmindex_collection::string::InterleavedEPR16Aligned<Sigma>, \
+    fmindex_collection::string::InterleavedEPR32Aligned<Sigma>, \
+    fmindex_collection::string::InterleavedEPRV2_8<Sigma>, \
+    fmindex_collection::string::InterleavedEPRV2_16<Sigma>, \
+    AddIf64Bit(fmindex_collection::string::InterleavedEPRV2_32<Sigma>) \
+    fmindex_collection::string::InterleavedEPRV2_8Aligned<Sigma>, \
+    fmindex_collection::string::InterleavedEPRV2_16Aligned<Sigma>, \
+    AddIf64Bit(fmindex_collection::string::InterleavedEPRV2_32Aligned<Sigma>) \
+    fmindex_collection::string::EPRV3_8<Sigma>, \
+    fmindex_collection::string::EPRV3_16<Sigma>, \
+    AddIf64Bit(fmindex_collection::string::EPRV3_32<Sigma>) \
+    fmindex_collection::string::EPRV4<Sigma>, \
+    fmindex_collection::string::EPRV5<Sigma>, \
+    fmindex_collection::string::DenseEPRV6<Sigma>, \
+    fmindex_collection::string::InterleavedEPRV7<Sigma>, \
+    fmindex_collection::string::InterleavedWavelet<Sigma>, \
+    fmindex_collection::string::Wavelet<Sigma>, \
+    (fmindex_collection::string::Wavelet<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<>>), \
+    fmindex_collection::string::Double64ShortEPRV8<Sigma>, \
+    fmindex_collection::string::Double128ShortEPRV8<Sigma>, \
+    fmindex_collection::string::Double64EPRV8<Sigma>, \
+    fmindex_collection::string::Double128EPRV8<Sigma>, \
+    fmindex_collection::string::Double256EPRV8<Sigma>, \
+    fmindex_collection::string::Double512EPRV8<Sigma>
+#if FMC_USE_SDSL
+#define ALLRANKVECTORS(Sigma) \
+    ALLRANKVECTORS_IMPL(Sigma), \
+    fmindex_collection::string::Sdsl_wt_bldc<Sigma>
+#else
+#define ALLRANKVECTORS(Sigma) ALLRANKVECTORS_IMPL(Sigma)
+#endif
+
+//!wt_epr is not working as expected
+//    fmindex_collection::string::Sdsl_wt_epr<255>,
+
+#else
+#if 0
+#define ALLRANKVECTORS(Sigma) \
+    fmindex_collection::string::Double64EPRV8<Sigma>
+#else
+#if 0
+#define ALLRANKVECTORS(Sigma) \
+    fmindex_collection::string::InterleavedBitvector16<Sigma>, \
+    fmindex_collection::string::InterleavedEPR16<Sigma>, \
+    fmindex_collection::string::InterleavedEPRV2_16<Sigma>, \
+    fmindex_collection::string::InterleavedEPRV7<Sigma>, \
+    fmindex_collection::string::Double64EPRV8<Sigma>, \
+    fmindex_collection::string::Double256EPRV8<Sigma>, \
+    fmindex_collection::string::Double512EPRV8<Sigma>, \
+    fmindex_collection::string::Double2048EPRV8<Sigma>, \
+    fmindex_collection::string::NEPRV8_64<Sigma>, \
+    fmindex_collection::string::NEPRV8_128<Sigma>, \
+    fmindex_collection::string::NEPRV8_256<Sigma>, \
+    fmindex_collection::string::NEPRV8_512<Sigma>, \
+    fmindex_collection::string::NEPRV8_1024<Sigma>, \
+    fmindex_collection::string::NEPRV8_2048<Sigma>, \
+    fmindex_collection::string::Wavelet<Sigma>, \
+    fmindex_collection::string::Sdsl_wt_bldc<Sigma>
+#endif
+
+
+#define ALLRANKVECTORS(Sigma) \
+    fmindex_collection::string::InterleavedBitvector16<Sigma>, \
+    fmindex_collection::string::L1L2_NEPRV9_64_64k<Sigma>, \
+    fmindex_collection::string::L1L2_NEPRV9_512_64k<Sigma>, \
+    fmindex_collection::string::PairedL1L2_NEPRV9_64_64k<Sigma>, \
+    fmindex_collection::string::PairedL1L2_NEPRV9_512_64k<Sigma>, \
+    fmindex_collection::string::Sdsl_wt_bldc<Sigma>, \
+    fmindex_collection::string::Sdsl_wt_epr<Sigma>
+
+#endif
+
+#endif

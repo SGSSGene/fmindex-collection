@@ -11,7 +11,7 @@ TEST_CASE("benchmark strings c'tor operation - 64 alphabet", "[string_with_rank]
 
         call_with_templates<
             ALLRANKVECTORS(64)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<64>>) {
+            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<64>>) {
                 return;
             }
 
@@ -37,7 +37,7 @@ TEST_CASE("benchmark vectors symbol() operations - 64 alphabet", "[string_with_r
 
         call_with_templates<
             ALLRANKVECTORS(64)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<64>>) {
+            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<64>>) {
                 return;
             }
 
@@ -66,7 +66,7 @@ TEST_CASE("benchmark vectors rank() operations - 64 alphabet", "[string_with_ran
 
         call_with_templates<
             ALLRANKVECTORS(64)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<64>>) {
+            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<64>>) {
                 return;
             }
 
@@ -95,7 +95,7 @@ TEST_CASE("benchmark vectors prefix_rank() operations - 64 alphabet", "[string_w
 
         call_with_templates<
             ALLRANKVECTORS(64)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<64>>) {
+            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<64>>) {
                 return;
             }
 
@@ -124,7 +124,7 @@ TEST_CASE("benchmark vectors all_ranks() operations - 64 alphabet", "[string_wit
 
         call_with_templates<
             ALLRANKVECTORS(64)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<64>>) {
+            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<64>>) {
                 return;
             }
 
@@ -153,7 +153,7 @@ TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - 64 alphab
 
         call_with_templates<
             ALLRANKVECTORS(64)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<64>>) {
+            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<64>>) {
                 return;
             }
 
@@ -182,7 +182,7 @@ TEST_CASE("benchmark vectors in size - alphabet 64", "[string_with_rank][!benchm
 
         call_with_templates<
             ALLRANKVECTORS(64)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::rankvector::Naive<64>>) {
+            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<64>>) {
                 return;
             }
 

@@ -5,7 +5,7 @@
 
 #include "../locate.h"
 #include "../occtable/all.h"
-#include "../rankvector/InterleavedBitvector.h"
+#include "../string/InterleavedBitvector.h"
 #include "../search/SearchNoErrors.h"
 #include "../search/Backtracking.h"
 #include "FMIndex.h"

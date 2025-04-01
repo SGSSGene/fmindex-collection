@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../rankvector/concepts.h"
+#include "../string/concepts.h"
 #include "concepts.h"
 
 #include <algorithm>
