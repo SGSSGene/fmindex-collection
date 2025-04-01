@@ -1,7 +1,7 @@
 #include "utils.h"
 
-TEST_CASE("benchmark strings c'tor operation - 5 alphabet", "[string_with_rank][!benchmark][5][time][ctor][.]") {
-    auto const& text = generateText<0, 5>();
+TEST_CASE("benchmark strings c'tor operation - 32 alphabet", "[string][!benchmark][32][time][ctor][.]") {
+    auto const& text = generateText<0, 32>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -10,8 +10,8 @@ TEST_CASE("benchmark strings c'tor operation - 5 alphabet", "[string_with_rank][
              .batch(text.size());
 
         call_with_templates<
-            ALLRANKVECTORS(5)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<5>>) {
+            ALLRANKVECTORS(32)>([&]<typename Vector>() {
+            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<32>>) {
                 return;
             }
 
@@ -26,8 +26,8 @@ TEST_CASE("benchmark strings c'tor operation - 5 alphabet", "[string_with_rank][
     }
 }
 
-TEST_CASE("benchmark vectors symbol() operations - 5 alphabet", "[string_with_rank][!benchmark][5][time][symbol]") {
-    auto const& text = generateText<0, 5>();
+TEST_CASE("benchmark vectors symbol() operations - 32 alphabet", "[string][!benchmark][32][time][symbol]") {
+    auto const& text = generateText<0, 32>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -36,8 +36,8 @@ TEST_CASE("benchmark vectors symbol() operations - 5 alphabet", "[string_with_ra
              .batch(text.size());
 
         call_with_templates<
-            ALLRANKVECTORS(5)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<5>>) {
+            ALLRANKVECTORS(32)>([&]<typename Vector>() {
+            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<32>>) {
                 return;
             }
 
@@ -56,8 +56,8 @@ TEST_CASE("benchmark vectors symbol() operations - 5 alphabet", "[string_with_ra
     }
 }
 
-TEST_CASE("benchmark vectors rank() operations - 5 alphabet", "[string_with_rank][!benchmark][5][time][rank]") {
-    auto const& text = generateText<0, 5>();
+TEST_CASE("benchmark vectors rank() operations - 32 alphabet", "[string][!benchmark][32][time][rank]") {
+    auto const& text = generateText<0, 32>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -65,8 +65,8 @@ TEST_CASE("benchmark vectors rank() operations - 5 alphabet", "[string_with_rank
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(5)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<5>>) {
+            ALLRANKVECTORS(32)>([&]<typename Vector>() {
+            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<32>>) {
                 return;
             }
 
@@ -78,15 +78,15 @@ TEST_CASE("benchmark vectors rank() operations - 5 alphabet", "[string_with_rank
             auto vec = Vector{text};
 
             bench.run(vector_name, [&]() {
-                auto v = vec.rank(rng.bounded(text.size()+1), rng.bounded(5));
+                auto v = vec.rank(rng.bounded(text.size()+1), rng.bounded(32));
                 ankerl::nanobench::doNotOptimizeAway(v);
             });
         });
     }
 }
 
-TEST_CASE("benchmark vectors prefix_rank() operations - 5 alphabet", "[string_with_rank][!benchmark][5][time][prefix_rank]") {
-    auto const& text = generateText<0, 5>();
+TEST_CASE("benchmark vectors prefix_rank() operations - 32 alphabet", "[string][!benchmark][32][time][prefix_rank]") {
+    auto const& text = generateText<0, 32>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -94,8 +94,8 @@ TEST_CASE("benchmark vectors prefix_rank() operations - 5 alphabet", "[string_wi
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(5)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<5>>) {
+            ALLRANKVECTORS(32)>([&]<typename Vector>() {
+            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<32>>) {
                 return;
             }
 
@@ -107,15 +107,15 @@ TEST_CASE("benchmark vectors prefix_rank() operations - 5 alphabet", "[string_wi
             auto vec = Vector{text};
 
             bench.run(vector_name, [&]() {
-                auto v = vec.prefix_rank(rng.bounded(text.size()+1), rng.bounded(5));
+                auto v = vec.prefix_rank(rng.bounded(text.size()+1), rng.bounded(32));
                 ankerl::nanobench::doNotOptimizeAway(v);
             });
         });
     }
 }
 
-TEST_CASE("benchmark vectors all_ranks() operations - 5 alphabet", "[string_with_rank][!benchmark][5][time][all_ranks]") {
-    auto const& text = generateText<0, 5>();
+TEST_CASE("benchmark vectors all_ranks() operations - 32 alphabet", "[string][!benchmark][32][time][all_ranks]") {
+    auto const& text = generateText<0, 32>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -123,8 +123,8 @@ TEST_CASE("benchmark vectors all_ranks() operations - 5 alphabet", "[string_with
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(5)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<5>>) {
+            ALLRANKVECTORS(32)>([&]<typename Vector>() {
+            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<32>>) {
                 return;
             }
 
@@ -143,8 +143,8 @@ TEST_CASE("benchmark vectors all_ranks() operations - 5 alphabet", "[string_with
     }
 }
 
-TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - 5 alphabet", "[string_with_rank][!benchmark][5][time][all_ranks_and_prefix_ranks]") {
-    auto const& text = generateText<0, 5>();
+TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - 32 alphabet", "[string][!benchmark][32][time][all_ranks_and_prefix_ranks]") {
+    auto const& text = generateText<0, 32>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -152,8 +152,8 @@ TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - 5 alphabe
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(5)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<5>>) {
+            ALLRANKVECTORS(32)>([&]<typename Vector>() {
+            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<32>>) {
                 return;
             }
 
@@ -172,17 +172,17 @@ TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - 5 alphabe
     }
 }
 
-TEST_CASE("benchmark vectors in size - alphabet 5", "[string_with_rank][!benchmark][5][size]") {
-    auto const& text = generateText<0, 5>();
+TEST_CASE("benchmark vectors in size - alphabet 32", "[string][!benchmark][32][size]") {
+    auto const& text = generateText<0, 32>();
 
     SECTION("benchmarking") {
         BenchSize benchSize;
         benchSize.entries[0][2] = "bits/char";
-        benchSize.entries[0][3] = "alphabet 5";
+        benchSize.entries[0][3] = "alphabet 32";
 
         call_with_templates<
-            ALLRANKVECTORS(5)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<5>>) {
+            ALLRANKVECTORS(32)>([&]<typename Vector>() {
+            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<32>>) {
                 return;
             }
 

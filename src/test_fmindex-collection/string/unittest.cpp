@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "utils.h"
 
-TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string_with_rank][all_sizes]") {
+TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string][all_sizes]") {
     auto testSigma = []<size_t Sigma>() {
         INFO("Sigma " << Sigma);
         call_with_templates<
@@ -48,7 +48,7 @@ TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string_
     }
 
 }
-TEST_CASE("hand counted, test with 255 alphabet", "[string_with_rank][255][small]") {
+TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
 
     auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
 
@@ -298,7 +298,7 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string_with_rank][255][small
     }
 }
 
-TEST_CASE("check symbol vectors construction on text longer than 255 characters", "[string_with_rank][255][large]") {
+TEST_CASE("check symbol vectors construction on text longer than 255 characters", "[string][255][large]") {
     auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't',
                                      'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',
                                      'x', 'y', 'z', 'x', 'y', 'z', 'x', 'y', 'z', 'x',

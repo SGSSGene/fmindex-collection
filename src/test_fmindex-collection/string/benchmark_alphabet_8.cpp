@@ -1,6 +1,6 @@
 #include "utils.h"
 
-TEST_CASE("benchmark strings c'tor operation - 8 alphabet", "[string_with_rank][!benchmark][8][time][ctor][.]") {
+TEST_CASE("benchmark strings c'tor operation - 8 alphabet", "[string][!benchmark][8][time][ctor][.]") {
     auto const& text = generateText<0, 8>();
 
     SECTION("benchmarking") {
@@ -26,7 +26,7 @@ TEST_CASE("benchmark strings c'tor operation - 8 alphabet", "[string_with_rank][
     }
 }
 
-TEST_CASE("benchmark vectors symbol() operations - 8 alphabet", "[string_with_rank][!benchmark][8][time][symbol]") {
+TEST_CASE("benchmark vectors symbol() operations - 8 alphabet", "[string][!benchmark][8][time][symbol]") {
     auto const& text = generateText<0, 8>();
 
     SECTION("benchmarking") {
@@ -56,7 +56,7 @@ TEST_CASE("benchmark vectors symbol() operations - 8 alphabet", "[string_with_ra
     }
 }
 
-TEST_CASE("benchmark vectors rank() operations - 8 alphabet", "[string_with_rank][!benchmark][8][time][rank]") {
+TEST_CASE("benchmark vectors rank() operations - 8 alphabet", "[string][!benchmark][8][time][rank]") {
     auto const& text = generateText<0, 8>();
 
     SECTION("benchmarking") {
@@ -85,7 +85,7 @@ TEST_CASE("benchmark vectors rank() operations - 8 alphabet", "[string_with_rank
     }
 }
 
-TEST_CASE("benchmark vectors prefix_rank() operations - 8 alphabet", "[string_with_rank][!benchmark][8][time][prefix_rank]") {
+TEST_CASE("benchmark vectors prefix_rank() operations - 8 alphabet", "[string][!benchmark][8][time][prefix_rank]") {
     auto const& text = generateText<0, 8>();
 
     SECTION("benchmarking") {
@@ -114,7 +114,7 @@ TEST_CASE("benchmark vectors prefix_rank() operations - 8 alphabet", "[string_wi
     }
 }
 
-TEST_CASE("benchmark vectors all_ranks() operations - 8 alphabet", "[string_with_rank][!benchmark][8][time][all_ranks]") {
+TEST_CASE("benchmark vectors all_ranks() operations - 8 alphabet", "[string][!benchmark][8][time][all_ranks]") {
     auto const& text = generateText<0, 8>();
 
     SECTION("benchmarking") {
@@ -143,7 +143,7 @@ TEST_CASE("benchmark vectors all_ranks() operations - 8 alphabet", "[string_with
     }
 }
 
-TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - 8 alphabet", "[string_with_rank][!benchmark][8][time][all_ranks_and_prefix_ranks]") {
+TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - 8 alphabet", "[string][!benchmark][8][time][all_ranks_and_prefix_ranks]") {
     auto const& text = generateText<0, 8>();
 
     SECTION("benchmarking") {
@@ -172,7 +172,7 @@ TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - 8 alphabe
     }
 }
 
-TEST_CASE("benchmark vectors in size - alphabet 8", "[string_with_rank][!benchmark][8][size]") {
+TEST_CASE("benchmark vectors in size - alphabet 8", "[string][!benchmark][8][size]") {
     auto const& text = generateText<0, 8>();
 
     SECTION("benchmarking") {

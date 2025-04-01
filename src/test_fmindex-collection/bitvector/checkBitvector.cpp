@@ -7,7 +7,7 @@
 #include <fstream>
 #include <nanobench.h>
 
-#include "../string_with_rank/utils.h"
+#include "../string/utils.h"
 
 #include <pasta/bit_vector/bit_vector.hpp>
 #include <pasta/bit_vector/support/rank.hpp>
