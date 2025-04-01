@@ -7,6 +7,8 @@
 #include <fstream>
 #include <nanobench.h>
 
+#include "../string_with_rank/utils.h"
+
 #include <pasta/bit_vector/bit_vector.hpp>
 #include <pasta/bit_vector/support/rank.hpp>
 #include <pasta/bit_vector/support/flat_rank.hpp>
@@ -17,43 +19,25 @@
 #include "../BenchSize.h"
 #include "allBitVectors.h"
 
-#if __has_include(<cxxabi.h>)
-#include <cxxabi.h>
-template <typename T>
-static auto getName() {
-    int     status;
-    auto realname = abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, &status);
-    auto str = std::string{realname};
-    std::free(realname);
-    return str;
-}
-#else
-#include <reflect>
-template <typename T>
-static auto getName() {
-    return std::string{reflect::type_name<T>()};
-}
-#endif
-
-TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS) {
-    using Vector = TestType;
-    auto vector_name = getName<Vector>();
-    INFO(vector_name);
-
+TEST_CASE("check bit vectors are working", "[BitVector]") {
     SECTION("short text") {
         auto text = std::vector<uint8_t>{0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1};
 
-        auto vec = Vector{text};
-        REQUIRE(vec.size() == text.size());
+        call_with_templates<
+            ALLBITVECTORS>([&]<typename Vector>() {
+            auto vector_name = getName<Vector>();
+            INFO(vector_name);
 
-        SECTION("check that symbol() call works") {
+            auto vec = Vector{text};
+            REQUIRE(vec.size() == text.size());
+
+            // check that symbol() call works
             for (size_t i{0}; i < text.size(); ++i) {
                 INFO(i);
                 CHECK(vec.symbol(i) == bool(text.at(i)));
             }
-        }
 
-        SECTION("test complete vector on symbol()") {
+            // test complete vector on symbol()
             CHECK(vec.symbol( 0) == 0);
             CHECK(vec.symbol( 1) == 1);
             CHECK(vec.symbol( 2) == 1);
@@ -68,10 +52,8 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
             CHECK(vec.symbol(11) == 0);
             CHECK(vec.symbol(12) == 0);
             CHECK(vec.symbol(13) == 1);
-        }
 
-
-        SECTION("test complete vector on rank()") {
+            // test complete vector on rank()
             CHECK(vec.rank( 0) == 0);
             CHECK(vec.rank( 1) == 0);
             CHECK(vec.rank( 2) == 1);
@@ -87,7 +69,7 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
             CHECK(vec.rank(12) == 6);
             CHECK(vec.rank(13) == 6);
             CHECK(vec.rank(14) == 7);
-        }
+        });
     }
     SECTION("longer text") {
         auto text = std::vector<uint8_t>{0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0,
@@ -125,23 +107,21 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
 
                                         };
 
-        auto vec = Vector{text};
-        REQUIRE(vec.size() == text.size());
+        call_with_templates<
+            ALLBITVECTORS>([&]<typename Vector>() {
+            auto vector_name = getName<Vector>();
+            INFO(vector_name);
 
-        auto vec2 = Vector{};
-        for (auto c : text) {
-            vec2.push_back(c);
-        }
+            auto vec = Vector{text};
+            REQUIRE(vec.size() == text.size());
 
-        SECTION("check that symbol() call works") {
+            // check that symbol() call works
             for (size_t i{0}; i < text.size(); ++i) {
                 INFO(i);
                 CHECK(vec.symbol(i) == bool(text.at(i)));
-                CHECK(vec2.symbol(i) == bool(text.at(i)));
             }
-        }
 
-        SECTION("test complete vector on rank()") {
+            // test complete vector on rank()
             for (size_t i{0}; i < 512; i += 16) {
                 CHECK(vec.rank(i +  0) == 0 + i/16*8);
                 CHECK(vec.rank(i +  1) == 0 + i/16*8);
@@ -160,195 +140,241 @@ TEMPLATE_TEST_CASE("check bit vectors are working", "[BitVector]", ALLBITVECTORS
                 CHECK(vec.rank(i + 14) == 7 + i/16*8);
                 CHECK(vec.rank(i + 15) == 8 + i/16*8);
                 CHECK(vec.rank(i + 16) == 8 + i/16*8);
-                CHECK(vec2.rank(i +  0) == 0 + i/16*8);
-                CHECK(vec2.rank(i +  1) == 0 + i/16*8);
-                CHECK(vec2.rank(i +  2) == 1 + i/16*8);
-                CHECK(vec2.rank(i +  3) == 2 + i/16*8);
-                CHECK(vec2.rank(i +  4) == 2 + i/16*8);
-                CHECK(vec2.rank(i +  5) == 2 + i/16*8);
-                CHECK(vec2.rank(i +  6) == 3 + i/16*8);
-                CHECK(vec2.rank(i +  7) == 3 + i/16*8);
-                CHECK(vec2.rank(i +  8) == 4 + i/16*8);
-                CHECK(vec2.rank(i +  9) == 5 + i/16*8);
-                CHECK(vec2.rank(i + 10) == 6 + i/16*8);
-                CHECK(vec2.rank(i + 11) == 6 + i/16*8);
-                CHECK(vec2.rank(i + 12) == 6 + i/16*8);
-                CHECK(vec2.rank(i + 13) == 6 + i/16*8);
-                CHECK(vec2.rank(i + 14) == 7 + i/16*8);
-                CHECK(vec2.rank(i + 15) == 8 + i/16*8);
-                CHECK(vec2.rank(i + 16) == 8 + i/16*8);
-
             }
-        }
+
+            // check push back is working (if push_back available)
+            if constexpr (requires { Vector{}.push_back(uint8_t{0}); }) {
+                auto vec2 = Vector{};
+                for (auto c : text) {
+                    vec2.push_back(c);
+                }
+                REQUIRE(vec2.size() == text.size());
+
+                // check that symbol() call works
+                for (size_t i{0}; i < text.size(); ++i) {
+                    INFO(i);
+                    CHECK(vec2.symbol(i) == bool(text.at(i)));
+                }
+                // test complete vector on rank()
+                for (size_t i{0}; i < 512; i += 16) {
+                    CHECK(vec2.rank(i +  0) == 0 + i/16*8);
+                    CHECK(vec2.rank(i +  1) == 0 + i/16*8);
+                    CHECK(vec2.rank(i +  2) == 1 + i/16*8);
+                    CHECK(vec2.rank(i +  3) == 2 + i/16*8);
+                    CHECK(vec2.rank(i +  4) == 2 + i/16*8);
+                    CHECK(vec2.rank(i +  5) == 2 + i/16*8);
+                    CHECK(vec2.rank(i +  6) == 3 + i/16*8);
+                    CHECK(vec2.rank(i +  7) == 3 + i/16*8);
+                    CHECK(vec2.rank(i +  8) == 4 + i/16*8);
+                    CHECK(vec2.rank(i +  9) == 5 + i/16*8);
+                    CHECK(vec2.rank(i + 10) == 6 + i/16*8);
+                    CHECK(vec2.rank(i + 11) == 6 + i/16*8);
+                    CHECK(vec2.rank(i + 12) == 6 + i/16*8);
+                    CHECK(vec2.rank(i + 13) == 6 + i/16*8);
+                    CHECK(vec2.rank(i + 14) == 7 + i/16*8);
+                    CHECK(vec2.rank(i + 15) == 8 + i/16*8);
+                    CHECK(vec2.rank(i + 16) == 8 + i/16*8);
+                }
+            }
+        });
     }
 
     SECTION("very longer text") {
-        srand(0);
-        auto text = std::vector<uint8_t>{};
-        auto rank = std::vector<size_t>{0};
-        for (size_t i{}; i < 65536ull*10; ++i) {
-            text.push_back(rand()%2);
-            rank.push_back(rank.back() + text.back());
-        }
+        call_with_templates<
+            ALLBITVECTORS>([&]<typename Vector>() {
+            auto vector_name = getName<Vector>();
+            INFO(vector_name);
 
-        auto vec = Vector{text};
-        REQUIRE(vec.size() == text.size());
+            srand(0);
+            auto text = std::vector<uint8_t>{};
+            auto rank = std::vector<size_t>{0};
+            for (size_t i{}; i < 65536ull*10; ++i) {
+                text.push_back(rand()%2);
+                rank.push_back(rank.back() + text.back());
+            }
 
-        SECTION("check that symbol() call works") {
+            auto vec = Vector{text};
+            REQUIRE(vec.size() == text.size());
+
+            // check that symbol() call works
             for (size_t i{0}; i < text.size(); ++i) {
                 INFO(i);
                 CHECK(vec.symbol(i) == bool(text.at(i)));
             }
-        }
 
-        SECTION("test complete vector on rank()") {
+            // test complete vector on rank()
             for (size_t i{0}; i < text.size(); ++i) {
                 INFO(i);
                 CHECK(vec.rank(i) == rank.at(i));
             }
-        }
+        });
     }
 
     SECTION("short text, push() back must have same result as c'tor") {
-        srand(0);
-        auto text = std::vector<uint8_t>{};
-        auto rank = std::vector<size_t>{0};
+        call_with_templates<
+            ALLBITVECTORS>([&]<typename Vector>() {
+            auto vector_name = getName<Vector>();
+            INFO(vector_name);
 
-        auto vec1 = Vector{};
-        for (size_t i{}; i < 512; ++i) {
-            text.push_back(rand()%2);
-            rank.push_back(rank.back() + text.back());
+            // check only if push_back is available
+            if constexpr (requires { Vector{}.push_back(uint8_t{0}); }) {
+                srand(0);
+                auto text = std::vector<uint8_t>{};
+                auto rank = std::vector<size_t>{0};
 
-            vec1.push_back(text.back());
+                auto vec1 = Vector{};
+                for (size_t i{}; i < 512; ++i) {
+                    text.push_back(rand()%2);
+                    rank.push_back(rank.back() + text.back());
 
-            auto vec2 = Vector{text};
-            auto vec3 = vec1;
-            SECTION("check vec2 and vec are the same") {
-                for (size_t i{0}; i < text.size(); ++i) {
-                    INFO(i);
-                    CHECK(vec3.symbol(i) == bool(text.at(i)));
-                    CHECK(vec2.symbol(i) == bool(text.at(i)));
-                    CHECK(vec3.rank(i) == rank.at(i));
-                    CHECK(vec2.rank(i) == rank.at(i));
+                    vec1.push_back(text.back());
+
+                    auto vec2 = Vector{text};
+                    auto vec3 = vec1;
+                    // check vec2 and vec are the same
+                    for (size_t i{0}; i < text.size(); ++i) {
+                        INFO(i);
+                        CHECK(vec3.symbol(i) == bool(text.at(i)));
+                        CHECK(vec2.symbol(i) == bool(text.at(i)));
+                        CHECK(vec3.rank(i) == rank.at(i));
+                        CHECK(vec2.rank(i) == rank.at(i));
+                    }
+                    CHECK(vec3.rank(text.size()) == rank.back());
+                    CHECK(vec2.rank(text.size()) == rank.back());
                 }
-                CHECK(vec3.rank(text.size()) == rank.back());
-                CHECK(vec2.rank(text.size()) == rank.back());
-
-
             }
-        }
+        });
     }
-
 
     SECTION("short text, some inserted at creation, rest via push()") {
-        srand(0);
-        auto text = std::vector<uint8_t>{};
-        auto rank = std::vector<size_t>{0};
-        for (size_t i{}; i < 64; ++i) {
-            text.push_back(rand()%2);
-            rank.push_back(rank.back() + text.back());
-        }
-
-        auto vec = Vector{text};
-        REQUIRE(vec.size() == text.size());
-
-        for (size_t i{}; i < 64; ++i) {
-            text.push_back(rand()%2);
-            rank.push_back(rank.back() + text.back());
-            vec.push_back(text.back());
-            {
-                auto v1 = rank.back();
-                auto vec3 = vec;
-                auto v2 = vec3.rank(vec.size());
-                if (v1 != v2) {
-                    auto vec2 = Vector{text};
-                    CHECK(v1 == v2);
-
+        call_with_templates<
+            ALLBITVECTORS>([&]<typename Vector>() {
+            auto vector_name = getName<Vector>();
+            INFO(vector_name);
+            // check only if push_back is available
+            if constexpr (requires { Vector{}.push_back(uint8_t{0}); }) {
+                srand(0);
+                auto text = std::vector<uint8_t>{};
+                auto rank = std::vector<size_t>{0};
+                for (size_t i{}; i < 64; ++i) {
+                    text.push_back(rand()%2);
+                    rank.push_back(rank.back() + text.back());
                 }
-                CHECK(v1 == v2);
-            }
-        }
-        REQUIRE(vec.size() == text.size());
 
-        SECTION("check that symbol() call works") {
-            for (size_t i{0}; i < text.size(); ++i) {
-                INFO(i);
-                CHECK(vec.symbol(i) == bool(text.at(i)));
-            }
-        }
+                auto vec = Vector{text};
+                REQUIRE(vec.size() == text.size());
 
-        SECTION("test complete vector on rank()") {
-            for (size_t i{0}; i < text.size(); ++i) {
-                INFO(i);
-                CHECK(vec.rank(i) == rank.at(i));
+                for (size_t i{}; i < 64; ++i) {
+                    text.push_back(rand()%2);
+                    rank.push_back(rank.back() + text.back());
+                    vec.push_back(text.back());
+                    {
+                        auto v1 = rank.back();
+                        auto vec3 = vec;
+                        auto v2 = vec3.rank(vec.size());
+                        if (v1 != v2) {
+                            auto vec2 = Vector{text};
+                            CHECK(v1 == v2);
+
+                        }
+                        CHECK(v1 == v2);
+                    }
+                }
+                REQUIRE(vec.size() == text.size());
+
+                // check that symbol() call works
+                for (size_t i{0}; i < text.size(); ++i) {
+                    INFO(i);
+                    CHECK(vec.symbol(i) == bool(text.at(i)));
+                }
+
+                // test complete vector on rank()
+                for (size_t i{0}; i < text.size(); ++i) {
+                    INFO(i);
+                    CHECK(vec.rank(i) == rank.at(i));
+                }
             }
-        }
+        });
     }
 
-
     SECTION("long text, some inserted at creation, rest via push()") {
-        srand(0);
-        auto text = std::vector<uint8_t>{};
-        auto rank = std::vector<size_t>{0};
-        for (size_t i{}; i < (size_t{1ul}<<15); ++i) {
-            text.push_back(rand()%2);
-            rank.push_back(rank.back() + text.back());
-        }
+        call_with_templates<
+            ALLBITVECTORS>([&]<typename Vector>() {
+            auto vector_name = getName<Vector>();
+            INFO(vector_name);
 
-        auto vec = Vector{text};
-        REQUIRE(vec.size() == text.size());
+            // check only if push_back is available
+            if constexpr (requires { Vector{}.push_back(uint8_t{0}); }) {
+                srand(0);
+                auto text = std::vector<uint8_t>{};
+                auto rank = std::vector<size_t>{0};
+                for (size_t i{}; i < (size_t{1ul}<<15); ++i) {
+                    text.push_back(rand()%2);
+                    rank.push_back(rank.back() + text.back());
+                }
 
-        for (size_t i{}; i < (size_t{1ul}<<15); ++i) {
-            text.push_back(rand()%2);
-            rank.push_back(rank.back() + text.back());
-            vec.push_back(text.back());
-            {
-                auto v1 = rank.back();
-                auto vec3 = vec;
-                auto v2 = vec3.rank(vec.size());
-                CHECK(v1 == v2);
+                auto vec = Vector{text};
+                REQUIRE(vec.size() == text.size());
+
+                for (size_t i{}; i < (size_t{1ul}<<15); ++i) {
+                    text.push_back(rand()%2);
+                    rank.push_back(rank.back() + text.back());
+                    vec.push_back(text.back());
+                    {
+                        auto v1 = rank.back();
+                        auto vec3 = vec;
+                        auto v2 = vec3.rank(vec.size());
+                        CHECK(v1 == v2);
+                    }
+                }
+                REQUIRE(vec.size() == text.size());
+
+                // check that symbol() call works
+                for (size_t i{0}; i < text.size(); ++i) {
+                    INFO(i);
+                    CHECK(vec.symbol(i) == bool(text.at(i)));
+                }
+
+                // test complete vector on rank()
+                for (size_t i{0}; i < text.size(); ++i) {
+                    INFO(i);
+                    CHECK(vec.rank(i) == rank.at(i));
+                }
             }
-        }
-        REQUIRE(vec.size() == text.size());
-
-        SECTION("check that symbol() call works") {
-            for (size_t i{0}; i < text.size(); ++i) {
-                INFO(i);
-                CHECK(vec.symbol(i) == bool(text.at(i)));
-            }
-        }
-
-        SECTION("test complete vector on rank()") {
-            for (size_t i{0}; i < text.size(); ++i) {
-                INFO(i);
-                CHECK(vec.rank(i) == rank.at(i));
-            }
-        }
+        });
     }
 
 
     SECTION("serialization/deserialization") {
-        auto input = std::vector<uint8_t>{0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1};
-        SECTION("serialize") {
-            auto ofs = std::ofstream{"temp_test_serialization"};
-            auto vec = Vector{input};
-            auto archive = cereal::BinaryOutputArchive{ofs};
-            archive(vec);
-        }
-        SECTION("deserialize") {
-            auto ifs = std::ifstream{"temp_test_serialization"};
-            auto vec = Vector{};
-            auto archive = cereal::BinaryInputArchive{ifs};
-            archive(vec);
-            REQUIRE(input.size() == vec.size());
-            size_t count{};
-            for (size_t i{0}; i != input.size(); ++i) {
-                CHECK((bool)input[i] == vec.symbol(i));
-                CHECK(count == vec.rank(i));
-                count += input[i];
+        call_with_templates<
+            ALLBITVECTORS>([&]<typename Vector>() {
+            auto vector_name = getName<Vector>();
+            INFO(vector_name);
+
+            auto input = std::vector<uint8_t>{0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1};
+            // serialize
+            {
+                auto ofs = std::ofstream{"temp_test_serialization"};
+                auto vec = Vector{input};
+                auto archive = cereal::BinaryOutputArchive{ofs};
+                archive(vec);
             }
-            CHECK(count == vec.rank(input.size()));
-        }
+            // deserialize
+            {
+                auto ifs = std::ifstream{"temp_test_serialization"};
+                auto vec = Vector{};
+                auto archive = cereal::BinaryInputArchive{ifs};
+                archive(vec);
+                REQUIRE(input.size() == vec.size());
+                size_t count{};
+                for (size_t i{0}; i != input.size(); ++i) {
+                    CHECK((bool)input[i] == vec.symbol(i));
+                    CHECK(count == vec.rank(i));
+                    count += input[i];
+                }
+                CHECK(count == vec.rank(input.size()));
+            }
+        });
     }
 }
 
@@ -504,11 +530,6 @@ struct SDSL_V5 {
         ar(bitvector, bv);
     }
 };
-
-template <typename ...T>
-void call_with_templates(auto f) {
-    (f.template operator()<T>(), ...);
-}
 
 auto generateText() -> std::vector<bool> const& {
     static auto text = []() -> std::vector<bool> {

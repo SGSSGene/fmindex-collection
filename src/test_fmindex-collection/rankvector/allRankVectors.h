@@ -6,6 +6,7 @@
 #include <fmindex-collection/bitvector/all.h>
 #include <fmindex-collection/rankvector/rankvector.h>
 
+
 #if SIZE_MAX == UINT64_MAX
 #define AddIf64Bit(x) x,
 #else
@@ -13,20 +14,20 @@
 #endif
 #define ALLRANKVECTORS_IMPL(Sigma) \
     fmindex_collection::rankvector::Naive<Sigma>, \
-    (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::Bitvector>), \
-    (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::CompactBitvector>), \
-    (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::CompactBitvector4Blocks>), \
-    (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<>>), \
-    (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<3>>), \
-    (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<4>>), \
-    (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<4, fmindex_collection::bitvector::Bitvector, fmindex_collection::bitvector::SparseBLEBitvector<>>>), \
-    (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<5>>), \
-    (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<6>>), \
-    (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<6, fmindex_collection::bitvector::Bitvector, fmindex_collection::bitvector::SparseBLEBitvector<>>>), \
-    (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<6, fmindex_collection::bitvector::Bitvector, fmindex_collection::bitvector::SparseBLEBitvector<3>>>), \
-    (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<6, fmindex_collection::bitvector::Bitvector, fmindex_collection::bitvector::SparseBLEBitvector<4>>>), \
-    (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<7>>), \
-    (fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<8>>), \
+    fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::Bitvector>, \
+    fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::CompactBitvector>, \
+    fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::CompactBitvector4Blocks>, \
+    fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<>>, \
+    fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<3>>, \
+    fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<4>>, \
+    fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<4, fmindex_collection::bitvector::Bitvector, fmindex_collection::bitvector::SparseBLEBitvector<>>>, \
+    fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<5>>, \
+    fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<6>>, \
+    fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<6, fmindex_collection::bitvector::Bitvector, fmindex_collection::bitvector::SparseBLEBitvector<>>>, \
+    fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<6, fmindex_collection::bitvector::Bitvector, fmindex_collection::bitvector::SparseBLEBitvector<3>>>, \
+    fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<6, fmindex_collection::bitvector::Bitvector, fmindex_collection::bitvector::SparseBLEBitvector<4>>>, \
+    fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<7>>, \
+    fmindex_collection::rankvector::MultiBitvector<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<8>>, \
     fmindex_collection::rankvector::InterleavedBitvector8<Sigma>, \
     fmindex_collection::rankvector::InterleavedBitvector16<Sigma>, \
     fmindex_collection::rankvector::InterleavedBitvector32<Sigma>, \
@@ -54,20 +55,24 @@
     fmindex_collection::rankvector::InterleavedEPRV7<Sigma>, \
     fmindex_collection::rankvector::InterleavedWavelet<Sigma>, \
     fmindex_collection::rankvector::Wavelet<Sigma>, \
-    (fmindex_collection::rankvector::Wavelet<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<>>), \
+    fmindex_collection::rankvector::Wavelet<Sigma, fmindex_collection::bitvector::SparseBLEBitvector<>>, \
     fmindex_collection::rankvector::Double64ShortEPRV8<Sigma>, \
     fmindex_collection::rankvector::Double128ShortEPRV8<Sigma>, \
     fmindex_collection::rankvector::Double64EPRV8<Sigma>, \
     fmindex_collection::rankvector::Double128EPRV8<Sigma>, \
     fmindex_collection::rankvector::Double256EPRV8<Sigma>, \
-    fmindex_collection::rankvector::Double512EPRV8<Sigma>
+    fmindex_collection::rankvector::Double512EPRV8<Sigma>, \
+    fmindex_collection::rankvector::L1L2_NEPRV9_64_64k<Sigma>, \
+    fmindex_collection::rankvector::L1L2_NEPRV9_512_64k<Sigma>, \
+    fmindex_collection::rankvector::PairedL1L2_NEPRV9_64_64k<Sigma>, \
+    fmindex_collection::rankvector::PairedL1L2_NEPRV9_512_64k<Sigma>
+
 #if FMC_USE_SDSL
 #define ALLRANKVECTORS(Sigma) \
     ALLRANKVECTORS_IMPL(Sigma), \
-    fmindex_collection::rankvector::Sdsl_wt_bldc<Sigma>
+        fmindex_collection::rankvector::Sdsl_wt_bldc<Sigma>, \
+        fmindex_collection::rankvector::Sdsl_wt_epr<Sigma>
+
 #else
 #define ALLRANKVECTORS(Sigma) ALLRANKVECTORS_IMPL(Sigma)
 #endif
-
-//!wt_epr is not working as expected
-//    fmindex_collection::rankvector::Sdsl_wt_epr<255>,

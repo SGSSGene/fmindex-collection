@@ -44,9 +44,9 @@
     AddIfNotClang18OrOlder(fmindex_collection::bitvector::CompactDoubleL1L2_2048_64kBitvector) \
     fmindex_collection::bitvector::SparseBLEBitvector<2>, \
     fmindex_collection::bitvector::SparseBLEBitvector<-2>, \
-    (fmindex_collection::bitvector::SparseBLEBitvector<3, fmindex_collection::bitvector::SparseBLEBitvector<2>>), \
-    (fmindex_collection::bitvector::SparseBLEBitvector<3, fmindex_collection::bitvector::Bitvector, fmindex_collection::bitvector::SparseBLEBitvector<2>>), \
-    (fmindex_collection::bitvector::SparseBLEBitvector<2, fmindex_collection::bitvector::DoubleL1L2_64_4kBitvector, fmindex_collection::bitvector::DoubleL1L2_64_4kBitvector>)
+    fmindex_collection::bitvector::SparseBLEBitvector<3, fmindex_collection::bitvector::SparseBLEBitvector<2>>, \
+    fmindex_collection::bitvector::SparseBLEBitvector<3, fmindex_collection::bitvector::Bitvector, fmindex_collection::bitvector::SparseBLEBitvector<2>>, \
+    fmindex_collection::bitvector::SparseBLEBitvector<2, fmindex_collection::bitvector::DoubleL1L2_64_4kBitvector, fmindex_collection::bitvector::DoubleL1L2_64_4kBitvector>
 
 
 //(fmindex_collection::bitvector::DoubleL1L2_NBitvector<4, 16>),

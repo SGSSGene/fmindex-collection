@@ -25,12 +25,21 @@ add_executable(${PROJECT_NAME}
     fmindex/checkReverseFMIndexCursor.cpp
     miscellaneous.cpp
     occtables/checkOccTables.cpp
-    rankvector/checkRankVector.cpp
     search/checkReverseIndexSearch.cpp
     search/checkSearchBacktracking.cpp
     search/checkSearchPseudo.cpp
     search/checkLocateFMTree.cpp
     search/checkSearches.cpp
+    string_with_rank/benchmark_alphabet_4.cpp
+    string_with_rank/benchmark_alphabet_5.cpp
+    string_with_rank/benchmark_alphabet_6.cpp
+    string_with_rank/benchmark_alphabet_8.cpp
+    string_with_rank/benchmark_alphabet_16.cpp
+    string_with_rank/benchmark_alphabet_32.cpp
+    string_with_rank/benchmark_alphabet_64.cpp
+    string_with_rank/benchmark_alphabet_128.cpp
+    string_with_rank/benchmark_alphabet_255.cpp
+    string_with_rank/unittest.cpp
     utils.cpp
     search/checkSearchHammingSM.cpp
 )
