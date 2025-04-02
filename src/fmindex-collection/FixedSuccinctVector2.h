@@ -24,7 +24,7 @@ template <size_t WordWidth, size_t MaxValue = std::numeric_limits<size_t>::max()
 struct FixedSuccinctVector2 {
     std::vector<uint64_t> data; // buffer where the data is being stored
     size_t entryCount{};        // number of entries
-    constexpr static uint64_t mask{(1ull<<WordWidth)-1};
+    constexpr static uint64_t mask{(~uint64_t{0}) >> (64-WordWidth)};
 
     FixedSuccinctVector2() = default;
     FixedSuccinctVector2(std::initializer_list<uint64_t> list) {
@@ -63,14 +63,13 @@ struct FixedSuccinctVector2 {
         assert(value <= MaxValue);
         assert(std::log2(value) < WordWidth);
         auto count = data.size()*EntriesPerMWord - entryCount;
+        entryCount += 1;
         if (count == 0) {
             data.push_back(value);
             count = EntriesPerMWord;
+        } else {
+            set(entryCount-1, value);
         }
-
-        size_t offset = (EntriesPerMWord - count)*WordWidth;
-        data.back() |= (value << offset);
-        entryCount += 1;
         assert(back() == value);
     }
 
@@ -83,9 +82,11 @@ struct FixedSuccinctVector2 {
         assert(std::log2(value) < WordWidth);
 
         size_t aid    = idx / EntriesPerMWord;
-        size_t offset = idx % EntriesPerMWord;
+        size_t lid    = idx % EntriesPerMWord;
+        size_t offset = lid * WordWidth;
 
-        data[aid] = (data[aid] ^~ (mask << offset)) | (value << offset);
+        data[aid] = (data[aid] &~ (mask << offset)) | (value << offset);
+        assert(at(idx) == value);
     }
 
     /** Read integer at a certain position
@@ -98,13 +99,14 @@ struct FixedSuccinctVector2 {
      */
     auto at(size_t idx) const -> uint64_t {
         size_t aid    = idx / EntriesPerMWord;
-        size_t offset = idx % EntriesPerMWord;
+        size_t lid    = idx % EntriesPerMWord;
+        size_t offset = lid*WordWidth;
+
         return (data[aid] >> offset) & mask;
     }
 
     void pop_back() {
         assert(entryCount > 0);
-        back() = 0;
         entryCount -= 1;
         auto count = data.size()*EntriesPerMWord - entryCount;
         assert(count <= EntriesPerMWord);
