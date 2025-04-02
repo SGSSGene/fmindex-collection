@@ -8,7 +8,8 @@ project(test_fmindex-collection)
 # fmindex-collectionunittests
 add_executable(${PROJECT_NAME}
     bitvector/bitset_popcount.cpp
-    bitvector/checkBitvector.cpp
+    bitvector/unittest.cpp
+    bitvector/benchmark.cpp
     fmindex/checkBiFMIndex.cpp
     fmindex/checkBiFMIndexCursor.cpp
     fmindex/checkCSA.cpp
