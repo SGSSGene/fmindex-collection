@@ -8,16 +8,13 @@
 #include <nanobench.h>
 
 #include "../string/utils.h"
-
-#include <pasta/bit_vector/bit_vector.hpp>
-#include <pasta/bit_vector/support/rank.hpp>
-#include <pasta/bit_vector/support/flat_rank.hpp>
-#include <pasta/bit_vector/support/wide_rank.hpp>
-#include <rank9.h>
-#include <sdsl/bit_vectors.hpp>
-
 #include "../BenchSize.h"
 #include "allBitVectors.h"
+#include "Pasta_FlatRank.h"
+#include "Pasta_WideRank.h"
+#include "sdsl_v.h"
+#include "sdsl_v5.h"
+#include "sux_Rank9.h"
 
 TEST_CASE("check bit vectors are working", "[BitVector]") {
     SECTION("short text") {
@@ -379,158 +376,6 @@ TEST_CASE("check bit vectors are working", "[BitVector]") {
 }
 
 namespace {
-
-// Wrapper for other bitvectors
-struct FlatRank {
-    pasta::BitVector bv;
-    pasta::FlatRank<pasta::OptimizedFor::DONT_CARE, pasta::BitVector> rs{bv};
-    FlatRank() = default;
-    FlatRank(FlatRank&&) = default;
-    FlatRank(std::vector<bool> const& input)
-        : bv{[&]() {
-            pasta::BitVector bv{input.size(), 0};
-            for (size_t i = 0; i < bv.size(); ++i) {
-                bv[i] = input[i];
-            }
-            return bv;
-        }()}
-    {
-    }
-    auto symbol(size_t i) const -> bool {
-        return bv[i];
-    }
-    auto rank(size_t i) const -> size_t {
-        return rs.rank1(i);
-    }
-    auto space_usage() const -> size_t {
-        return bv.space_usage() + rs.space_usage();
-    }
-
-};
-
-struct WideRank {
-    pasta::BitVector bv;
-    pasta::WideRank<pasta::OptimizedFor::DONT_CARE, pasta::BitVector> rs{bv};
-    WideRank() = default;
-    WideRank(WideRank&&) = default;
-    WideRank(std::vector<bool> const& input)
-        : bv{[&]() {
-            pasta::BitVector bv{input.size(), 0};
-            for (size_t i = 0; i < bv.size(); ++i) {
-                bv[i] = input[i];
-            }
-            return bv;
-        }()}
-    {
-    }
-    auto symbol(size_t i) const -> bool {
-        return bv[i];
-    }
-    auto rank(size_t i) const -> size_t {
-        return rs.rank1(i);
-    }
-    auto space_usage() const -> size_t {
-        return bv.space_usage() + rs.space_usage();
-    }
-};
-struct Rank9 {
-    std::vector<uint64_t> bitvector;
-    rank9 bv;
-
-    Rank9() = default;
-    Rank9(Rank9&&) = default;
-    Rank9(std::vector<bool> input)
-        : bitvector{[&]() {
-            auto bitvector = std::vector<uint64_t>{};
-            bitvector.resize(input.size()/64 + 1);
-            for (size_t i = 0; i < input.size(); ++i) {
-                auto id = i / 64;
-                auto offset = i % 64;
-                bitvector[id] |= (input[i]<<offset);
-            }
-            return bitvector;
-        }()}
-        , bv{bitvector.data(), input.size()+1}
-    {}
-
-    auto symbol(size_t i) const -> bool {
-        auto id = i / 64;
-        auto offset = i % 64;
-        return (bitvector[id] >> offset) & 1;
-    }
-
-    auto rank(size_t i) const -> size_t {
-        //hack, since rank9 is not const correct
-        return const_cast<rank9&>(bv).rank(i);
-    }
-    auto space_usage() const -> size_t {
-        return 0;
-//        bitvector.size() * 8 + rank9.
-    }
-};
-
-struct SDSL_V {
-    sdsl::bit_vector bitvector;
-    sdsl::bit_vector::rank_1_type bv;
-
-    SDSL_V() = default;
-    SDSL_V(SDSL_V&&) = default;
-    SDSL_V(std::vector<bool> input)
-        : bitvector{[&]() {
-            auto bv = sdsl::bit_vector(input.size(), 0);
-            for (size_t i = 0; i < input.size(); ++i) {
-                bv[i] = input[i];
-            }
-            return bv;
-        }()}
-        , bv{&bitvector}
-    {}
-
-    auto symbol(size_t i) const -> bool {
-        return bitvector[i];
-    }
-
-    auto rank(size_t i) const -> size_t {
-        return bv.rank(i);
-    }
-
-    template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(bitvector, bv);
-    }
-};
-
-struct SDSL_V5 {
-    sdsl::bit_vector bitvector;
-    sdsl::rank_support_v5<> bv;
-
-    SDSL_V5() = default;
-    SDSL_V5(SDSL_V5&&) = default;
-    SDSL_V5(std::vector<bool> input)
-        : bitvector{[&]() {
-            auto bv = sdsl::bit_vector(input.size(), 0);
-            for (size_t i = 0; i < input.size(); ++i) {
-                bv[i] = input[i];
-            }
-            return bv;
-        }()}
-        , bv{&bitvector}
-    {}
-
-    auto symbol(size_t i) const -> bool {
-        return bitvector[i];
-    }
-
-    auto rank(size_t i) const -> size_t {
-        return bv.rank(i);
-    }
-
-    template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(bitvector, bv);
-    }
-};
-
 auto generateText() -> std::vector<bool> const& {
     static auto text = []() -> std::vector<bool> {
         auto rng = ankerl::nanobench::Rng{};
