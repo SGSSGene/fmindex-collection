@@ -25,7 +25,7 @@
       "name": "sdsl-lite",
       "version": "3.0.3-git",
       "github_repository": "xxsds/sdsl-lite",
-      "git_tag": "a012afeb191bc5184fa314292c85af64d8efb3c1",
+      "git_tag": "a2e2bab4711201516e5d6f9377eef2a2b2752e49",
       "download_only": true,
       "cmake_commands": [
         "add_library(sdsl-lite INTERFACE)",
