@@ -23,8 +23,9 @@
     {
       "if": "FMC_USE_SDSL",
       "name": "sdsl-lite",
-      "version": "3.0.3",
+      "version": "3.0.3-git",
       "github_repository": "xxsds/sdsl-lite",
+      "git_tag": "a012afeb191bc5184fa314292c85af64d8efb3c1",
       "download_only": true,
       "cmake_commands": [
         "add_library(sdsl-lite INTERFACE)",
