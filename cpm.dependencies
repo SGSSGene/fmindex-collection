@@ -71,8 +71,8 @@
       "if": "PROJECT_IS_TOP_LEVEL",
       "name": "bit_vector",
       "version": "1.0.1-git",
-      "github_repository": "pasta-toolbox/bit_vector",
-      "git_tag": "main"
+      "github_repository": "SGSSGene/bit_vector",
+      "git_tag": "31124fa06d11938261e22c1f113c4b2b5ea6f7ba"
     },
     {
       "if": "PROJECT_IS_TOP_LEVEL",
