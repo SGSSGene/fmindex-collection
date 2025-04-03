@@ -9,11 +9,11 @@
 ito provide FM-Indices and their internal support structures.
 
 ## Functionality
+- fast and compact bitvectors with rank support
+- fast and compact strings with rank support
 - (bidirectional) FM-Indices
 - search schemes generator
 - several search algorithms (with edit distance or hamming distance)
-- some bit vector implementations
-- many more vector with rank supports (for vectors over type `uint8_t`)
 
 
 ## Dependencies
