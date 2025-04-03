@@ -8,11 +8,6 @@
 
 #include "../string/utils.h"
 #include "allBitVectors.h"
-#include "Pasta_FlatRank.h"
-#include "Pasta_WideRank.h"
-#include "sdsl_v.h"
-#include "sdsl_v5.h"
-#include "sux_Rank9.h"
 
 TEST_CASE("check bit vectors are working", "[bitvector]") {
     SECTION("short text") {

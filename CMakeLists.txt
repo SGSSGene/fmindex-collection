@@ -6,10 +6,14 @@ cmake_minimum_required (VERSION 3.25)
 project(fmindex-collection LANGUAGES CXX C
                             DESCRIPTION "fmindex-collection -- Datastructures and Algorithms for (Bi-)FMIndices and Approximate Pattern Matching")
 
-option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${PROJECT_IS_TOP_LEVEL})
+option(FMC_USE_SDSL  "Activate occ tables that use SDSL as a backend" ${PROJECT_IS_TOP_LEVEL})
+option(FMC_USE_PASTA "Include PASTA (required for bitvector benchmarks)" ${PROJECT_IS_TOP_LEVEL})
+option(FMC_USE_SUX   "Include SUX (required for bitvector benchmarks)" ${PROJECT_IS_TOP_LEVEL})
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(FMC_USE_SDSL OFF)
+    set(FMC_USE_PASTA OFF)
+    set(FMC_USE_SUX OFF)
 elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
     set(FMC_USE_SDSL OFF)
 endif()

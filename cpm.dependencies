@@ -68,14 +68,14 @@
       ]
     },
     {
-      "if": "PROJECT_IS_TOP_LEVEL AND NOT CMAKE_CXX_COMPILER_ID STREQUAL \"MSVC\"",
+      "if": "FMC_USE_PASTA",
       "name": "bit_vector",
       "version": "1.0.1-git",
       "github_repository": "SGSSGene/bit_vector",
       "git_tag": "31124fa06d11938261e22c1f113c4b2b5ea6f7ba"
     },
     {
-      "if": "PROJECT_IS_TOP_LEVEL AND NOT CMAKE_CXX_COMPILER_ID STREQUAL \"MSVC\"",
+      "if": "FMC_USE_SUX",
       "name": "sux",
       "version": "0.9.2-git",
       "github_repository": "foudrer/Sux",
