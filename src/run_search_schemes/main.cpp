@@ -1,13 +1,17 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: BSD-3-Clause
+
+#include <fmindex-collection/search_scheme/all.h>
 #include <fmt/format.h>
-#include <search_schemes/search_schemes.h>
+
+namespace fmc = fmindex_collection;
+namespace ss = fmc::search_scheme;
 
 int main(int argc, char** argv) {
     if (argc != 4) {
         fmt::print("generators: ");
-        for (auto const& [key, val] : search_schemes::generator::all) {
+        for (auto const& [key, val] : ss::generator::all) {
             fmt::print("{}, ", key);
         }
         fmt::print("\n");
@@ -20,7 +24,7 @@ int main(int argc, char** argv) {
     auto K   = std::stod(argv[2]);
     auto gen = argv[3];
     {
-        auto oss = search_schemes::generator::all.at(gen).generator(0, K, 0, 0);
+        auto oss = ss::generator::all.at(gen).generator(0, K, 0, 0);
         if (oss.size() == 0) return 0;
 
 //        for (auto s : oss) {
@@ -30,15 +34,15 @@ int main(int argc, char** argv) {
 //        }
 //        fmt::print("\n");
 
-        auto ss = search_schemes::expand(oss, len);
+        auto ss = ss::expand(oss, len);
 
         auto nc = [&](auto ss) {
-            return search_schemes::weightedNodeCount</*Edit=*/false>(ss, 4, 3'000'000'000);
+            return ss::weightedNodeCount</*Edit=*/false>(ss, 4, 3'000'000'000);
         };
         auto nce = [&](auto ss) {
-            return search_schemes::weightedNodeCount</*Edit=*/true>(ss, 4, 3'000'000'000);
+            return ss::weightedNodeCount</*Edit=*/true>(ss, 4, 3'000'000'000);
         };
-        auto dss = search_schemes::expandByWNC</*Edit=*/true>(oss, len, 4, 3'000'000'000);
+        auto dss = ss::expandByWNC</*Edit=*/true>(oss, len, 4, 3'000'000'000);
 
 
 //        fmt::print("ess:\n");

@@ -1,21 +1,22 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include <catch2/catch_all.hpp>
-#include <search_schemes/generator/backtracking.h>
-#include <search_schemes/generator/bestKnown.h>
-#include <search_schemes/generator/h2.h>
-#include <search_schemes/generator/hato.h>
-#include <search_schemes/generator/kianfar.h>
-#include <search_schemes/generator/kucherov.h>
-#include <search_schemes/generator/optimum.h>
-#include <search_schemes/generator/pigeon.h>
-#include <search_schemes/generator/suffixFilter.h>
-#include <search_schemes/generator/zeroOnesZero.h>
-#include <search_schemes/isComplete.h>
-#include <search_schemes/isValid.h>
 
-namespace ss = search_schemes;
+#include <catch2/catch_all.hpp>
+#include <fmindex-collection/search_scheme/generator/backtracking.h>
+#include <fmindex-collection/search_scheme/generator/bestKnown.h>
+#include <fmindex-collection/search_scheme/generator/h2.h>
+#include <fmindex-collection/search_scheme/generator/hato.h>
+#include <fmindex-collection/search_scheme/generator/kianfar.h>
+#include <fmindex-collection/search_scheme/generator/kucherov.h>
+#include <fmindex-collection/search_scheme/generator/optimum.h>
+#include <fmindex-collection/search_scheme/generator/pigeon.h>
+#include <fmindex-collection/search_scheme/generator/suffixFilter.h>
+#include <fmindex-collection/search_scheme/generator/zeroOnesZero.h>
+#include <fmindex-collection/search_scheme/isComplete.h>
+#include <fmindex-collection/search_scheme/isValid.h>
+
+namespace ss = fmindex_collection::search_scheme;
 namespace gen = ss::generator;
 
 TEST_CASE("check search scheme generator backtracking for completeness", "[isComplete][backtracking]") {

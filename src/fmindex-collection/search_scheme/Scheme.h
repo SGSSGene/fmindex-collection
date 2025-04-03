@@ -5,7 +5,7 @@
 
 #include "Search.h"
 
-namespace search_schemes {
+namespace fmindex_collection::search_scheme {
 
 /*
  * A Scheme is a list of Searches

@@ -8,8 +8,8 @@
 #include <fmindex-collection/locate.h>
 #include <fmindex-collection/search/all.h>
 #include <fmt/format.h>
-#include <search_schemes/expand.h>
-#include <search_schemes/generator/all.h>
+#include <fmindex-collection/search_scheme/expand.h>
+#include <fmindex-collection/search_scheme/generator/all.h>
 #include <unordered_set>
 
 using namespace fmindex_collection;
@@ -42,9 +42,9 @@ int main(int argc, char const* const* argv) {
         for (auto iter = ++count.begin(); iter != count.end(); ++iter) {
             ext += ", " + iter->first;
         }
-        std::string gens = search_schemes::generator::all.begin()->first;
+        std::string gens = search_scheme::generator::all.begin()->first;
         gens = gens + "|" + gens + "_dyn";
-        for (auto iter = ++search_schemes::generator::all.begin(); iter != search_schemes::generator::all.end(); ++iter) {
+        for (auto iter = ++search_scheme::generator::all.begin(); iter != search_scheme::generator::all.end(); ++iter) {
             gens += "|" + iter->first + "|" + iter->first + "_dyn";
         }
         fmt::print("Usage:\n"
@@ -119,15 +119,15 @@ int main(int argc, char const* const* argv) {
                     mut_queries.resize(mut_queries.size() / 10);
                 }*/
                 auto search_scheme = [&]() {
-                    auto iter = search_schemes::generator::all.find(config.generator);
-                    if (iter == search_schemes::generator::all.end()) {
+                    auto iter = search_scheme::generator::all.find(config.generator);
+                    if (iter == search_scheme::generator::all.end()) {
                         throw std::runtime_error("unknown search scheme generetaror \"" + config.generator + "\"");
                     }
                     auto len = mut_queries[0].size();
                     auto oss = iter->second.generator(0, k, 0, 0); //!TODO last two parameters of second are not being used
-                    auto ess = search_schemes::expand(oss, len);
-                    auto dss = search_schemes::expandByWNC</*Edit=*/true>(oss, len, 4, 3'000'000'000); //!TODO use correct Sigma and text size
-                    fmt::print("ss diff: {} to {}, using dyn: {}\n", search_schemes::weightedNodeCount</*Edit=*/false>(ess, 4, 3'000'000'000), search_schemes::weightedNodeCount</*Edit=*/false>(dss, 4, 3'000'000'000), config.generator_dyn);
+                    auto ess = search_scheme::expand(oss, len);
+                    auto dss = search_scheme::expandByWNC</*Edit=*/true>(oss, len, 4, 3'000'000'000); //!TODO use correct Sigma and text size
+                    fmt::print("ss diff: {} to {}, using dyn: {}\n", search_scheme::weightedNodeCount</*Edit=*/false>(ess, 4, 3'000'000'000), search_scheme::weightedNodeCount</*Edit=*/false>(dss, 4, 3'000'000'000), config.generator_dyn);
                     if (!config.generator_dyn) {
                         return ess;
                     } else {
@@ -138,14 +138,14 @@ int main(int argc, char const* const* argv) {
                     auto r = std::vector<decltype(search_scheme)>{};
                     for (size_t j{0}; j<=k; ++j) {
                         r.emplace_back([&]() {
-                            auto iter = search_schemes::generator::all.find(config.generator);
-                            if (iter == search_schemes::generator::all.end()) {
+                            auto iter = search_scheme::generator::all.find(config.generator);
+                            if (iter == search_scheme::generator::all.end()) {
                                 throw std::runtime_error("unknown search scheme generetaror \"" + config.generator + "\"");
                             }
                             auto len = mut_queries[0].size();
                             auto oss = iter->second.generator(j, j, 0, 0); //!TODO last two parameters of second are not being used
-                            auto ess = search_schemes::expand(oss, len);
-                            auto dss = search_schemes::expandByWNC</*Edit=*/true>(oss, len, 4, 3'000'000'000); //!TODO use correct Sigma and text size
+                            auto ess = search_scheme::expand(oss, len);
+                            auto dss = search_scheme::expandByWNC</*Edit=*/true>(oss, len, 4, 3'000'000'000); //!TODO use correct Sigma and text size
                             if (!config.generator_dyn) {
                                 return ess;
                             } else {

@@ -7,7 +7,7 @@
 #include <tuple>
 #include <vector>
 
-namespace search_schemes {
+namespace fmindex_collection::search_scheme {
 
 /* Single Search
  *

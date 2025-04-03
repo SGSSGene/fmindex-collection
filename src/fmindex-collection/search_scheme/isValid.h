@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <cassert>
 
-namespace search_schemes {
+namespace fmindex_collection::search_scheme {
 namespace valid::detail {
 /* check if pi is
  * - contiguous

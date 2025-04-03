@@ -3,10 +3,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include <search_schemes/Scheme.h>
-
 #include "../concepts.h"
 #include "../fmindex/BiFMIndexCursor.h"
+#include "../search_scheme/Scheme.h"
 #include "SelectCursor.h"
 
 /* Hamming distance search, without expanded search scheme

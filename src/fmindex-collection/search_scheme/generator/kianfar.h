@@ -6,7 +6,7 @@
 #include "../Scheme.h"
 #include <cassert>
 
-namespace search_schemes::generator {
+namespace fmindex_collection::search_scheme::generator {
 
 inline auto kianfar(int K) -> Scheme {
     if (K == 0) {

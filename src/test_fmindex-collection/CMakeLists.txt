@@ -30,6 +30,13 @@ add_executable(${PROJECT_NAME}
     search/checkSearchPseudo.cpp
     search/checkSearches.cpp
     search/checkSearchHammingSM.cpp
+    search_scheme/checkGenerators.cpp
+    search_scheme/checkGeneratorsIsComplete.cpp
+    search_scheme/expand.cpp
+    search_scheme/isComplete.cpp
+    search_scheme/isValid.cpp
+    search_scheme/nodeCount.cpp
+    search_scheme/weightedNodeCount.cpp
     string/benchmark_alphabet_4.cpp
     string/benchmark_alphabet_5.cpp
     string/benchmark_alphabet_6.cpp

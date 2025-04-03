@@ -26,7 +26,6 @@ endif()
 if (PROJECT_IS_TOP_LEVEL)
     enable_testing()
     add_subdirectory(src/test_fmindex-collection)
-    add_subdirectory(src/test_search_schemes)
 
     # example executable
     add_executable(example
@@ -53,8 +52,6 @@ if (PROJECT_IS_TOP_LEVEL)
         cereal::cereal
     )
 
-
-
     # easyExample executable
     add_executable(easyExample
         src/easyExample/main.cpp
@@ -71,7 +68,7 @@ if (PROJECT_IS_TOP_LEVEL)
     )
     target_link_libraries(run_search_schemes
         PRIVATE
-        search_schemes
+        fmindex-collection::fmindex-collection
         fmt::fmt-header-only
     )
 

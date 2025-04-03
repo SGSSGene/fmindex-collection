@@ -7,8 +7,8 @@
 #include <fmindex-collection/locate.h>
 #include <fmindex-collection/occtable/all.h>
 #include <fmindex-collection/search/all.h>
-#include <search_schemes/generator/all.h>
-#include <search_schemes/expand.h>
+#include <fmindex-collection/search_scheme/generator/all.h>
+#include <fmindex-collection/search_scheme/expand.h>
 
 
 TEST_CASE("locating using LocateFMTree", "[locate][fmtree]") {
@@ -24,7 +24,7 @@ TEST_CASE("locating using LocateFMTree", "[locate][fmtree]") {
     auto queries = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'C', 'C'}, std::vector<uint8_t>{'B', 'B'}};
 
     SECTION("test LocateFMTree") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_pseudo::search</*EditDistance=*/true>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -58,7 +58,7 @@ TEST_CASE("locating using LocateFMTree", "[locate][fmtree]") {
     }
 
     SECTION("test locateFMTree") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_pseudo::search</*EditDistance=*/true>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {

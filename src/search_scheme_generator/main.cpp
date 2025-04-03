@@ -2,18 +2,20 @@
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: BSD-3-Clause
 #include <cstdio>
+#include <fmindex-collection/search_scheme/generator/all.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
-#include <search_schemes/generator/all.h>
 #include <unordered_set>
 
+namespace fmc = fmindex_collection;
+namespace ss = fmc::search_scheme;
 
 void help() {
     fmt::print("Usage:\n"
                 "./search_scheme_generator <generator> <k>\n\n"
                 "generators:\n");
 
-    for (auto const& [key, value] : search_schemes::generator::all) {
+    for (auto const& [key, value] : ss::generator::all) {
         fmt::print("- {}\n", key);
     }
 }
@@ -28,8 +30,8 @@ int main(int argc, char const* const* argv) {
         auto generator_name = std::string{argv[1]};
         auto k              = std::stoi(std::string{argv[2]});
 
-        auto iter = search_schemes::generator::all.find(generator_name);
-        if (iter == search_schemes::generator::all.end()) {
+        auto iter = ss::generator::all.find(generator_name);
+        if (iter == ss::generator::all.end()) {
             throw std::runtime_error("unknown search scheme generetaror \"" + generator_name + "\"");
         }
 
@@ -42,7 +44,7 @@ int main(int argc, char const* const* argv) {
             fmt::print("\\(({}, {}, {})\\)", fmt::join(search.pi, ""), fmt::join(search.l, ""), fmt::join(search.u, ""));
         }
         fmt::print("\\}}\n");
-//        auto ess = search_schemes::expand(oss, len);
+//        auto ess = ss::expand(oss, len);
 
 
     } catch(std::exception const& e) {

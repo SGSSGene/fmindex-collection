@@ -6,7 +6,7 @@
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/ReverseFMIndex.h>
 #include <fmindex-collection/search/BacktrackingWithBuffers.h>
-#include <search_schemes/generator/all.h>
+#include <fmindex-collection/search_scheme/generator/all.h>
 
 TEMPLATE_TEST_CASE("searching with collection and backtracking with buffers on a reversed fmindex", "[collection][search][reverse]", ALLTABLES) {
     using OccTable = TestType;
@@ -17,7 +17,7 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with buffers on a
     auto index = fmindex_collection::ReverseFMIndex<OccTable>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     auto query = std::vector<uint8_t>{'A', 'C'};
-    auto search_scheme = search_schemes::generator::backtracking(1, 0, 0);
+    auto search_scheme = fmindex_collection::search_scheme::generator::backtracking(1, 0, 0);
 
     using cursor_t = fmindex_collection::select_cursor_t<decltype(index)>;
 

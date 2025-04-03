@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include <catch2/catch_all.hpp>
-#include <search_schemes/expand.h>
-#include <search_schemes/generator/backtracking.h>
-#include <search_schemes/weightedNodeCount.h>
 
-namespace ss = search_schemes;
+#include <catch2/catch_all.hpp>
+#include <fmindex-collection/search_scheme/expand.h>
+#include <fmindex-collection/search_scheme/generator/backtracking.h>
+#include <fmindex-collection/search_scheme/weightedNodeCount.h>
+
+namespace ss = fmindex_collection::search_scheme;
 namespace gen = ss::generator;
 
 TEST_CASE("check node counts", "[weightedNodeCount]") {

@@ -19,7 +19,6 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     INTERFACE
     libsais
-    search_schemes::search_schemes
     cereal::cereal
     pasta_bit_vector
     sux::sux

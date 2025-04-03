@@ -7,15 +7,19 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <numeric>
 
-namespace search_schemes {
+namespace fmindex_collection::search_scheme {
 
 /**
- * If its not edit distance, its Hamming distance
+ * \tparam Edit use edit distance, other wise Hamming distance
+ * \param s search scheme
+ * \param sigma size of the alphabet (without delimiter)
+ * \param N     size of the reference text, ~3'000'000'000 for hg
  */
 template <bool Edit>
-long double nodeCount(Search s, size_t sigma) {
+long double weightedNodeCount(Search s, size_t sigma, size_t N) {
     auto n_max = s.pi.size();
     auto e     = *std::max_element(begin(s.u), end(s.u));
 
@@ -26,6 +30,9 @@ long double nodeCount(Search s, size_t sigma) {
 
     auto newArray = std::vector<long double>(e+1, 0);
     for (size_t n {1}; n <= n_max; ++n) {
+        auto f = N / std::pow(sigma, n);
+        if (f > 1) f = 1.;
+
         for (size_t i{0}; i < e+1; ++i) {
             if (s.l[n-1] <= i and i <= s.u[n-1]) {
                 newArray[i] = lastArray[i];
@@ -36,7 +43,9 @@ long double nodeCount(Search s, size_t sigma) {
                         newArray[i] += (sigma-1) * lastArray[i-1];
                     }
                 }
+                newArray[i] *= f;
                 acc += newArray[i];
+
             } else {
                 newArray[i] = 0;
             }
@@ -47,12 +56,15 @@ long double nodeCount(Search s, size_t sigma) {
 }
 
 /**
- * If its not edit distance, its Hamming distance
+ * \tparam Edit use edit distance, other wise Hamming distance
+ * \param ss search schemes
+ * \param sigma size of the alphabet (without delimiter)
+ * \param N     size of the reference text, ~3'000'000'000 for hg
  */
 template <bool Edit>
-long double nodeCount(Scheme const& ss, size_t sigma) {
+long double weightedNodeCount(Scheme const& ss, size_t sigma, size_t N) {
     return std::accumulate(begin(ss), end(ss), static_cast<long double>(0.), [&](long double v, auto const& s) {
-        return v + nodeCount<Edit>(s, sigma);
+        return v + weightedNodeCount<Edit>(s, sigma, N);
     });
 }
 }
