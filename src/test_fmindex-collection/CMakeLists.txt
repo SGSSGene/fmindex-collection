@@ -60,7 +60,7 @@ target_link_libraries(${PROJECT_NAME}
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_link_options(${PROJECT_NAME} PUBLIC /STACK:4194304)
 endif()
-if(FMC_USE_SUX AND FMC_USE_PASTA)
+if(FMC_USE_SUX AND FMC_USE_PASTA AND FMC_USE_SDSL)
     # bitvector/benchmark requires sux and paste to compile successful
     target_compile_definitions(${PROJECT_NAME} INTERFACE -DFMC_USE_SUX)
     target_compile_definitions(${PROJECT_NAME} INTERFACE -DFMC_USE_PASTA)
