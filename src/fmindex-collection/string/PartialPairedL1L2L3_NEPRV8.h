@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../bitset_popcount.h"
+#include "../builtins.h"
 #include "concepts.h"
 #include "utils.h"
 #include "EPRV3.h"

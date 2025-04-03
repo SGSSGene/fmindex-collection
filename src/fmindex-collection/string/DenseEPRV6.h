@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../DenseVector.h"
+#include "../builtins.h"
 #include "concepts.h"
 
 #include <bit>
