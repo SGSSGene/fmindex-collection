@@ -5,14 +5,12 @@ cmake_minimum_required (VERSION 3.10)
 
 project(test_fmindex-collection)
 
-# fmindex-collectionunittests
 add_executable(${PROJECT_NAME}
     bitvector/bitset_popcount.cpp
     bitvector/unittest.cpp
     bitvector/benchmark.cpp
     fmindex/checkBiFMIndex.cpp
     fmindex/checkBiFMIndexCursor.cpp
-    fmindex/checkCSA.cpp
     fmindex/checkDenseBiFMIndex.cpp
     fmindex/checkDenseReverseFMIndex.cpp
     fmindex/checkFMIndex.cpp
@@ -26,11 +24,12 @@ add_executable(${PROJECT_NAME}
     fmindex/checkReverseFMIndexCursor.cpp
     miscellaneous.cpp
     occtables/checkOccTables.cpp
+    search/checkLocateFMTree.cpp
     search/checkReverseIndexSearch.cpp
     search/checkSearchBacktracking.cpp
     search/checkSearchPseudo.cpp
-    search/checkLocateFMTree.cpp
     search/checkSearches.cpp
+    search/checkSearchHammingSM.cpp
     string/benchmark_alphabet_4.cpp
     string/benchmark_alphabet_5.cpp
     string/benchmark_alphabet_6.cpp
@@ -41,8 +40,8 @@ add_executable(${PROJECT_NAME}
     string/benchmark_alphabet_128.cpp
     string/benchmark_alphabet_255.cpp
     string/unittest.cpp
+    suffixarray/checkCSA.cpp
     utils.cpp
-    search/checkSearchHammingSM.cpp
 )
 target_link_libraries(${PROJECT_NAME}
     Catch2::Catch2WithMain

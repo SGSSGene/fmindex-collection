@@ -7,7 +7,7 @@
 #include <fmindex-collection/suffixarray/DenseCSA.h>
 #include <fmindex-collection/utils.h>
 
-TEST_CASE("check Compressed Suffix Array (CSA)", "[CSA]") {
+TEST_CASE("check Compressed Suffix Array (CSA)", "[suffixarray][CSA]") {
     // SA of 'Hello$World$':
     //               S P  SA
     // $Hello$World  1 5  11
@@ -81,7 +81,7 @@ TEST_CASE("check Compressed Suffix Array (CSA)", "[CSA]") {
     }
 }
 
-TEST_CASE("check Dense Compressed Suffix Array (DenseCSA)", "[DenseCSA]") {
+TEST_CASE("check Dense Compressed Suffix Array (DenseCSA)", "[suffixarray][DenseCSA]") {
     // SA of 'Hello$World$':
     //               S P  SA
     // $Hello$World  1 5  11
