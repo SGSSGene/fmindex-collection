@@ -4,7 +4,7 @@
 
 #include "utils.h"
 
-TEST_CASE("benchmark strings c'tor operation - 5 alphabet", "[string][!benchmark][5][time][ctor][.]") {
+TEST_CASE("benchmark strings c'tor operation - 5 alphabet", "[string][!benchmark][5][time][ctor]") {
     auto const& text = generateText<0, 5>();
 
     SECTION("benchmarking") {

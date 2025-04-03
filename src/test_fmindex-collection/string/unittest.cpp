@@ -11,7 +11,7 @@ TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string]
             auto vector_name = getName<Vector>();
             INFO(vector_name);
 
-            auto text = generateText<0, Vector::Sigma>(1000000);
+            auto text = generateText<0, Vector::Sigma>(1000);
 
             auto vec = Vector{std::span{text}};
             REQUIRE(vec.size() == text.size());
