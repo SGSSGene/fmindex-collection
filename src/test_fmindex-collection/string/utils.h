@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2006-2025, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2025, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
+#pragma once
+
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/utils.h>
 #include <fstream>
@@ -9,10 +11,9 @@
 #include "../BenchSize.h"
 #include "allStrings.h"
 
-namespace {
-
 #if __has_include(<cxxabi.h>)
 #include <cxxabi.h>
+namespace {
 template <typename T>
 auto getName() {
     int     status;
@@ -21,14 +22,18 @@ auto getName() {
     std::free(realname);
     return str;
 }
+}
 #else
 #include <reflect>
+namespace {
 template <typename T>
 auto getName() {
     return std::string{reflect::type_name<T>()};
 }
+}
 #endif
 
+namespace {
 
 template <typename T>
 struct X;
