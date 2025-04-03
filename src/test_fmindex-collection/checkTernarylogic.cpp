@@ -4,131 +4,9 @@
 #include <bit>
 #include <catch2/catch_all.hpp>
 #include <nanobench.h>
-#include <fmindex-collection/bitset_popcount.h>
 #include <fmindex-collection/ternarylogic.h>
 
 
-/*
-#include <simde/x86/avx512.h>
-#include <simde/x86/sse2.h>
-
-template <size_t T, size_t O>
-auto convert(std::bitset<O> const& _o) -> std::bitset<T> {
-    using A1 = std::array<uint64_t, (O+63)/64>;
-    auto const& s = reinterpret_cast<A1 const&>(_o);
-
-    auto t = std::array<uint64_t, (T+63)/64>{};
-    for (size_t i{0}; i < std::min(s.size(), t.size()); ++i) {
-        t[i] = s[i];
-    }
-    return std::bit_cast<std::bitset<T>>(t);
-}
-
-
-template <size_t Shift, size_t N>
-auto and_and(std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
-    if constexpr (N == 1024 || N == 2048) {
-        (void)_a;
-        (void)_b;
-        (void)_c;
-        return {};
-    } else if constexpr (N == 512) {
-        auto a = simde_mm512_loadu_epi64(&_a);
-        auto b = simde_mm512_loadu_epi64(&_b);
-        auto c = simde_mm512_loadu_epi64(&_c);
-        auto r = simde_mm512_ternarylogic_epi64(a, b, c, Shift);
-        auto _r = std::bitset<N>{};
-        simde_mm512_storeu_epi64(&_r, r);
-        return _r;
-    } else if constexpr (N == 256) {
-        auto a = simde_mm256_loadu_epi64(&_a);
-        auto b = simde_mm256_loadu_epi64(&_b);
-        auto c = simde_mm256_loadu_epi64(&_c);
-        auto r = simde_mm256_ternarylogic_epi64(a, b, c, Shift);
-        auto _r = std::bitset<N>{};
-        simde_mm256_storeu_epi64(&_r, r);
-        return _r;
-    } else if constexpr (N == 128) {
-        auto r = and_and<Shift>(convert<256>(_a), convert<256>(_b), convert<256>(_c));
-        return convert<128>(r);
-    } else if constexpr (N == 64) {
-        auto r = and_and<Shift>(convert<256>(_a), convert<256>(_b), convert<256>(_c));
-        return convert<64>(r);
-    } else {
-        []<bool b = false> {
-            static_assert(b, "Only values of 64, 128, 256 and 512 supported");
-        };
-    }
-}
-
-template <size_t N>
-auto and_and_run(size_t shift, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
-    if constexpr (N == 1024 || N == 2048) {
-        (void)shift;
-        (void)_a;
-        (void)_b;
-        (void)_c;
-        return {};
-    } else if constexpr (N == 512) {
-        auto a = simde_mm512_loadu_epi64(&_a);
-        auto b = simde_mm512_loadu_epi64(&_b);
-        auto c = simde_mm512_loadu_epi64(&_c);
-        auto r = simde_mm512_ternarylogic_epi64(a, b, c, shift);
-        auto _r = std::bitset<N>{};
-        simde_mm512_storeu_epi64(&_r, r);
-        return _r;
-    } else if constexpr (N == 256) {
-        auto a = simde_mm256_loadu_epi64(&_a);
-        auto b = simde_mm256_loadu_epi64(&_b);
-        auto c = simde_mm256_loadu_epi64(&_c);
-        auto r = simde_mm256_ternarylogic_epi64(a, b, c, shift);
-        auto _r = std::bitset<N>{};
-        simde_mm256_storeu_epi64(&_r, r);
-        return _r;
-    } else if constexpr (N == 128) {
-        auto r = and_and_run(shift, convert<256>(_a), convert<256>(_b), convert<256>(_c));
-        return convert<128>(r);
-    } else if constexpr (N == 64) {
-        auto r = and_and_run(shift, convert<256>(_a), convert<256>(_b), convert<256>(_c));
-        return convert<64>(r);
-    } else {
-        []<bool b = false> {
-            static_assert(b, "Only values of 64, 128, 256 and 512 supported");
-        };
-    }
-}
-
-template <size_t N>
-auto fast_ternarylogic(size_t shift, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
-    if constexpr (N >= 1024) {
-        return ternarylogic_v3<N>(shift, _a, _b, _c);
-    } else if constexpr (N == 512) {
-        auto a = simde_mm512_loadu_epi64(&_a);
-        auto b = simde_mm512_loadu_epi64(&_b);
-        auto c = simde_mm512_loadu_epi64(&_c);
-        auto r = simde_mm512_ternarylogic_epi64(a, b, c, shift);
-        auto _r = std::bitset<N>{};
-        simde_mm512_storeu_epi64(&_r, r);
-        return _r;
-    } else if constexpr (N == 256) {
-        auto a = simde_mm256_loadu_epi64(&_a);
-        auto b = simde_mm256_loadu_epi64(&_b);
-        auto c = simde_mm256_loadu_epi64(&_c);
-        auto r = simde_mm256_ternarylogic_epi64(a, b, c, shift);
-        auto _r = std::bitset<N>{};
-        simde_mm256_storeu_epi64(&_r, r);
-        return _r;
-    } else if constexpr (N == 128) {
-        return ternarylogic_v3<N>(shift, _a, _b, _c);
-    } else if constexpr (N == 64) {
-        return ternarylogic_v3<N>(shift, _a, _b, _c);
-    } else {
-        []<bool b = false> {
-            static_assert(b, "Only values of 64, 128, 256 and 512 supported");
-        };
-    }
-}*/
-#if 1
 TEST_CASE("testing ternary Logic functions are equivalent", "[ternary_logic]") {
     auto check_equality = [&]<size_t Bits>() {
         INFO(Bits);
@@ -183,7 +61,7 @@ TEST_CASE("testing ternary Logic functions are equivalent", "[ternary_logic]") {
     }
 }
 
-TEST_CASE("mark_exact - test to ternary logic function", "[mark_exact]") {
+TEST_CASE("mark_exact - test to ternary logic function", "[ternary_logic][mark_exact]") {
 
     auto check_equality = [&]<size_t Bits>() {
         auto a = std::bitset<Bits>{0b00001111};
@@ -227,7 +105,7 @@ TEST_CASE("mark_exact - test to ternary logic function", "[mark_exact]") {
     }
 }
 
-TEST_CASE("mark_exact - testing and benchmarking", "[mark_exact][!benchmark]") {
+TEST_CASE("mark_exact - testing and benchmarking", "[ternary_logic][!benchmark][mark_exact]") {
     auto rng = ankerl::nanobench::Rng{};
     SECTION("test all of it") {
         auto benchmark = [&]<size_t Bits>() {
@@ -320,7 +198,7 @@ TEST_CASE("mark_exact - testing and benchmarking", "[mark_exact][!benchmark]") {
     }
 }
 
-TEST_CASE("mark_exact_or_less - test to ternary logic function", "[mark_exact_or_less]") {
+TEST_CASE("mark_exact_or_less - test to ternary logic function", "[ternary_logic][mark_exact_or_less]") {
     auto check_equality = [&]<size_t Bits>() {
         auto a = std::bitset<Bits>{0b00001111};
         auto b = std::bitset<Bits>{0b00110011};
@@ -363,9 +241,8 @@ TEST_CASE("mark_exact_or_less - test to ternary logic function", "[mark_exact_or
         check_equality.operator()<65536>();
     }
 }
-#endif
 
-TEST_CASE("mark_exact_or_less_large - test to ternary logic function", "[mark_exact_or_less_large]") {
+TEST_CASE("mark_exact_or_less_large - test to ternary logic function", "[ternary_logic][mark_exact_or_less_large]") {
     auto check_equality = [&]<size_t Bits, size_t BitWidth=4>() {
         for (size_t loop{0}; loop < 1<<BitWidth; loop += Bits) {
             auto b = std::array<std::bitset<Bits>, BitWidth>{};
@@ -453,7 +330,7 @@ TEST_CASE("mark_exact_or_less_large - test to ternary logic function", "[mark_ex
 }
 #if 1
 
-TEST_CASE("mark_exact_or_less - testing and benchmarking", "[mark_exact_or_less][!benchmark]") {
+TEST_CASE("mark_exact_or_less - testing and benchmarking", "[ternary_logic][!benchmark][mark_exact_or_less]") {
     auto rng = ankerl::nanobench::Rng{};
     SECTION("test all of it") {
         auto benchmark = [&]<size_t Bits>() {

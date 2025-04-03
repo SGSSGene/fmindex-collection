@@ -9,6 +9,7 @@ add_executable(${PROJECT_NAME}
     bitvector/bitset_popcount.cpp
     bitvector/unittest.cpp
     bitvector/benchmark.cpp
+    checkTernarylogic.cpp
     fmindex/checkBiFMIndex.cpp
     fmindex/checkBiFMIndexCursor.cpp
     fmindex/checkDenseBiFMIndex.cpp
@@ -22,7 +23,6 @@ add_executable(${PROJECT_NAME}
     fmindex/checkRBiFMIndexCursor.cpp
     fmindex/checkReverseFMIndex.cpp
     fmindex/checkReverseFMIndexCursor.cpp
-    miscellaneous.cpp
     occtables/checkOccTables.cpp
     search/checkLocateFMTree.cpp
     search/checkReverseIndexSearch.cpp
