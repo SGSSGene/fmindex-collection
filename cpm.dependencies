@@ -68,7 +68,7 @@
       ]
     },
     {
-      "if": "PROJECT_IS_TOP_LEVEL",
+      "if": "PROJECT_IS_TOP_LEVEL AND NOT CMAKE_CXX_COMPILER_ID STREQUAL \"MSVC\"",
       "name": "bit_vector",
       "version": "1.0.1-git",
       "github_repository": "SGSSGene/bit_vector",
