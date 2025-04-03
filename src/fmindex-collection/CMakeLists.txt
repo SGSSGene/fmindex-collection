@@ -20,8 +20,6 @@ target_link_libraries(${PROJECT_NAME}
     INTERFACE
     libsais
     cereal::cereal
-    pasta_bit_vector
-    sux::sux
 )
 
 if (FMC_USE_SDSL)

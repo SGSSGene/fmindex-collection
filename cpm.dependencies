@@ -75,7 +75,7 @@
       "git_tag": "31124fa06d11938261e22c1f113c4b2b5ea6f7ba"
     },
     {
-      "if": "PROJECT_IS_TOP_LEVEL",
+      "if": "PROJECT_IS_TOP_LEVEL AND NOT CMAKE_CXX_COMPILER_ID STREQUAL \"MSVC\"",
       "name": "sux",
       "version": "0.9.2-git",
       "github_repository": "foudrer/Sux",

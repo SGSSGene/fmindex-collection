@@ -8,7 +8,6 @@ project(test_fmindex-collection)
 add_executable(${PROJECT_NAME}
     bitvector/bitset_popcount.cpp
     bitvector/unittest.cpp
-    bitvector/benchmark.cpp
     checkTernarylogic.cpp
     fmindex/checkBiFMIndex.cpp
     fmindex/checkBiFMIndexCursor.cpp
@@ -60,6 +59,15 @@ target_link_libraries(${PROJECT_NAME}
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_link_options(${PROJECT_NAME} PUBLIC /STACK:4194304)
+else()
+    if (FMC_USE_SDSL)
+        # bitvector/benchmark requires sux and paste to compile successful
+        target_sources(${PROJECT_NAME} PRIVATE bitvector/benchmark.cpp)
+        target_link_libraries(${PROJECT_NAME}
+            pasta_bit_vector
+            sux::sux
+        )
+    endif()
 endif()
 
 add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})
