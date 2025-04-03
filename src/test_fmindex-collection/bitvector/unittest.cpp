@@ -14,7 +14,7 @@
 #include "sdsl_v5.h"
 #include "sux_Rank9.h"
 
-TEST_CASE("check bit vectors are working", "[BitVector]") {
+TEST_CASE("check bit vectors are working", "[bitvector]") {
     SECTION("short text") {
         auto text = std::vector<uint8_t>{0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1};
 

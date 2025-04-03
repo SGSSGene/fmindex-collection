@@ -43,7 +43,7 @@ auto generateText() -> std::vector<bool> const& {
 }
 }
 
-TEST_CASE("benchmark bit vectors ctor run times", "[BitVector][!benchmark][time][ctor][.]") {
+TEST_CASE("benchmark bit vectors ctor run times", "[bitvector][!benchmark][time][ctor]") {
     auto bench_ctor = ankerl::nanobench::Bench{};
     bench_ctor.title("c'tor()")
               .relative(true);
@@ -71,7 +71,7 @@ TEST_CASE("benchmark bit vectors ctor run times", "[BitVector][!benchmark][time]
     }
 }
 
-TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!benchmark][time][symbol]") {
+TEST_CASE("benchmark bit vectors rank and symbol run times", "[bitvector][!benchmark][time][symbol]") {
 
     auto& text = generateText();
 
@@ -105,7 +105,7 @@ TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!bench
     }
 }
 
-TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!benchmark][time][rank]") {
+TEST_CASE("benchmark bit vectors rank and symbol run times", "[bitvector][!benchmark][time][rank]") {
 
     auto& text = generateText();
 
@@ -141,8 +141,7 @@ TEST_CASE("benchmark bit vectors rank and symbol run times", "[BitVector][!bench
     }
 }
 
-
-TEST_CASE("benchmark bit vectors memory consumption", "[BitVector][!benchmark][size]") {
+TEST_CASE("benchmark bit vectors memory consumption", "[bitvector][!benchmark][size]") {
     BenchSize benchSize;
 
     SECTION("benchmarking") {
