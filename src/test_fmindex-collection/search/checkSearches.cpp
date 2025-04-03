@@ -866,7 +866,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 }
 
-TEST_CASE("benchmark searches with errors", "[benchmark]") {
+TEST_CASE("benchmark searches with errors", "[searches][!benchmark]") {
     SECTION("benchmarking") {
         using OccTable = fmindex_collection::occtable::EprV2_16<256>;
         using Index = fmindex_collection::BiFMIndex<OccTable>;
@@ -959,13 +959,15 @@ TEST_CASE("benchmark searches with errors", "[benchmark]") {
 
         auto index = Index{ref, /*samplingRate*/1, /*threadNbr*/1};
         static auto bench = ankerl::nanobench::Bench();
+        bench.batch(reads.size())
+             .relative(true);
 
         size_t r_ng12{};
         size_t r_ng21{};
         {
             auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, errors), len);
 
-            bench.relative(true).minEpochTime(std::chrono::milliseconds{1000}).run("search ng12", [&]() {
+            bench.run("search ng12", [&]() {
                 r_ng12 = 0;
                 fmindex_collection::search_ng21::search(index, reads, search_scheme, [&](auto qidx, auto cursor, auto errors) {
                     (void)errors;
@@ -979,7 +981,7 @@ TEST_CASE("benchmark searches with errors", "[benchmark]") {
         {
             auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, errors), len);
 
-            bench.relative(true).minEpochTime(std::chrono::milliseconds{1000}).run("search ng21", [&]() {
+            bench.run("search ng21", [&]() {
                 r_ng21 = 0;
                 fmindex_collection::search_ng21::search(index, reads, search_scheme, [&](auto qidx, auto cursor, auto errors) {
                     (void)errors;
