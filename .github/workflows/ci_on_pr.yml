@@ -38,7 +38,7 @@ jobs:
           - {os: ubuntu-22.04, compiler: gcc14-cpp20-debug-sanitize_thread}
           - {os: ubuntu-22.04, compiler: clang18-cpp20-release}
           - {os: ubuntu-22.04, compiler: clang19-cpp20-release}
-          - {os: ubuntu-22.04, compiler: clang20-cpp20-release}
+          - {os: ubuntu-22.04, compiler: clang20-cpp20-release,    cmake_flags: "-DLIBSAIS_USE_OPENMP=NO"}
           - {os: macos-13,     compiler: gcc14-cpp20-release,      cmake_flags: "-DFMC_USE_SDSL=NO"}
           - {os: macos-13,     compiler: clang20-cpp20-release,    cmake_flags: "-DFMC_USE_SDSL=NO"}
           - {os: macos-14,     compiler: gcc14-cpp20-release,      cmake_flags: "-DFMC_USE_SDSL=NO"}
