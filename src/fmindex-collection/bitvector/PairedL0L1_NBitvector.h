@@ -31,27 +31,80 @@ struct PairedL0L1_NBitvector {
     std::vector<uint16_t> l1{0};
     std::vector<AlignedBitset<l1_bits_ct, Align>> bits{{}};
     size_t totalLength{};
-    bool finalized{};
 
     PairedL0L1_NBitvector() = default;
     PairedL0L1_NBitvector(PairedL0L1_NBitvector const&) = default;
     PairedL0L1_NBitvector(PairedL0L1_NBitvector&&) noexcept = default;
 
-    template <typename CB>
-    PairedL0L1_NBitvector(size_t length, CB cb)
-        : PairedL0L1_NBitvector{std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
-            return cb(i);
-        })}
-    {}
-
+    // constructor accepting view to bools or already compact uint64_t
     template <std::ranges::sized_range range_t>
-        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
-    PairedL0L1_NBitvector(range_t&& _range) {
-        reserve(_range.size());
+    PairedL0L1_NBitvector(range_t&& _range)
+        : PairedL0L1_NBitvector{convertToBitsetView<l1_bits_ct>(std::forward<range_t>(_range))}
+    {
+        if constexpr (std::same_as<std::ranges::range_value_t<range_t>, uint64_t>) {
+            totalLength = _range.size()*64;
+        } else if constexpr (std::convertible_to<std::ranges::range_value_t<range_t>, bool>) {
+            totalLength = _range.size();
+        } else {
+            []<bool b=false>() {
+                static_assert(b, "Must be an uint64_t or convertible to bool");
+            }();
+        }
+        l0.resize((totalLength+l0_bits_ct)/(l0_bits_ct*2) + 1);
+        l1.resize((totalLength+l1_bits_ct)/(l1_bits_ct*2) + 1);
+        bits.resize(totalLength/l1_bits_ct + 1);
+    }
 
-        auto iter = _range.begin();
-        while(totalLength < _range.size()) {
-            push_back(*(iter++));
+    // the actual constructor, already receiving premade std::bitsets<N>
+    template <std::ranges::sized_range range_t>
+        requires std::same_as<std::ranges::range_value_t<range_t>, std::bitset<l1_bits_ct>>
+    PairedL0L1_NBitvector(range_t&& _range) {
+        auto _length = _range.size()*l1_bits_ct;
+
+        l0.resize((_length+l0_bits_ct)/(l0_bits_ct*2) + 1);
+        l1.resize((_length+l1_bits_ct)/(l1_bits_ct*2) + 1);
+        bits.resize(_length/l1_bits_ct + 1);
+
+        for (auto const& b : _range) {
+            auto l0_id   = totalLength / (l0_bits_ct*2);
+            auto l1_id   = totalLength / (l1_bits_ct*2);
+            auto bits_id = totalLength / l1_bits_ct;
+            bits[bits_id].bits = b;
+
+            auto isLeftL0 = totalLength % (l0_bits_ct*2) < l0_bits_ct;
+            auto isLeftL1 = totalLength % (l1_bits_ct*2) < l1_bits_ct;
+
+            auto count = bits[bits_id].count();
+            if (isLeftL0) {
+                l0[l0_id] += count;
+                auto startL1Id = l0_id * l0_bits_ct / l1_bits_ct;
+
+                for (size_t i{startL1Id}; i < l1_id + !isLeftL1; ++i) {
+                    l1[i] += count;
+                }
+            } else {
+                l0[l0_id+1] += count;
+                if (isLeftL1) {
+                    l1[l1_id] += count;
+                    l1[l1_id+1] = l1[l1_id];
+                } else {
+                    l1[l1_id+1] += count;
+                }
+            }
+            totalLength += l1_bits_ct;
+
+            // requires extension to next blocks?
+            if (isLeftL0) {
+                // switches from left to right in next block
+                if (totalLength % (l0_bits_ct*2) >= l0_bits_ct) {
+                    l0[l0_id+1] = l0[l0_id];
+                }
+            } else {
+                // switches from right to left in next block
+                if (totalLength % (l0_bits_ct*2) < l0_bits_ct) {
+                    l1[l1_id+1] = 0;
+                }
+            }
         }
     }
 
@@ -64,73 +117,51 @@ struct PairedL0L1_NBitvector {
         bits.reserve(_length/l1_bits_ct + 2);
     }
 
-    void finalize() const {
-        const_cast<PairedL0L1_NBitvector*>(this)->impl_finalize();
-    }
-
-    void impl_finalize() {
-        if (finalized) return;
-        finalized = true;
-
-        size_t l0BlockCt = (totalLength + (l0_bits_ct*2)) / (l0_bits_ct*2);
-        size_t l1BlockCt = l0BlockCt * (l0_bits_ct / l1_bits_ct);
-        size_t inbitsCt  = l0BlockCt * ((l0_bits_ct*2) / l1_bits_ct);
-
-        l0.resize(l0BlockCt);
-        l1.resize(l1BlockCt);
-        bits.resize(inbitsCt);
-
-        constexpr size_t b1 = l1_bits_ct;
-        constexpr size_t b0 = l0_bits_ct;
-
-        constexpr size_t l1_block_ct = b0 / b1;
-
-
-        size_t l0_acc{};
-        // walk through all superblocks
-        for (size_t l0I{0}; l0I < l0BlockCt; ++l0I) {
-            // walk left to right and set l1 values (as if they are the begining of a superblock)
-
-            // left part
-            size_t acc{};
-            for (size_t i{0}; i < l1_block_ct; ++i) {
-                acc += bits[l0I*l1_block_ct*2 + i].count();
-                if (i % 2 == 0) {
-                    l1[l0I*l1_block_ct + i/2] = acc;
-                }
-            }
-            l0_acc += acc;
-            // update l0 (reached center)
-            l0[l0I] = l0_acc;//acc + [&]() { if(l0I > 0) return l0[l0I-1]; return size_t{0};}();
-            // walk backwards through left part and revert l0
-            for (size_t i{0}; i < l1_block_ct; ++i) {
-                if (i % 2 == 0) {
-                    auto idx = l0I*l1_block_ct + i/2;
-                    l1[idx] = acc - l1[idx];
-                }
-            }
-
-            // right part
-            acc = 0;
-            for (size_t i{l1_block_ct}; i < l1_block_ct*2; ++i) {
-                acc += bits[l0I*l1_block_ct*2 + i].count();
-                if (i % 2 == 0) {
-                    auto idx = l0I*l1_block_ct + i/2;
-                    l1[idx] = acc;
-                }
-            }
-            l0_acc += acc;
-        }
-    }
-
     void push_back(bool _value) {
-        if (finalized) throw std::runtime_error{"DS is finalized, can not call push_back after calling `rank`"};
-        if (_value) {
-            auto bitId         = totalLength % l1_bits_ct;
-            bits.back()[bitId] = _value;
+        auto bitId         = totalLength % l1_bits_ct;
+        bits.back()[bitId] = _value;
+
+        auto l0_id   = totalLength / (l0_bits_ct*2);
+        auto l1_id   = totalLength / (l1_bits_ct*2);
+
+        size_t count = _value;
+
+        auto isLeftL0 = totalLength % (l0_bits_ct*2) < l0_bits_ct;
+        auto isLeftL1 = totalLength % (l1_bits_ct*2) < l1_bits_ct;
+
+        // add to the appropiate counters
+        if (isLeftL0) {
+            l0.back() += count;
+
+            auto startL1Id = l0_id * l0_bits_ct / l1_bits_ct;
+            for (size_t i{startL1Id}; i < l1_id + !isLeftL1; ++i) {
+                l1[i] += count;
+            }
+        } else {
+            l0.back() += count;
+            l1.back() += count;
         }
+
         totalLength += 1;
-        if (totalLength % l1_bits_ct == 0) { // next bit will require a new in-bits block
+        // requires extension to next blocks?
+        if (isLeftL0) {
+            // switches l0 from left to right in next block
+            if (totalLength % (l0_bits_ct*2) >= l0_bits_ct) {
+                l0.emplace_back(l0.back());
+            }
+            if (totalLength % (l1_bits_ct*2) == l1_bits_ct) {
+                l1.emplace_back();
+            }
+        } else {
+            if (totalLength % (l1_bits_ct*2) == l1_bits_ct) {
+                l1.emplace_back(l1.back());
+            }
+            // switches l0 from right to left in next block
+            if (totalLength % (l0_bits_ct*2) < l0_bits_ct) {
+                l1.back() = 0;
+            }
+        }
+        if (totalLength % l1_bits_ct == 0) {
             bits.emplace_back();
         }
     }
@@ -149,7 +180,6 @@ struct PairedL0L1_NBitvector {
     }
 
     uint64_t rank(size_t idx) const noexcept {
-        finalize();
         assert(idx <= totalLength);
         auto bitId = idx % (l1_bits_ct*2);
         auto l1Id = idx / l1_bits_ct;
@@ -169,16 +199,9 @@ struct PairedL0L1_NBitvector {
     }
 
     template <typename Archive>
-    void save(Archive& ar) const {
-        finalize();
+    void serialize(Archive& ar) {
         ar(l0, l1, totalLength, bits);
     }
-
-    template <typename Archive>
-    void load(Archive& ar) {
-        ar(l0, l1, totalLength, bits);
-    }
-
 };
 using PairedL0L1_64_4kBitvector   = PairedL0L1_NBitvector<64, 4096>;
 using PairedL0L1_128_4kBitvector  = PairedL0L1_NBitvector<128, 4096>;

@@ -71,11 +71,11 @@ struct PairedL0_NBitvector {
             bits[bits_id].bits = b;
             totalLength += bits_ct;
 
-            if (totalLength % (bits_ct*2) == 0) { // accumulator for next block
-                l0[l0_id+1] += bits[bits_id].count();
-            } else {
+            if (totalLength % (bits_ct*2) == bits_ct) { // accumulator for next block
                 l0[l0_id] += bits[bits_id].count();
                 l0[l0_id+1] = l0[l0_id];
+            } else {
+                l0[l0_id+1] += bits[bits_id].count();
             }
         }
     }
