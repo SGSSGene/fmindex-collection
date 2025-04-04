@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#include "bitset_popcount.h"
 #include "concepts.h"
 
 #include <algorithm>
@@ -17,11 +18,55 @@
 #include <tuple>
 #include <vector>
 
+#if __has_include(<cereal/types/bitset.hpp>)
+#include <cereal/types/bitset.hpp>
+#endif
+
+
 #if LIBSAIS_OPENMP
 #   include <omp.h>
 #endif
 
 namespace fmindex_collection {
+
+// helper to compute 'alignas' values
+constexpr inline auto alignAsValue(size_t bits) -> size_t {
+    if (bits % 512 == 0) return 64;
+    if (bits % 256 == 0) return 32;
+    if (bits % 128 == 0) return 16;
+    if (bits %  64 == 0)  return 8;
+    return 1;
+}
+// helper to compute 'alignas' values
+constexpr inline auto minAlignAsValue(auto... bits) {
+    return std::min(alignAsValue(bits)...);
+}
+
+template <size_t N, bool Align=true>
+struct alignas(std::max(alignof(std::bitset<N>), Align?alignAsValue(N):size_t{1})) AlignedBitset {
+    std::bitset<N> bits;
+
+    decltype(auto) operator[](size_t i) {
+        return bits[i];
+    }
+    decltype(auto) operator[](size_t i) const {
+        return bits[i];
+    }
+    auto count() const {
+        return bits.count();
+    }
+
+    template <typename Archive>
+    void save(Archive& ar) const {
+        saveBV(bits, ar);
+    }
+
+    template <typename Archive>
+    void load(Archive& ar) {
+        loadBV(bits, ar);
+    }
+
+};
 
 inline auto createSA64(std::span<uint8_t const> input, size_t threadNbr) -> std::vector<uint64_t> {
     assert(uint64_t{input.size()} < std::numeric_limits<int64_t>::max());

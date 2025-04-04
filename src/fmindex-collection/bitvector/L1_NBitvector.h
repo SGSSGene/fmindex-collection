@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#include "../utils.h"
 #include "concepts.h"
 
 #include <array>
@@ -14,10 +15,6 @@
 #include <span>
 #include <vector>
 
-#if __has_include(<cereal/types/bitset.hpp>)
-#include <cereal/types/bitset.hpp>
-#endif
-
 namespace fmindex_collection::bitvector {
 
 /**
@@ -28,22 +25,12 @@ namespace fmindex_collection::bitvector {
  *   For 256bits, we need 320bits, resulting in 1.25bits per bit
  *
  */
-template <size_t bits_ct>
+template <size_t bits_ct, bool Align=true>
 struct L1_NBitvector {
-    std::vector<uint64_t> superblocks{0};
-    std::vector<std::bitset<bits_ct>> bits{0};
+    std::vector<uint64_t>                      superblocks{0};
+    std::vector<AlignedBitset<bits_ct, Align>> bits{{}};
     size_t totalLength{};
 
-    static std::array<std::bitset<bits_ct>, bits_ct+1> const masks;/* = []() {
-        auto m = std::array<std::bitset<bits_ct>, bits_ct+1>{};
-        auto a = std::bitset<bits_ct>{};
-
-        for (size_t i{0}; i < bits_ct; ++i) {
-            a.set(i);
-            m[i+1] = a;
-        }
-        return m;
-    }();*/
 
     L1_NBitvector() = default;
     L1_NBitvector(L1_NBitvector const&) = default;
@@ -87,7 +74,7 @@ struct L1_NBitvector {
 
             // concatenate next full block
             auto l0_id = totalLength / bits_ct;
-            auto& bits = l1[l0_id];
+            auto& bits = l1[l0_id].bits;
             bits = bool(*iter);
             if (restBits == bits_ct) {
                 for (size_t j{0}; j < bits_ct/64; ++j) {
@@ -148,66 +135,16 @@ struct L1_NBitvector {
     uint64_t rank(size_t idx) const noexcept {
         auto bitId        = idx % bits_ct;
         auto superblockId = idx / bits_ct;
-
-        auto bitcount = (bits[superblockId] & masks[bitId]).count();
-//        auto maskedBits = (bits[superblockId] << (bits_ct - bitId));
-//        auto bitcount   = maskedBits.count();
-
+        auto count = lshift_and_count(bits[superblockId].bits, bits_ct - bitId);
         return superblocks[superblockId]
-                + bitcount;
+                + count;
     }
 
     template <typename Archive>
-    void save(Archive& ar) const {
-        ar(superblocks, totalLength);
-        size_t ct = bits.size();
-        ar(ct);
-
-        auto mask = std::bitset<bits_ct>{~uint64_t{0}};
-
-        for (auto const& b : bits) {
-            // saving in 64bit blocks
-            for (size_t i{0}; i < bits_ct; i += 64) {
-                auto v = ((b >> i) & mask).to_ullong();
-                ar(v);
-            }
-        }
-        //ar(superblocks, bits, totalLength);
-    }
-
-    template <typename Archive>
-    void load(Archive& ar) {
-        ar(superblocks, totalLength);
-        size_t ct{};
-        ar(ct);
-
-        bits.resize(ct);
-
-        for (size_t j{0}; j < ct; ++j) {
-            auto b = std::bitset<bits_ct>{};
-            // saving in 64bit blocks
-            for (size_t i{0}; i < bits_ct; i += 64) {
-                uint64_t v{};
-                ar(v);
-                b = b | (std::bitset<bits_ct>{v} << i);
-            }
-            bits[j] = b;
-        }
-        //ar(superblocks, bits, totalLength);
+    void serialize(Archive& ar) {
+        ar(superblocks, totalLength, bits);
     }
 };
-
-template <size_t bits_ct>
-std::array<std::bitset<bits_ct>, bits_ct+1> const L1_NBitvector<bits_ct>::masks = []() {
-    auto m = std::array<std::bitset<bits_ct>, bits_ct+1>{};
-    auto a = std::bitset<bits_ct>{};
-
-    for (size_t i{0}; i < bits_ct; ++i) {
-        a.set(i);
-        m[i+1] = a;
-    }
-    return m;
-}();
 
 using L1_64Bitvector  = L1_NBitvector<64>;
 using L1_128Bitvector = L1_NBitvector<128>;
@@ -216,11 +153,24 @@ using L1_512Bitvector = L1_NBitvector<512>;
 using L1_1024Bitvector = L1_NBitvector<1024>;
 using L1_2048Bitvector = L1_NBitvector<2048>;
 
+using L1_64BitvectorUA  = L1_NBitvector<64, false>;
+using L1_128BitvectorUA = L1_NBitvector<128, false>;
+using L1_256BitvectorUA = L1_NBitvector<256, false>;
+using L1_512BitvectorUA = L1_NBitvector<512, false>;
+using L1_1024BitvectorUA = L1_NBitvector<1024, false>;
+using L1_2048BitvectorUA = L1_NBitvector<2048, false>;
+
 static_assert(BitVector_c<L1_64Bitvector>);
 static_assert(BitVector_c<L1_128Bitvector>);
 static_assert(BitVector_c<L1_256Bitvector>);
 static_assert(BitVector_c<L1_512Bitvector>);
 static_assert(BitVector_c<L1_1024Bitvector>);
 static_assert(BitVector_c<L1_2048Bitvector>);
+static_assert(BitVector_c<L1_64BitvectorUA>);
+static_assert(BitVector_c<L1_128BitvectorUA>);
+static_assert(BitVector_c<L1_256BitvectorUA>);
+static_assert(BitVector_c<L1_512BitvectorUA>);
+static_assert(BitVector_c<L1_1024BitvectorUA>);
+static_assert(BitVector_c<L1_2048BitvectorUA>);
 
 }
