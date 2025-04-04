@@ -7,6 +7,7 @@ project(test_fmindex-collection)
 
 add_executable(${PROJECT_NAME}
     bitvector/bitset_popcount.cpp
+    bitvector/benchmark.cpp
     bitvector/unittest.cpp
     checkTernarylogic.cpp
     fmindex/checkBiFMIndex.cpp
