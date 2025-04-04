@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../bitset_popcount.h"
+#include "../utils.h"
 #include "concepts.h"
 
 #include <array>
@@ -14,10 +15,6 @@
 #include <ranges>
 #include <span>
 #include <vector>
-
-#if __has_include(<cereal/types/bitset.hpp>)
-#include <cereal/types/bitset.hpp>
-#endif
 
 namespace fmindex_collection::bitvector {
 
@@ -30,10 +27,10 @@ namespace fmindex_collection::bitvector {
  *   (512) for 1024bits, we need 1088bits, resulting in 1.0625bits per bit
  *   (1024) for 2048bits, we need 2112bits, resulting in 1.0312bits per bit
  */
-template <size_t bits_ct>
+template <size_t bits_ct, bool Align=true>
 struct PairedL1_NBitvector {
-    std::vector<uint64_t> l0{0};
-    std::vector<std::bitset<bits_ct>> bits{0};
+    std::vector<uint64_t>                      l0{0};
+    std::vector<AlignedBitset<bits_ct, Align>> bits{{}};
     size_t totalLength{};
 
     PairedL1_NBitvector() = default;
@@ -117,7 +114,7 @@ struct PairedL1_NBitvector {
         auto superblockId = idx / bits_ct;
 
         auto right = (superblockId%2);
-        auto count = signed_rshift_and_count(bits[superblockId], bitId);
+        auto count = signed_rshift_and_count(bits[superblockId].bits, bitId);
 
         // Implicit conversions, because emcc can't handle over/underflow correctly
         auto ct = static_cast<int64_t>(l0[superblockId/2]) + (static_cast<int64_t>(right)*2-1) * static_cast<int64_t>(count);
@@ -125,18 +122,11 @@ struct PairedL1_NBitvector {
     }
 
     template <typename Archive>
-    void save(Archive& ar) const {
-        ar(l0, totalLength);
-        saveBV(bits, ar);
+    void serialize(Archive& ar) {
+        ar(l0, totalLength, bits);
     }
-
-    template <typename Archive>
-    void load(Archive& ar) {
-        ar(l0, totalLength);
-        loadBV(bits, ar);
-    }
-
 };
+
 using PairedL1_64Bitvector  = PairedL1_NBitvector<64>;
 using PairedL1_128Bitvector = PairedL1_NBitvector<128>;
 using PairedL1_256Bitvector = PairedL1_NBitvector<256>;
@@ -150,5 +140,19 @@ static_assert(BitVector_c<PairedL1_256Bitvector>);
 static_assert(BitVector_c<PairedL1_512Bitvector>);
 static_assert(BitVector_c<PairedL1_1024Bitvector>);
 static_assert(BitVector_c<PairedL1_2048Bitvector>);
+
+using PairedL1_64BitvectorUA  = PairedL1_NBitvector<64, false>;
+using PairedL1_128BitvectorUA = PairedL1_NBitvector<128, false>;
+using PairedL1_256BitvectorUA = PairedL1_NBitvector<256, false>;
+using PairedL1_512BitvectorUA = PairedL1_NBitvector<512, false>;
+using PairedL1_1024BitvectorUA = PairedL1_NBitvector<1024, false>;
+using PairedL1_2048BitvectorUA = PairedL1_NBitvector<2048, false>;
+
+static_assert(BitVector_c<PairedL1_64BitvectorUA>);
+static_assert(BitVector_c<PairedL1_128BitvectorUA>);
+static_assert(BitVector_c<PairedL1_256BitvectorUA>);
+static_assert(BitVector_c<PairedL1_512BitvectorUA>);
+static_assert(BitVector_c<PairedL1_1024BitvectorUA>);
+static_assert(BitVector_c<PairedL1_2048BitvectorUA>);
 
 }
