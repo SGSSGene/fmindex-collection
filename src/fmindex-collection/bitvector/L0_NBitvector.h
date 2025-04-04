@@ -36,6 +36,7 @@ struct L0_NBitvector {
     L0_NBitvector(L0_NBitvector const&) = default;
     L0_NBitvector(L0_NBitvector&&) noexcept = default;
 
+    // constructor accepting view to bools or already compact uint64_t
     template <std::ranges::sized_range range_t>
     L0_NBitvector(range_t&& _range)
         : L0_NBitvector{convertToBitsetView<bits_ct>(std::forward<range_t>(_range))}
@@ -53,6 +54,7 @@ struct L0_NBitvector {
         bits.resize(totalLength/bits_ct + 1);
     }
 
+    // the actual constructor, already receiving premade std::bitsets<N>
     template <std::ranges::sized_range range_t>
         requires std::same_as<std::ranges::range_value_t<range_t>, std::bitset<bits_ct>>
     L0_NBitvector(range_t&& _range) {
