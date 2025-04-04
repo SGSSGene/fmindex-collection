@@ -260,13 +260,8 @@ TEST_CASE("check bit vectors are working", "[bitvector]") {
                     vec.push_back(text.back());
                     {
                         auto v1 = rank.back();
-                        auto vec3 = vec;
-                        auto v2 = vec3.rank(vec.size());
-                        if (v1 != v2) {
-                            auto vec2 = Vector{text};
-                            CHECK(v1 == v2);
-
-                        }
+                        auto vec2 = vec;
+                        auto v2 = vec2.rank(vec.size());
                         CHECK(v1 == v2);
                     }
                 }

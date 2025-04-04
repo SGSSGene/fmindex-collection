@@ -68,6 +68,48 @@ struct alignas(std::max(alignof(std::bitset<N>), Align?alignAsValue(N):size_t{1}
 
 };
 
+
+// converts a view of `range<bool>` to an aggregated view of `range<uint64_t>` with filled zeros
+template <std::ranges::sized_range range_t>
+    requires std::convertible_to<std::ranges::range_value_t<range_t>, bool>
+auto convertToUint64View(range_t&& _range) {
+    auto f = [_range = std::forward<range_t>(_range)](size_t i) -> uint64_t {
+        auto beginI = i*64;
+        auto endI   = std::min((i+1)*64, _range.size());
+        auto v = uint64_t{};
+        for (size_t j{0}; j < endI - beginI; ++j) {
+            v = v | (uint64_t{_range[beginI+j]} << j);
+        }
+        return v;
+    };
+    return std::views::iota(size_t{0}, (_range.size()+63)/64) | std::views::transform(f);
+}
+
+// converts a view of `range<uint64_t>` to an aggregated view of `range<bitset<N>`` with filled zeros
+template <size_t N, std::ranges::sized_range range_t>
+    requires std::same_as<std::ranges::range_value_t<range_t>, uint64_t>
+auto convertToBitsetView(range_t&& _range) {
+    static_assert(N % 64 == 0);
+    auto f = [_range = std::forward<range_t>(_range)](size_t i) -> std::bitset<N> {
+        auto beginI = i*N/64;
+        auto endI   = std::min((i+1)*N/64, _range.size());
+        auto v = std::bitset<N>{};
+        for (size_t j{0}; j < endI - beginI; ++j) {
+            v = v | (std::bitset<N>{_range[beginI+j]} << (64*j));
+        }
+        return v;
+    };
+    return std::views::iota(size_t{0}, (_range.size()+N/64-1)/(N/64)) | std::views::transform(f);
+}
+
+// converts a view of `range<bool>` to an aggregated view of `range<bitset<N>> with filled zeros
+template <size_t N, std::ranges::sized_range range_t>
+    requires (std::convertible_to<std::ranges::range_value_t<range_t>, bool>
+        && !std::same_as<std::ranges::range_value_t<range_t>, uint64_t>)
+auto convertToBitsetView(range_t&& _range) {
+    return convertToBitsetView<N>(convertToUint64View(std::forward<range_t>(_range)));
+}
+
 inline auto createSA64(std::span<uint8_t const> input, size_t threadNbr) -> std::vector<uint64_t> {
     assert(uint64_t{input.size()} < std::numeric_limits<int64_t>::max());
     auto sa = std::vector<uint64_t>(input.size());
