@@ -37,40 +37,46 @@ struct PairedL0_NBitvector {
     PairedL0_NBitvector(PairedL0_NBitvector const&) = default;
     PairedL0_NBitvector(PairedL0_NBitvector&&) noexcept = default;
 
-    template <typename CB>
-    PairedL0_NBitvector(size_t length, CB cb)
-        : PairedL0_NBitvector{std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
-            return cb(i);
-        })}
-    {}
-
+    // constructor accepting view to bools or already compact uint64_t
     template <std::ranges::sized_range range_t>
-        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
-    PairedL0_NBitvector(range_t&& _range) {
-        reserve(_range.size());
-
-        auto iter = _range.begin();
-
-        size_t const loop64  = _range.size() / (bits_ct*2);
-
-        for (size_t l64{}; l64 < loop64; ++l64) {
-            for (size_t i{}; i < bits_ct; ++i) {
-                bool value         = *(iter++);
-                bits.back()[i]     = value;
-                l0.back() += value;
-            }
-            bits.emplace_back();
-            l0.emplace_back(l0.back());
-            for (size_t i{}; i < bits_ct; ++i) {
-                bool value         = *(iter++);
-                bits.back()[i]     = value;
-                l0.back() += value;
-            }
-            bits.emplace_back();
+    PairedL0_NBitvector(range_t&& _range)
+        : PairedL0_NBitvector{convertToBitsetView<bits_ct>(std::forward<range_t>(_range))}
+    {
+        if constexpr (std::same_as<std::ranges::range_value_t<range_t>, uint64_t>) {
+            totalLength = _range.size()*64;
+        } else if constexpr (std::convertible_to<std::ranges::range_value_t<range_t>, bool>) {
+            totalLength = _range.size();
+        } else {
+            []<bool b=false>() {
+                static_assert(b, "Must be an uint64_t or convertible to bool");
+            }();
         }
-        totalLength = bits_ct * (loop64*2);
-        while(totalLength < _range.size()) {
-            push_back(*(iter++));
+        l0.resize((totalLength+bits_ct)/(bits_ct*2) + 1);
+        bits.resize(totalLength/bits_ct + 1);
+    }
+
+    // the actual constructor, already receiving premade std::bitsets<N>
+    template <std::ranges::sized_range range_t>
+        requires std::same_as<std::ranges::range_value_t<range_t>, std::bitset<bits_ct>>
+    PairedL0_NBitvector(range_t&& _range) {
+        auto _length = _range.size()*bits_ct;
+
+        l0.resize((_length+bits_ct)/(bits_ct*2) + 1);
+        bits.resize(_length/bits_ct + 1);
+
+
+        for (auto const& b : _range) {
+            auto bits_id = totalLength / bits_ct;
+            auto l0_id = totalLength / (bits_ct*2);
+            bits[bits_id].bits = b;
+            totalLength += bits_ct;
+
+            if (totalLength % (bits_ct*2) == 0) { // accumulator for next block
+                l0[l0_id+1] += bits[bits_id].count();
+            } else {
+                l0[l0_id] += bits[bits_id].count();
+                l0[l0_id+1] = l0[l0_id];
+            }
         }
     }
 
@@ -78,24 +84,22 @@ struct PairedL0_NBitvector {
     auto operator=(PairedL0_NBitvector&&) noexcept -> PairedL0_NBitvector& = default;
 
     void reserve(size_t _length) {
-        l0.reserve((_length+1)/(bits_ct*2) + 1);
+        l0.reserve((_length+bits_ct)/(bits_ct*2) + 1);
         bits.reserve(_length/bits_ct + 1);
     }
 
     void push_back(bool _value) {
-        if (_value) {
-            auto bitId         = totalLength % bits_ct;
-            bits.back()[bitId] = _value;
-            l0.back() += _value;
-        }
-        totalLength += 1;
-        if (totalLength % (bits_ct*2) == 0) { // new superblock
-            bits.emplace_back();
-        } else if (totalLength % (bits_ct*2) == bits_ct) { // new superblock
-            l0.emplace_back(l0.back());
-            bits.emplace_back();
-        }
+        auto bitId         = totalLength % bits_ct;
+        bits.back()[bitId] = _value;
+        l0.back()         += _value;
 
+        totalLength += 1;
+        if (totalLength % bits_ct == 0) { // filled a bits block
+            if (totalLength % (bits_ct*2) == bits_ct) { // accumulator for next block
+                l0.emplace_back(l0.back());
+            }
+            bits.emplace_back();
+        }
     }
 
     size_t size() const noexcept {
@@ -103,6 +107,7 @@ struct PairedL0_NBitvector {
     }
 
     bool symbol(size_t idx) const noexcept {
+        assert(idx < totalLength);
         auto bitId        = idx % bits_ct;
         auto blockId      = idx / bits_ct;
         auto bit = bits[blockId][bitId];
@@ -110,14 +115,16 @@ struct PairedL0_NBitvector {
     }
 
     uint64_t rank(size_t idx) const noexcept {
+        assert(idx <= totalLength);
         auto bitId = idx % (bits_ct*2);
-        auto superblockId = idx / bits_ct;
+        auto l0Id  = idx / bits_ct;
 
-        auto right = (superblockId%2);
-        auto count = signed_rshift_and_count(bits[superblockId].bits, bitId);
+        int64_t right_l0 = (l0Id%2)*2-1;
 
-        // Implicit conversions, because emcc can't handle over/underflow correctly
-        auto ct = static_cast<int64_t>(l0[superblockId/2]) + (static_cast<int64_t>(right)*2-1) * static_cast<int64_t>(count);
+        int64_t count = skip_first_or_last_n_bits_and_count(bits[l0Id].bits, bitId);
+
+        auto ct = l0[l0Id/2] + right_l0 * count;
+        assert(ct <= idx);
         return ct;
     }
 
