@@ -20,11 +20,11 @@
 namespace fmindex_collection::bitvector {
 
 /**
- * PairedL1L2_NBitvector a bit vector with only bits and blocks
+ * PairedL0L1_NBitvector a bit vector with only bits and blocks
  *
  */
 template <size_t l1_bits_ct, size_t l0_bits_ct, bool Align=true>
-struct PairedL1L2_NBitvector {
+struct PairedL0L1_NBitvector {
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static_assert(l0_bits_ct-l1_bits_ct <= std::numeric_limits<uint16_t>::max(), "l0_bits_ct can only hold up to uint16_t bits");
     std::vector<uint64_t> l0{0};
@@ -33,20 +33,20 @@ struct PairedL1L2_NBitvector {
     size_t totalLength{};
     bool finalized{};
 
-    PairedL1L2_NBitvector() = default;
-    PairedL1L2_NBitvector(PairedL1L2_NBitvector const&) = default;
-    PairedL1L2_NBitvector(PairedL1L2_NBitvector&&) noexcept = default;
+    PairedL0L1_NBitvector() = default;
+    PairedL0L1_NBitvector(PairedL0L1_NBitvector const&) = default;
+    PairedL0L1_NBitvector(PairedL0L1_NBitvector&&) noexcept = default;
 
     template <typename CB>
-    PairedL1L2_NBitvector(size_t length, CB cb)
-        : PairedL1L2_NBitvector{std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
+    PairedL0L1_NBitvector(size_t length, CB cb)
+        : PairedL0L1_NBitvector{std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
             return cb(i);
         })}
     {}
 
     template <std::ranges::sized_range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
-    PairedL1L2_NBitvector(range_t&& _range) {
+    PairedL0L1_NBitvector(range_t&& _range) {
         reserve(_range.size());
 
         auto iter = _range.begin();
@@ -55,8 +55,8 @@ struct PairedL1L2_NBitvector {
         }
     }
 
-    auto operator=(PairedL1L2_NBitvector const&) -> PairedL1L2_NBitvector& = default;
-    auto operator=(PairedL1L2_NBitvector&&) noexcept -> PairedL1L2_NBitvector& = default;
+    auto operator=(PairedL0L1_NBitvector const&) -> PairedL0L1_NBitvector& = default;
+    auto operator=(PairedL0L1_NBitvector&&) noexcept -> PairedL0L1_NBitvector& = default;
 
     void reserve(size_t _length) {
         l0.reserve(_length/(l0_bits_ct*2) + 2);
@@ -65,7 +65,7 @@ struct PairedL1L2_NBitvector {
     }
 
     void finalize() const {
-        const_cast<PairedL1L2_NBitvector*>(this)->impl_finalize();
+        const_cast<PairedL0L1_NBitvector*>(this)->impl_finalize();
     }
 
     void impl_finalize() {
@@ -180,47 +180,47 @@ struct PairedL1L2_NBitvector {
     }
 
 };
-using PairedL1L2_64_4kBitvector   = PairedL1L2_NBitvector<64, 4096>;
-using PairedL1L2_128_4kBitvector  = PairedL1L2_NBitvector<128, 4096>;
-using PairedL1L2_256_4kBitvector  = PairedL1L2_NBitvector<256, 4096>;
-using PairedL1L2_512_4kBitvector  = PairedL1L2_NBitvector<512, 4096>;
-using PairedL1L2_1024_4kBitvector = PairedL1L2_NBitvector<1024, 4096>;
-using PairedL1L2_2048_4kBitvector = PairedL1L2_NBitvector<2048, 4096>;
+using PairedL0L1_64_4kBitvector   = PairedL0L1_NBitvector<64, 4096>;
+using PairedL0L1_128_4kBitvector  = PairedL0L1_NBitvector<128, 4096>;
+using PairedL0L1_256_4kBitvector  = PairedL0L1_NBitvector<256, 4096>;
+using PairedL0L1_512_4kBitvector  = PairedL0L1_NBitvector<512, 4096>;
+using PairedL0L1_1024_4kBitvector = PairedL0L1_NBitvector<1024, 4096>;
+using PairedL0L1_2048_4kBitvector = PairedL0L1_NBitvector<2048, 4096>;
 
-static_assert(BitVector_c<PairedL1L2_64_4kBitvector>);
-static_assert(BitVector_c<PairedL1L2_128_4kBitvector>);
-static_assert(BitVector_c<PairedL1L2_256_4kBitvector>);
-static_assert(BitVector_c<PairedL1L2_512_4kBitvector>);
-static_assert(BitVector_c<PairedL1L2_1024_4kBitvector>);
-static_assert(BitVector_c<PairedL1L2_2048_4kBitvector>);
+static_assert(BitVector_c<PairedL0L1_64_4kBitvector>);
+static_assert(BitVector_c<PairedL0L1_128_4kBitvector>);
+static_assert(BitVector_c<PairedL0L1_256_4kBitvector>);
+static_assert(BitVector_c<PairedL0L1_512_4kBitvector>);
+static_assert(BitVector_c<PairedL0L1_1024_4kBitvector>);
+static_assert(BitVector_c<PairedL0L1_2048_4kBitvector>);
 
-using PairedL1L2_64_64kBitvector   = PairedL1L2_NBitvector<64, 65536>;
-using PairedL1L2_128_64kBitvector  = PairedL1L2_NBitvector<128, 65536>;
-using PairedL1L2_256_64kBitvector  = PairedL1L2_NBitvector<256, 65536>;
-using PairedL1L2_512_64kBitvector  = PairedL1L2_NBitvector<512, 65536>;
-using PairedL1L2_1024_64kBitvector = PairedL1L2_NBitvector<1024, 65536>;
-using PairedL1L2_2048_64kBitvector = PairedL1L2_NBitvector<2048, 65536>;
+using PairedL0L1_64_64kBitvector   = PairedL0L1_NBitvector<64, 65536>;
+using PairedL0L1_128_64kBitvector  = PairedL0L1_NBitvector<128, 65536>;
+using PairedL0L1_256_64kBitvector  = PairedL0L1_NBitvector<256, 65536>;
+using PairedL0L1_512_64kBitvector  = PairedL0L1_NBitvector<512, 65536>;
+using PairedL0L1_1024_64kBitvector = PairedL0L1_NBitvector<1024, 65536>;
+using PairedL0L1_2048_64kBitvector = PairedL0L1_NBitvector<2048, 65536>;
 
-static_assert(BitVector_c<PairedL1L2_64_64kBitvector>);
-static_assert(BitVector_c<PairedL1L2_128_64kBitvector>);
-static_assert(BitVector_c<PairedL1L2_256_64kBitvector>);
-static_assert(BitVector_c<PairedL1L2_512_64kBitvector>);
-static_assert(BitVector_c<PairedL1L2_1024_64kBitvector>);
-static_assert(BitVector_c<PairedL1L2_2048_64kBitvector>);
+static_assert(BitVector_c<PairedL0L1_64_64kBitvector>);
+static_assert(BitVector_c<PairedL0L1_128_64kBitvector>);
+static_assert(BitVector_c<PairedL0L1_256_64kBitvector>);
+static_assert(BitVector_c<PairedL0L1_512_64kBitvector>);
+static_assert(BitVector_c<PairedL0L1_1024_64kBitvector>);
+static_assert(BitVector_c<PairedL0L1_2048_64kBitvector>);
 
-using PairedL1L2_64_64kBitvectorUA   = PairedL1L2_NBitvector<64, 65536, false>;
-using PairedL1L2_128_64kBitvectorUA  = PairedL1L2_NBitvector<128, 65536, false>;
-using PairedL1L2_256_64kBitvectorUA  = PairedL1L2_NBitvector<256, 65536, false>;
-using PairedL1L2_512_64kBitvectorUA  = PairedL1L2_NBitvector<512, 65536, false>;
-using PairedL1L2_1024_64kBitvectorUA = PairedL1L2_NBitvector<1024, 65536, false>;
-using PairedL1L2_2048_64kBitvectorUA = PairedL1L2_NBitvector<2048, 65536, false>;
+using PairedL0L1_64_64kBitvectorUA   = PairedL0L1_NBitvector<64, 65536, false>;
+using PairedL0L1_128_64kBitvectorUA  = PairedL0L1_NBitvector<128, 65536, false>;
+using PairedL0L1_256_64kBitvectorUA  = PairedL0L1_NBitvector<256, 65536, false>;
+using PairedL0L1_512_64kBitvectorUA  = PairedL0L1_NBitvector<512, 65536, false>;
+using PairedL0L1_1024_64kBitvectorUA = PairedL0L1_NBitvector<1024, 65536, false>;
+using PairedL0L1_2048_64kBitvectorUA = PairedL0L1_NBitvector<2048, 65536, false>;
 
-static_assert(BitVector_c<PairedL1L2_64_64kBitvectorUA>);
-static_assert(BitVector_c<PairedL1L2_128_64kBitvectorUA>);
-static_assert(BitVector_c<PairedL1L2_256_64kBitvectorUA>);
-static_assert(BitVector_c<PairedL1L2_512_64kBitvectorUA>);
-static_assert(BitVector_c<PairedL1L2_1024_64kBitvectorUA>);
-static_assert(BitVector_c<PairedL1L2_2048_64kBitvectorUA>);
+static_assert(BitVector_c<PairedL0L1_64_64kBitvectorUA>);
+static_assert(BitVector_c<PairedL0L1_128_64kBitvectorUA>);
+static_assert(BitVector_c<PairedL0L1_256_64kBitvectorUA>);
+static_assert(BitVector_c<PairedL0L1_512_64kBitvectorUA>);
+static_assert(BitVector_c<PairedL0L1_1024_64kBitvectorUA>);
+static_assert(BitVector_c<PairedL0L1_2048_64kBitvectorUA>);
 
 
 }

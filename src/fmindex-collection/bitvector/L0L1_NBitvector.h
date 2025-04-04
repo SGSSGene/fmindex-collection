@@ -20,11 +20,11 @@
 namespace fmindex_collection::bitvector {
 
 /**
- * L1L2_NBitvector a bit vector with only bits and blocks
+ * L0L1_NBitvector a bit vector with only bits and blocks
  *
  */
 template <size_t l1_bits_ct, size_t l0_bits_ct, bool shift_and_count=false, bool Align=true>
-struct L1L2_NBitvector {
+struct L0L1_NBitvector {
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static_assert(l0_bits_ct-l1_bits_ct <= std::numeric_limits<uint16_t>::max(), "l0_bits_ct can only hold up to uint16_t bits");
     std::vector<uint64_t> l0{0};
@@ -33,20 +33,20 @@ struct L1L2_NBitvector {
     size_t totalLength{};
     bool finalized{};
 
-    L1L2_NBitvector() = default;
-    L1L2_NBitvector(L1L2_NBitvector const&) = default;
-    L1L2_NBitvector(L1L2_NBitvector&&) noexcept = default;
+    L0L1_NBitvector() = default;
+    L0L1_NBitvector(L0L1_NBitvector const&) = default;
+    L0L1_NBitvector(L0L1_NBitvector&&) noexcept = default;
 
     template <typename CB>
-    L1L2_NBitvector(size_t length, CB cb)
-        : L1L2_NBitvector{std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
+    L0L1_NBitvector(size_t length, CB cb)
+        : L0L1_NBitvector{std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
             return cb(i);
         })}
     {}
 
     template <std::ranges::sized_range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
-    L1L2_NBitvector(range_t&& _range) {
+    L0L1_NBitvector(range_t&& _range) {
         reserve(_range.size());
 
         auto iter = _range.begin();
@@ -55,8 +55,8 @@ struct L1L2_NBitvector {
         }
     }
 
-    auto operator=(L1L2_NBitvector const&) -> L1L2_NBitvector& = default;
-    auto operator=(L1L2_NBitvector&&) noexcept -> L1L2_NBitvector& = default;
+    auto operator=(L0L1_NBitvector const&) -> L0L1_NBitvector& = default;
+    auto operator=(L0L1_NBitvector&&) noexcept -> L0L1_NBitvector& = default;
 
     void reserve(size_t _length) {
         l0.reserve(_length/(l0_bits_ct) + 2);
@@ -65,7 +65,7 @@ struct L1L2_NBitvector {
     }
 
     void finalize() const {
-        const_cast<L1L2_NBitvector*>(this)->impl_finalize();
+        const_cast<L0L1_NBitvector*>(this)->impl_finalize();
     }
 
     void impl_finalize() {
@@ -156,51 +156,51 @@ struct L1L2_NBitvector {
         ar(l0, l1, totalLength, bits);
     }
 };
-using L1L2_64_4kBitvector   = L1L2_NBitvector<64, 4096>;
-using L1L2_128_4kBitvector  = L1L2_NBitvector<128, 4096>;
-using L1L2_256_4kBitvector  = L1L2_NBitvector<256, 4096>;
-using L1L2_512_4kBitvector  = L1L2_NBitvector<512, 4096>;
-using L1L2_1024_4kBitvector = L1L2_NBitvector<1024, 4096>;
-using L1L2_2048_4kBitvector = L1L2_NBitvector<2048, 4096>;
+using L0L1_64_4kBitvector   = L0L1_NBitvector<64, 4096>;
+using L0L1_128_4kBitvector  = L0L1_NBitvector<128, 4096>;
+using L0L1_256_4kBitvector  = L0L1_NBitvector<256, 4096>;
+using L0L1_512_4kBitvector  = L0L1_NBitvector<512, 4096>;
+using L0L1_1024_4kBitvector = L0L1_NBitvector<1024, 4096>;
+using L0L1_2048_4kBitvector = L0L1_NBitvector<2048, 4096>;
 
-static_assert(BitVector_c<L1L2_64_4kBitvector>);
-static_assert(BitVector_c<L1L2_128_4kBitvector>);
-static_assert(BitVector_c<L1L2_256_4kBitvector>);
-static_assert(BitVector_c<L1L2_512_4kBitvector>);
-static_assert(BitVector_c<L1L2_1024_4kBitvector>);
-static_assert(BitVector_c<L1L2_2048_4kBitvector>);
+static_assert(BitVector_c<L0L1_64_4kBitvector>);
+static_assert(BitVector_c<L0L1_128_4kBitvector>);
+static_assert(BitVector_c<L0L1_256_4kBitvector>);
+static_assert(BitVector_c<L0L1_512_4kBitvector>);
+static_assert(BitVector_c<L0L1_1024_4kBitvector>);
+static_assert(BitVector_c<L0L1_2048_4kBitvector>);
 
-using L1L2_64_64kBitvector   = L1L2_NBitvector<64, 65536>;
-using L1L2_128_64kBitvector  = L1L2_NBitvector<128, 65536>;
-using L1L2_256_64kBitvector  = L1L2_NBitvector<256, 65536>;
-using L1L2_512_64kBitvector  = L1L2_NBitvector<512, 65536>;
-using L1L2_1024_64kBitvector = L1L2_NBitvector<1024, 65536>;
-using L1L2_2048_64kBitvector = L1L2_NBitvector<2048, 65536>;
+using L0L1_64_64kBitvector   = L0L1_NBitvector<64, 65536>;
+using L0L1_128_64kBitvector  = L0L1_NBitvector<128, 65536>;
+using L0L1_256_64kBitvector  = L0L1_NBitvector<256, 65536>;
+using L0L1_512_64kBitvector  = L0L1_NBitvector<512, 65536>;
+using L0L1_1024_64kBitvector = L0L1_NBitvector<1024, 65536>;
+using L0L1_2048_64kBitvector = L0L1_NBitvector<2048, 65536>;
 
-static_assert(BitVector_c<L1L2_64_64kBitvector>);
-static_assert(BitVector_c<L1L2_128_64kBitvector>);
-static_assert(BitVector_c<L1L2_256_64kBitvector>);
-static_assert(BitVector_c<L1L2_512_64kBitvector>);
-static_assert(BitVector_c<L1L2_1024_64kBitvector>);
-static_assert(BitVector_c<L1L2_2048_64kBitvector>);
+static_assert(BitVector_c<L0L1_64_64kBitvector>);
+static_assert(BitVector_c<L0L1_128_64kBitvector>);
+static_assert(BitVector_c<L0L1_256_64kBitvector>);
+static_assert(BitVector_c<L0L1_512_64kBitvector>);
+static_assert(BitVector_c<L0L1_1024_64kBitvector>);
+static_assert(BitVector_c<L0L1_2048_64kBitvector>);
 
-using L1L2_64_64kBitvector_ShiftAndCount   = L1L2_NBitvector<64, 65536, true>;
-using L1L2_512_64kBitvector_ShiftAndCount  = L1L2_NBitvector<512, 65536, true>;
-static_assert(BitVector_c<L1L2_64_64kBitvector_ShiftAndCount>);
-static_assert(BitVector_c<L1L2_512_64kBitvector_ShiftAndCount>);
+using L0L1_64_64kBitvector_ShiftAndCount   = L0L1_NBitvector<64, 65536, true>;
+using L0L1_512_64kBitvector_ShiftAndCount  = L0L1_NBitvector<512, 65536, true>;
+static_assert(BitVector_c<L0L1_64_64kBitvector_ShiftAndCount>);
+static_assert(BitVector_c<L0L1_512_64kBitvector_ShiftAndCount>);
 
-using L1L2_64_64kBitvectorUA   = L1L2_NBitvector<64, 65536, false, false>;
-using L1L2_128_64kBitvectorUA  = L1L2_NBitvector<128, 65536, false, false>;
-using L1L2_256_64kBitvectorUA  = L1L2_NBitvector<256, 65536, false, false>;
-using L1L2_512_64kBitvectorUA  = L1L2_NBitvector<512, 65536, false, false>;
-using L1L2_1024_64kBitvectorUA = L1L2_NBitvector<1024, 65536, false, false>;
-using L1L2_2048_64kBitvectorUA = L1L2_NBitvector<2048, 65536, false, false>;
+using L0L1_64_64kBitvectorUA   = L0L1_NBitvector<64, 65536, false, false>;
+using L0L1_128_64kBitvectorUA  = L0L1_NBitvector<128, 65536, false, false>;
+using L0L1_256_64kBitvectorUA  = L0L1_NBitvector<256, 65536, false, false>;
+using L0L1_512_64kBitvectorUA  = L0L1_NBitvector<512, 65536, false, false>;
+using L0L1_1024_64kBitvectorUA = L0L1_NBitvector<1024, 65536, false, false>;
+using L0L1_2048_64kBitvectorUA = L0L1_NBitvector<2048, 65536, false, false>;
 
-static_assert(BitVector_c<L1L2_64_64kBitvectorUA>);
-static_assert(BitVector_c<L1L2_128_64kBitvectorUA>);
-static_assert(BitVector_c<L1L2_256_64kBitvectorUA>);
-static_assert(BitVector_c<L1L2_512_64kBitvectorUA>);
-static_assert(BitVector_c<L1L2_1024_64kBitvectorUA>);
-static_assert(BitVector_c<L1L2_2048_64kBitvectorUA>);
+static_assert(BitVector_c<L0L1_64_64kBitvectorUA>);
+static_assert(BitVector_c<L0L1_128_64kBitvectorUA>);
+static_assert(BitVector_c<L0L1_256_64kBitvectorUA>);
+static_assert(BitVector_c<L0L1_512_64kBitvectorUA>);
+static_assert(BitVector_c<L0L1_1024_64kBitvectorUA>);
+static_assert(BitVector_c<L0L1_2048_64kBitvectorUA>);
 
 }

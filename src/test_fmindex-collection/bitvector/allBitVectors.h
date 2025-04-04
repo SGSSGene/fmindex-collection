@@ -18,22 +18,22 @@
     fmindex_collection::bitvector::CompactBitvector, \
     fmindex_collection::bitvector::CompactBitvector4Blocks, \
     fmindex_collection::bitvector::L1Bitvector, \
-    fmindex_collection::bitvector::L1_64Bitvector, \
-    fmindex_collection::bitvector::L1_128Bitvector, \
-    fmindex_collection::bitvector::L1_256Bitvector, \
-    fmindex_collection::bitvector::L1_512Bitvector, \
-    fmindex_collection::bitvector::PairedL1_64Bitvector, \
-    fmindex_collection::bitvector::PairedL1_128Bitvector, \
-    fmindex_collection::bitvector::PairedL1_256Bitvector, \
-    fmindex_collection::bitvector::PairedL1_512Bitvector, \
-    fmindex_collection::bitvector::PairedL1L2_64_4kBitvector, \
-    fmindex_collection::bitvector::PairedL1L2_128_4kBitvector, \
-    fmindex_collection::bitvector::PairedL1L2_256_4kBitvector, \
-    fmindex_collection::bitvector::PairedL1L2_512_4kBitvector, \
-    fmindex_collection::bitvector::PairedL1L2_64_64kBitvector, \
-    fmindex_collection::bitvector::PairedL1L2_128_64kBitvector, \
-    fmindex_collection::bitvector::PairedL1L2_256_64kBitvector, \
-    fmindex_collection::bitvector::PairedL1L2_2048_64kBitvector, \
+    fmindex_collection::bitvector::L0_64Bitvector, \
+    fmindex_collection::bitvector::L0_128Bitvector, \
+    fmindex_collection::bitvector::L0_256Bitvector, \
+    fmindex_collection::bitvector::L0_512Bitvector, \
+    fmindex_collection::bitvector::PairedL0_64Bitvector, \
+    fmindex_collection::bitvector::PairedL0_128Bitvector, \
+    fmindex_collection::bitvector::PairedL0_256Bitvector, \
+    fmindex_collection::bitvector::PairedL0_512Bitvector, \
+    fmindex_collection::bitvector::PairedL0L1_64_4kBitvector, \
+    fmindex_collection::bitvector::PairedL0L1_128_4kBitvector, \
+    fmindex_collection::bitvector::PairedL0L1_256_4kBitvector, \
+    fmindex_collection::bitvector::PairedL0L1_512_4kBitvector, \
+    fmindex_collection::bitvector::PairedL0L1_64_64kBitvector, \
+    fmindex_collection::bitvector::PairedL0L1_128_64kBitvector, \
+    fmindex_collection::bitvector::PairedL0L1_256_64kBitvector, \
+    fmindex_collection::bitvector::PairedL0L1_2048_64kBitvector, \
     AddIfNotClang18OrOlder(fmindex_collection::bitvector::CompactPairedL1L2_64_4kBitvector) \
     AddIfNotClang18OrOlder(fmindex_collection::bitvector::CompactPairedL1L2_128_4kBitvector) \
     AddIfNotClang18OrOlder(fmindex_collection::bitvector::CompactPairedL1L2_256_4kBitvector) \

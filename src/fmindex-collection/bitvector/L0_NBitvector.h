@@ -18,7 +18,7 @@
 namespace fmindex_collection::bitvector {
 
 /**
- * L1_NBitvector a bit vector with only bits and blocks
+ * L0_NBitvector a bit vector with only bits and blocks
  *
  *   For 64bits,  we need 256bits, resulting in 2.0bits per bit
  *   For 128bits, we need 192bits, resulting in 1.5bits per bit
@@ -26,19 +26,19 @@ namespace fmindex_collection::bitvector {
  *
  */
 template <size_t bits_ct, bool Align=true>
-struct L1_NBitvector {
+struct L0_NBitvector {
     std::vector<uint64_t>                      superblocks{0};
     std::vector<AlignedBitset<bits_ct, Align>> bits{{}};
     size_t totalLength{};
 
 
-    L1_NBitvector() = default;
-    L1_NBitvector(L1_NBitvector const&) = default;
-    L1_NBitvector(L1_NBitvector&&) noexcept = default;
+    L0_NBitvector() = default;
+    L0_NBitvector(L0_NBitvector const&) = default;
+    L0_NBitvector(L0_NBitvector&&) noexcept = default;
 
     template <typename CB>
-    L1_NBitvector(size_t length, CB cb)
-        : L1_NBitvector{std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
+    L0_NBitvector(size_t length, CB cb)
+        : L0_NBitvector{std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
             return cb(i);
         })}
     {}
@@ -54,7 +54,7 @@ struct L1_NBitvector {
 
     template <std::ranges::sized_range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
-    L1_NBitvector(range_t&& _range) {
+    L0_NBitvector(range_t&& _range) {
         reserve(_range.size());
 
         auto _length = _range.size();
@@ -102,8 +102,8 @@ struct L1_NBitvector {
         }
     }
 
-    auto operator=(L1_NBitvector const&) -> L1_NBitvector& = default;
-    auto operator=(L1_NBitvector&&) noexcept -> L1_NBitvector& = default;
+    auto operator=(L0_NBitvector const&) -> L0_NBitvector& = default;
+    auto operator=(L0_NBitvector&&) noexcept -> L0_NBitvector& = default;
 
     void reserve(size_t _length) {
         superblocks.reserve(_length/bits_ct + 1);
@@ -146,31 +146,31 @@ struct L1_NBitvector {
     }
 };
 
-using L1_64Bitvector  = L1_NBitvector<64>;
-using L1_128Bitvector = L1_NBitvector<128>;
-using L1_256Bitvector = L1_NBitvector<256>;
-using L1_512Bitvector = L1_NBitvector<512>;
-using L1_1024Bitvector = L1_NBitvector<1024>;
-using L1_2048Bitvector = L1_NBitvector<2048>;
+using L0_64Bitvector  = L0_NBitvector<64>;
+using L0_128Bitvector = L0_NBitvector<128>;
+using L0_256Bitvector = L0_NBitvector<256>;
+using L0_512Bitvector = L0_NBitvector<512>;
+using L0_1024Bitvector = L0_NBitvector<1024>;
+using L0_2048Bitvector = L0_NBitvector<2048>;
 
-using L1_64BitvectorUA  = L1_NBitvector<64, false>;
-using L1_128BitvectorUA = L1_NBitvector<128, false>;
-using L1_256BitvectorUA = L1_NBitvector<256, false>;
-using L1_512BitvectorUA = L1_NBitvector<512, false>;
-using L1_1024BitvectorUA = L1_NBitvector<1024, false>;
-using L1_2048BitvectorUA = L1_NBitvector<2048, false>;
+using L0_64BitvectorUA  = L0_NBitvector<64, false>;
+using L0_128BitvectorUA = L0_NBitvector<128, false>;
+using L0_256BitvectorUA = L0_NBitvector<256, false>;
+using L0_512BitvectorUA = L0_NBitvector<512, false>;
+using L0_1024BitvectorUA = L0_NBitvector<1024, false>;
+using L0_2048BitvectorUA = L0_NBitvector<2048, false>;
 
-static_assert(BitVector_c<L1_64Bitvector>);
-static_assert(BitVector_c<L1_128Bitvector>);
-static_assert(BitVector_c<L1_256Bitvector>);
-static_assert(BitVector_c<L1_512Bitvector>);
-static_assert(BitVector_c<L1_1024Bitvector>);
-static_assert(BitVector_c<L1_2048Bitvector>);
-static_assert(BitVector_c<L1_64BitvectorUA>);
-static_assert(BitVector_c<L1_128BitvectorUA>);
-static_assert(BitVector_c<L1_256BitvectorUA>);
-static_assert(BitVector_c<L1_512BitvectorUA>);
-static_assert(BitVector_c<L1_1024BitvectorUA>);
-static_assert(BitVector_c<L1_2048BitvectorUA>);
+static_assert(BitVector_c<L0_64Bitvector>);
+static_assert(BitVector_c<L0_128Bitvector>);
+static_assert(BitVector_c<L0_256Bitvector>);
+static_assert(BitVector_c<L0_512Bitvector>);
+static_assert(BitVector_c<L0_1024Bitvector>);
+static_assert(BitVector_c<L0_2048Bitvector>);
+static_assert(BitVector_c<L0_64BitvectorUA>);
+static_assert(BitVector_c<L0_128BitvectorUA>);
+static_assert(BitVector_c<L0_256BitvectorUA>);
+static_assert(BitVector_c<L0_512BitvectorUA>);
+static_assert(BitVector_c<L0_1024BitvectorUA>);
+static_assert(BitVector_c<L0_2048BitvectorUA>);
 
 }
