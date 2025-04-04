@@ -78,6 +78,7 @@ size_t signed_rshift_and_count(std::bitset<N> const& b, size_t shift) {
  * 8: 1111
  */
 template <size_t N>
+alignas((N==512)?64:alignof(std::array<std::bitset<N>, N*2+1>))
 std::array<std::bitset<N>, N*2+1> const skip_first_or_last_n_bits_masks = []() {
     auto m = std::array<std::bitset<N>, N*2+1>{};
     m[0].flip();
