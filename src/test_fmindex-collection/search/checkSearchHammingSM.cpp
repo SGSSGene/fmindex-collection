@@ -13,7 +13,7 @@
 #include <nanobench.h>
 
 
-TEST_CASE("check search with hamming and scoring matrix with errors", "[searches][hamming][scoring-matrix]") {
+TEST_CASE("check search with hamming and scoring matrix with errors", "[searches][!benchmark][hamming][scoring-matrix]") {
 //    using OccTable = fmindex_collection::occtable::EprV7<21>;
     using OccTable = fmindex_collection::occtable::Interleaved_16<21>;
     using Index = fmindex_collection::BiFMIndex<OccTable>;
