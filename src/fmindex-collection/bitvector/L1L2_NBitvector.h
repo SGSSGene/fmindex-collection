@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../bitset_popcount.h"
+#include "../utils.h"
 #include "concepts.h"
 
 #include <array>
@@ -16,23 +17,19 @@
 #include <span>
 #include <vector>
 
-#if __has_include(<cereal/types/bitset.hpp>)
-#include <cereal/types/bitset.hpp>
-#endif
-
 namespace fmindex_collection::bitvector {
 
 /**
  * L1L2_NBitvector a bit vector with only bits and blocks
  *
  */
-template <size_t l1_bits_ct, size_t l0_bits_ct, bool shift_and_count=false>
+template <size_t l1_bits_ct, size_t l0_bits_ct, bool shift_and_count=false, bool Align=true>
 struct L1L2_NBitvector {
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static_assert(l0_bits_ct-l1_bits_ct <= std::numeric_limits<uint16_t>::max(), "l0_bits_ct can only hold up to uint16_t bits");
     std::vector<uint64_t> l0{0};
     std::vector<uint16_t> l1{0};
-    std::vector<std::bitset<l1_bits_ct>> bits{0};
+    std::vector<AlignedBitset<l1_bits_ct, Align>> bits{{}};
     size_t totalLength{};
     bool finalized{};
 
@@ -142,9 +139,9 @@ struct L1L2_NBitvector {
 
         auto count = [&]() {
             if constexpr (shift_and_count) {
-                return (bits[l1Id] << (l1_bits_ct - bitId)).count();
+                return (bits[l1Id].bits << (l1_bits_ct - bitId)).count();
             } else {
-                return skip_first_or_last_n_bits_and_count(bits[l1Id], bitId + l1_bits_ct);
+                return skip_first_or_last_n_bits_and_count(bits[l1Id].bits, bitId + l1_bits_ct);
             }
         }();
 
@@ -154,18 +151,10 @@ struct L1L2_NBitvector {
     }
 
     template <typename Archive>
-    void save(Archive& ar) const {
+    void serialize(Archive& ar) {
         finalize();
-        ar(l0, l1, totalLength);
-        saveBV(bits, ar);
+        ar(l0, l1, totalLength, bits);
     }
-
-    template <typename Archive>
-    void load(Archive& ar) {
-        ar(l0, l1, totalLength);
-        loadBV(bits, ar);
-    }
-
 };
 using L1L2_64_4kBitvector   = L1L2_NBitvector<64, 4096>;
 using L1L2_128_4kBitvector  = L1L2_NBitvector<128, 4096>;
@@ -199,5 +188,19 @@ using L1L2_64_64kBitvector_ShiftAndCount   = L1L2_NBitvector<64, 65536, true>;
 using L1L2_512_64kBitvector_ShiftAndCount  = L1L2_NBitvector<512, 65536, true>;
 static_assert(BitVector_c<L1L2_64_64kBitvector_ShiftAndCount>);
 static_assert(BitVector_c<L1L2_512_64kBitvector_ShiftAndCount>);
+
+using L1L2_64_64kBitvectorUA   = L1L2_NBitvector<64, 65536, false, false>;
+using L1L2_128_64kBitvectorUA  = L1L2_NBitvector<128, 65536, false, false>;
+using L1L2_256_64kBitvectorUA  = L1L2_NBitvector<256, 65536, false, false>;
+using L1L2_512_64kBitvectorUA  = L1L2_NBitvector<512, 65536, false, false>;
+using L1L2_1024_64kBitvectorUA = L1L2_NBitvector<1024, 65536, false, false>;
+using L1L2_2048_64kBitvectorUA = L1L2_NBitvector<2048, 65536, false, false>;
+
+static_assert(BitVector_c<L1L2_64_64kBitvectorUA>);
+static_assert(BitVector_c<L1L2_128_64kBitvectorUA>);
+static_assert(BitVector_c<L1L2_256_64kBitvectorUA>);
+static_assert(BitVector_c<L1L2_512_64kBitvectorUA>);
+static_assert(BitVector_c<L1L2_1024_64kBitvectorUA>);
+static_assert(BitVector_c<L1L2_2048_64kBitvectorUA>);
 
 }
