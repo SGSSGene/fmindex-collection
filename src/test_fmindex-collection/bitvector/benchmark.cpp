@@ -145,6 +145,7 @@ TEST_CASE("benchmark bit vectors rank and symbol run times", "[bitvector][!bench
 
 TEST_CASE("benchmark bit vectors memory consumption", "[bitvector][!benchmark][size]") {
     BenchSize benchSize;
+    benchSize.baseSize = 1.;
 
     SECTION("benchmarking") {
         call_with_templates<ALLTYPES>([&]<typename Vector>() {
