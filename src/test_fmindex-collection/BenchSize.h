@@ -33,7 +33,7 @@ struct BenchSize {
             firstEntrySize = e.size;
         }
 
-        double overheadInPercent = (e.bits_per_char - baseSize) * 100.;
+        double overheadInPercent = (e.bits_per_char - baseSize) / baseSize * 100.;
 
         entries.push_back({
             fmt::format("{:.1f}%", double(e.size) / firstEntrySize*100.),
