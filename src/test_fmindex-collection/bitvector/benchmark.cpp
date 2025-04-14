@@ -10,11 +10,20 @@
 #include "../string/utils.h"
 #include "../BenchSize.h"
 #include "allBitVectors.h"
+
+#ifdef FMC_USE_PASTA
 #include "Pasta_FlatRank.h"
 #include "Pasta_WideRank.h"
+#endif
+
+#ifdef FMC_USE_SDSL
 #include "sdsl_v.h"
 #include "sdsl_v5.h"
+#endif
+
+#ifdef FMC_USE_SUX
 #include "sux_Rank9.h"
+#endif
 
 namespace {
 auto generateText() -> std::vector<bool> const& {
@@ -43,6 +52,18 @@ auto generateText() -> std::vector<bool> const& {
 }
 }
 
+#if defined(FMC_USE_PASTA) && defined(FMC_USE_SDSL) && defined(FMC_USE_SUX)
+    #define ALLTYPES \
+             ALLBITVECTORS, \
+             FlatRank, \
+             WideRank, \
+             SDSL_V, \
+             SDSL_V5, \
+             Rank9
+#else
+    #define ALLTYPES ALLBITVECTORS
+#endif
+
 TEST_CASE("benchmark bit vectors ctor run times", "[bitvector][!benchmark][time][ctor]") {
     auto bench_ctor = ankerl::nanobench::Bench{};
     bench_ctor.title("c'tor()")
@@ -51,14 +72,7 @@ TEST_CASE("benchmark bit vectors ctor run times", "[bitvector][!benchmark][time]
     auto& text = generateText();
 
     SECTION("benchmarking") {
-        call_with_templates<
-            ALLBITVECTORS,
-            FlatRank,
-            WideRank,
-            SDSL_V,
-            SDSL_V5,
-            Rank9
-            >([&]<typename Vector>() {
+        call_with_templates<ALLTYPES>([&]<typename Vector>() {
 
             auto vector_name = getName<Vector>();
             INFO(vector_name);
@@ -82,13 +96,7 @@ TEST_CASE("benchmark bit vectors rank and symbol run times", "[bitvector][!bench
 
         bench_symbol.epochs(10);
         bench_symbol.minEpochTime(std::chrono::milliseconds{10});
-        call_with_templates<
-            ALLBITVECTORS,
-            FlatRank,
-            WideRank,
-            SDSL_V,
-            SDSL_V5,
-            Rank9>([&]<typename Vector>() {
+        call_with_templates<ALLTYPES>([&]<typename Vector>() {
 
             auto vector_name = getName<Vector>();
             INFO(vector_name);
@@ -118,13 +126,7 @@ TEST_CASE("benchmark bit vectors rank and symbol run times", "[bitvector][!bench
         bench_rank.minEpochTime(std::chrono::milliseconds{1});
         bench_rank.minEpochIterations(1'000'000);
 
-        call_with_templates<
-            ALLBITVECTORS,
-            FlatRank,
-            WideRank,
-            SDSL_V,
-            SDSL_V5,
-            Rank9>([&]<typename Vector>() {
+        call_with_templates<ALLTYPES>([&]<typename Vector>() {
 
             auto vector_name = getName<Vector>();
             INFO(vector_name);
@@ -145,13 +147,7 @@ TEST_CASE("benchmark bit vectors memory consumption", "[bitvector][!benchmark][s
     BenchSize benchSize;
 
     SECTION("benchmarking") {
-        call_with_templates<
-            ALLBITVECTORS,
-            FlatRank,
-            WideRank,
-            SDSL_V,
-            SDSL_V5,
-            Rank9>([&]<typename Vector>() {
+        call_with_templates<ALLTYPES>([&]<typename Vector>() {
 
             auto vector_name = getName<Vector>();
             INFO(vector_name);
