@@ -23,7 +23,7 @@
 namespace fmindex_collection::string {
 
 
-template <size_t TSigma, size_t l1_bits_ct, size_t l0_bits_ct>
+template <size_t TSigma, size_t l1_bits_ct, size_t l0_bits_ct, bool Align=true>
 struct L0L1_NEPRV9 {
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static_assert(l0_bits_ct-l1_bits_ct <= std::numeric_limits<uint16_t>::max(), "l0_bits_ct can only hold up to uint16_t bits");
@@ -35,7 +35,7 @@ struct L0L1_NEPRV9 {
     // next full power of 2
     static constexpr auto bvct  = (1ull << bitct);
 
-    struct InBits {
+    struct alignas(Align?alignAsValue(bitct):size_t{1}) InBits {
         std::array<std::bitset<l1_bits_ct>, bitct> bits;
 
         uint8_t symbol(uint64_t idx) const {
@@ -257,5 +257,19 @@ static_assert(checkRankVector<L0L1_NEPRV9_256_64k>);
 static_assert(checkRankVector<L0L1_NEPRV9_512_64k>);
 static_assert(checkRankVector<L0L1_NEPRV9_1024_64k>);
 static_assert(checkRankVector<L0L1_NEPRV9_2048_64k>);
+
+template <size_t Sigma> using L0L1_NEPRV9_64_64kUA   = L0L1_NEPRV9<Sigma, 64, 65536, false>;
+template <size_t Sigma> using L0L1_NEPRV9_128_64kUA  = L0L1_NEPRV9<Sigma, 128, 65536, false>;
+template <size_t Sigma> using L0L1_NEPRV9_256_64kUA  = L0L1_NEPRV9<Sigma, 256, 65536, false>;
+template <size_t Sigma> using L0L1_NEPRV9_512_64kUA  = L0L1_NEPRV9<Sigma, 512, 65536, false>;
+template <size_t Sigma> using L0L1_NEPRV9_1024_64kUA = L0L1_NEPRV9<Sigma, 1024, 65536, false>;
+template <size_t Sigma> using L0L1_NEPRV9_2048_64kUA = L0L1_NEPRV9<Sigma, 2048, 65536, false>;
+
+static_assert(checkRankVector<L0L1_NEPRV9_64_64kUA>);
+static_assert(checkRankVector<L0L1_NEPRV9_128_64kUA>);
+static_assert(checkRankVector<L0L1_NEPRV9_256_64kUA>);
+static_assert(checkRankVector<L0L1_NEPRV9_512_64kUA>);
+static_assert(checkRankVector<L0L1_NEPRV9_1024_64kUA>);
+static_assert(checkRankVector<L0L1_NEPRV9_2048_64kUA>);
 
 }
