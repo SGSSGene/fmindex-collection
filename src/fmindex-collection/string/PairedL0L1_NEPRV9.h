@@ -35,7 +35,8 @@ struct PairedL0L1_NEPRV9 {
     // next full power of 2
     static constexpr auto bvct  = (1ull << bitct);
 
-    struct alignas(Align?alignAsValue(bitct):size_t{1}) InBits {
+    static constexpr auto AlignV = Align?alignAsValue(l1_bits_ct):alignof(std::array<std::bitset<l1_bits_ct>, bitct>);
+    struct alignas(AlignV) InBits {
         std::array<std::bitset<l1_bits_ct>, bitct> bits;
 
         uint8_t symbol(uint64_t idx) const {
