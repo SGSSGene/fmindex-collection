@@ -183,7 +183,7 @@ TEST_CASE("benchmark vectors in size - alphabet 8", "[string][!benchmark][8][siz
         BenchSize benchSize;
         benchSize.baseSize = 3.;
         benchSize.entries[0][2] = "bits/char";
-        benchSize.entries[0][3] = "alphabet 8";
+        benchSize.entries[0][4] = "alphabet 8";
 
         call_with_templates<
             ALLRANKVECTORS(8)>([&]<typename Vector>() {
