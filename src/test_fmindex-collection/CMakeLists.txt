@@ -63,8 +63,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 if(FMC_USE_SUX AND FMC_USE_PASTA AND FMC_USE_SDSL)
     # bitvector/benchmark requires sux and paste to compile successful
-    target_compile_definitions(${PROJECT_NAME} INTERFACE -DFMC_USE_SUX)
-    target_compile_definitions(${PROJECT_NAME} INTERFACE -DFMC_USE_PASTA)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_SUX)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_PASTA)
     target_sources(${PROJECT_NAME} PRIVATE bitvector/benchmark.cpp)
     target_link_libraries(${PROJECT_NAME}
         pasta_bit_vector
