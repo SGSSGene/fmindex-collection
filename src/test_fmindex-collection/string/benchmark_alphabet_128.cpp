@@ -181,6 +181,7 @@ TEST_CASE("benchmark vectors in size - alphabet 128", "[string][!benchmark][128]
 
     SECTION("benchmarking") {
         BenchSize benchSize;
+        benchSize.baseSize = 7.;
         benchSize.entries[0][2] = "bits/char";
         benchSize.entries[0][3] = "alphabet 128";
 
