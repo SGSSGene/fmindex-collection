@@ -23,7 +23,7 @@ namespace fmindex_collection::bitvector {
  * PairedL0L1_NBitvector a bit vector with only bits and blocks
  *
  */
-template <size_t l1_bits_ct, size_t l0_bits_ct, bool Align=true>
+template <size_t l1_bits_ct, size_t l0_bits_ct, bool Align=true, bool ShiftAndCount=false>
 struct PairedL0L1_NBitvector {
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static_assert(l0_bits_ct-l1_bits_ct <= std::numeric_limits<uint16_t>::max(), "l0_bits_ct can only hold up to uint16_t bits");
@@ -191,7 +191,18 @@ struct PairedL0L1_NBitvector {
         int64_t right_l1 = (l1Id%2)*2-1;
         int64_t right_l0 = (l0Id%2)*2-1;
 
-        auto count = skip_first_or_last_n_bits_and_count(bits[l1Id].bits, bitId);
+        auto count = [&]() -> size_t {
+            if constexpr (ShiftAndCount) {
+                if (bitId > l1_bits_ct) {
+                    size_t i = l1_bits_ct - bitId;
+                    return (bits[l1Id].bits << i).count();
+                } else {
+                    return (bits[l1Id].bits >> bitId).count();
+                }
+            } else {
+                return skip_first_or_last_n_bits_and_count(bits[l1Id].bits, bitId);
+            }
+        }();
 
         auto r = l0[l0Id/2] + right_l0 * l1[l1Id/2] + right_l1 * count;
         assert(r <= idx);
@@ -230,6 +241,21 @@ static_assert(BitVector_c<PairedL0L1_256_64kBitvector>);
 static_assert(BitVector_c<PairedL0L1_512_64kBitvector>);
 static_assert(BitVector_c<PairedL0L1_1024_64kBitvector>);
 static_assert(BitVector_c<PairedL0L1_2048_64kBitvector>);
+
+using PairedL0L1_64_64kBitvector_ShiftAndCount   = PairedL0L1_NBitvector<64, 65536, false, true>;
+using PairedL0L1_128_64kBitvector_ShiftAndCount  = PairedL0L1_NBitvector<128, 65536, false, true>;
+using PairedL0L1_256_64kBitvector_ShiftAndCount  = PairedL0L1_NBitvector<256, 65536, false, true>;
+using PairedL0L1_512_64kBitvector_ShiftAndCount  = PairedL0L1_NBitvector<512, 65536, false, true>;
+using PairedL0L1_1024_64kBitvector_ShiftAndCount = PairedL0L1_NBitvector<1024, 65536, false, true>;
+using PairedL0L1_2048_64kBitvector_ShiftAndCount = PairedL0L1_NBitvector<2048, 65536, false, true>;
+
+static_assert(BitVector_c<PairedL0L1_64_64kBitvector_ShiftAndCount>);
+static_assert(BitVector_c<PairedL0L1_128_64kBitvector_ShiftAndCount>);
+static_assert(BitVector_c<PairedL0L1_256_64kBitvector_ShiftAndCount>);
+static_assert(BitVector_c<PairedL0L1_512_64kBitvector_ShiftAndCount>);
+static_assert(BitVector_c<PairedL0L1_1024_64kBitvector_ShiftAndCount>);
+static_assert(BitVector_c<PairedL0L1_2048_64kBitvector_ShiftAndCount>);
+
 
 using PairedL0L1_64_64kBitvectorUA   = PairedL0L1_NBitvector<64, 65536, false>;
 using PairedL0L1_128_64kBitvectorUA  = PairedL0L1_NBitvector<128, 65536, false>;
