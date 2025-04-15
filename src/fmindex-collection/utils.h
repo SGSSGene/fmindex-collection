@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#include "bitset_popcount.h"
 #include "concepts.h"
 
 #include <algorithm>
@@ -17,11 +18,97 @@
 #include <tuple>
 #include <vector>
 
+#if __has_include(<cereal/types/bitset.hpp>)
+#include <cereal/types/bitset.hpp>
+#endif
+
+
 #if LIBSAIS_OPENMP
 #   include <omp.h>
 #endif
 
 namespace fmindex_collection {
+
+// helper to compute 'alignas' values
+constexpr inline auto alignAsValue(size_t bits) -> size_t {
+    if (bits % 512 == 0) return 64;
+    if (bits % 256 == 0) return 32;
+    if (bits % 128 == 0) return 16;
+    if (bits %  64 == 0)  return 8;
+    return 1;
+}
+// helper to compute 'alignas' values
+constexpr inline auto minAlignAsValue(auto... bits) {
+    return std::min(alignAsValue(bits)...);
+}
+
+template <size_t N, bool Align=true>
+struct alignas(std::max(alignof(std::bitset<N>), Align?alignAsValue(N):size_t{1})) AlignedBitset {
+    std::bitset<N> bits;
+
+    decltype(auto) operator[](size_t i) {
+        return bits[i];
+    }
+    decltype(auto) operator[](size_t i) const {
+        return bits[i];
+    }
+    auto count() const {
+        return bits.count();
+    }
+
+    template <typename Archive>
+    void save(Archive& ar) const {
+        saveBV(bits, ar);
+    }
+
+    template <typename Archive>
+    void load(Archive& ar) {
+        loadBV(bits, ar);
+    }
+
+};
+
+
+// converts a view of `range<bool>` to an aggregated view of `range<uint64_t>` with filled zeros
+template <std::ranges::sized_range range_t>
+    requires std::convertible_to<std::ranges::range_value_t<range_t>, bool>
+auto convertToUint64View(range_t&& _range) {
+    auto f = [_range = std::forward<range_t>(_range)](size_t i) -> uint64_t {
+        auto beginI = i*64;
+        auto endI   = std::min((i+1)*64, _range.size());
+        auto v = uint64_t{};
+        for (size_t j{0}; j < endI - beginI; ++j) {
+            v = v | (uint64_t{_range[beginI+j]} << j);
+        }
+        return v;
+    };
+    return std::views::iota(size_t{0}, (_range.size()+63)/64) | std::views::transform(f);
+}
+
+// converts a view of `range<uint64_t>` to an aggregated view of `range<bitset<N>`` with filled zeros
+template <size_t N, std::ranges::sized_range range_t>
+    requires std::same_as<std::ranges::range_value_t<range_t>, uint64_t>
+auto convertToBitsetView(range_t&& _range) {
+    static_assert(N % 64 == 0);
+    auto f = [_range = std::forward<range_t>(_range)](size_t i) -> std::bitset<N> {
+        auto beginI = i*N/64;
+        auto endI   = std::min((i+1)*N/64, _range.size());
+        auto v = std::bitset<N>{};
+        for (size_t j{0}; j < endI - beginI; ++j) {
+            v = v | (std::bitset<N>{_range[beginI+j]} << (64*j));
+        }
+        return v;
+    };
+    return std::views::iota(size_t{0}, (_range.size()+N/64-1)/(N/64)) | std::views::transform(f);
+}
+
+// converts a view of `range<bool>` to an aggregated view of `range<bitset<N>> with filled zeros
+template <size_t N, std::ranges::sized_range range_t>
+    requires (std::convertible_to<std::ranges::range_value_t<range_t>, bool>
+        && !std::same_as<std::ranges::range_value_t<range_t>, uint64_t>)
+auto convertToBitsetView(range_t&& _range) {
+    return convertToBitsetView<N>(convertToUint64View(std::forward<range_t>(_range)));
+}
 
 inline auto createSA64(std::span<uint8_t const> input, size_t threadNbr) -> std::vector<uint64_t> {
     assert(uint64_t{input.size()} < std::numeric_limits<int64_t>::max());

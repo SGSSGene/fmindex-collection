@@ -80,7 +80,6 @@
     fmindex_collection::occtable::EprV6<256>, \
     fmindex_collection::occtable::EprV7<256>, \
     fmindex_collection::occtable::InterleavedWavelet<256>, \
-    fmindex_collection::occtable::Wavelet<256>, \
     fmindex_collection::occtable::RunBlockEncoded2<256>, \
     fmindex_collection::occtable::RunBlockEncoded3<256>, \
     fmindex_collection::occtable::RunBlockEncoded4<256>, \

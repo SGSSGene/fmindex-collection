@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include <fmindex-collection/rankvector/rankvector.h>
+#include <fmindex-collection/string/all.h>
 #include <fmindex-collection/bitvector/all.h>
 #include <fmt/format.h>
 #include <filesystem>
@@ -112,13 +112,13 @@ static void analyse_bitvectors() {
 }
 
 template <typename RV>
-void analyse_rankvector(std::string label, std::vector<uint8_t> const& text) {
-    auto rankvector = RV{text};
+void analyse_string(std::string label, std::vector<uint8_t> const& text) {
+    auto string = RV{text};
     // Save index to disk
     {
         auto fs     = std::ofstream("tmp.index", std::ios::binary);
         auto archive = cereal::BinaryOutputArchive{fs};
-        archive(rankvector);
+        archive(string);
     }
 
     //auto size = *ram;
@@ -127,54 +127,54 @@ void analyse_rankvector(std::string label, std::vector<uint8_t> const& text) {
     auto bits_per_char = size * 8. / text.size();
     fmt::print("{:<24} {: 8.2f} bits per character\n", label, bits_per_char);
 
-    (void)rankvector;
+    (void)string;
 }
 
 template <int64_t BL, typename Bitvector = fmindex_collection::bitvector::Bitvector, typename Bitvector2 = fmindex_collection::bitvector::Bitvector>
 using SparseBitvector = fmindex_collection::bitvector::SparseBLEBitvector<BL, Bitvector, Bitvector2>;
 
-static void analyse_rankvectors() {
-    using namespace fmindex_collection::rankvector;
+static void analyse_strings() {
+    using namespace fmindex_collection::string;
     for (auto e : {7}) {
         constexpr static size_t Sigma = 21;
         auto text = generateString<Sigma>(my_pow10(e));
 //        f<Naive<Sigma>>(text);
-        analyse_rankvector<MultiBitvector<Sigma>>("MultiBitvector", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<1>>>("SparseMultiBitvector 2", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<2>>>("SparseMultiBitvector 4", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<3>>>("SparseMultiBitvector 8", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<4>>>("SparseMultiBitvector 16", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<5>>>("SparseMultiBitvector 32", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<6>>>("SparseMultiBitvector 64", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<1, SparseBitvector<-1>>>>("SparseMultiBitvector 2/2", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<2, SparseBitvector<-1>>>>("SparseMultiBitvector 4/2", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<2, SparseBitvector<-2>>>>("SparseMultiBitvector 4/4", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<2, fmindex_collection::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 4/-2", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<3, fmindex_collection::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 8/-2", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<3, fmindex_collection::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 8/-4", text);
-        analyse_rankvector<MultiBitvector<Sigma, SparseBitvector<4, fmindex_collection::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 16/-4", text);
+        analyse_string<MultiBitvector<Sigma>>("MultiBitvector", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<1>>>("SparseMultiBitvector 2", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<2>>>("SparseMultiBitvector 4", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<3>>>("SparseMultiBitvector 8", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<4>>>("SparseMultiBitvector 16", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<5>>>("SparseMultiBitvector 32", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<6>>>("SparseMultiBitvector 64", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<1, SparseBitvector<-1>>>>("SparseMultiBitvector 2/2", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<2, SparseBitvector<-1>>>>("SparseMultiBitvector 4/2", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<2, SparseBitvector<-2>>>>("SparseMultiBitvector 4/4", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<2, fmindex_collection::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 4/-2", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<3, fmindex_collection::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 8/-2", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<3, fmindex_collection::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 8/-4", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<4, fmindex_collection::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 16/-4", text);
 
-        analyse_rankvector<InterleavedBitvector8<Sigma>>("InterleavedBitvector8", text);
-        analyse_rankvector<InterleavedBitvector16<Sigma>>("InterleavedBitvector16", text);
-        //analyse_rankvector<InterleavedBitvector32<Sigma>>("InterleavedBitvector32", text);
-        analyse_rankvector<InterleavedEPR8<Sigma>>("InterleavedEPR8", text);
-        analyse_rankvector<InterleavedEPR16<Sigma>>("InterleavedEPR16", text);
-        //analyse_rankvector<InterleavedEPR32<Sigma>>("InterleavedEPR32", text);
-        analyse_rankvector<InterleavedEPRV2_8<Sigma>>("InterleavedEPRV2_8", text);
-        analyse_rankvector<InterleavedEPRV2_16<Sigma>>("InterleavedEPRV2_16", text);
-        //analyse_rankvector<InterleavedEPRV2_32<Sigma>>("InterleavedEPRV2_32", text);
-        analyse_rankvector<EPRV3_8<Sigma>> ("EPRV3_8", text);
-        analyse_rankvector<EPRV3_16<Sigma>>("EPRV3_16", text);
-        //analyse_rankvector<EPRV3_32<Sigma>>("EPRV3_32", text);
-        analyse_rankvector<EPRV4<Sigma>> ("EPRV4", text);
-        analyse_rankvector<EPRV5<Sigma>> ("EPRV5", text);
-        analyse_rankvector<DenseEPRV6<Sigma>> ("DenseEPRV6", text);
-        analyse_rankvector<InterleavedEPRV7<Sigma>>("InterleavedEPRV7", text);
-        analyse_rankvector<InterleavedWavelet<Sigma>>("InterleavedWavelet", text);
+        analyse_string<InterleavedBitvector8<Sigma>>("InterleavedBitvector8", text);
+        analyse_string<InterleavedBitvector16<Sigma>>("InterleavedBitvector16", text);
+        //analyse_string<InterleavedBitvector32<Sigma>>("InterleavedBitvector32", text);
+        analyse_string<InterleavedEPR8<Sigma>>("InterleavedEPR8", text);
+        analyse_string<InterleavedEPR16<Sigma>>("InterleavedEPR16", text);
+        //analyse_string<InterleavedEPR32<Sigma>>("InterleavedEPR32", text);
+        analyse_string<InterleavedEPRV2_8<Sigma>>("InterleavedEPRV2_8", text);
+        analyse_string<InterleavedEPRV2_16<Sigma>>("InterleavedEPRV2_16", text);
+        //analyse_string<InterleavedEPRV2_32<Sigma>>("InterleavedEPRV2_32", text);
+        analyse_string<EPRV3_8<Sigma>> ("EPRV3_8", text);
+        analyse_string<EPRV3_16<Sigma>>("EPRV3_16", text);
+        //analyse_string<EPRV3_32<Sigma>>("EPRV3_32", text);
+        analyse_string<EPRV4<Sigma>> ("EPRV4", text);
+        analyse_string<EPRV5<Sigma>> ("EPRV5", text);
+        analyse_string<DenseEPRV6<Sigma>> ("DenseEPRV6", text);
+        analyse_string<InterleavedEPRV7<Sigma>>("InterleavedEPRV7", text);
+        analyse_string<InterleavedWavelet<Sigma>>("InterleavedWavelet", text);
 #if FMC_USE_SDSL
-        analyse_rankvector<Sdsl_wt_bldc<Sigma>>("sdsl-wavelet", text);
+        analyse_string<Sdsl_wt_bldc<Sigma>>("sdsl-wavelet", text);
 #endif
-        analyse_rankvector<Wavelet<Sigma>>("Wavelet", text);
+        analyse_string<Wavelet<Sigma>>("Wavelet", text);
     }
 }
 
@@ -182,6 +182,6 @@ int main() {
     fmt::print("analyse bitvectors:\n");
     analyse_bitvectors();
 
-    fmt::print("\nanalyse rankvectors:\n");
-    analyse_rankvectors();
+    fmt::print("\nanalyse strings:\n");
+    analyse_strings();
 }

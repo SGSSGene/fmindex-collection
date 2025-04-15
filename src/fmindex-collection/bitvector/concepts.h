@@ -27,7 +27,7 @@ concept BitVector_c =
 
     /** Every BitVector can be constructed via some type of string similar thing
      */
-    { T{size_t{}, [](size_t) { return false; }} } -> std::same_as<T>;
+    { T{symbols} } -> std::same_as<T>;
 
     /* Run time variable indicating the number of rows inside this occurrence table
      */

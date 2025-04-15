@@ -4,8 +4,8 @@
 #include <fmindex-collection/fmindex-collection.h>
 #include <fmindex-collection/occtable/all.h>
 #include <fmindex-collection/search/all.h>
-#include <search_schemes/generator/all.h>
-#include <search_schemes/expand.h>
+#include <fmindex-collection/search_scheme/expand.h>
+#include <fmindex-collection/search_scheme/generator/all.h>
 
 #include <cereal/archives/binary.hpp>
 #include <filesystem>
@@ -88,7 +88,7 @@ int main(int argc, char const* const* argv) {
 
 
 
-/*    auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 0), queries[0].size());
+/*    auto search_scheme = search_scheme::expand(search_scheme::generator::pigeon_opt(0, 0), queries[0].size());
 
     search_pseudo::search<false>(index, queries, search_scheme, [&](size_t queryId, auto cursor, size_t errors) {
         (void)errors;

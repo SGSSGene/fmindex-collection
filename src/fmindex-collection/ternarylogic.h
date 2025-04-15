@@ -626,8 +626,33 @@ auto mark_exact_v3(size_t value, std::bitset<N> const& _a, std::bitset<N> const&
 //    unreachable();
 //    __builtin_unreachable();
     return {};
-
 };
+
+template <size_t N>
+auto mark_exact_all(std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::array<std::bitset<N>, 8> {
+    auto r = std::array<std::bitset<N>, 8>{};
+    auto na = ~_a;
+    auto nb = ~_b;
+    auto nc = ~_c;
+    r[1] = na & nb;
+    r[0] = r[1] & nc;
+    r[1] = r[1] & _c;
+
+    r[3] = na & _b;
+    r[2] = r[3] & nc;
+    r[3] = r[3] & _c;
+
+    r[5] = _a & nb;
+    r[4] = r[5] & nc;
+    r[5] = r[5] & _c;
+
+    r[7] = _a & _b;
+    r[6] = r[7] & nc;
+    r[7] = r[7] & _c;
+    return r;
+}
+
+
 
 template <size_t N, typename T=std::bitset<N>>
 static std::array<T(*)(T const&, T const&, T const&), 8> lut_mark_exact = []() {
@@ -659,6 +684,33 @@ auto mark_exact_fast(size_t value, std::bitset<N> const& _a, std::bitset<N> cons
     assert(value < 8);
     return mark_exact_v4(value, _a, _b, _c);
 };
+
+
+template <size_t N>
+static std::array<std::bitset<N>, 2> mask_positive_or_negative = []() {
+    auto a = std::array<std::bitset<N>, 2>{};
+    a[0].set();
+    return a;
+}();
+
+
+/** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
+ *  has the same bit value as Value
+ */
+template <size_t N1, size_t N2>
+auto mark_exact_large(size_t value, std::array<std::bitset<N1>, N2> const& _arr) -> std::bitset<N1> {
+    if constexpr (N2 == 3) {
+        return mark_exact_v3(value, _arr[2], _arr[1], _arr[0]);
+    } else {
+        auto const& mask = mask_positive_or_negative<N1>;
+        auto r = _arr[0] ^ mask[value & 1];
+        for (size_t i{1}; i < N2; ++i) {
+            r = r & (_arr[i] ^ mask[(value>>i) & 1]);
+        }
+        return r;
+    }
+};
+
 
 /** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
  *  has the same bit value as Value
@@ -707,14 +759,7 @@ auto mark_exact_or_less_v3(size_t value, std::bitset<N> const& _a, std::bitset<N
     case 0x04: return ~_a | (~_b & ~_c);
     case 0x05: return ~_a | ~_b;
     case 0x06: return ~_a | ~_b | ~_c;
-    case 0x07: {
-        static auto r = []() {
-            auto r = std::bitset<N>{};
-            r.flip();
-            return r;
-        }();
-        return r;
-    }
+    case 0x07: return mask_positive_or_negative<N>[0];
     }
 //    unreachable();
 //    __builtin_unreachable();
@@ -736,7 +781,6 @@ static std::array<T(*)(T const&, T const&, T const&), 8> lut_mark_exact_or_less 
 }();
 
 
-
 /** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
  *  has the same bit value as Value
  */
@@ -750,6 +794,126 @@ template <size_t N>
 auto mark_exact_or_less_fast(size_t value, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
     assert(value < 8);
     return mark_exact_or_less_v4(value, _a, _b, _c);
+};
+
+template <size_t N>
+auto mark_exact_or_less_all(std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::array<std::bitset<N>, 8> {
+    auto r = std::array<std::bitset<N>, 8>{};
+    r[3] = ~_a;
+    r[1] = r[3] & ~_b;
+    r[0] = r[1] & ~_c;
+    r[7] = ~_b | ~_c;
+    r[2] = r[3] & r[7];
+    r[4] = r[3] | ~(_b | _c);
+    r[5] = r[3] | ~_b;
+    r[6] = r[3] | r[7];
+    r[7] |= ~r[7];
+    return r;
+}
+
+/** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
+ *  has the same bit value as Value
+ */
+template <size_t N1, size_t N2>
+auto mark_exact_or_less_large(size_t value, std::array<std::bitset<N1>, N2> const& _arr) -> std::bitset<N1> {
+    if constexpr (N2 == 1) {
+        if (!value) return ~_arr[0];
+        return mask_positive_or_negative<N1>[0];
+    } else if constexpr (N2 == 2) {
+        switch(value) {
+        case 0x00: return ~_arr[1] & ~_arr[0];
+        case 0x01: return ~_arr[1];
+        case 0x02: return ~_arr[1] | ~_arr[0];
+        default: return mask_positive_or_negative<N1>[0];
+        }
+    } else {
+        auto v       = mark_exact_or_less_v3(value & 7,      _arr[2], _arr[1], _arr[0]);
+        auto tail1 = [&](size_t value, size_t i) {
+            if (!value) return ~_arr[i] & v;
+            return ~_arr[i] | v;
+        };
+
+        auto tail2 = [&](size_t value, size_t i0, size_t i1) {
+            switch(value) {
+            case 0x00: return ~_arr[i1] & ~_arr[i0] & v;
+            case 0x01: return ~_arr[i1] & (~_arr[i0] | v);
+            case 0x02: return ~_arr[i1] | (~_arr[i0] & v);
+            default:   return ~_arr[i1] | ~_arr[i0] | v;
+            }
+        };
+        if constexpr (N2 == 3) {
+            return v;
+        } else if constexpr (N2 == 4) {
+            return tail1((value>>3)&1, 3);
+        } else {
+            v = tail2((value>>3)&3, 3, 4);
+            if constexpr (N2 == 5) {
+                return v;
+            } else if constexpr (N2 == 6) {
+                return tail1(value>>5, 5);
+            } else {
+                v = tail2((value>>5)&3, 5, 6);
+                if constexpr (N2 == 7) {
+                    return v;
+                } else {
+                    return tail1(value>>7, 7);
+                }
+            }
+        }
+    }
+
+// 0    ~3 ~2 ~1 ~0
+// 1    ~3 ~2 ~1
+// 2    ~3 ~2 (~1 | ~0)
+// 3    ~3 ~2
+// 4    ~3 (~2 | (~1 & ~0))
+// 5    ~3 (~2 | ~1)
+// 6    ~3 (~2 | ~1 | ~0)
+// 7    ~3 & true
+// 8    ~3 | (~2 ~1 ~0)
+// 9    ~3 | (~2 ~1)
+//10    ~3 | (~2 (~1 | ~0))
+//11    ~3 | ~2
+//12    ~3 | ((~2 | (~1 & ~0)))
+//13    ~3 | ((~2 | ~1))
+//14    ~3 | ((~2 | ~1 | ~0))
+//15    ~3 | true
+
+
+//0    ~7 ~6 ~5 ~4 ~3 ~2 ~1 ~0
+//1    ~7 ~6 ~5 ~4 ~3 ~2 ~1
+//2    ~7 ~6 ~5 ~4 ~3 ~2 (~1 | ~0)
+//3    ~7 ~6 ~5 ~4 ~3 ~2
+//4    ~7 ~6 ~5 ~4 ~3 (~2 | (~1 & ~0))
+//5    ~7 ~6 ~5 ~4 ~3 (~2 | ~1)
+//6    ~7 ~6 ~5 ~4 ~3 (~2 | ~1 | ~0)
+//7    ~7 ~6 ~5 ~4 ~3
+//0    ~7 ~6 ~5 ~4 (~3 | (~2 ~1 ~0)
+//1    ~7 ~6 ~5 ~4 (~3 | (~2 ~1)
+//2    ~7 ~6 ~5 ~4 (~3 | (~2 (~1 | ~0))
+//3    ~7 ~6 ~5 ~4 (~3 | ~2)
+//4    ~7 ~6 ~5 ~4 (~3 | ((~2 | (~1 & ~0)))
+//5    ~7 ~6 ~5 ~4 (~3 | ((~2 | ~1))
+//6    ~7 ~6 ~5 ~4 (~3 | ((~2 | ~1 | ~0))
+//7    ~7 ~6 ~5 ~4
+
+//
+// 0 0    ~7 ~6 ~5 ~4 ~3 ~v
+// 8 1    ~7 ~6 ~5 ~4 ~3
+//16 2    ~7 ~6 ~5 ~4 (~3 | ~v)
+//24 3    ~7 ~6 ~5 ~4
+//32 4    ~7 ~6 ~5 (~4 | (~3 & ~v))
+//40 5    ~7 ~6 ~5 (~4 | ~3)
+//48 6    ~7 ~6 ~5 (~4 | ~3 | ~v)
+//56 7    ~7 ~6 ~5
+
+//    case 0x00: return ~_a & ~_b & ~_c;
+//    case 0x01: return ~_a & ~_b;
+//    case 0x02: return ~_a & (~_b | ~_c);
+//    case 0x03: return ~_a;
+//    case 0x04: return ~_a | (~_b & ~_c);
+//    case 0x05: return ~_a | ~_b;
+//    case 0x06: return ~_a | ~_b | ~_c;
 };
 
 }

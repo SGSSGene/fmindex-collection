@@ -6,7 +6,7 @@
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/BiFMIndex.h>
 #include <fmindex-collection/search/SearchPseudo.h>
-#include <search_schemes/generator/all.h>
+#include <fmindex-collection/search_scheme/generator/all.h>
 
 TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]", ALLTABLES) {
     using OccTable = TestType;
@@ -32,7 +32,7 @@ TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]", ALLTABLES) {
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
-    auto search_scheme = search_schemes::generator::backtracking(1, 0, 0);
+    auto search_scheme = fmindex_collection::search_scheme::generator::backtracking(1, 0, 0);
     fmindex_collection::search_pseudo::search<true>(index, query, search_scheme, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);
@@ -60,7 +60,7 @@ TEMPLATE_TEST_CASE("searching with collection and PseudoSearch", "[collection]",
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
-    auto search_scheme = search_schemes::generator::backtracking(1, 0, 0);
+    auto search_scheme = fmindex_collection::search_scheme::generator::backtracking(1, 0, 0);
     fmindex_collection::search_pseudo::search<true>(index, query, search_scheme, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);

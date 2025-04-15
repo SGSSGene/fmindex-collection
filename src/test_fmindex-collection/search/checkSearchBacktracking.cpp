@@ -6,7 +6,7 @@
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/locate.h>
 #include <fmindex-collection/search/Backtracking.h>
-#include <search_schemes/generator/all.h>
+#include <fmindex-collection/search_scheme/generator/all.h>
 
 TEMPLATE_TEST_CASE("searching with backtracking", "[search]", ALLTABLES) {
     using OccTable = TestType;

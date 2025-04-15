@@ -8,12 +8,12 @@
 #include <fmindex-collection/occtable/all.h>
 #include <fmindex-collection/search/SearchHammingSM.h>
 #include <fmindex-collection/search/all.h>
-#include <search_schemes/generator/all.h>
-#include <search_schemes/expand.h>
+#include <fmindex-collection/search_scheme/generator/all.h>
+#include <fmindex-collection/search_scheme/expand.h>
 #include <nanobench.h>
 
 
-TEST_CASE("check search with hamming and scoring matrix with errors", "[searches][hamming][scoring-matrix]") {
+TEST_CASE("check search with hamming and scoring matrix with errors", "[searches][!benchmark][hamming][scoring-matrix]") {
 //    using OccTable = fmindex_collection::occtable::EprV7<21>;
     using OccTable = fmindex_collection::occtable::Interleaved_16<21>;
     using Index = fmindex_collection::BiFMIndex<OccTable>;
@@ -77,7 +77,7 @@ TEST_CASE("check search with hamming and scoring matrix with errors", "[searches
         auto index = Index{input, /*samplingRate*/1, /*threadNbr*/1};
 
 
-        auto search_scheme = search_schemes::generator::pigeon_opt(0, 1);
+        auto search_scheme = fmindex_collection::search_scheme::generator::pigeon_opt(0, 1);
 
         {
             auto sm = fmindex_collection::search_hamming_sm::ScoringMatrix<28, 21>{}; // Inversed-Identity is set by default
@@ -113,7 +113,7 @@ TEST_CASE("check search with hamming and scoring matrix with errors", "[searches
         }
 
         {
-            auto expanded_search_scheme = search_schemes::expand(search_scheme, queries[0].size());
+            auto expanded_search_scheme = fmindex_collection::search_scheme::expand(search_scheme, queries[0].size());
 
             ankerl::nanobench::Bench().minEpochTime(std::chrono::milliseconds{10}).run("hamming without scoring matrix", [&]() {
                 fmindex_collection::search_pseudo::search</*EditDistance=*/false>(index, queries, expanded_search_scheme, [&](auto qidx, auto cursor, auto errors) {

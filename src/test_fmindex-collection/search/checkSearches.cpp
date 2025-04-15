@@ -8,8 +8,8 @@
 #include <fmindex-collection/occtable/all.h>
 #include <fmindex-collection/search/all.h>
 #include <nanobench.h>
-#include <search_schemes/generator/all.h>
-#include <search_schemes/expand.h>
+#include <fmindex-collection/search_scheme/generator/all.h>
+#include <fmindex-collection/search_scheme/expand.h>
 
 
 TEST_CASE("check searches with errors", "[searches]") {
@@ -144,7 +144,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("pseudo search, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_pseudo::search</*EditDistance=*/true>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -178,7 +178,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("pseudo search, single searches") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         for (size_t qidx{0}; qidx < queries.size(); ++qidx) {
@@ -216,7 +216,7 @@ TEST_CASE("check searches with errors", "[searches]") {
 
 
     SECTION("pseudo search, hamming distance, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_pseudo::search</*EditDistance=*/false>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -243,7 +243,7 @@ TEST_CASE("check searches with errors", "[searches]") {
 
 
     SECTION("search ng12, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng12::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -277,7 +277,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng14, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng14::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -303,7 +303,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng15, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng15::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -329,7 +329,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
     //!TODO Doesn't work for such short search schemes??
     SECTION("search ng16, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::backtracking(2, 0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::backtracking(2, 0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng16::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -363,7 +363,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng17, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng17::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -389,7 +389,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
 /*    SECTION("search ng20, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::backtracking(2, 0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::backtracking(2, 0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng20::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -424,7 +424,7 @@ TEST_CASE("check searches with errors", "[searches]") {
 
 
     SECTION("search ng21, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -450,7 +450,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21, all search_n") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21::search_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
@@ -474,9 +474,9 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21, all search_best") {
-        auto search_scheme_e0 = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 0), queries[0].size());
-        auto search_scheme_e1 = search_schemes::expand(search_schemes::generator::pigeon_opt(1, 1), queries[0].size());
-        auto search_scheme_e2 = search_schemes::expand(search_schemes::generator::pigeon_opt(2, 2), queries[0].size());
+        auto search_scheme_e0 = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 0), queries[0].size());
+        auto search_scheme_e1 = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(1, 1), queries[0].size());
+        auto search_scheme_e2 = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(2, 2), queries[0].size());
         auto search_schemes = std::vector{search_scheme_e0, search_scheme_e1, search_scheme_e2};
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
@@ -503,8 +503,8 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21, all search_best_n") {
-        auto search_scheme_e0 = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 0), queries[0].size());
-        auto search_scheme_e1 = search_schemes::expand(search_schemes::generator::pigeon_opt(1, 1), queries[0].size());
+        auto search_scheme_e0 = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 0), queries[0].size());
+        auto search_scheme_e1 = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(1, 1), queries[0].size());
         auto search_schemes = std::vector{search_scheme_e0, search_scheme_e1};
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
@@ -529,7 +529,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21 V2, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V2::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -555,7 +555,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21 V3, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V3::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -581,7 +581,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21 V4, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V4::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -607,7 +607,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21 V5, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V5::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -633,7 +633,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21 V6, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V6::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -659,7 +659,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21 V6, all search_n") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V6::search_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
@@ -683,9 +683,9 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21 V6, all search_best") {
-        auto search_scheme_e0 = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 0), queries[0].size());
-        auto search_scheme_e1 = search_schemes::expand(search_schemes::generator::pigeon_opt(1, 1), queries[0].size());
-        auto search_scheme_e2 = search_schemes::expand(search_schemes::generator::pigeon_opt(2, 2), queries[0].size());
+        auto search_scheme_e0 = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 0), queries[0].size());
+        auto search_scheme_e1 = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(1, 1), queries[0].size());
+        auto search_scheme_e2 = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(2, 2), queries[0].size());
         auto search_schemes = std::vector{search_scheme_e0, search_scheme_e1, search_scheme_e2};
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
@@ -712,8 +712,8 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21 V6, all search_best_n") {
-        auto search_scheme_e0 = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 0), queries[0].size());
-        auto search_scheme_e1 = search_schemes::expand(search_schemes::generator::pigeon_opt(1, 1), queries[0].size());
+        auto search_scheme_e0 = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 0), queries[0].size());
+        auto search_scheme_e1 = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(1, 1), queries[0].size());
         auto search_schemes = std::vector{search_scheme_e0, search_scheme_e1};
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
@@ -738,7 +738,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21 V7, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V7::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -764,7 +764,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21 V7, all search_n") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V7::search_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
@@ -788,7 +788,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21 V7, all search_best") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 2), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 2), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V7::search_best(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
@@ -814,7 +814,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 
     SECTION("search ng21 V7, all search_best_n") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 2), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 2), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V7::search_best_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
@@ -839,7 +839,7 @@ TEST_CASE("check searches with errors", "[searches]") {
 
 
     SECTION("search ng22, all search") {
-        auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng22::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors, auto const& action) {
@@ -866,7 +866,7 @@ TEST_CASE("check searches with errors", "[searches]") {
     }
 }
 
-TEST_CASE("benchmark searches with errors", "[benchmark]") {
+TEST_CASE("benchmark searches with errors", "[searches][!benchmark]") {
     SECTION("benchmarking") {
         using OccTable = fmindex_collection::occtable::EprV2_16<256>;
         using Index = fmindex_collection::BiFMIndex<OccTable>;
@@ -959,13 +959,15 @@ TEST_CASE("benchmark searches with errors", "[benchmark]") {
 
         auto index = Index{ref, /*samplingRate*/1, /*threadNbr*/1};
         static auto bench = ankerl::nanobench::Bench();
+        bench.batch(reads.size())
+             .relative(true);
 
         size_t r_ng12{};
         size_t r_ng21{};
         {
-            auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, errors), len);
+            auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, errors), len);
 
-            bench.relative(true).minEpochTime(std::chrono::milliseconds{1000}).run("search ng12", [&]() {
+            bench.run("search ng12", [&]() {
                 r_ng12 = 0;
                 fmindex_collection::search_ng21::search(index, reads, search_scheme, [&](auto qidx, auto cursor, auto errors) {
                     (void)errors;
@@ -977,9 +979,9 @@ TEST_CASE("benchmark searches with errors", "[benchmark]") {
         }
 
         {
-            auto search_scheme = search_schemes::expand(search_schemes::generator::pigeon_opt(0, errors), len);
+            auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, errors), len);
 
-            bench.relative(true).minEpochTime(std::chrono::milliseconds{1000}).run("search ng21", [&]() {
+            bench.run("search ng21", [&]() {
                 r_ng21 = 0;
                 fmindex_collection::search_ng21::search(index, reads, search_scheme, [&](auto qidx, auto cursor, auto errors) {
                     (void)errors;

@@ -4,8 +4,10 @@
 #pragma once
 
 #include "concepts.h"
+#include "../bitset_popcount.h"
 
 #include <array>
+#include <bit>
 #include <bitset>
 #include <cassert>
 #include <cstddef>
@@ -26,7 +28,7 @@ namespace fmindex_collection::bitvector {
  *   For 256bits, we need 352bits, or 1.375bits to save a single bit
  */
 struct Bitvector {
-    std::vector<uint64_t> superblocks{0, 0};
+    std::vector<uint64_t> superblocks{0};
     std::vector<uint8_t>  blocks{0};
     std::vector<uint64_t> bits{0};
     size_t totalLength{};
@@ -42,35 +44,63 @@ struct Bitvector {
         })}
     {}
 
+    template <typename CB>
+    struct Layer {
+        CB get;
+
+        auto operator[](size_t i) -> auto& {
+            return get(i);
+        }
+    };
+
     template <std::ranges::sized_range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
     Bitvector(range_t&& _range) {
         reserve(_range.size());
 
-        auto iter = _range.begin();
+        auto _length = _range.size();
+        superblocks.resize(_length/256+1);
+        blocks.resize(_length/64+1);
+        bits.resize(_length/64+1);
 
-        size_t const loop64  = _range.size() / 64;
-        for (size_t l64{}; l64 < loop64; ++l64) {
-            for (size_t i{}; i < 64; ++i) {
-                bool value = *(iter++);
-                if (value) {
-                    auto bitId = i;
-                    auto& tbits  = bits.back();
-                    tbits        = tbits | (uint64_t{1} << bitId);
-                    superblocks.back() += 1;
-                }
+        auto l0 = Layer{[&](size_t i) -> uint64_t& {
+            return superblocks[i];
+        }};
+        auto l1 = Layer{[&](size_t i) -> uint8_t& {
+            return blocks[i];
+        }};
+        auto l2 = Layer{[&](size_t i) -> uint64_t& {
+            return bits[i];
+        }};
+
+        for (auto iter = _range.begin(); iter != _range.end(); ++iter) {
+            // run only if full block
+            auto restBits = std::min(size_t{64}, _range.size() - totalLength);
+
+            // concatenate next full block
+            uint64_t bits = *iter;
+            for (size_t i{1}; i < restBits; ++i) {
+                bool value = *(++iter);
+                bits = bits | (uint64_t{value} << i);
             }
-            totalLength += 64;
-            blocks.emplace_back(superblocks.back());
-            bits.emplace_back();
+
+            // update bits and blocks
+            auto l0_id = totalLength / 256;
+            auto l1_id = totalLength / 64;
+            l2[l1_id] = bits;
+
+            totalLength += restBits;
+            // abort - if block not full,
+            if (restBits < 64) {
+                break;
+            }
+
+            l1[l1_id+1] = l1[l1_id] + std::popcount(bits);
+            // check if next superblock is full
             if (totalLength % 256 == 0) {
-                superblocks.back() += superblocks[superblocks.size()-2];
-                superblocks.emplace_back();
-                blocks.back() = 0;
+                l0[l0_id+1] = l0[l0_id] + l1[l1_id+1];
+                l1[l1_id+1] = 0;
             }
-        }
-        while(totalLength < _range.size()) {
-            push_back(*(iter++));
         }
     }
 
@@ -88,19 +118,14 @@ struct Bitvector {
             auto bitId   = totalLength % 64;
             auto& tbits  = bits.back();
             tbits        = tbits | (uint64_t{1} << bitId);
-            superblocks.back() += 1;
         }
         totalLength += 1;
         if (totalLength % 64 == 0) { // new block
+            blocks.emplace_back(blocks.back() + std::popcount(bits.back()));
+            bits.emplace_back();
             if (totalLength % 256 == 0) { // new super block + new block
-                superblocks.back() += superblocks[superblocks.size()-2];
-                superblocks.emplace_back();
-                blocks.emplace_back();
-                bits.emplace_back();
-            } else {
-                assert(superblocks.back() < 256);
-                blocks.emplace_back(uint8_t(superblocks.back()));
-                bits.emplace_back();
+                superblocks.emplace_back(superblocks.back() + blocks.back());
+                blocks.back() = 0;
             }
         }
     }

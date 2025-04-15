@@ -6,10 +6,18 @@ cmake_minimum_required (VERSION 3.25)
 project(fmindex-collection LANGUAGES CXX C
                             DESCRIPTION "fmindex-collection -- Datastructures and Algorithms for (Bi-)FMIndices and Approximate Pattern Matching")
 
-option(FMC_USE_SDSL "Activate occ tables that use SDSL as a backend" ${PROJECT_IS_TOP_LEVEL})
+option(FMC_USE_SDSL  "Activate occ tables that use SDSL as a backend" ${PROJECT_IS_TOP_LEVEL})
+option(FMC_USE_PASTA "Include PASTA (required for bitvector benchmarks)" ${PROJECT_IS_TOP_LEVEL})
+option(FMC_USE_SUX   "Include SUX (required for bitvector benchmarks)" ${PROJECT_IS_TOP_LEVEL})
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(FMC_USE_SDSL OFF)
+    set(FMC_USE_PASTA OFF)
+    set(FMC_USE_SUX OFF)
+    if (PROJECT_IS_TOP_LEVEL)
+        add_compile_options("/EHsc")
+    endif()
+
 elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
     set(FMC_USE_SDSL OFF)
 endif()
@@ -26,7 +34,6 @@ endif()
 if (PROJECT_IS_TOP_LEVEL)
     enable_testing()
     add_subdirectory(src/test_fmindex-collection)
-    add_subdirectory(src/test_search_schemes)
 
     # example executable
     add_executable(example
@@ -53,8 +60,6 @@ if (PROJECT_IS_TOP_LEVEL)
         cereal::cereal
     )
 
-
-
     # easyExample executable
     add_executable(easyExample
         src/easyExample/main.cpp
@@ -71,7 +76,7 @@ if (PROJECT_IS_TOP_LEVEL)
     )
     target_link_libraries(run_search_schemes
         PRIVATE
-        search_schemes
+        fmindex-collection::fmindex-collection
         fmt::fmt-header-only
     )
 
@@ -79,7 +84,7 @@ if (PROJECT_IS_TOP_LEVEL)
     add_subdirectory(src/test_header)
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        target_compile_options(fmindex-collection INTERFACE /bigobj /EHsc -DNOMINMAX)
+        target_compile_options(fmindex-collection INTERFACE /bigobj -DNOMINMAX)
     else()
         target_compile_options(fmindex-collection INTERFACE -Wall -Werror -Wpedantic -Wextra -fPIC)
     endif()

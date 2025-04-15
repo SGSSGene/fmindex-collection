@@ -67,17 +67,18 @@ size_t signed_rshift_and_count(std::bitset<N> const& b, size_t shift) {
 /**
  * an array of size N*2+1. This array masks the first x bits or last y bits, depending on the parameter
  *
- * 0: 0000
- * 1: 000x
- * 2: 00xx
- * 3: 0xxx
- * 4: xxxx
- * 5: xxx0
- * 6: xx00
- * 7: x000
- * 8: 0000
+ * 0: 1111
+ * 1: 1110
+ * 2: 1100
+ * 3: 1000
+ * 4: 0000
+ * 5: 0001
+ * 6: 0011
+ * 7: 0111
+ * 8: 1111
  */
 template <size_t N>
+alignas((N==512)?64:alignof(std::array<std::bitset<N>, N*2+1>))
 std::array<std::bitset<N>, N*2+1> const skip_first_or_last_n_bits_masks = []() {
     auto m = std::array<std::bitset<N>, N*2+1>{};
     m[0].flip();
