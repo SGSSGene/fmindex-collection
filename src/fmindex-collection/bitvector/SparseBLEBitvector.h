@@ -35,13 +35,6 @@ struct SparseBLEBitvector {
 
     std::vector<uint8_t> trailing; // extra characters, that aren't inside a block
 
-    template <typename CB>
-    SparseBLEBitvector(size_t length, CB cb)
-        : SparseBLEBitvector{std::views::iota(size_t{}, length) | std::views::transform([&](size_t i) {
-            return cb(i);
-        })}
-    {}
-
     template <std::ranges::sized_range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
     SparseBLEBitvector(range_t&& _range) {
@@ -53,6 +46,7 @@ struct SparseBLEBitvector {
     SparseBLEBitvector() = default;
     SparseBLEBitvector(SparseBLEBitvector const&) = default;
     SparseBLEBitvector(SparseBLEBitvector&&) noexcept = default;
+
     auto operator=(SparseBLEBitvector const&) -> SparseBLEBitvector& = default;
     auto operator=(SparseBLEBitvector&&) noexcept -> SparseBLEBitvector& = default;
 
