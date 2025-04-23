@@ -29,6 +29,7 @@ struct SparseBLEBitvector {
 
     static constexpr bool   CompressOnes = _BlockLengthE<0;
     static constexpr size_t BlockLengthE = CompressOnes?-_BlockLengthE:_BlockLengthE;
+    static constexpr size_t BlockLength  = (size_t{1} << BlockLengthE);
     BV1 indicatorBitvector;
     BV2 uncompressedBitvector;
     size_t totalLength{};
@@ -38,8 +39,30 @@ struct SparseBLEBitvector {
     template <std::ranges::sized_range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
     SparseBLEBitvector(range_t&& _range) {
-        for (auto v : _range) {
-            push_back(v);
+        size_t completeBlocks = _range.size() / BlockLength;
+        for (size_t block{0}; block < completeBlocks; ++block) {
+            bool allTheSame = true;
+            bool first = _range[block*BlockLength];
+            for (size_t j{1}; j < BlockLength; ++j) {
+                allTheSame &= (first == _range[block*BlockLength + j]);
+            }
+            if constexpr (!CompressOnes) {
+                if (first) allTheSame = false; // Don't compress ones
+            } else {
+                if (!first) allTheSame = false; // Don't compress zeros
+            }
+            indicatorBitvector.push_back(allTheSame);
+            if (!allTheSame) {
+                for (size_t j{0}; j < BlockLength; ++j) {
+                    uncompressedBitvector.push_back(_range[block*BlockLength+j]);
+                }
+            }
+        }
+        totalLength = completeBlocks * BlockLength;
+
+        size_t trailingChars = _range.size() - totalLength;
+        for (size_t i{_range.size() - trailingChars}; i < _range.size(); ++i) {
+            push_back(_range[i]);
         }
     }
 
@@ -84,6 +107,7 @@ struct SparseBLEBitvector {
             return trailing[idx-totalLength];
         }
         auto blockId = idx >> BlockLengthE;
+        assert(blockId < indicatorBitvector.size());
 
         // If compressed, must be what ever is compressed
         if (indicatorBitvector.symbol(blockId)) {
