@@ -24,46 +24,44 @@ namespace fmindex_collection::bitvector {
  * Uses Block length encoding and simplification on the
  * assumption the bit vector is sparse
  */
-template <int64_t _BlockLengthE = 2, BitVector_c BV1 = Bitvector, BitVector_c BV2 = Bitvector>
+template <int64_t BlockLengthE = 2, BitVector_c BV1 = Bitvector, BitVector_c BV2 = Bitvector>
 struct SparseBLEBitvector {
 
-    static constexpr bool   CompressOnes = _BlockLengthE<0;
-    static constexpr size_t BlockLengthE = CompressOnes?-_BlockLengthE:_BlockLengthE;
-    static constexpr size_t BlockLength  = (size_t{1} << BlockLengthE);
+    static constexpr size_t BlockLength = (size_t{1} << BlockLengthE);
     BV1 indicatorBitvector;
     BV2 uncompressedBitvector;
     size_t totalLength{};
-
-    std::vector<uint8_t> trailing; // extra characters, that aren't inside a block
 
     template <std::ranges::sized_range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
     SparseBLEBitvector(range_t&& _range) {
         size_t completeBlocks = _range.size() / BlockLength;
         for (size_t block{0}; block < completeBlocks; ++block) {
-            bool allTheSame = true;
-            bool first = _range[block*BlockLength];
-            for (size_t j{1}; j < BlockLength; ++j) {
-                allTheSame &= (first == _range[block*BlockLength + j]);
+            bool allZeros = true;
+            for (size_t j{0}; j < BlockLength; ++j) {
+                allZeros &= (0 == _range[block*BlockLength + j]);
             }
-            if constexpr (!CompressOnes) {
-                if (first) allTheSame = false; // Don't compress ones
-            } else {
-                if (!first) allTheSame = false; // Don't compress zeros
-            }
-            indicatorBitvector.push_back(allTheSame);
-            if (!allTheSame) {
+            indicatorBitvector.push_back(allZeros);
+            if (!allZeros) {
                 for (size_t j{0}; j < BlockLength; ++j) {
                     uncompressedBitvector.push_back(_range[block*BlockLength+j]);
                 }
             }
         }
-        totalLength = completeBlocks * BlockLength;
 
-        size_t trailingChars = _range.size() - totalLength;
-        for (size_t i{_range.size() - trailingChars}; i < _range.size(); ++i) {
-            push_back(_range[i]);
+        // last block is not compressed
+        if (completeBlocks*BlockLength < _range.size()) {
+            indicatorBitvector.push_back(0);
+            for (size_t j{0}; j < BlockLength; ++j) {
+                auto k = completeBlocks*BlockLength+j;
+                if (k < _range.size()) {
+                    uncompressedBitvector.push_back(_range[k]);
+                } else {
+                    uncompressedBitvector.push_back(0);
+                }
+            }
         }
+        totalLength = _range.size();
     }
 
     SparseBLEBitvector() = default;
@@ -73,97 +71,63 @@ struct SparseBLEBitvector {
     auto operator=(SparseBLEBitvector const&) -> SparseBLEBitvector& = default;
     auto operator=(SparseBLEBitvector&&) noexcept -> SparseBLEBitvector& = default;
 
-    void push_back(bool _value) {
+/*    void push_back_(bool _value) {
         trailing.push_back(_value);
-        if (trailing.size() == (1<<BlockLengthE)) {
-            bool allTheSame = true;
-            bool first = trailing[0];
+        if (trailing.size() == BlockLength) {
+            bool allZeros = true;
             for (auto v : trailing) {
-                allTheSame &= (first == v);
+                allZeros &= (0 == v);
             }
-            if constexpr (!CompressOnes) {
-                if (first) allTheSame = false; // Don't compress ones
-            } else {
-                if (!first) allTheSame = false; // Don't compress zeros
-            }
-            indicatorBitvector.push_back(allTheSame);
-            if (!allTheSame) {
-                for (size_t j{0}; j < (1<<BlockLengthE); ++j) {
+            indicatorBitvector.push_back(allZeros);
+            if (!allZeros) {
+                for (size_t j{0}; j < BlockLength; ++j) {
                     uncompressedBitvector.push_back(trailing[j]);
                 }
             }
             totalLength += trailing.size();
             trailing.clear();
         }
-    }
+    }*/
 
     size_t size() const noexcept {
-        return totalLength + trailing.size();
+        return totalLength;
     }
 
     bool symbol(size_t idx) const noexcept {
         assert(idx < size());
-        if (idx >= totalLength) {
-            return trailing[idx-totalLength];
-        }
         auto blockId = idx >> BlockLengthE;
-        assert(blockId < indicatorBitvector.size());
 
         // If compressed, must be what ever is compressed
         if (indicatorBitvector.symbol(blockId)) {
-            return CompressOnes;
+            return 0;
         }
 
         auto compBlocks = indicatorBitvector.rank(blockId);
 
-        auto detailSymbId = idx - (compBlocks * (1 << BlockLengthE));
+        auto detailSymbId = idx - (compBlocks * BlockLength);
         return uncompressedBitvector.symbol(detailSymbId);
     }
 
     uint64_t rank(size_t idx) const noexcept {
-        if (idx == 0) return 0;
         assert(idx <= size());
-        if (idx > totalLength) {
-            auto r = uncompressedBitvector.rank(uncompressedBitvector.size());
-            if constexpr (CompressOnes) {
-                auto compBlocks = indicatorBitvector.rank(indicatorBitvector.size());
-                r += (compBlocks * (1 << BlockLengthE));
-            }
-            for (size_t i{0}; i < idx-totalLength; ++i) {
-                r += trailing[i];
-            }
-            assert(r <= idx);
-            return r;
-        }
 
-        auto blockId        = idx >> BlockLengthE;
-        auto compBlocks     = indicatorBitvector.rank(blockId);
+        auto blockId    = idx >> BlockLengthE;
+        auto [ind, compBlocks] = [&]() -> std::tuple<bool, uint64_t> {
+            auto ind        = indicatorBitvector.symbol(blockId);
+            auto compBlocks = indicatorBitvector.rank(blockId);
+            return {ind, compBlocks};
+        }();
 
-        // If perfect multiple of blocks OR target block is compressed
-        if (idx % (1 << BlockLengthE) == 0 || indicatorBitvector.symbol(blockId)) {
-            auto detailedSymbId = ((idx >> BlockLengthE) - compBlocks) << BlockLengthE;
-            auto r = uncompressedBitvector.rank(detailedSymbId);
-
-            if constexpr (CompressOnes) {
-                r += (compBlocks * (1 << BlockLengthE));
-                r += idx % (1 << BlockLengthE);
-            }
-            assert(r <= idx);
-            return r;
-        } else {
-            auto detailedSymbId = idx - (compBlocks * (1 << BlockLengthE));
-            auto r = uncompressedBitvector.rank(detailedSymbId);
-            if constexpr (CompressOnes) {
-                r += (compBlocks * (1 << BlockLengthE));
-            }
-            assert(r <= idx);
-            return r;
-        }
+        // Remove bits in last block, if block is compressed
+        auto detailedSymbId = idx - (idx % BlockLength) * ind - (compBlocks * BlockLength);
+        auto r = uncompressedBitvector.rank(detailedSymbId);
+        assert(r <= idx);
+        return r;
     }
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(indicatorBitvector, uncompressedBitvector, totalLength, trailing);
+        ar(indicatorBitvector, uncompressedBitvector, totalLength);
     }
 };
 static_assert(BitVector_c<SparseBLEBitvector<>>);
