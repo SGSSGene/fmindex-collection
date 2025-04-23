@@ -59,10 +59,17 @@ target_link_libraries(${PROJECT_NAME}
     fmt::fmt
 )
 
+if (FMC_USE_AWFMINDEX)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_AWFMINDEX)
+    target_include_directories(${PROJECT_NAME} PRIVATE "${FMC_AWFMINDEX_PATH}/include")
+    target_link_directories(${PROJECT_NAME} PRIVATE "${FMC_AWFMINDEX_PATH}/lib")
+    target_link_libraries(${PROJECT_NAME} awfmindex_static divsufsort64 fastavector_static)
+endif()
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_link_options(${PROJECT_NAME} PUBLIC /STACK:4194304)
 endif()
-if(FMC_USE_SUX AND FMC_USE_PASTA AND FMC_USE_SDSL)
+if (FMC_USE_SUX AND FMC_USE_PASTA AND FMC_USE_SDSL)
     # bitvector/benchmark requires sux and paste to compile successful
     target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_SUX)
     target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_PASTA)

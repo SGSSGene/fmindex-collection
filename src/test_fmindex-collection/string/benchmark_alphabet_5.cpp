@@ -4,6 +4,14 @@
 
 #include "utils.h"
 
+#ifdef FMC_USE_AWFMINDEX
+    #include "AWFMIndex.h"
+    #define RANKVECTORS ALLRANKVECTORS(5), AWFMIndex
+#else
+    #define RANKVECTORS ALLRANKVECTORS(5)
+#endif
+
+
 TEST_CASE("benchmark strings c'tor operation - 5 alphabet", "[string][!benchmark][5][time][ctor]") {
     auto const& text = generateText<0, 5>();
 
@@ -14,7 +22,7 @@ TEST_CASE("benchmark strings c'tor operation - 5 alphabet", "[string][!benchmark
              .batch(text.size());
 
         call_with_templates<
-            ALLRANKVECTORS(5)>([&]<typename Vector>() {
+            RANKVECTORS>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<5>>) {
                 return;
             }
@@ -40,7 +48,7 @@ TEST_CASE("benchmark vectors symbol() operations - 5 alphabet", "[string][!bench
              .batch(text.size());
 
         call_with_templates<
-            ALLRANKVECTORS(5)>([&]<typename Vector>() {
+            RANKVECTORS>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<5>>) {
                 return;
             }
@@ -69,7 +77,7 @@ TEST_CASE("benchmark vectors rank() operations - 5 alphabet", "[string][!benchma
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(5)>([&]<typename Vector>() {
+            RANKVECTORS>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<5>>) {
                 return;
             }
@@ -98,7 +106,7 @@ TEST_CASE("benchmark vectors prefix_rank() operations - 5 alphabet", "[string][!
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(5)>([&]<typename Vector>() {
+            RANKVECTORS>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<5>>) {
                 return;
             }
@@ -127,7 +135,7 @@ TEST_CASE("benchmark vectors all_ranks() operations - 5 alphabet", "[string][!be
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(5)>([&]<typename Vector>() {
+            RANKVECTORS>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<5>>) {
                 return;
             }
@@ -156,7 +164,7 @@ TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - 5 alphabe
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(5)>([&]<typename Vector>() {
+            RANKVECTORS>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<5>>) {
                 return;
             }
@@ -186,7 +194,7 @@ TEST_CASE("benchmark vectors in size - alphabet 5", "[string][!benchmark][5][siz
         benchSize.entries[0][4] = "alphabet 5";
 
         call_with_templates<
-            ALLRANKVECTORS(5)>([&]<typename Vector>() {
+            RANKVECTORS>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<5>>) {
                 return;
             }
