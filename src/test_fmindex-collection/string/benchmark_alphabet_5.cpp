@@ -6,7 +6,7 @@
 
 #ifdef FMC_USE_AWFMINDEX
     #include "AWFMIndex.h"
-    #define RANKVECTORS ALLRANKVECTORS(5), AWFMIndex
+    #define RANKVECTORS ALLRANKVECTORS(5), AWFMIndex<5>
 #else
     #define RANKVECTORS ALLRANKVECTORS(5)
 #endif
@@ -205,20 +205,22 @@ TEST_CASE("benchmark vectors in size - alphabet 5", "[string][!benchmark][5][siz
             auto rng = ankerl::nanobench::Rng{};
 
             auto vec = Vector{text};
-
-            {
-                auto ofs     = std::stringstream{};
-                auto archive = cereal::BinaryOutputArchive{ofs};
-                archive(vec);
-                auto s = ofs.str().size();
-                benchSize.addEntry({
-                    .name = vector_name,
-                    .size = s,
-                    .text_size = text.size(),
-                    .bits_per_char = (s*8)/double(text.size())
-                });
-            }
-
+            auto size = [&]() {
+                if constexpr (requires() { vec.space_usage(); }) {
+                    return vec.space_usage();
+                } else {
+                    auto ofs     = std::stringstream{};
+                    auto archive = cereal::BinaryOutputArchive{ofs};
+                    archive(vec);
+                    return ofs.str().size();
+                }
+            }();
+            benchSize.addEntry({
+                .name = vector_name,
+                .size = size,
+                .text_size = text.size(),
+                .bits_per_char = (size*8)/double(text.size())
+            });
         });
     }
 }
