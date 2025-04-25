@@ -3,11 +3,18 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "utils.h"
 
+#ifdef FMC_USE_AWFMINDEX
+    #include "AWFMIndex.h"
+    #define RANKVECTORS ALLRANKVECTORS(Sigma), AWFMIndex<Sigma>
+#else
+    #define RANKVECTORS ALLRANKVECTORS(Sigma)
+#endif
+
 TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string][all_sizes]") {
     auto testSigma = []<size_t Sigma>() {
         INFO("Sigma " << Sigma);
         call_with_templates<
-            ALLRANKVECTORS(Sigma)>([&]<typename Vector>() {
+            RANKVECTORS>([&]<typename Vector>() {
             auto vector_name = getName<Vector>();
             INFO(vector_name);
 
@@ -43,7 +50,7 @@ TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string]
         testSigma.operator()<4>();
         testSigma.operator()<5>();
         testSigma.operator()<6>();
-        testSigma.operator()<16>();
+        testSigma.operator()<21>();
         testSigma.operator()<255>();
     }
 
