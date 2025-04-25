@@ -88,3 +88,10 @@ auto generateText() -> std::vector<uint8_t> const& {
     return text;
 }
 }
+
+#ifdef FMC_USE_AWFMINDEX
+    #include "AWFMIndex.h"
+    #define RANKVECTORS(Sigma) ALLRANKVECTORS(Sigma), AWFMIndex<Sigma>
+#else
+    #define RANKVECTORS(Sigma) ALLRANKVECTORS(Sigma)
+#endif

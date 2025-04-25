@@ -5,16 +5,16 @@
 
 #ifdef FMC_USE_AWFMINDEX
     #include "AWFMIndex.h"
-    #define RANKVECTORS ALLRANKVECTORS(Sigma), AWFMIndex<Sigma>
+    #define RANKVECTORS(Sigma) ALLRANKVECTORS(Sigma), AWFMIndex<Sigma>
 #else
-    #define RANKVECTORS ALLRANKVECTORS(Sigma)
+    #define RANKVECTORS(Sigma) ALLRANKVECTORS(Sigma)
 #endif
 
 TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string][all_sizes]") {
     auto testSigma = []<size_t Sigma>() {
         INFO("Sigma " << Sigma);
         call_with_templates<
-            RANKVECTORS>([&]<typename Vector>() {
+            RANKVECTORS(Sigma)>([&]<typename Vector>() {
             auto vector_name = getName<Vector>();
             INFO(vector_name);
 
