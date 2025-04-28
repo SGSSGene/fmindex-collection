@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2025 Simon Gene Gottlieb
+// SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
 #include <fmindex-collection/string/L0L1_NEPRV9.h>
