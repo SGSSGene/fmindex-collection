@@ -287,9 +287,9 @@ struct PairedL0L1_NEPRV9 {
         auto bitId = idx % l1_bits_ct;
         auto l1Id  = idx / l1_bits_ct;
         assert(l1Id < bits.size());
-
         auto symb = bits[l1Id].symbol(bitId);
         assert(symb < Sigma);
+        return symb;
     }
 
     uint64_t rank(uint64_t idx, uint64_t symb) const {
