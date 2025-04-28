@@ -54,16 +54,15 @@ struct SparseBLEBitvector {
             }
         }
 
-        // last block is not compressed
-        if (completeBlocks*BlockLength < _range.size()) {
-            tmpIndicatorBV.push_back(0);
-            for (size_t j{0}; j < BlockLength; ++j) {
-                auto k = completeBlocks*BlockLength+j;
-                if (k < _range.size()) {
-                    tmpUncompressedBV.push_back(_range[k]);
-                } else {
-                    tmpUncompressedBV.push_back(0);
-                }
+        // last block is not compressed, need a last block, even if empty.
+        // required to allow rank(size()) access
+        tmpIndicatorBV.push_back(0);
+        for (size_t j{0}; j < BlockLength; ++j) {
+            auto k = completeBlocks*BlockLength+j;
+            if (k < _range.size()) {
+                tmpUncompressedBV.push_back(_range[k]);
+            } else {
+                tmpUncompressedBV.push_back(0);
             }
         }
 
