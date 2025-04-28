@@ -36,31 +36,39 @@ struct SparseBLEBitvector {
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
     SparseBLEBitvector(range_t&& _range) {
         size_t completeBlocks = _range.size() / BlockLength;
+
+        // Save data in temporary structure
+        auto tmpIndicatorBV = std::vector<bool>{};
+        auto tmpUncompressedBV = std::vector<bool>{};
+
         for (size_t block{0}; block < completeBlocks; ++block) {
             bool allZeros = true;
             for (size_t j{0}; j < BlockLength; ++j) {
                 allZeros &= (0 == _range[block*BlockLength + j]);
             }
-            indicatorBitvector.push_back(allZeros);
+            tmpIndicatorBV.push_back(allZeros);
             if (!allZeros) {
                 for (size_t j{0}; j < BlockLength; ++j) {
-                    uncompressedBitvector.push_back(_range[block*BlockLength+j]);
+                    tmpUncompressedBV.push_back(_range[block*BlockLength+j]);
                 }
             }
         }
 
         // last block is not compressed
         if (completeBlocks*BlockLength < _range.size()) {
-            indicatorBitvector.push_back(0);
+            tmpIndicatorBV.push_back(0);
             for (size_t j{0}; j < BlockLength; ++j) {
                 auto k = completeBlocks*BlockLength+j;
                 if (k < _range.size()) {
-                    uncompressedBitvector.push_back(_range[k]);
+                    tmpUncompressedBV.push_back(_range[k]);
                 } else {
-                    uncompressedBitvector.push_back(0);
+                    tmpUncompressedBV.push_back(0);
                 }
             }
         }
+
+        indicatorBitvector = BV1{tmpIndicatorBV};
+        uncompressedBitvector = BV2{tmpUncompressedBV};
         totalLength = _range.size();
     }
 
@@ -70,24 +78,6 @@ struct SparseBLEBitvector {
 
     auto operator=(SparseBLEBitvector const&) -> SparseBLEBitvector& = default;
     auto operator=(SparseBLEBitvector&&) noexcept -> SparseBLEBitvector& = default;
-
-/*    void push_back_(bool _value) {
-        trailing.push_back(_value);
-        if (trailing.size() == BlockLength) {
-            bool allZeros = true;
-            for (auto v : trailing) {
-                allZeros &= (0 == v);
-            }
-            indicatorBitvector.push_back(allZeros);
-            if (!allZeros) {
-                for (size_t j{0}; j < BlockLength; ++j) {
-                    uncompressedBitvector.push_back(trailing[j]);
-                }
-            }
-            totalLength += trailing.size();
-            trailing.clear();
-        }
-    }*/
 
     size_t size() const noexcept {
         return totalLength;
