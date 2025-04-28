@@ -44,7 +44,7 @@ concept RankVector =
      * \param idx - row index
      * \return - will be in range of [0, Sigma)
      */
-    { t.symbol(idx) } -> std::same_as<SymbolType>;
+    { t.symbol(idx) };// -> std::same_as<SymbolType>;
 
     /* Return the numbers of symbols at a certain row + all symbols smaller over all rows
      *

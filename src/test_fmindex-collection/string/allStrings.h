@@ -29,3 +29,11 @@
 #else
 #define ALLRANKVECTORS(Sigma) ALLRANKVECTORS_IMPL(Sigma)
 #endif
+
+#define ALLLARGERANKVECTORS(Sigma) \
+    fmindex_collection::string::L0L1_NEPRV9_64_64k<Sigma>, \
+    fmindex_collection::string::L0L1_NEPRV9_512_64k<Sigma>, \
+    fmindex_collection::string::L0L1_NEPRV9_4096_64k<Sigma>, \
+    fmindex_collection::string::PairedL0L1_NEPRV9_64_64k<Sigma>, \
+    fmindex_collection::string::PairedL0L1_NEPRV9_512_64k<Sigma>, \
+    fmindex_collection::string::PairedL0L1_NEPRV9_4096_64k<Sigma>

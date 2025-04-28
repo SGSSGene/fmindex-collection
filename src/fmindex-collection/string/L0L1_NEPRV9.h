@@ -39,23 +39,26 @@ struct L0L1_NEPRV9 {
     struct alignas(AlignV) InBits {
         std::array<std::bitset<l1_bits_ct>, bitct> bits;
 
-        uint8_t symbol(uint64_t idx) const {
+        uint64_t symbol(uint64_t idx) const {
             assert(idx < l1_bits_ct);
-            uint8_t symb{};
+            uint64_t symb{};
             for (uint64_t i{bitct}; i > 0; --i) {
                 auto b = bits[i-1].test(idx);
                 symb = (symb<<1) | b;
             }
+            assert(symb < Sigma);
             return symb;
         }
 
-        uint64_t rank(uint64_t idx, uint8_t symb) const {
+        uint64_t rank(uint64_t idx, uint64_t symb) const {
+            assert(symb < Sigma);
             assert(idx <= l1_bits_ct);
             auto v = neprv8_detail::rank(bits, symb);
             return lshift_and_count(v, l1_bits_ct-idx);
         }
 
         uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
+            assert(symb < Sigma);
             assert(idx <= l1_bits_ct);
             auto v = neprv8_detail::prefix_rank(bits, symb);
             return lshift_and_count(v, l1_bits_ct-idx);
@@ -73,7 +76,7 @@ struct L0L1_NEPRV9 {
             }
             return v;
         }
-        void setSymbol(size_t i, uint8_t symb) {
+        void setSymbol(size_t i, uint64_t symb) {
             assert(i <= l1_bits_ct);
             assert(symb < TSigma);
             for (size_t j{0}; j < bitct; ++j) {
@@ -163,21 +166,84 @@ struct L0L1_NEPRV9 {
         }
     }
 
+    L0L1_NEPRV9(std::span<uint64_t const> _symbols) {
+        auto const _length = _symbols.size();
+        bits.reserve(_length/l1_bits_ct + 2);
+        if (_length == 0) return;
+
+        // fill all inbits
+        for (auto c : _symbols) {
+            auto bitId         = totalLength % l1_bits_ct;
+            bits.back().setSymbol(bitId, c);
+
+            totalLength += 1;
+            if (totalLength % l1_bits_ct == 0) { // next bit will require a new in-bits block
+                bits.emplace_back();
+            }
+        }
+
+        // fill l0/l1 structure
+        {
+            size_t l0BlockCt = (totalLength / l0_bits_ct) + 1;
+            size_t l1BlockCt = l0BlockCt * (l0_bits_ct / l1_bits_ct);
+            size_t inbitsCt  = l0BlockCt * ((l0_bits_ct) / l1_bits_ct);
+
+            l0.resize(l0BlockCt);
+            l1.resize(l1BlockCt);
+            bits.resize(inbitsCt);
+
+            constexpr size_t b1 = l1_bits_ct;
+            constexpr size_t b0 = l0_bits_ct;
+
+            constexpr size_t l1_block_ct = b0 / b1;
+
+
+            BlockL0 l0_acc{};
+            // walk through all superblocks
+            for (size_t l0I{0}; l0I < l0BlockCt; ++l0I) {
+                // update l0
+                l0[l0I] = l0_acc;
+
+                // right part
+                BlockL1 acc{};
+                for (size_t i{0}; i < l1_block_ct; ++i) {
+                    auto idx = l0I*l1_block_ct + i;
+                    l1[idx] = acc;
+                    auto& b = bits[l0I*l1_block_ct + i];
+
+                    auto counts = b.all_ranks(l1_bits_ct);
+
+                    for (size_t symb{0}; symb < TSigma; ++symb) {
+                        acc[symb] += counts[symb];
+                    }
+                }
+
+                for (size_t symb{0}; symb < TSigma; ++symb) {
+                    l0_acc[symb] += acc[symb];
+                }
+            }
+        }
+    }
+
+
     size_t size() const {
         return totalLength;
     }
 
-    uint8_t symbol(uint64_t idx) const {
+    uint64_t symbol(uint64_t idx) const {
         assert(idx < totalLength);
         auto bitId = idx % l1_bits_ct;
         auto l1Id  = idx / l1_bits_ct;
         assert(l1Id < bits.size());
 
-        return bits[l1Id].symbol(bitId);
+        auto symb = bits[l1Id].symbol(bitId);
+        assert(symb < Sigma);
+        return symb;
     }
 
-    uint64_t rank(uint64_t idx, uint8_t symb) const {
+    uint64_t rank(uint64_t idx, uint64_t symb) const {
         assert(idx <= totalLength);
+        assert(symb < Sigma);
         auto bitId = idx % (l1_bits_ct);
         auto l1Id = idx / l1_bits_ct;
         auto l0Id = idx / l0_bits_ct;
@@ -191,8 +257,9 @@ struct L0L1_NEPRV9 {
         return r;
     }
 
-    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+    uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
         assert(idx <= totalLength);
+        assert(symb < Sigma);
         auto bitId = idx % (l1_bits_ct);
         auto l1Id = idx / l1_bits_ct;
         auto l0Id = idx / l0_bits_ct;
@@ -251,6 +318,7 @@ template <size_t Sigma> using L0L1_NEPRV9_256_64k  = L0L1_NEPRV9<Sigma, 256, 655
 template <size_t Sigma> using L0L1_NEPRV9_512_64k  = L0L1_NEPRV9<Sigma, 512, 65536>;
 template <size_t Sigma> using L0L1_NEPRV9_1024_64k = L0L1_NEPRV9<Sigma, 1024, 65536>;
 template <size_t Sigma> using L0L1_NEPRV9_2048_64k = L0L1_NEPRV9<Sigma, 2048, 65536>;
+template <size_t Sigma> using L0L1_NEPRV9_4096_64k = L0L1_NEPRV9<Sigma, 4096, 65536>;
 
 static_assert(checkRankVector<L0L1_NEPRV9_64_64k>);
 static_assert(checkRankVector<L0L1_NEPRV9_128_64k>);
@@ -258,6 +326,7 @@ static_assert(checkRankVector<L0L1_NEPRV9_256_64k>);
 static_assert(checkRankVector<L0L1_NEPRV9_512_64k>);
 static_assert(checkRankVector<L0L1_NEPRV9_1024_64k>);
 static_assert(checkRankVector<L0L1_NEPRV9_2048_64k>);
+static_assert(checkRankVector<L0L1_NEPRV9_4096_64k>);
 
 template <size_t Sigma> using L0L1_NEPRV9_64_64kUA   = L0L1_NEPRV9<Sigma, 64, 65536, false>;
 template <size_t Sigma> using L0L1_NEPRV9_128_64kUA  = L0L1_NEPRV9<Sigma, 128, 65536, false>;
@@ -265,6 +334,7 @@ template <size_t Sigma> using L0L1_NEPRV9_256_64kUA  = L0L1_NEPRV9<Sigma, 256, 6
 template <size_t Sigma> using L0L1_NEPRV9_512_64kUA  = L0L1_NEPRV9<Sigma, 512, 65536, false>;
 template <size_t Sigma> using L0L1_NEPRV9_1024_64kUA = L0L1_NEPRV9<Sigma, 1024, 65536, false>;
 template <size_t Sigma> using L0L1_NEPRV9_2048_64kUA = L0L1_NEPRV9<Sigma, 2048, 65536, false>;
+template <size_t Sigma> using L0L1_NEPRV9_4096_64kUA = L0L1_NEPRV9<Sigma, 4096, 65536, false>;
 
 static_assert(checkRankVector<L0L1_NEPRV9_64_64kUA>);
 static_assert(checkRankVector<L0L1_NEPRV9_128_64kUA>);
@@ -272,5 +342,6 @@ static_assert(checkRankVector<L0L1_NEPRV9_256_64kUA>);
 static_assert(checkRankVector<L0L1_NEPRV9_512_64kUA>);
 static_assert(checkRankVector<L0L1_NEPRV9_1024_64kUA>);
 static_assert(checkRankVector<L0L1_NEPRV9_2048_64kUA>);
+static_assert(checkRankVector<L0L1_NEPRV9_4096_64kUA>);
 
 }
