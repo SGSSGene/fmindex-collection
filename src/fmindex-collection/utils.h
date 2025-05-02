@@ -183,13 +183,7 @@ auto createSequences(Sequences auto const& _input, bool reverse=false) -> std::t
         if (not reverse) {
             inputText.insert(inputText.end(), begin(l), end(l));
         } else {
-//!TODO hack for clang, broken in clang 15
-#if __clang__
-            auto l2 = std::vector<uint8_t>(l);
-            std::ranges::reverse(l2);
-#else
             auto l2 = std::views::reverse(l);
-#endif
             inputText.insert(inputText.end(), begin(l2), end(l2));
         }
 
