@@ -90,7 +90,8 @@ int main(int argc, char const* const* argv) {
         fmt::print("start loading {} ...", name);
         fflush(stdout);
         size_t samplingRate = 16;
-        auto index = loadDenseIndex<CSA, Table>(config.indexPath, samplingRate, config.threads, config.partialBuildUp, config.convertUnknownChar);
+        using Vector = fmindex_collection::string::InterleavedBitvector16<Table::Sigma>;
+        auto index = loadDenseIndex<CSA, Vector>(config.indexPath, samplingRate, config.threads, config.partialBuildUp, config.convertUnknownChar);
         fmt::print("done\n");
         for (auto const& algorithm : config.algorithms) {
             fmt::print("using algorithm {}\n", algorithm);

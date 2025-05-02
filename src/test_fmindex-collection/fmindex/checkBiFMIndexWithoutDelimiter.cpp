@@ -1,14 +1,14 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../occtables/allTables.h"
+#include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/BiFMIndex.h>
 #include <fmindex-collection/fmindex/BiFMIndexCursor.h>
 #include <fstream>
 
-TEMPLATE_TEST_CASE("checking bidirectional fm index without delimiters", "[BiFMIndex-nd]", ALLTABLES) {
+TEMPLATE_TEST_CASE("checking bidirectional fm index without delimiters", "[BiFMIndex-nd]", ALLRANKVECTORS(255)) {
     using OccTable = TestType;
 
     auto input = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{1, 2, 0}};

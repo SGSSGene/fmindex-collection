@@ -41,16 +41,17 @@ struct BiFMIndexCursor {
         return len;
     }
     auto extendLeft() const -> std::array<BiFMIndexCursor, Sigma> {
-        auto const& occ = index->occ;
-        if constexpr (OccTablePrefetch<Index>) {
-            occ.prefetch(lb+len);
+        auto const& bwt = index->bwt;
+        auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lb);
+        auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lb+len);
+
+        for (size_t i{0}; i < rs1.size(); ++i) {
+            rs1[i] += index->C[i];
+            rs2[i] += index->C[i];
         }
-        auto [rs1, prs1] = occ.all_ranks(lb);
-        auto [rs2, prs2] = occ.all_ranks(lb+len);
 
         auto cursors = std::array<BiFMIndexCursor, Sigma>{};
         cursors[0] = BiFMIndexCursor{*index, rs1[0], lbRev, rs2[0] - rs1[0]};
-        cursors[0].prefetchLeft();
         for (size_t i{1}; i < Sigma; ++i) {
             cursors[i] = BiFMIndexCursor{*index, rs1[i], lbRev + prs2[i-1] - prs1[i-1], rs2[i] - rs1[i]};
         }
@@ -58,58 +59,57 @@ struct BiFMIndexCursor {
     }
 
     auto extendRight() const -> std::array<BiFMIndexCursor, Sigma> {
-        auto const& occ = index->occRev;
-        if constexpr (OccTablePrefetch<Index>) {
-            occ.prefetch(lbRev+len);
+        auto const& bwt = index->bwtRev;
+        auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lbRev);
+        auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lbRev+len);
+
+        for (size_t i{0}; i < rs1.size(); ++i) {
+            rs1[i] += index->C[i];
+            rs2[i] += index->C[i];
         }
-        auto [rs1, prs1] = occ.all_ranks(lbRev);
-        auto [rs2, prs2] = occ.all_ranks(lbRev+len);
 
         auto cursors = std::array<BiFMIndexCursor, Sigma>{};
         cursors[0] = BiFMIndexCursor{*index, lb, rs1[0], rs2[0] - rs1[0]};
-        cursors[0].prefetchRight();
         for (size_t i{1}; i < Sigma; ++i) {
             cursors[i] = BiFMIndexCursor{*index, lb + prs2[i-1] - prs1[i-1], rs1[i], rs2[i] - rs1[i]};
         }
         return cursors;
     }
     void prefetchLeft() const {
-        if constexpr (OccTablePrefetch<Index>) {
+/*        if constexpr (OccTablePrefetch<Index>) {
             auto& occ = index->occ;
             occ.prefetch(lb);
             occ.prefetch(lb+len);
-        }
+        }*/
     }
     void prefetchRight() const {
-        if constexpr (OccTablePrefetch<Index>) {
+/*        if constexpr (OccTablePrefetch<Index>) {
             auto& occ = index->occRev;
             occ.prefetch(lbRev);
             occ.prefetch(lbRev+len);
-        }
+        }*/
     }
 
     auto extendLeft(size_t symb) const -> BiFMIndexCursor {
-        auto& occ = index->occ;
-        size_t newLb    = occ.rank(lb, symb);
+        auto& bwt = index->bwt;
+        size_t newLb    = bwt.rank(lb, symb);
         size_t newLbRev = lbRev + [&]() -> size_t {
             if (symb == 0) return {};
-            return occ.prefix_rank(lb+len, symb-1) - occ.prefix_rank(lb, symb-1);
+            return bwt.prefix_rank(lb+len, symb-1) - bwt.prefix_rank(lb, symb-1);
         }();
-        size_t newLen   = occ.rank(lb+len, symb) - newLb;
-        auto newCursor = BiFMIndexCursor{*index, newLb, newLbRev, newLen};
-        newCursor.prefetchLeft();
+        size_t newLen   = bwt.rank(lb+len, symb) - newLb;
+        auto newCursor = BiFMIndexCursor{*index, newLb + index->C[symb], newLbRev, newLen};
         return newCursor;
     }
     auto extendRight(size_t symb) const -> BiFMIndexCursor {
-        auto& occ = index->occRev;
+        auto& bwt = index->bwtRev;
         size_t newLb    = lb + [&]() -> size_t {
             if (symb == 0) return {};
-            return occ.prefix_rank(lbRev+len, symb-1) - occ.prefix_rank(lbRev, symb-1);
+            return bwt.prefix_rank(lbRev+len, symb-1) - bwt.prefix_rank(lbRev, symb-1);
         }();
-        size_t newLbRev = occ.rank(lbRev, symb);
-        size_t newLen   = occ.rank(lbRev+len, symb) - newLbRev;
-        auto newCursor = BiFMIndexCursor{*index, newLb, newLbRev, newLen};
-        newCursor.prefetchRight();
+        size_t newLbRev = bwt.rank(lbRev, symb);
+        size_t newLen   = bwt.rank(lbRev+len, symb) - newLbRev;
+        auto newCursor = BiFMIndexCursor{*index, newLb, newLbRev + index->C[symb], newLen};
         return newCursor;
     }
 };
@@ -154,30 +154,29 @@ struct LeftBiFMIndexCursor {
         return len;
     }
     auto extendLeft() const -> std::array<LeftBiFMIndexCursor, Sigma> {
-        auto const& occ = index->occ;
-        auto [rs1, prs1] = occ.all_ranks(lb);
-        auto [rs2, prs2] = occ.all_ranks(lb+len);
+        auto const& bwt = index->bwt;
+        auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lb);
+        auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lb+len);
+
+        for (size_t i{0}; i < rs1.size(); ++i) {
+            rs1[i] += index->C[i];
+            rs2[i] += index->C[i];
+        }
 
         auto cursors = std::array<LeftBiFMIndexCursor, Sigma>{};
         cursors[0] = LeftBiFMIndexCursor{*index, rs1[0], rs2[0] - rs1[0]};
         for (size_t i{1}; i < Sigma; ++i) {
             cursors[i] = LeftBiFMIndexCursor{*index, rs1[i], rs2[i] - rs1[i]};
-//            cursors[i].prefetchLeft();
         }
         return cursors;
     }
 
     auto extendLeft(size_t symb) const -> LeftBiFMIndexCursor {
-        auto& occ = index->occ;
+        auto& bwt = index->bwt;
 
-        size_t newLb    = occ.rank(lb, symb);
-        size_t newLen   = occ.rank(lb+len, symb) - newLb;
-        if constexpr (OccTablePrefetch<Index>) {
-            occ.prefetch(newLb);
-            occ.prefetch(newLb + newLen);
-        }
-
-        auto newCursor = LeftBiFMIndexCursor{*index, newLb, newLen};
+        size_t newLb    = bwt.rank(lb, symb);
+        size_t newLen   = bwt.rank(lb+len, symb) - newLb;
+        auto newCursor = LeftBiFMIndexCursor{*index, newLb + index->C[symb], newLen};
         return newCursor;
     }
 };

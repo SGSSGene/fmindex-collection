@@ -138,8 +138,8 @@ auto merge(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const& ind
 }
 
 
-template <typename Res = void, typename OccLhs, typename OccRhs, typename TCSA>
-auto mergeImpl(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> const& index2, size_t seqOffset1, size_t seqOffset2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
+template <typename Res = void, typename StrLhs, typename StrRhs, typename TCSA>
+auto mergeImpl(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> const& index2, size_t seqOffset1, size_t seqOffset2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, StrLhs, Res>, TCSA> {
     auto csa = TCSA::createJoinedCSA(index1.csa, index2.csa);
 
     // Interleave BWT->R and SA->ssa
@@ -148,7 +148,7 @@ auto mergeImpl(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> co
 
     // compute normal forward bwt
     {
-        auto R = computeInterleavingR(index1.occ, index2.occ);
+        auto R = computeInterleavingR(index1.bwt, index1.C, index2.bwt, index2.C);
         auto addSSAEntry = [&csa](auto const& index, size_t idx, size_t seqOffset) {
             auto loc = index.csa.value(idx);
             if (loc) {
@@ -161,13 +161,13 @@ auto mergeImpl(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> co
         size_t idx1{}, idx2{};
         for (bool v : R) {
             if (!v) {
-                assert(idx1 < index1.occ.size());
-                mergedBWT.push_back(index1.occ.symbol(idx1));
+                assert(idx1 < index1.bwt.size());
+                mergedBWT.push_back(index1.bwt.symbol(idx1));
                 addSSAEntry(index1, idx1, seqOffset1);
                 idx1 += 1;
             } else {
-                assert(idx2 < index2.occ.size());
-                mergedBWT.push_back(index2.occ.symbol(idx2));
+                assert(idx2 < index2.bwt.size());
+                mergedBWT.push_back(index2.bwt.symbol(idx2));
                 addSSAEntry(index2, idx2, seqOffset2);
                 idx2 += 1;
             }
@@ -180,16 +180,16 @@ auto mergeImpl(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> co
 
     // compute reversed bwt
     {
-        auto R = computeInterleavingR(index1.occRev, index2.occRev);
+        auto R = computeInterleavingR(index1.bwtRev, index1.C, index2.bwtRev, index2.C);
         size_t idx1{}, idx2{};
         for (bool v : R) {
             if (!v) {
-                assert(idx1 < index1.occRev.size());
-                mergedBWTRev.push_back(index1.occRev.symbol(idx1));
+                assert(idx1 < index1.bwtRev.size());
+                mergedBWTRev.push_back(index1.bwtRev.symbol(idx1));
                 idx1 += 1;
             } else {
                 assert(idx2 < index2.occRev.size());
-                mergedBWTRev.push_back(index2.occRev.symbol(idx2));
+                mergedBWTRev.push_back(index2.bwtRev.symbol(idx2));
                 idx2 += 1;
             }
         }
@@ -198,10 +198,10 @@ auto mergeImpl(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> co
     return {mergedBWT, mergedBWTRev, std::move(csa)};
 }
 
-template <typename Res = void, typename OccLhs, typename OccRhs, typename TCSA>
-auto merge(BiFMIndex<OccLhs, TCSA> const& index1, BiFMIndex<OccRhs, TCSA> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
+template <typename Res = void, typename StrLhs, typename StrRhs, typename TCSA>
+auto merge(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, StrLhs, Res>, TCSA> {
 //    if (index1.size() >= index2.size()) {
-        return mergeImpl(index1, index2, 0, index1.occ.rank(index1.size(), 0));
+        return mergeImpl(index1, index2, 0, index1.bwt.rank(index1.size(), 0) + index1.C[0]);
 //    }
 //    return mergeImpl(index2, index1, index2.occ.rank(index2.size(), 0), 0);
 }

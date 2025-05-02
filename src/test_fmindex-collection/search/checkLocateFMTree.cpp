@@ -5,14 +5,14 @@
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/BiFMIndex.h>
 #include <fmindex-collection/locate.h>
-#include <fmindex-collection/occtable/all.h>
+#include <fmindex-collection/string/all.h>
 #include <fmindex-collection/search/all.h>
 #include <fmindex-collection/search_scheme/generator/all.h>
 #include <fmindex-collection/search_scheme/expand.h>
 
 
 TEST_CASE("locating using LocateFMTree", "[locate][fmtree]") {
-    using OccTable = fmindex_collection::occtable::EprV2_16<256>;
+    using OccTable = fmindex_collection::string::InterleavedBitvector16<256>;
     using Index = fmindex_collection::BiFMIndex<OccTable>;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'B', 'A', 'A', 'A'},

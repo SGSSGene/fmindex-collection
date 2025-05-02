@@ -145,7 +145,9 @@ auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr, bool con
 template <typename CSA, typename Table>
 auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, bool partialBuildUp, bool convertUnknownChar) {
     auto sw = StopWatch{};
-    auto indexPath = path + "." + Table::extension() + ".dense.index";
+//    auto indexPath = path + "." + Table::extension() + ".dense.index";
+    auto indexPath = path + ".tab.dense.index";
+
     if (!std::filesystem::exists(indexPath)) {
         auto [ref, refInfo] = loadQueries<Table::Sigma>(path, false, convertUnknownChar);
         using Index = fmindex_collection::BiFMIndex<Table, fmindex_collection::DenseCSA>;

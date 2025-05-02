@@ -81,7 +81,8 @@ struct LocateFMTree {
                     auto opt = index.single_locate_step(idx);
                     uint64_t steps{};
                     for (;!opt && maxSteps > 0; --maxSteps) {
-                        idx = index.occ.rank(idx, index.occ.symbol(idx));
+                        auto symb = index.bwt.symbol(idx);
+                        idx = index.bwt.rank(idx, symb) + index.C[symb];
                         steps += 1;
                         opt = index.single_locate_step(idx);
                     }
@@ -143,7 +144,8 @@ void locateFMTree(index_t const& index, cursor_t cursor, CB const& cb, size_t sa
             auto opt = index.single_locate_step(idx);
             uint64_t steps{};
             for (;!opt && maxSteps > 0; --maxSteps) {
-                idx = index.occ.rank(idx, index.occ.symbol(idx));
+                auto symb = index.bwt.symbol(idx);
+                idx = index.bwt.rank(idx, symb) + index.C[symb];
                 steps += 1;
                 opt = index.single_locate_step(idx);
             }
