@@ -4,17 +4,17 @@
 #include "../occtables/allTables.h"
 
 #include <catch2/catch_all.hpp>
-#include <fmindex-collection/fmindex/RBiFMIndex.h>
-#include <fmindex-collection/fmindex/RBiFMIndexCursor.h>
+#include <fmindex-collection/fmindex/MirroredBiFMIndex.h>
+#include <fmindex-collection/fmindex/MirroredBiFMIndexCursor.h>
 
-TEST_CASE("checking biidirectional fm index left cursor", "[LeftRBiFMIndexCursor]") {
+TEST_CASE("checking biidirectional fm index left cursor", "[LeftMirroredBiFMIndexCursor]") {
 
     auto data = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 2, 2}};
     using OccTable = fmindex_collection::occtable::Bitvector<256>;
-    using Index = fmindex_collection::RBiFMIndex<OccTable>;
+    using Index = fmindex_collection::MirroredBiFMIndex<OccTable>;
     auto index = Index{data, 1, 1};
 
-    auto cursor = fmindex_collection::LeftRBiFMIndexCursor{index};
+    auto cursor = fmindex_collection::LeftMirroredBiFMIndexCursor{index};
     REQUIRE(cursor.count() == index.size());
     REQUIRE(!cursor.empty());
     REQUIRE(cursor.lb == 0);

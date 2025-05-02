@@ -12,14 +12,14 @@
 namespace fmindex_collection {
 
 template <OccTable Table, SuffixArray_c TCSA = CSA>
-struct RBiFMIndex {
+struct MirroredBiFMIndex {
     static size_t constexpr Sigma = Table::Sigma;
 
     Table  occ;
     TCSA   csa;
 
-    RBiFMIndex() = default;
-    RBiFMIndex(std::span<uint8_t const> bwt, TCSA _csa)
+    MirroredBiFMIndex() = default;
+    MirroredBiFMIndex(std::span<uint8_t const> bwt, TCSA _csa)
         : occ{bwt}
         , csa{std::move(_csa)}
     {
@@ -51,12 +51,12 @@ struct RBiFMIndex {
         }
     }
 
-    /**!\brief Creates a RBiFMIndex with a specified sampling rate
+    /**!\brief Creates a MirroredBiFMIndex with a specified sampling rate
      *
      * \param _input a list of sequences
      * \param samplingRate rate of the sampling
      */
-    RBiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
+    MirroredBiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
         auto [totalSize, inputText, inputSizes] = createSequencesAndReverse(_input);
 
         // Check only valid characters are used
@@ -77,7 +77,7 @@ struct RBiFMIndex {
 
         decltype(inputText){}.swap(inputText); // inputText memory can be deleted
 
-        *this = RBiFMIndex{bwt, std::move(csa)};
+        *this = MirroredBiFMIndex{bwt, std::move(csa)};
     }
 
     size_t memoryUsage() const requires OccTableMemoryUsage<Table> {

@@ -19,10 +19,10 @@ add_executable(${PROJECT_NAME}
     fmindex/checkFMIndex.cpp
     fmindex/checkFMIndexCursor.cpp
     fmindex/checkLeftBiFMIndexCursor.cpp
-    fmindex/checkLeftRBiFMIndexCursor.cpp
+    fmindex/checkLeftMirroredBiFMIndexCursor.cpp
     fmindex/checkMerge.cpp
-    fmindex/checkRBiFMIndex.cpp
-    fmindex/checkRBiFMIndexCursor.cpp
+    fmindex/checkMirroredBiFMIndex.cpp
+    fmindex/checkMirroredBiFMIndexCursor.cpp
     fmindex/checkReverseFMIndex.cpp
     fmindex/checkReverseFMIndexCursor.cpp
     occtables/checkOccTables.cpp
