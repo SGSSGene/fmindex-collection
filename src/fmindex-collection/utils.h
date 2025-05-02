@@ -447,8 +447,8 @@ auto reconstructText(Index const& index, size_t seqNbr) -> std::vector<uint8_t> 
     uint8_t c{};
     size_t idx = seqNbr;
     do {
-        c = index.occ.symbol(idx);
-        idx = index.occ.rank(idx, c);
+        c = index.bwt.symbol(idx);
+        idx = index.bwt.rank(idx, c) + index.C[c];
         r.push_back(c);
     } while (c != 0);
     r.pop_back(); // remove last zero
@@ -458,7 +458,7 @@ auto reconstructText(Index const& index, size_t seqNbr) -> std::vector<uint8_t> 
 
 template <typename Index>
 auto reconstructText(Index const& index) -> std::vector<std::vector<uint8_t>> {
-    auto nbrOfSeq = index.occ.rank(index.size(), 0);
+    auto nbrOfSeq = index.bwt.rank(index.size(), 0) + index.C[0];
     auto texts = std::vector<std::vector<uint8_t>>{};
     auto seqIds = std::vector<std::tuple<size_t, size_t>>{};
     for (size_t i{}; i < nbrOfSeq; ++i) {

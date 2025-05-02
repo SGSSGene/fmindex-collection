@@ -1,13 +1,13 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../occtables/allTables.h"
+#include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/FMIndex.h>
 #include <fstream>
 
-TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLTABLES) {
+TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLRANKVECTORS(255)) {
     using OccTable = TestType;
 
     auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};

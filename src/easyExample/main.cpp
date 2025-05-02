@@ -20,6 +20,10 @@ constexpr size_t Sigma = 5;
 template <size_t Sigma>
 using Table = occtable::Interleaved_16<Sigma>;
 
+template <size_t Sigma>
+using String = string::InterleavedBitvector16<Sigma>;
+
+
 template <typename Index>
 void saveIndex(Index const& _index, std::filesystem::path _fileName) {
     auto ofs     = std::ofstream(_fileName, std::ios::binary);
@@ -57,7 +61,7 @@ int main(int argc, char const* const* argv) {
     }
     {
         std::cout << "\nFMIndex:\n";
-        auto index = FMIndex<Table<Sigma>>{reference, /*samplingRate*/16, /*threadNbr*/1};
+        auto index = FMIndex<String<Sigma>>{reference, /*samplingRate*/16, /*threadNbr*/1};
         auto queries = std::vector<std::vector<uint8_t>>{{1, 3}, {4, 2}};
 
         search_backtracking::search(index, queries, 0, [&](size_t queryId, auto cursor, size_t errors) {

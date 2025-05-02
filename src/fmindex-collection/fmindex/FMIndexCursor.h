@@ -31,13 +31,18 @@ struct FMIndexCursor {
     {}
 
     auto extendLeft(uint8_t symb) const -> FMIndexCursor {
-        size_t newLb  = index->occ.rank(lb, symb);
-        size_t newLen = index->occ.rank(lb+len, symb) - newLb;
-        return {*index, newLb, newLen};
+        size_t newLb  = index->bwt.rank(lb, symb);
+        size_t newLen = index->bwt.rank(lb+len, symb) - newLb;
+        return {*index, newLb + index->C[symb], newLen};
     }
     auto extendLeft() const -> std::array<FMIndexCursor, Sigma> {
-        auto [rs1, prs1] = index->occ.all_ranks(lb);
-        auto [rs2, prs2] = index->occ.all_ranks(lb+len);
+        auto [rs1, prs1] = index->bwt.all_ranks_and_prefix_ranks(lb);
+        auto [rs2, prs2] = index->bwt.all_ranks_and_prefix_ranks(lb+len);
+
+        for (size_t i{0}; i < rs1.size(); ++i) {
+            rs1[i] += index->C[i];
+            rs2[i] += index->C[i];
+        }
 
         auto cursors = std::array<FMIndexCursor, Sigma>{};
         cursors[0] = FMIndexCursor{*index, rs1[0], rs2[0] - rs1[0]};

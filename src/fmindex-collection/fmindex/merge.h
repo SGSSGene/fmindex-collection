@@ -48,11 +48,47 @@ auto computeInterleavingR(OccLhs const& lhsOcc, OccRhs const& rhsOcc) -> std::ve
     return R;
 }
 
+/**
+ * creates the R array for interleaving FM-Indices
+ */
+template <typename StringLhs, typename StringRhs, typename value_t = size_t>
+auto computeInterleavingR(StringLhs const& lhsStr, std::array<size_t, StringLhs::Sigma+1> const& lhsC, StringRhs const& rhsStr, std::array<size_t, StringRhs::Sigma+1> const& rhsC) -> std::vector<bool> {
+    if (rhsStr.size() > std::numeric_limits<value_t>::max()) {
+        throw std::runtime_error{"Can not create interleaving R for this value type, index to large"};
+    }
+
+    auto R = std::vector<bool>{};
+    R.resize(lhsStr.size() + rhsStr.size(), false);
+
+    auto nbrOfSeqRhs = rhsStr.rank(rhsStr.size(), 0);
+    for (size_t n{}; n < nbrOfSeqRhs; ++n) {
+        size_t idx1{};
+        size_t idx2{n};
+        uint8_t c{};
+        do {
+            assert(idx1 + idx2 < R.size());
+            assert(R[idx1 + idx2] == false);
+            R[idx1 + idx2] = true;
+            c = rhsStr.symbol(idx2);
+            idx1 = lhsStr.rank(idx1, c) + lhsC[c];
+            idx2 = rhsStr.rank(idx2, c) + rhsC[c];
+        } while(c != 0);
+    }
+    assert([&]() {
+        size_t a{};
+        for (auto b : R) {
+            a += b;
+        }
+        return a;
+    }() == rhsStr.size());
+    return R;
+}
+
 
 
 template <typename Res = void, typename OccLhs, typename OccRhs, typename TCSA>
 auto mergeImpl(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const& index2, size_t seqOffset1, size_t seqOffset2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
-    auto R = computeInterleavingR(index1.occ, index2.occ);
+    auto R = computeInterleavingR(index1.bwt, index1.C, index2.bwt, index2.C);
 
     // Interleave BWT->R and SA->ssa
     auto mergedBWT = std::vector<uint8_t>{};
@@ -76,13 +112,13 @@ auto mergeImpl(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const&
     size_t idx1{}, idx2{};
     for (bool v : R) {
         if (!v) {
-            assert(idx1 < index1.occ.size());
-            mergedBWT.push_back(index1.occ.symbol(idx1));
+            assert(idx1 < index1.size());
+            mergedBWT.push_back(index1.bwt.symbol(idx1));
             addSSAEntry(index1, idx1, seqOffset1);
             idx1 += 1;
         } else {
-            assert(idx2 < index2.occ.size());
-            mergedBWT.push_back(index2.occ.symbol(idx2));
+            assert(idx2 < index2.size());
+            mergedBWT.push_back(index2.bwt.symbol(idx2));
             addSSAEntry(index2, idx2, seqOffset2);
             idx2 += 1;
         }
@@ -95,7 +131,8 @@ auto mergeImpl(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const&
 template <typename Res = void, typename OccLhs, typename OccRhs, typename TCSA>
 auto merge(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const& index2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
 //    if (index1.size() >= index2.size()) {
-        return mergeImpl<Res>(index1, index2, 0, index1.occ.rank(index1.size(), 0));
+        auto r = index1.bwt.rank(index1.size(), 0) + index1.C[0];
+        return mergeImpl<Res>(index1, index2, 0, r);
 //    }
 //    return mergeImpl<Res>(index2, index1, index2.occ.rank(index2.size(), 0), 0);
 }
