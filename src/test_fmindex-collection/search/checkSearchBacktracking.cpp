@@ -197,7 +197,7 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[
     }
 }
 
-TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]", ALLTABLES) {
+TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]", ALLRANKVECTORS(255)) {
     using OccTable = TestType;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
@@ -206,18 +206,18 @@ TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]"
 
     SECTION("check symbol call to occurrence table") {
         REQUIRE(input.size()+1 == index.size());
-        CHECK(index.occ.symbol( 0) == 'A');
-        CHECK(index.occ.symbol( 1) == 'A');
-        CHECK(index.occ.symbol( 2) == 'A');
-        CHECK(index.occ.symbol( 3) == 'C');
-        CHECK(index.occ.symbol( 4) == 'C');
-        CHECK(index.occ.symbol( 5) == '\0');
-        CHECK(index.occ.symbol( 6) == 'A');
-        CHECK(index.occ.symbol( 7) == 'A');
-        CHECK(index.occ.symbol( 8) == 'A');
-        CHECK(index.occ.symbol( 9) == 'A');
-        CHECK(index.occ.symbol(10) == 'A');
-        CHECK(index.occ.symbol(11) == 'A');
+        CHECK(index.bwt.symbol( 0) == 'A');
+        CHECK(index.bwt.symbol( 1) == 'A');
+        CHECK(index.bwt.symbol( 2) == 'A');
+        CHECK(index.bwt.symbol( 3) == 'C');
+        CHECK(index.bwt.symbol( 4) == 'C');
+        CHECK(index.bwt.symbol( 5) == '\0');
+        CHECK(index.bwt.symbol( 6) == 'A');
+        CHECK(index.bwt.symbol( 7) == 'A');
+        CHECK(index.bwt.symbol( 8) == 'A');
+        CHECK(index.bwt.symbol( 9) == 'A');
+        CHECK(index.bwt.symbol(10) == 'A');
+        CHECK(index.bwt.symbol(11) == 'A');
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
@@ -229,7 +229,7 @@ TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]"
     });
 
 }
-TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMIndex", "[collection]", ALLTABLES) {
+TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMIndex", "[collection]", ALLRANKVECTORS(255)) {
     using OccTable = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
@@ -243,7 +243,7 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMInd
         REQUIRE(index.size() == expected.size());
         for (size_t i{0}; i < expected.size(); ++i) {
             INFO(i);
-            CHECK(index.occ.symbol(i) == expected[i]);
+            CHECK(index.bwt.symbol(i) == expected[i]);
         }
     }
 
@@ -284,7 +284,7 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMInd
 
     for (size_t i{0}; i < expected.size(); ++i) {
         INFO(i);
-        if (index.occ.symbol(i) != 0) {
+        if (index.bwt.symbol(i) != 0) {
             auto [il, pl] = index.locate(i);
             auto [ir, pr] = expected[i];
             CHECK(il == ir);

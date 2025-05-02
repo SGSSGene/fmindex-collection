@@ -76,7 +76,7 @@ int main(int argc, char const* const* argv) {
 
     {
         std::cout << "\nReverseFMIndex:\n";
-        auto index = ReverseFMIndex<Table<Sigma>>{reference, /*samplingRate*/16, /*threadNbr*/1};
+        auto index = ReverseFMIndex<String<Sigma>>{reference, /*samplingRate*/16, /*threadNbr*/1};
         auto queries = std::vector<std::vector<uint8_t>>{{3, 1}, {2, 4}};
         search_backtracking::search(index, queries, 0, [&](size_t queryId, auto cursor, size_t errors) {
             (void)errors;

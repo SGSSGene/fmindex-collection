@@ -1,13 +1,13 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../occtables/allTables.h"
+#include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/ReverseFMIndex.h>
 #include <fmindex-collection/suffixarray/DenseCSA.h>
 
-TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", ALLTABLES) {
+TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", ALLRANKVECTORS(255)) {
     using OccTable = TestType;
     using DenseVector = fmindex_collection::DenseVector;
 

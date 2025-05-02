@@ -2,12 +2,13 @@
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
 #include "../occtables/allTables.h"
+#include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/ReverseFMIndex.h>
 #include <fstream>
 
-TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]", ALLTABLES) {
+TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]", ALLRANKVECTORS(255)) {
     using OccTable = TestType;
 
     auto bwt = std::vector<uint8_t>{'H', '\0', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
@@ -137,7 +138,7 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
         for (size_t i{1}; i < sa.size(); ++i) {
             INFO(i);
             INFO(sa[i]);
-            CHECK(bwt[i] == index.occ.symbol(i));
+            CHECK(bwt[i] == index.bwt.symbol(i));
             INFO(std::get<1>(index.locate(i)));
             CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
         }
