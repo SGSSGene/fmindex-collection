@@ -235,6 +235,73 @@ auto createSequencesAndReverse(Sequences auto const& _input) -> std::tuple<size_
     return {totalSize, inputText, inputSizes};
 }
 
+auto createSequencesWithoutDelimiter(Sequences auto const& _input, bool reverse=false) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<size_t>> {
+    // compute longest smallest word
+    size_t delimiterLength{};
+    {
+        size_t l{};
+        for (auto const& record : _input) {
+            for (auto c : record) {
+                if (c == 0) {
+                    l += 1;
+                } else {
+                    if (l > delimiterLength) {
+                        delimiterLength = l;
+                    }
+                    l = 0;
+                }
+            }
+        }
+        // last input has '0', maybe it continues in the front
+        if (l > 0) {
+            for (auto const& c : _input[0]) {
+                if (c == 0) {
+                    l += 1;
+                } else {
+                    if (l > delimiterLength) {
+                        delimiterLength = l;
+                    }
+                    l = 0;
+                    break;
+                }
+            }
+        }
+    }
+
+
+    // compute total numbers of bytes + artifical delimeterLength + 1
+    size_t totalSize = delimiterLength + 1;
+    for (auto const& l : _input) {
+        totalSize += l.size() ;
+    }
+
+    // our concatenated sequences
+    auto inputText = std::vector<uint8_t>{};
+    inputText.reserve(totalSize);
+    inputText.resize(delimiterLength + 1, 0);
+
+    // list of sizes of the individual sequences (zeroth entry is delimiter length)
+    auto inputSizes = std::vector<size_t>{};
+    inputSizes.reserve(_input.size()+1);
+    inputSizes.push_back(delimiterLength + 1);
+
+    for (auto const& l : _input) {
+        if (not reverse) {
+            inputText.insert(inputText.end(), begin(l), end(l));
+        } else {
+            auto l2 = std::views::reverse(l);
+            inputText.insert(inputText.end(), begin(l2), end(l2));
+        }
+
+        // fill with delimiters/zeros
+        inputText.resize(inputText.size());
+
+        inputSizes.emplace_back(l.size());
+    }
+    return {totalSize, inputText, inputSizes};
+}
+
+
 
 
 inline auto createSA_32(std::span<uint32_t const> input, size_t threadNbr) -> std::vector<int32_t> {

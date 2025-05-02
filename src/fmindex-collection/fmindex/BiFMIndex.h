@@ -91,8 +91,15 @@ struct BiFMIndex {
      * \param _input a list of sequences
      * \param samplingRate rate of the sampling
      */
-    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
-        auto [totalSize, inputText, inputSizes] = createSequences(_input);
+    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, bool useDelimiters = true) {
+
+        auto [totalSize, inputText, inputSizes] = [&]() {
+            if (useDelimiters) {
+                return createSequences(_input);
+            } else {
+                return createSequencesWithoutDelimiter(_input);
+            }
+        }();
 
         if (totalSize < std::numeric_limits<int32_t>::max()) { // only 32bit SA required
             // create BurrowsWheelerTransform and CompressedSuffixArray

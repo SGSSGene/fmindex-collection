@@ -13,6 +13,7 @@ add_executable(${PROJECT_NAME}
     checkTernarylogic.cpp
     fmindex/checkBiFMIndex.cpp
     fmindex/checkBiFMIndexCursor.cpp
+    fmindex/checkBiFMIndexWithoutDelimiter.cpp
     fmindex/checkDenseBiFMIndex.cpp
     fmindex/checkDenseReverseFMIndex.cpp
     fmindex/checkFMIndex.cpp
