@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../occtables/allTables.h"
+#include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/MirroredBiFMIndex.h>
 
-TEMPLATE_TEST_CASE("checking reversed bidirectional fm index", "[MirroredBiFMIndex]", ALLTABLES) {
+TEMPLATE_TEST_CASE("checking reversed bidirectional fm index", "[MirroredBiFMIndex]", ALLRANKVECTORS(255)) {
     using OccTable = TestType;
 
     // T = 011202110
