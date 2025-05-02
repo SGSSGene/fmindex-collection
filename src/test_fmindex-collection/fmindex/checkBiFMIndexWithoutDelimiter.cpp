@@ -8,7 +8,7 @@
 #include <fmindex-collection/fmindex/BiFMIndexCursor.h>
 #include <fstream>
 
-TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex-nd]", ALLTABLES) {
+TEMPLATE_TEST_CASE("checking bidirectional fm index without delimiters", "[BiFMIndex-nd]", ALLTABLES) {
     using OccTable = TestType;
 
     auto input = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{1, 2, 0}};

@@ -235,7 +235,7 @@ auto createSequencesAndReverse(Sequences auto const& _input) -> std::tuple<size_
     return {totalSize, inputText, inputSizes};
 }
 
-auto createSequencesWithoutDelimiter(Sequences auto const& _input, bool reverse=false) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<size_t>> {
+auto computeDelimiterLength(Sequences auto const& _input) -> size_t {
     // compute longest smallest word
     size_t delimiterLength{};
     {
@@ -267,10 +267,14 @@ auto createSequencesWithoutDelimiter(Sequences auto const& _input, bool reverse=
             }
         }
     }
+    return delimiterLength+1;
+}
 
+auto createSequencesWithoutDelimiter(Sequences auto const& _input, bool reverse=false) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<size_t>> {
+    auto delimiterLength = computeDelimiterLength(_input);
 
-    // compute total numbers of bytes + artifical delimeterLength + 1
-    size_t totalSize = delimiterLength + 1;
+    // compute total numbers of bytes + artificial delimeterLength
+    size_t totalSize = delimiterLength;
     for (auto const& l : _input) {
         totalSize += l.size() ;
     }
@@ -278,12 +282,12 @@ auto createSequencesWithoutDelimiter(Sequences auto const& _input, bool reverse=
     // our concatenated sequences
     auto inputText = std::vector<uint8_t>{};
     inputText.reserve(totalSize);
-    inputText.resize(delimiterLength + 1, 0);
+    inputText.resize(delimiterLength, 0);
 
     // list of sizes of the individual sequences (zeroth entry is delimiter length)
     auto inputSizes = std::vector<size_t>{};
     inputSizes.reserve(_input.size()+1);
-    inputSizes.push_back(delimiterLength + 1);
+    inputSizes.push_back(delimiterLength);
 
     for (auto const& l : _input) {
         if (not reverse) {
@@ -301,6 +305,52 @@ auto createSequencesWithoutDelimiter(Sequences auto const& _input, bool reverse=
     return {totalSize, inputText, inputSizes};
 }
 
+auto createSequencesAndReverseWithoutDelimiter(Sequences auto const& _input) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<size_t>> {
+    auto delimiterLength = computeDelimiterLength(_input);
+
+    // compute total numbers of bytes of the text including delimiters "$"
+    size_t totalSize = delimiterLength;
+    for (auto const& l : _input) {
+        totalSize += l.size();
+    }
+    totalSize = totalSize*2; // including reverse text
+
+    // our concatenated sequences with delimiters
+    auto inputText = std::vector<uint8_t>{};
+    inputText.reserve(totalSize);
+    inputText.resize(delimiterLength, 0);
+
+    // list of sizes of the individual sequences
+    auto inputSizes = std::vector<size_t>{};
+    inputSizes.reserve(_input.size()+2);
+    inputSizes.push_back(delimiterLength);
+
+    // add text
+    for (auto const& l : _input) {
+        inputText.insert(inputText.end(), begin(l), end(l));
+
+        // fill with delimiters/zeros
+        inputText.resize(inputText.size());
+
+        inputSizes.emplace_back(l.size());
+    }
+
+    // add reversed text
+    for (auto const& l : std::views::reverse(_input)) {
+        auto l2 = std::views::reverse(l);
+        inputText.insert(inputText.end(), begin(l2), end(l2));
+
+        // fill with delimiters/zeros
+        inputText.resize(inputText.size());
+
+        inputSizes.emplace_back(l.size());
+    }
+
+    inputText.resize(inputText.size() + delimiterLength, 0);
+    inputSizes.push_back(delimiterLength);
+
+    return {totalSize, inputText, inputSizes};
+}
 
 
 

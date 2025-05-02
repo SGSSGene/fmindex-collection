@@ -23,6 +23,7 @@ add_executable(${PROJECT_NAME}
     fmindex/checkMerge.cpp
     fmindex/checkMirroredBiFMIndex.cpp
     fmindex/checkMirroredBiFMIndexCursor.cpp
+    fmindex/checkMirroredBiFMIndexWithoutDelimiter.cpp
     fmindex/checkReverseFMIndex.cpp
     fmindex/checkReverseFMIndexCursor.cpp
     occtables/checkOccTables.cpp

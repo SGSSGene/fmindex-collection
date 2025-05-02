@@ -56,8 +56,14 @@ struct MirroredBiFMIndex {
      * \param _input a list of sequences
      * \param samplingRate rate of the sampling
      */
-    MirroredBiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
-        auto [totalSize, inputText, inputSizes] = createSequencesAndReverse(_input);
+    MirroredBiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, bool useDelimiters = true) {
+        auto [totalSize, inputText, inputSizes] = [&]() {
+            if (useDelimiters) {
+                return createSequencesAndReverse(_input);
+            } else {
+                return createSequencesAndReverseWithoutDelimiter(_input);
+            }
+        }();
 
         // Check only valid characters are used
         assert([&]() {
