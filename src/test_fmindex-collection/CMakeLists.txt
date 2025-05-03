@@ -26,7 +26,6 @@ add_executable(${PROJECT_NAME}
     fmindex/checkMirroredBiFMIndexWithoutDelimiter.cpp
     fmindex/checkReverseFMIndex.cpp
     fmindex/checkReverseFMIndexCursor.cpp
-    occtables/checkOccTables.cpp
     search/checkLocateFMTree.cpp
     search/checkReverseIndexSearch.cpp
     search/checkSearchBacktracking.cpp

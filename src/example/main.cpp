@@ -23,8 +23,8 @@ int main(int argc, char const* const* argv) {
 
     auto config = loadConfig(argc, argv);
     auto count = std::map<std::string, int>{};
-    visitAllTables<Sigma>([&]<typename Table>() {
-        auto ext = Table::extension();
+    visitAllStrings<Sigma>([&]<typename String>() {
+        auto ext = std::string{"str"};
         count[ext] += 1;
         if (count.at(ext) != 1) {
             throw std::runtime_error("two different indices share the same file ending");
@@ -76,22 +76,14 @@ int main(int argc, char const* const* argv) {
     }
 
 
-    visitAllTables<Sigma>([&, &queries=queries]<typename Table>() {
-        std::string name = Table::extension();
+    visitAllStrings<Sigma>([&, &queries=queries]<typename String>() {
+        std::string name = "str";
         if (config.extensions.count(name) == 0) return;
 
-        if constexpr (OccTableMemoryUsage<Table>) {
-            size_t s = Table::expectedMemoryUsage(3'000'000'000ull);
-            if (s > 1024ull*1024*1024*56ull) {
-                fmt::print("{} skipping, to much memory\n", name);
-                return;
-            }
-        }
         fmt::print("start loading {} ...", name);
         fflush(stdout);
         size_t samplingRate = 16;
-        using Vector = fmindex_collection::string::InterleavedBitvector16<Table::Sigma>;
-        auto index = loadDenseIndex<CSA, Vector>(config.indexPath, samplingRate, config.threads, config.partialBuildUp, config.convertUnknownChar);
+        auto index = loadDenseIndex<CSA, String>(config.indexPath, samplingRate, config.threads, config.partialBuildUp, config.convertUnknownChar);
         fmt::print("done\n");
         for (auto const& algorithm : config.algorithms) {
             fmt::print("using algorithm {}\n", algorithm);
@@ -106,14 +98,8 @@ int main(int argc, char const* const* argv) {
                 }
             }
 
-
-
             auto memory = [&] () -> size_t {
-                if constexpr (OccTableMemoryUsage<Table>) {
-                    return index.memoryUsage();
-                } else {
-                    return 0ull;
-                }
+                return 0ull;
             }();
             for (size_t k{config.minK}; k <= config.maxK; k = k + config.k_stepSize) {
                 /*if (k >= 4 and k != 6) {

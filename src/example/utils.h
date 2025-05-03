@@ -7,7 +7,6 @@
 
 #include <fmindex-collection/fmindex-collection.h>
 #include <fmindex-collection/fmindex/merge.h>
-#include <fmindex-collection/occtable/all.h>
 #include <fmindex-collection/suffixarray/DenseCSA.h>
 
 #include <cereal/archives/binary.hpp>
@@ -263,14 +262,13 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
 
 
 template <size_t Sigma, typename CB>
-void visitAllTables(CB cb) {
+void visitAllStrings(CB cb) {
 /*    cb.template operator()<fmindex_collection::occtable::naive::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::bitvector::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::compactBitvector::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::compactBitvectorPrefix::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::interleaved8::OccTable<Sigma>>();*/
-    cb.template operator()<fmindex_collection::occtable::Interleaved_16<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::L1Bitvector<Sigma>>();
+    cb.template operator()<fmindex_collection::string::InterleavedBitvector16<Sigma>>();
 /*    cb.template operator()<fmindex_collection::occtable::interleaved32::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::interleaved8Aligned::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::interleaved16Aligned::OccTable<Sigma>>();
