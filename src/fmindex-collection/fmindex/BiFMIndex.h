@@ -71,11 +71,35 @@ struct BiFMIndex {
             }
         }();
 
+        //!TODO not properly pointing to the buffer, when reversing
+        auto inputTextSpan = std::span<uint8_t const>{inputText};
+        if (!useDelimiters) {
+            // double text, so we get omage sorting
+            auto halfSize = inputText.size();
+            inputText.resize(halfSize*2);
+            inputTextSpan = {inputText.begin(), inputText.begin()+halfSize};
+
+            for (size_t i{0}; i < halfSize; ++i) {
+                inputText[halfSize + i] = inputText[i];
+            }
+        }
+        auto removeInvalidSA = [&](auto& sa) {
+            if (!useDelimiters) { // using omega sorting, remove half of the entries
+                auto halfSize = inputText.size() / 2;
+                auto [first, last] = std::ranges::remove_if(sa, [&](auto e) {
+                    return e >= halfSize;
+                });
+                sa.erase(first, last);
+            }
+        };
+
         if (totalSize < std::numeric_limits<int32_t>::max()) { // only 32bit SA required
             // create BurrowsWheelerTransform and CompressedSuffixArray
             auto [bwt, csa] = [&]() {
                 auto sa  = createSA32(inputText, threadNbr);
-                auto bwt = createBWT32(inputText, sa);
+                removeInvalidSA(sa);
+
+                auto bwt = createBWT32(inputTextSpan, sa);
                 auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
                 return std::make_tuple(std::move(bwt), std::move(csa));
             }();
@@ -84,7 +108,9 @@ struct BiFMIndex {
             auto bwtRev = [&]() {
                 std::ranges::reverse(inputText);
                 auto saRev  = createSA32(inputText, threadNbr);
-                auto bwtRev = createBWT32(inputText, saRev);
+                removeInvalidSA(saRev);
+
+                auto bwtRev = createBWT32(inputTextSpan, saRev);
                 return bwtRev;
             }();
 
@@ -95,7 +121,8 @@ struct BiFMIndex {
             // create BurrowsWheelerTransform and CompressedSuffixArray
             auto [bwt, csa] = [&]() {
                 auto sa  = createSA64(inputText, threadNbr);
-                auto bwt = createBWT64(inputText, sa);
+                removeInvalidSA(sa);
+                auto bwt = createBWT64(inputTextSpan, sa);
                 auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
                 return std::make_tuple(std::move(bwt), std::move(csa));
             }();
@@ -104,7 +131,8 @@ struct BiFMIndex {
             auto bwtRev = [&]() {
                 std::ranges::reverse(inputText);
                 auto saRev  = createSA64(inputText, threadNbr);
-                auto bwtRev = createBWT64(inputText, saRev);
+                removeInvalidSA(saRev);
+                auto bwtRev = createBWT64(inputTextSpan, saRev);
                 return bwtRev;
             }();
 

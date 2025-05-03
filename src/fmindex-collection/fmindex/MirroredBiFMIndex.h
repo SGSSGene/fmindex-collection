@@ -46,6 +46,29 @@ struct MirroredBiFMIndex {
             }
         }();
 
+        //!TODO not properly pointing to the buffer, when reversing
+        auto inputTextSpan = std::span<uint8_t const>{inputText};
+        if (!useDelimiters) {
+            // double text, so we get omage sorting
+            auto halfSize = inputText.size();
+            inputText.resize(halfSize*2);
+            inputTextSpan = {inputText.begin(), inputText.begin()+halfSize};
+
+            for (size_t i{0}; i < halfSize; ++i) {
+                inputText[halfSize + i] = inputText[i];
+            }
+        }
+        auto removeInvalidSA = [&](auto& sa) {
+            if (!useDelimiters) { // using omega sorting, remove half of the entries
+                auto halfSize = inputText.size() / 2;
+                auto [first, last] = std::ranges::remove_if(sa, [&](auto e) {
+                    return e >= halfSize;
+                });
+                sa.erase(first, last);
+            }
+        };
+
+
         // Check only valid characters are used
         assert([&]() {
             for (auto c : inputText) {
@@ -57,7 +80,9 @@ struct MirroredBiFMIndex {
         // create BurrowsWheelerTransform and CompressedSuffixArray
         auto [bwt, csa] = [&]() {
             auto sa  = createSA64(inputText, threadNbr);
-            auto bwt = createBWT64(inputText, sa);
+            removeInvalidSA(sa);
+
+            auto bwt = createBWT64(inputTextSpan, sa);
             auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();
