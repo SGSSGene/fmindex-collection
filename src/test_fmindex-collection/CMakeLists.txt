@@ -14,6 +14,7 @@ add_executable(${PROJECT_NAME}
     fmindex/checkBiFMIndex.cpp
     fmindex/checkBiFMIndexCursor.cpp
     fmindex/checkBiFMIndexWithoutDelimiter.cpp
+    fmindex/checkBinaryMirroredBiFMIndex.cpp
     fmindex/checkDenseBiFMIndex.cpp
     fmindex/checkDenseReverseFMIndex.cpp
     fmindex/checkFMIndex.cpp

@@ -188,7 +188,7 @@ auto mergeImpl(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> co
                 mergedBWTRev.push_back(index1.bwtRev.symbol(idx1));
                 idx1 += 1;
             } else {
-                assert(idx2 < index2.occRev.size());
+                assert(idx2 < index2.bwtRev.size());
                 mergedBWTRev.push_back(index2.bwtRev.symbol(idx2));
                 idx2 += 1;
             }
