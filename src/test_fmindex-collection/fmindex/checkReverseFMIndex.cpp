@@ -14,9 +14,9 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
     auto sa  = std::vector<uint64_t>{0, 11, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
 
     SECTION("full sa") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         for (size_t i{0}; i < sa.size(); ++i) {
-            bitStack.push(true);
+            bitStack.push_back(true);
         }
         auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
         auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
@@ -28,11 +28,11 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
     }
 
     SECTION("sa with only every second value given - sa sampled") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 0} || (sa[i] == sa.size()-1);
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }
@@ -59,11 +59,11 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
     }
 
     SECTION("sa with only every second value given - sa sampled - uneven") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 1} || (sa[i] == sa.size()-1);
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }
@@ -83,11 +83,11 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
 
 
     SECTION("sa with only every second value given - text sampled") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{sa[i] % 2 == 0} || (sa[i] == 11);
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }
@@ -146,9 +146,9 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
     SECTION("serialization/deserialization") {
         SECTION("serialize") {
             auto ofs = std::ofstream{"temp_test_serialization", std::ios::binary};
-            auto bitStack = fmindex_collection::BitStack{};
+            auto bitStack = std::vector<bool>{};
             for (size_t i{0}; i < sa.size(); ++i) {
-                bitStack.push(true);
+                bitStack.push_back(true);
             }
             auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
             auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};

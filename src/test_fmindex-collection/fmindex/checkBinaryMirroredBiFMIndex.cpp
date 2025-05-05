@@ -14,9 +14,9 @@ TEMPLATE_TEST_CASE("checking binary mirrored bidirectional fm index", "[BinaryMi
     assert(bwt.size() == sa.size());
 
     SECTION("full sa") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         for (size_t i{0}; i < sa.size(); ++i) {
-            bitStack.push(true);
+            bitStack.push_back(true);
         }
         auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
         auto index = fmindex_collection::BinaryMirroredBiFMIndex<String>{bwt, std::move(csa)};
@@ -28,11 +28,11 @@ TEMPLATE_TEST_CASE("checking binary mirrored bidirectional fm index", "[BinaryMi
     }
 
     SECTION("sa with only every second value given - sa sampled") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 0} || (sa[i] == 0);
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }
@@ -60,11 +60,11 @@ TEMPLATE_TEST_CASE("checking binary mirrored bidirectional fm index", "[BinaryMi
     }
 
     SECTION("sa with only every second value given - sa sampled - uneven") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 1} || (sa[i] == 0);
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }
@@ -84,11 +84,11 @@ TEMPLATE_TEST_CASE("checking binary mirrored bidirectional fm index", "[BinaryMi
 
 
     SECTION("sa with only every second value given - text sampled") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{sa[i] % 2 == 0};
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }
