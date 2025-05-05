@@ -70,7 +70,7 @@ if (FMC_USE_AWFMINDEX)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_link_options(${PROJECT_NAME} PUBLIC /STACK:4194304)
+    target_link_options(${PROJECT_NAME} PUBLIC /STACK:16777216)
 endif()
 if (FMC_USE_SUX AND FMC_USE_PASTA AND FMC_USE_SDSL)
     # bitvector/benchmark requires sux and paste to compile successful
