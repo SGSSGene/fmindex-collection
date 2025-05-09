@@ -207,6 +207,8 @@ auto expandByNC(Scheme ss, size_t _newLen, size_t sigma) -> Scheme {
     return expand(ss, counts);
 }
 
+/** Expands from lower by adding position steps by step
+ */
 template <bool Edit=false>
 auto expandByWNC(Scheme ss, size_t _newLen, size_t sigma, size_t N) -> Scheme {
     if (ss.size() == 0) return {};
@@ -231,6 +233,51 @@ auto expandByWNC(Scheme ss, size_t _newLen, size_t sigma, size_t N) -> Scheme {
 
     return expand(ss, counts);
 }
+
+template <bool Edit=false>
+auto expandByWNCTopDown(Scheme _ss, size_t _newLen, size_t sigma, size_t N, size_t steps) -> Scheme {
+    if (_ss.size() == 0) return {};
+
+    // uniform distribute part size
+    auto counts = expandCount(_ss[0].pi.size(), _newLen);
+
+    double lastVal = [&]() {
+        auto ess = expand(_ss, counts);
+        auto f = weightedNodeCount<Edit>(ess, sigma, N);
+        return f;
+    }();
+
+
+    // loop through each part and try to improve it, by increasing it size
+    while (true) {
+        double bestVal = lastVal;
+        size_t bestI1;
+        size_t bestI2;
+        for (size_t i1{0}; i1 < _ss[0].pi.size(); ++i1) {
+            for (size_t i2{0}; i2 < _ss[0].pi.size(); ++i2) {
+                if (i1 == i2) continue;
+                if (counts[i1] <= steps) continue;
+                counts[i1] -= steps;
+                counts[i2] += steps;
+                auto ess = expand(_ss, counts);
+                auto f = weightedNodeCount<Edit>(ess, sigma, N);
+                if (f < bestVal) {
+                    bestI1 = i1;
+                    bestI2 = i2;
+                    bestVal = f;
+                }
+                counts[i1] += steps;
+                counts[i2] -= steps;
+            }
+        }
+        if (bestVal == lastVal) break;
+        lastVal = bestVal;
+        counts[bestI1] -= steps;
+        counts[bestI2] += steps;
+    }
+    return expand(_ss, counts);
+}
+
 
 inline auto limitToHamming(Search s) -> Search {
     auto len = s.pi.size();
