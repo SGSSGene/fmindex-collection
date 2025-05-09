@@ -3,26 +3,34 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../occtable/concepts.h"
+#include "../string/concepts.h"
 #include "../suffixarray/CSA.h"
 #include "../utils.h"
 
 namespace fmindex_collection {
 
-template <OccTable Table, SuffixArray_c TCSA = CSA>
+template <RankVector Vector, SuffixArray_c TCSA = CSA>
 struct FMIndex {
-    static size_t constexpr Sigma = Table::Sigma;
+    static size_t constexpr Sigma = Vector::Sigma;
 
-    Table  occ;
+    Vector                      bwt;
+    std::array<size_t, Sigma+1> C{};
     TCSA   csa;
 
     FMIndex() = default;
     FMIndex(FMIndex const&) = delete;
     FMIndex(FMIndex&&) noexcept = default;
-    FMIndex(std::span<uint8_t const> bwt, TCSA _csa)
-        : occ{bwt}
+    FMIndex(std::span<uint8_t const> _bwt, TCSA _csa)
+        : bwt{_bwt}
         , csa{std::move(_csa)}
-    {}
+    {
+        for (auto c : _bwt) {
+            C[c+1] += 1;
+        }
+        for (size_t i{1}; i < C.size(); ++i) {
+            C[i] = C[i] + C[i-1];
+        }
+    }
 
     FMIndex(std::vector<uint8_t> _input, size_t samplingRate, size_t threadNbr) {
         auto input = std::vector<std::vector<uint8_t>>{std::move(_input)};
@@ -59,19 +67,20 @@ struct FMIndex {
     auto operator=(FMIndex&&) noexcept -> FMIndex& = default;
 
 
-    size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
+/*    size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
         return occ.memoryUsage() + csa.memoryUsage();
-    }
+    }*/
 
     size_t size() const {
-        return occ.size();
+        return bwt.size();
     }
 
     auto locate(size_t idx) const -> std::tuple<size_t, size_t> {
         auto opt = csa.value(idx);
         size_t steps{};
         while(!opt) {
-            idx = occ.rank(idx, occ.symbol(idx));
+            auto symb = bwt.symbol(idx);
+            idx = bwt.rank(idx, symb) + C[symb];
             steps += 1;
             opt = csa.value(idx);
         }
@@ -85,7 +94,7 @@ struct FMIndex {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(occ, csa);
+        ar(bwt, C, csa);
     }
 };
 

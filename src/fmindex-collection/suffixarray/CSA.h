@@ -4,7 +4,6 @@
 #pragma once
 
 
-#include "../BitStack.h"
 #include "../bitvector/Bitvector.h"
 #include "../bitvector/CompactBitvector.h"
 #include "concepts.h"
@@ -63,11 +62,11 @@ struct CSA {
         }
     }
 
-    CSA(std::vector<uint64_t> _ssa, BitStack const& bitstack, size_t _bitsForPosition, size_t _seqCount)
+    template <std::ranges::sized_range range_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
+    CSA(std::vector<uint64_t> _ssa, range_t const& bitstack, size_t _bitsForPosition, size_t _seqCount)
         : ssa{std::move(_ssa)}
-        , bv{bitstack.size, [&](size_t idx) {
-            return bitstack.value(idx);
-        }}
+        , bv{bitstack}
         , bitsForPosition{_bitsForPosition}
         , bitPositionMask{(uint64_t{1}<<bitsForPosition)-1}
         , seqCount{_seqCount}

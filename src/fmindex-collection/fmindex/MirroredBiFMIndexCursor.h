@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "BiFMIndex.h"
+#include "MirroredBiFMIndex.h"
 
 namespace fmindex_collection {
 
 template <typename Index>
-struct LeftBiFMIndexCursor;
+struct LeftMirroredBiFMIndexCursor;
 
 template <typename Index>
-struct BiFMIndexCursor {
+struct MirroredBiFMIndexCursor {
     static constexpr size_t Sigma    = Index::Sigma;
     static constexpr bool   Reversed = false;
 
@@ -19,18 +19,18 @@ struct BiFMIndexCursor {
     size_t lb;
     size_t lbRev;
     size_t len{};
-    BiFMIndexCursor() noexcept = default;
-    BiFMIndexCursor(Index const& index) noexcept
-        : BiFMIndexCursor{index, 0, 0, index.size()}
+    MirroredBiFMIndexCursor() noexcept = default;
+    MirroredBiFMIndexCursor(Index const& index) noexcept
+        : MirroredBiFMIndexCursor{index, 0, 0, index.size()}
     {}
-    BiFMIndexCursor(Index const& index, size_t lb, size_t lbRev, size_t len) noexcept
+    MirroredBiFMIndexCursor(Index const& index, size_t lb, size_t lbRev, size_t len) noexcept
         : index{&index}
         , lb{lb}
         , lbRev{lbRev}
         , len{len}
     {}
 
-    bool operator==(BiFMIndexCursor const& _other) const noexcept {
+    bool operator==(MirroredBiFMIndexCursor const& _other) const noexcept {
         return lb == _other.lb
                && len == _other.len;
     }
@@ -40,7 +40,7 @@ struct BiFMIndexCursor {
     size_t count() const {
         return len;
     }
-    auto extendLeft() const -> std::array<BiFMIndexCursor, Sigma> {
+    auto extendLeft() const -> std::array<MirroredBiFMIndexCursor, Sigma> {
         auto const& bwt = index->bwt;
         auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lb);
         auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lb+len);
@@ -50,16 +50,16 @@ struct BiFMIndexCursor {
             rs2[i] += index->C[i];
         }
 
-        auto cursors = std::array<BiFMIndexCursor, Sigma>{};
-        cursors[0] = BiFMIndexCursor{*index, rs1[0], lbRev, rs2[0] - rs1[0]};
+        auto cursors = std::array<MirroredBiFMIndexCursor, Sigma>{};
+        cursors[0] = MirroredBiFMIndexCursor{*index, rs1[0], lbRev, rs2[0] - rs1[0]};
         for (size_t i{1}; i < Sigma; ++i) {
-            cursors[i] = BiFMIndexCursor{*index, rs1[i], lbRev + prs2[i-1] - prs1[i-1], rs2[i] - rs1[i]};
+            cursors[i] = MirroredBiFMIndexCursor{*index, rs1[i], lbRev + prs2[i-1] - prs1[i-1], rs2[i] - rs1[i]};
         }
         return cursors;
     }
 
-    auto extendRight() const -> std::array<BiFMIndexCursor, Sigma> {
-        auto const& bwt = index->bwtRev;
+    auto extendRight() const -> std::array<MirroredBiFMIndexCursor, Sigma> {
+        auto const& bwt = index->bwt;
         auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lbRev);
         auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lbRev+len);
 
@@ -68,10 +68,11 @@ struct BiFMIndexCursor {
             rs2[i] += index->C[i];
         }
 
-        auto cursors = std::array<BiFMIndexCursor, Sigma>{};
-        cursors[0] = BiFMIndexCursor{*index, lb, rs1[0], rs2[0] - rs1[0]};
+        auto cursors = std::array<MirroredBiFMIndexCursor, Sigma>{};
+        cursors[0] = MirroredBiFMIndexCursor{*index, lb, rs1[0], rs2[0] - rs1[0]};
+        cursors[0].prefetchRight();
         for (size_t i{1}; i < Sigma; ++i) {
-            cursors[i] = BiFMIndexCursor{*index, lb + prs2[i-1] - prs1[i-1], rs1[i], rs2[i] - rs1[i]};
+            cursors[i] = MirroredBiFMIndexCursor{*index, lb + prs2[i-1] - prs1[i-1], rs1[i], rs2[i] - rs1[i]};
         }
         return cursors;
     }
@@ -84,13 +85,13 @@ struct BiFMIndexCursor {
     }
     void prefetchRight() const {
 /*        if constexpr (OccTablePrefetch<Index>) {
-            auto& occ = index->occRev;
+            auto& occ = index->occ;
             occ.prefetch(lbRev);
             occ.prefetch(lbRev+len);
         }*/
     }
 
-    auto extendLeft(size_t symb) const -> BiFMIndexCursor {
+    auto extendLeft(size_t symb) const -> MirroredBiFMIndexCursor {
         auto& bwt = index->bwt;
         size_t newLb    = bwt.rank(lb, symb);
         size_t newLbRev = lbRev + [&]() -> size_t {
@@ -98,51 +99,51 @@ struct BiFMIndexCursor {
             return bwt.prefix_rank(lb+len, symb-1) - bwt.prefix_rank(lb, symb-1);
         }();
         size_t newLen   = bwt.rank(lb+len, symb) - newLb;
-        auto newCursor = BiFMIndexCursor{*index, newLb + index->C[symb], newLbRev, newLen};
+        auto newCursor = MirroredBiFMIndexCursor{*index, newLb + index->C[symb], newLbRev, newLen};
         return newCursor;
     }
-    auto extendRight(size_t symb) const -> BiFMIndexCursor {
-        auto& bwt = index->bwtRev;
+    auto extendRight(size_t symb) const -> MirroredBiFMIndexCursor {
+        auto& bwt = index->bwt;
         size_t newLb    = lb + [&]() -> size_t {
             if (symb == 0) return {};
             return bwt.prefix_rank(lbRev+len, symb-1) - bwt.prefix_rank(lbRev, symb-1);
         }();
         size_t newLbRev = bwt.rank(lbRev, symb);
         size_t newLen   = bwt.rank(lbRev+len, symb) - newLbRev;
-        auto newCursor = BiFMIndexCursor{*index, newLb, newLbRev + index->C[symb], newLen};
+        auto newCursor = MirroredBiFMIndexCursor{*index, newLb, newLbRev + index->C[symb], newLen};
         return newCursor;
     }
 };
 
 template <typename Index>
-auto begin(BiFMIndexCursor<Index> const& _cursor) {
+auto begin(MirroredBiFMIndexCursor<Index> const& _cursor) {
     return IntIterator{_cursor.lb};
 }
 template <typename Index>
-auto end(BiFMIndexCursor<Index> const& _cursor) {
+auto end(MirroredBiFMIndexCursor<Index> const& _cursor) {
     return IntIterator{_cursor.lb + _cursor.len};
 }
 
 template <typename Index>
-struct LeftBiFMIndexCursor {
+struct LeftMirroredBiFMIndexCursor {
     static constexpr size_t Sigma    = Index::Sigma;
     static constexpr bool   Reversed = false;
 
     Index const* index;
     size_t lb;
     size_t len;
-    LeftBiFMIndexCursor(BiFMIndexCursor<Index> const& _other)
+    LeftMirroredBiFMIndexCursor(MirroredBiFMIndexCursor<Index> const& _other)
         : index{_other.index}
         , lb{_other.lb}
         , len{_other.len}
     {}
-    LeftBiFMIndexCursor()
+    LeftMirroredBiFMIndexCursor()
         : index{nullptr}
     {}
-    LeftBiFMIndexCursor(Index const& index)
-        : LeftBiFMIndexCursor{index, 0, index.size()}
+    LeftMirroredBiFMIndexCursor(Index const& index)
+        : LeftMirroredBiFMIndexCursor{index, 0, index.size()}
     {}
-    LeftBiFMIndexCursor(Index const& index, size_t lb, size_t len)
+    LeftMirroredBiFMIndexCursor(Index const& index, size_t lb, size_t len)
         : index{&index}
         , lb{lb}
         , len{len}
@@ -153,7 +154,7 @@ struct LeftBiFMIndexCursor {
     size_t count() const {
         return len;
     }
-    auto extendLeft() const -> std::array<LeftBiFMIndexCursor, Sigma> {
+    auto extendLeft() const -> std::array<LeftMirroredBiFMIndexCursor, Sigma> {
         auto const& bwt = index->bwt;
         auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lb);
         auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lb+len);
@@ -163,30 +164,31 @@ struct LeftBiFMIndexCursor {
             rs2[i] += index->C[i];
         }
 
-        auto cursors = std::array<LeftBiFMIndexCursor, Sigma>{};
-        cursors[0] = LeftBiFMIndexCursor{*index, rs1[0], rs2[0] - rs1[0]};
+        auto cursors = std::array<LeftMirroredBiFMIndexCursor, Sigma>{};
+        cursors[0] = LeftMirroredBiFMIndexCursor{*index, rs1[0], rs2[0] - rs1[0]};
         for (size_t i{1}; i < Sigma; ++i) {
-            cursors[i] = LeftBiFMIndexCursor{*index, rs1[i], rs2[i] - rs1[i]};
+            cursors[i] = LeftMirroredBiFMIndexCursor{*index, rs1[i], rs2[i] - rs1[i]};
         }
         return cursors;
     }
 
-    auto extendLeft(size_t symb) const -> LeftBiFMIndexCursor {
+    auto extendLeft(size_t symb) const -> LeftMirroredBiFMIndexCursor {
         auto& bwt = index->bwt;
 
         size_t newLb    = bwt.rank(lb, symb);
         size_t newLen   = bwt.rank(lb+len, symb) - newLb;
-        auto newCursor = LeftBiFMIndexCursor{*index, newLb + index->C[symb], newLen};
+
+        auto newCursor = LeftMirroredBiFMIndexCursor{*index, newLb + index->C[symb], newLen};
         return newCursor;
     }
 };
 
 template <typename Index>
-auto begin(LeftBiFMIndexCursor<Index> const& _cursor) {
+auto begin(LeftMirroredBiFMIndexCursor<Index> const& _cursor) {
     return IntIterator{_cursor.lb};
 }
 template <typename Index>
-auto end(LeftBiFMIndexCursor<Index> const& _cursor) {
+auto end(LeftMirroredBiFMIndexCursor<Index> const& _cursor) {
     return IntIterator{_cursor.lb + _cursor.len};
 }
 
@@ -195,8 +197,8 @@ auto end(LeftBiFMIndexCursor<Index> const& _cursor) {
 namespace std {
 
 template <typename index_t>
-struct hash<fmindex_collection::BiFMIndexCursor<index_t>> {
-    auto operator()(fmindex_collection::BiFMIndexCursor<index_t> const& cursor) const -> size_t {
+struct hash<fmindex_collection::MirroredBiFMIndexCursor<index_t>> {
+    auto operator()(fmindex_collection::MirroredBiFMIndexCursor<index_t> const& cursor) const -> size_t {
         return hash<size_t>()(cursor.lb)
             ^ hash<size_t>()(cursor.len);
     }

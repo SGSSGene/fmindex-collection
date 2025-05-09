@@ -8,22 +8,25 @@ project(test_fmindex-collection)
 add_executable(${PROJECT_NAME}
     bitvector/bitset_popcount.cpp
     bitvector/benchmark.cpp
+    bitvector/sparse_benchmark.cpp
     bitvector/unittest.cpp
     checkTernarylogic.cpp
     fmindex/checkBiFMIndex.cpp
     fmindex/checkBiFMIndexCursor.cpp
+    fmindex/checkBiFMIndexWithoutDelimiter.cpp
+    fmindex/checkBinaryMirroredBiFMIndex.cpp
     fmindex/checkDenseBiFMIndex.cpp
     fmindex/checkDenseReverseFMIndex.cpp
     fmindex/checkFMIndex.cpp
     fmindex/checkFMIndexCursor.cpp
     fmindex/checkLeftBiFMIndexCursor.cpp
-    fmindex/checkLeftRBiFMIndexCursor.cpp
+    fmindex/checkLeftMirroredBiFMIndexCursor.cpp
     fmindex/checkMerge.cpp
-    fmindex/checkRBiFMIndex.cpp
-    fmindex/checkRBiFMIndexCursor.cpp
+    fmindex/checkMirroredBiFMIndex.cpp
+    fmindex/checkMirroredBiFMIndexCursor.cpp
+    fmindex/checkMirroredBiFMIndexWithoutDelimiter.cpp
     fmindex/checkReverseFMIndex.cpp
     fmindex/checkReverseFMIndexCursor.cpp
-    occtables/checkOccTables.cpp
     search/checkLocateFMTree.cpp
     search/checkReverseIndexSearch.cpp
     search/checkSearchBacktracking.cpp
@@ -46,6 +49,7 @@ add_executable(${PROJECT_NAME}
     string/benchmark_alphabet_64.cpp
     string/benchmark_alphabet_128.cpp
     string/benchmark_alphabet_255.cpp
+    string/benchmark_alphabet_4096.cpp
     string/unittest.cpp
     suffixarray/checkCSA.cpp
     utils.cpp
@@ -58,10 +62,17 @@ target_link_libraries(${PROJECT_NAME}
     fmt::fmt
 )
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_link_options(${PROJECT_NAME} PUBLIC /STACK:4194304)
+if (FMC_USE_AWFMINDEX)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_AWFMINDEX)
+    target_include_directories(${PROJECT_NAME} PRIVATE "${FMC_AWFMINDEX_PATH}/include")
+    target_link_directories(${PROJECT_NAME} PRIVATE "${FMC_AWFMINDEX_PATH}/lib")
+    target_link_libraries(${PROJECT_NAME} awfmindex_static divsufsort64 fastavector_static)
 endif()
-if(FMC_USE_SUX AND FMC_USE_PASTA AND FMC_USE_SDSL)
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_link_options(${PROJECT_NAME} PUBLIC /STACK:16777216)
+endif()
+if (FMC_USE_SUX AND FMC_USE_PASTA AND FMC_USE_SDSL)
     # bitvector/benchmark requires sux and paste to compile successful
     target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_SUX)
     target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_PASTA)
