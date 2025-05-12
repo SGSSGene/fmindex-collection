@@ -6,7 +6,6 @@
 #include "StopWatch.h"
 #include "random.h"
 
-#include <fmindex-collection/occtable/concepts.h>
 #include <fmindex-collection/utils.h>
 
 #include <array>
@@ -76,7 +75,7 @@ auto generateBWT(size_t len) -> std::tuple<std::vector<uint8_t>, std::vector<uin
 }
 
 
-template <fmindex_collection::OccTable Table, typename T>
+/*template <fmindex_collection::OccTable Table, typename T>
 void printOccTable(Table const& table, T const& bwt) {
     if (bwt.size() > 128) return;
     for (size_t i{0}; i < bwt.size(); ++i) {
@@ -97,7 +96,7 @@ void printOccTable(Table const& table, T const& bwt) {
         }
         std::cout << "\n";
     }
-}
+}*/
 
 struct Result {
     std::string name;
@@ -117,6 +116,7 @@ struct Result {
     std::array<size_t, 2> benchV6CheckSum  = {0, 0};
     double totalTime                       = std::numeric_limits<double>::quiet_NaN();
 };
+#if 0
 template <fmindex_collection::OccTable Table, typename T>
 auto benchmarkTable(std::string name, T const& bwt) -> Result {
     StopWatch allTime;
@@ -134,7 +134,7 @@ auto benchmarkTable(std::string name, T const& bwt) -> Result {
         auto table = Table{bwt};
 
         result.constructionTime = watch.reset();
-        printOccTable(table, bwt);
+        //printOccTable(table, bwt);
         { // benchmark V1
             xorshf96_reset();
             uint64_t a{};
@@ -221,4 +221,5 @@ auto benchmarkTable(std::string name, T const& bwt) -> Result {
     std::cout << "finished " << result.name << "\n";
     return result;
 }
+#endif
 

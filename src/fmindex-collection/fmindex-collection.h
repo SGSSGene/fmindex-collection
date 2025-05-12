@@ -4,5 +4,4 @@
 #pragma once
 
 #include "fmindex/all.h"
-#include "occtable/all.h"
 #include "suffixarray/CSA.h"

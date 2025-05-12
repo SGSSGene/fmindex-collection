@@ -4,7 +4,6 @@
 #pragma once
 
 #include "../locate.h"
-#include "../occtable/all.h"
 #include "../string/InterleavedBitvector.h"
 #include "../search/SearchNoErrors.h"
 #include "../search/Backtracking.h"
@@ -23,11 +22,11 @@ struct VariableFMIndex {
     std::array<uint8_t, 256> charToRankMapping{};
 
     template <size_t Sigma>
-    using OccTable = occtable::Interleaved_16<Sigma>;
+    using Vector = string::InterleavedBitvector16<Sigma>;
 
-    using Index4  = FMIndex<OccTable<5>>;
-    using Index5  = FMIndex<OccTable<6>>;
-    using Index16 = FMIndex<OccTable<17>>;
+    using Index4  = FMIndex<Vector<5>>;
+    using Index5  = FMIndex<Vector<6>>;
+    using Index16 = FMIndex<Vector<17>>;
 
     std::variant<std::monostate, Index4, Index5, Index16> index;
 

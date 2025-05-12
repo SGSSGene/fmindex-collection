@@ -1,17 +1,17 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../string/allStrings.h"
+#include "../bitvector/allBitVectors.h"
 
 #include <catch2/catch_all.hpp>
-#include <fmindex-collection/fmindex/FMIndex.h>
-#include <fstream>
+#include <fmindex-collection/fmindex/BinaryMirroredBiFMIndex.h>
 
-TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLRANKVECTORS(255)) {
-    using OccTable = TestType;
-
-    auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
-    auto sa     = std::vector<uint64_t>{ 10, 11, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };
+TEMPLATE_TEST_CASE("checking binary mirrored bidirectional fm index", "[BinaryMirroredBiFMIndex]", ALLBITVECTORS) {
+    using String = TestType;
+    // T = 011101010
+    auto bwt    = std::vector<uint8_t> {1,  1,  1,  1,  0,  1,  1,  0,  0,  1,  0,  1,  0,  0,  1,  1,  0,  0};
+    auto sa     = std::vector<uint64_t>{8, 17,  6,  4,  9, 11, 13,  0,  7, 16,  5,  3, 10, 12, 15,  2, 14,  1};
+    assert(bwt.size() == sa.size());
 
     SECTION("full sa") {
         auto bitStack = std::vector<bool>{};
@@ -19,14 +19,11 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLRANKVECTO
             bitStack.push_back(true);
         }
         auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::BinaryMirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto [seqId, seqPos] = index.locate(i);
-            INFO(i);
-            CHECK(seqId == 0);
-            CHECK(seqPos == sa[i]);
+            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
         }
     }
 
@@ -42,10 +39,13 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLRANKVECTO
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::BinaryMirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
+            if (index.locate(i) != std::make_tuple(0, sa[i])) {
+                index.locate(i);
+            }
             CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
             auto res = index.single_locate_step(i);
             INFO(i);
@@ -63,7 +63,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLRANKVECTO
         auto bitStack = std::vector<bool>{};
         auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto add = bool{i % 2 == 1};
+            auto add = bool{i % 2 == 1} || (sa[i] == 0);
             bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
@@ -71,10 +71,13 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLRANKVECTO
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::BinaryMirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
+            if (index.locate(i) != std::make_tuple(0, sa[i])) {
+                index.locate(i);
+            }
             CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
         }
     }
@@ -92,37 +95,12 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLRANKVECTO
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::BinaryMirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
             CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
         }
-    }
 
-    SECTION("serialization/deserialization") {
-        SECTION("serialize") {
-            auto ofs = std::ofstream{"temp_test_serialization", std::ios::binary};
-            auto bitStack = std::vector<bool>{};
-            for (size_t i{0}; i < sa.size(); ++i) {
-                bitStack.push_back(true);
-            }
-            auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-            auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
-            auto archive = cereal::BinaryOutputArchive{ofs};
-            archive(index);
-        }
-        SECTION("deserialize") {
-            auto ifs = std::ifstream{"temp_test_serialization", std::ios::binary};
-
-            auto index = fmindex_collection::FMIndex<OccTable>{};
-            auto archive = cereal::BinaryInputArchive{ifs};
-            archive(index);
-
-            REQUIRE(index.size() == bwt.size());
-            for (size_t i{0}; i < sa.size(); ++i) {
-                CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
-            }
-        }
     }
 }

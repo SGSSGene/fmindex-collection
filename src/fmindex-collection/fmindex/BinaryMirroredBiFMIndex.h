@@ -3,31 +3,29 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../string/concepts.h"
+#include "../bitvector/concepts.h"
 #include "../suffixarray/CSA.h"
 #include "../utils.h"
 
+#include <algorithm>
+
 namespace fmindex_collection {
 
-/*
- * Same as the FMIndex, but build internally over the reverse text.
- *
- * This allows to have "extend_right" functionality instead of "extend_left".
- */
-template <RankVector Vector, SuffixArray_c TCSA = CSA>
-struct ReverseFMIndex {
-    static size_t constexpr Sigma = Vector::Sigma;
+template <BitVector_c Vector, SuffixArray_c TCSA = CSA>
+struct BinaryMirroredBiFMIndex {
+    static size_t constexpr Sigma = 2;
 
-    Vector                      bwt;
+    Vector bwt;
     std::array<size_t, Sigma+1> C{};
     TCSA   csa;
 
-    ReverseFMIndex() = default;
-    ReverseFMIndex(std::span<uint8_t const> _bwt, TCSA _csa)
+    BinaryMirroredBiFMIndex() = default;
+    BinaryMirroredBiFMIndex(std::span<uint8_t const> _bwt, TCSA _csa)
         : bwt{_bwt}
         , csa{std::move(_csa)}
     {
         for (auto c : _bwt) {
+            assert(c < Sigma); // must fit into the alphabet
             C[c+1] += 1;
         }
         for (size_t i{1}; i < C.size(); ++i) {
@@ -35,26 +33,40 @@ struct ReverseFMIndex {
         }
     }
 
-    ReverseFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
+    /**!\brief Creates a BinaryMirroredBiFMIndex with a specified sampling rate
+     *
+     * \param _input a list of sequences
+     * \param samplingRate rate of the sampling
+     */
+    BinaryMirroredBiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, bool useDelimiters = true) {
+        auto [totalSize, inputText, inputSizes] = [&]() {
+            if (useDelimiters) {
+                return createSequencesAndReverse(_input);
+            } else {
+                return createSequencesAndReverseWithoutDelimiter(_input);
+            }
+        }();
 
-        auto [totalSize, inputText, inputSizes] = createSequences(_input, /*reverse*/ true);
+        // Check only valid characters are used
+        assert([&]() {
+            for (auto c : inputText) {
+                if (c >= Sigma) return false;
+            }
+            return true;
+        }());
 
-        auto [bwt, csa] = [&, &inputText=inputText, &inputSizes=inputSizes] () {
+        // create BurrowsWheelerTransform and CompressedSuffixArray
+        auto [bwt, csa] = [&]() {
             auto sa  = createSA64(inputText, threadNbr);
             auto bwt = createBWT64(inputText, sa);
-            auto csa = TCSA{std::move(sa), samplingRate, inputSizes, /*reverse*/ true};
-
+            auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
             return std::make_tuple(std::move(bwt), std::move(csa));
         }();
 
         decltype(inputText){}.swap(inputText); // inputText memory can be deleted
 
-        *this = ReverseFMIndex{bwt, std::move(csa)};
+        *this = BinaryMirroredBiFMIndex{bwt, std::move(csa)};
     }
-
-/*    size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
-        return occ.memoryUsage() + csa.memoryUsage();
-    }*/
 
     size_t size() const {
         return bwt.size();
@@ -70,8 +82,7 @@ struct ReverseFMIndex {
                 v = bwt.hasValue(idx);
             }
             auto [chr, pos] = csa.value(idx);
-            return {chr, pos-steps};
-
+            return {chr, pos+steps};
         } else {
             auto opt = csa.value(idx);
             uint64_t steps{};
@@ -80,13 +91,17 @@ struct ReverseFMIndex {
                     idx = bwt.rank_symbol(idx);
                 } else {
                     auto symb = bwt.symbol(idx);
-                    idx = bwt.rank(idx, symb) + C[symb];
+                    if (symb) {
+                        idx = bwt.rank(idx) + C[symb] ;
+                    } else {
+                        idx = idx - bwt.rank(idx) + C[symb];
+                    }
                 }
                 steps += 1;
                 opt = csa.value(idx);
             }
             auto [chr, pos] = *opt;
-            return {chr, pos-steps};
+            return {chr, pos+steps};
         }
     }
 

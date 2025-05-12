@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../BitStack.h"
 #include "../bitvector/Bitvector.h"
 #include "../bitvector/CompactBitvector.h"
 #include "../DenseVector.h"
@@ -56,22 +55,22 @@ struct DenseCSA {
         }
     }
 
-    DenseCSA(DenseVector _ssaPos, DenseVector _ssaSeq, size_t _seqCount, BitStack const& bitstack)
+    template <std::ranges::sized_range range_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
+    DenseCSA(DenseVector _ssaPos, DenseVector _ssaSeq, size_t _seqCount, range_t const& bitstack)
         : ssaPos{std::move(_ssaPos)}
         , ssaSeq{std::move(_ssaSeq)}
-        , bv{bitstack.size, [&](size_t idx) {
-            return bitstack.value(idx);
-        }}
+        , bv{bitstack}
         , seqCount{_seqCount} {
         assert(ssaPos.size() == ssaSeq.size());
     }
 
-    DenseCSA(DenseVector _ssaPos, BitStack const& bitstack)
+    template <std::ranges::sized_range range_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
+    DenseCSA(DenseVector _ssaPos, range_t const& bitstack)
         : ssaPos{std::move(_ssaPos)}
         , ssaSeq(1)
-        , bv{bitstack.size, [&](size_t idx) {
-            return bitstack.value(idx);
-        }}
+        , bv{bitstack}
         , seqCount{1} {
         for(size_t i{0}; i < ssaPos.size(); ++i) {
             ssaSeq.push_back(0);
@@ -165,7 +164,7 @@ struct DenseCSA {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(ssaPos, ssaSeq, bv);
+        ar(ssaPos, ssaSeq, bv, seqCount);
     }
 };
 static_assert(SuffixArray_c<DenseCSA>);
