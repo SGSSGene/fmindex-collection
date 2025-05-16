@@ -22,12 +22,12 @@
  */
 namespace fmindex_collection::string {
 
-template <size_t TSigma, size_t encodingBlockSize, size_t DifferentBlocks = 16, template <size_t, typename...> typename RankVector = Wavelet, template <size_t, typename...> typename MixedVector = RankVector>
+template <size_t TSigma, size_t encodingBlockSize, size_t DifferentBlocks = 16, template <size_t, typename...> typename String = Wavelet, template <size_t, typename...> typename MixedString = String>
 struct RBBwtV2 {
     static constexpr size_t Sigma = TSigma;
 
-    RankVector<DifferentBlocks> topLevelVector{};
-    MixedVector<TSigma>         mixedLevelVector{};
+    String<DifferentBlocks> topLevelVector{};
+    MixedString<TSigma>     mixedLevelVector{};
 
     std::array<std::array<size_t, DifferentBlocks>, TSigma> factors{};
     std::array<std::array<uint8_t, encodingBlockSize>, DifferentBlocks> prefix{};
@@ -99,8 +99,8 @@ struct RBBwtV2 {
                 }
             }
 
-            topLevelVector   = RankVector<DifferentBlocks>{topLevelNames};
-            mixedLevelVector = MixedVector<TSigma>{mixedLevel};
+            topLevelVector   = String<DifferentBlocks>{topLevelNames};
+            mixedLevelVector = MixedString<TSigma>{mixedLevel};
 
 /*            for (size_t i{0}; i < topLevelNames.size(); ++i) {
                 assert(topLevelVector.symbol(i) == topLevelNames[i]);
@@ -236,6 +236,6 @@ struct RBBwtV2 {
 };
 
 template <size_t TSigma> using RBBwtV2Instance = RBBwtV2<TSigma, 4>;
-static_assert(checkRankVector<RBBwtV2Instance>);
+static_assert(checkString_c<RBBwtV2Instance>);
 
 }

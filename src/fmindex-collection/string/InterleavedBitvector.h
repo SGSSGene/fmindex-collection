@@ -174,11 +174,11 @@ template <size_t TSigma> using InterleavedBitvector16Aligned = InterleavedBitvec
 template <size_t TSigma> using InterleavedBitvector32Aligned = InterleavedBitvector<TSigma, 64, uint32_t>;
 
 
-static_assert(checkRankVector<InterleavedBitvector8>);
-static_assert(checkRankVector<InterleavedBitvector16>);
-static_assert(checkRankVector<InterleavedBitvector32>);
-static_assert(checkRankVector<InterleavedBitvector8Aligned>);
-static_assert(checkRankVector<InterleavedBitvector16Aligned>);
-static_assert(checkRankVector<InterleavedBitvector32Aligned>);
+static_assert(checkString_c<InterleavedBitvector8>);
+static_assert(checkString_c<InterleavedBitvector16>);
+static_assert(checkString_c<InterleavedBitvector32>);
+static_assert(checkString_c<InterleavedBitvector8Aligned>);
+static_assert(checkString_c<InterleavedBitvector16Aligned>);
+static_assert(checkString_c<InterleavedBitvector32Aligned>);
 
 }

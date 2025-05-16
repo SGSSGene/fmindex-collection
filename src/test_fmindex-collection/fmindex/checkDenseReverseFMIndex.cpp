@@ -7,7 +7,7 @@
 #include <fmindex-collection/fmindex/ReverseFMIndex.h>
 #include <fmindex-collection/suffixarray/DenseCSA.h>
 
-TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
     using DenseVector = fmindex_collection::DenseVector;
 

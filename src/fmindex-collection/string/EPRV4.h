@@ -236,6 +236,6 @@ struct EPRV4 {
     }
 };
 
-static_assert(checkRankVector<EPRV4>);
+static_assert(checkString_c<EPRV4>);
 
 }

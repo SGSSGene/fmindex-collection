@@ -8,7 +8,7 @@
 #include <fmindex-collection/search/BacktrackingWithBuffers.h>
 #include <fmindex-collection/search_scheme/generator/all.h>
 
-TEMPLATE_TEST_CASE("searching with collection and backtracking with buffers on a reversed fmindex", "[collection][search][reverse]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("searching with collection and backtracking with buffers on a reversed fmindex", "[collection][search][reverse]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'B', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},

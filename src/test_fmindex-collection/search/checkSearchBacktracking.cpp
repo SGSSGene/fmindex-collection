@@ -8,7 +8,7 @@
 #include <fmindex-collection/search/Backtracking.h>
 #include <fmindex-collection/search_scheme/generator/all.h>
 
-TEMPLATE_TEST_CASE("searching with backtracking", "[search]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("searching with backtracking", "[search]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
@@ -40,7 +40,7 @@ TEMPLATE_TEST_CASE("searching with backtracking", "[search]", ALLRANKVECTORS(255
     });
 }
 
-TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
@@ -102,7 +102,7 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]",
     }
 }
 
-TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
@@ -134,7 +134,7 @@ TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]", ALLRA
     });
 }
 
-TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[collection]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[collection]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
@@ -196,7 +196,7 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[
     }
 }
 
-TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
@@ -228,7 +228,7 @@ TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]"
     });
 
 }
-TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMIndex", "[collection]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMIndex", "[collection]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},

@@ -332,4 +332,4 @@ AWFMINDEX_TEMPLATE(21, 18);
 AWFMINDEX_TEMPLATE(21, 19);
 AWFMINDEX_TEMPLATE(21, 20);
 
-//static_assert(checkRankVector<AWFMIndex>);
+//static_assert(checkString_c<AWFMIndex>);

@@ -14,11 +14,11 @@ namespace fmindex_collection {
  *
  * This allows to have "extend_right" functionality instead of "extend_left".
  */
-template <RankVector Vector, SuffixArray_c TCSA = CSA>
+template <String_c String, SuffixArray_c TCSA = CSA>
 struct ReverseFMIndex {
-    static size_t constexpr Sigma = Vector::Sigma;
+    static size_t constexpr Sigma = String::Sigma;
 
-    Vector                      bwt;
+    String                      bwt;
     std::array<size_t, Sigma+1> C{};
     TCSA   csa;
 
@@ -61,7 +61,7 @@ struct ReverseFMIndex {
     }
 
     auto locate(size_t idx) const -> std::tuple<size_t, size_t> {
-        if constexpr (requires(Vector t) {{ t.hasValue(size_t{}) }; }) {
+        if constexpr (requires(String t) {{ t.hasValue(size_t{}) }; }) {
             bool v = bwt.hasValue(idx);
             uint64_t steps{};
             while(!v) {
@@ -76,7 +76,7 @@ struct ReverseFMIndex {
             auto opt = csa.value(idx);
             uint64_t steps{};
             while(!opt) {
-                if constexpr (requires(Vector t) { { t.rank_symbol(size_t{}) }; }) {
+                if constexpr (requires(String t) { { t.rank_symbol(size_t{}) }; }) {
                     idx = bwt.rank_symbol(idx);
                 } else {
                     auto symb = bwt.symbol(idx);

@@ -6,7 +6,7 @@
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/MirroredBiFMIndex.h>
 
-TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index", "[MirroredBiFMIndex]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index", "[MirroredBiFMIndex]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     // T = 011202110

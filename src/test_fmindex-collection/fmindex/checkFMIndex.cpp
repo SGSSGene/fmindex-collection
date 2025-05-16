@@ -7,7 +7,7 @@
 #include <fmindex-collection/fmindex/FMIndex.h>
 #include <fstream>
 
-TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};

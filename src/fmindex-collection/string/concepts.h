@@ -22,7 +22,7 @@
 namespace fmindex_collection {
 
 template <typename T, typename SymbolType = uint8_t>
-concept RankVector =
+concept String_c =
     std::default_initializable<T>
     && std::movable<T>
     && requires(T t, std::span<SymbolType const> symbols, size_t idx, SymbolType symb) {
@@ -31,7 +31,7 @@ concept RankVector =
      */
     { decltype(T::Sigma){} } -> std::same_as<size_t>;
 
-    /** Every RankVector can be constructed via some type of string similar thing
+    /** Every String_c can be constructed via some type of string similar thing
      */
     { T{symbols} } -> std::same_as<T>;
 
@@ -87,9 +87,9 @@ concept RankVector =
 
 
 template<template <auto> typename T>
-concept checkRankVector =    RankVector<T<2>>
-                          && RankVector<T<4>>
-                          && RankVector<T<5>>
-                          && RankVector<T<255>>
-                          && RankVector<T<256>>;
+concept checkString_c =    String_c<T<2>>
+                        && String_c<T<4>>
+                        && String_c<T<5>>
+                        && String_c<T<255>>
+                        && String_c<T<256>>;
 }

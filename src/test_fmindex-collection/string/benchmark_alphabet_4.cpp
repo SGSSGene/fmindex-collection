@@ -14,7 +14,7 @@ TEST_CASE("benchmark strings c'tor operation - 4 alphabet", "[string][!benchmark
              .batch(text.size());
 
         call_with_templates<
-            RANKVECTORS(4)>([&]<typename Vector>() {
+            STRINGSWITHRANK(4)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<4>>) {
                 return;
             }
@@ -40,7 +40,7 @@ TEST_CASE("benchmark vectors symbol() operations - 4 alphabet", "[string][!bench
              .batch(text.size());
 
         call_with_templates<
-            RANKVECTORS(4)>([&]<typename Vector>() {
+            STRINGSWITHRANK(4)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<4>>) {
                 return;
             }
@@ -69,7 +69,7 @@ TEST_CASE("benchmark vectors rank() operations - 4 alphabet", "[string][!benchma
              .relative(true);
 
         call_with_templates<
-            RANKVECTORS(4)>([&]<typename Vector>() {
+            STRINGSWITHRANK(4)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<4>>) {
                 return;
             }
@@ -98,7 +98,7 @@ TEST_CASE("benchmark vectors prefix_rank() operations - 4 alphabet", "[string][!
              .relative(true);
 
         call_with_templates<
-            RANKVECTORS(4)>([&]<typename Vector>() {
+            STRINGSWITHRANK(4)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<4>>) {
                 return;
             }
@@ -127,7 +127,7 @@ TEST_CASE("benchmark vectors all_ranks() operations - 4 alphabet", "[string][!be
              .relative(true);
 
         call_with_templates<
-            RANKVECTORS(4)>([&]<typename Vector>() {
+            STRINGSWITHRANK(4)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<4>>) {
                 return;
             }
@@ -156,7 +156,7 @@ TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - 4 alphabe
              .relative(true);
 
         call_with_templates<
-            RANKVECTORS(4)>([&]<typename Vector>() {
+            STRINGSWITHRANK(4)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<4>>) {
                 return;
             }
@@ -186,7 +186,7 @@ TEST_CASE("benchmark vectors in size - alphabet 4", "[string][!benchmark][4][siz
         benchSize.entries[0][4] = "alphabet 4";
 
         call_with_templates<
-            RANKVECTORS(4)>([&]<typename Vector>() {
+            STRINGSWITHRANK(4)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<4>>) {
                 return;
             }

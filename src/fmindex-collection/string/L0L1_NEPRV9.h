@@ -305,12 +305,12 @@ template <size_t Sigma> using L0L1_NEPRV9_512_4k  = L0L1_NEPRV9<Sigma, 512, 4096
 template <size_t Sigma> using L0L1_NEPRV9_1024_4k = L0L1_NEPRV9<Sigma, 1024, 4096>;
 template <size_t Sigma> using L0L1_NEPRV9_2048_4k = L0L1_NEPRV9<Sigma, 2048, 4096>;
 
-static_assert(checkRankVector<L0L1_NEPRV9_64_4k>);
-static_assert(checkRankVector<L0L1_NEPRV9_128_4k>);
-static_assert(checkRankVector<L0L1_NEPRV9_256_4k>);
-static_assert(checkRankVector<L0L1_NEPRV9_512_4k>);
-static_assert(checkRankVector<L0L1_NEPRV9_1024_4k>);
-static_assert(checkRankVector<L0L1_NEPRV9_2048_4k>);
+static_assert(checkString_c<L0L1_NEPRV9_64_4k>);
+static_assert(checkString_c<L0L1_NEPRV9_128_4k>);
+static_assert(checkString_c<L0L1_NEPRV9_256_4k>);
+static_assert(checkString_c<L0L1_NEPRV9_512_4k>);
+static_assert(checkString_c<L0L1_NEPRV9_1024_4k>);
+static_assert(checkString_c<L0L1_NEPRV9_2048_4k>);
 
 template <size_t Sigma> using L0L1_NEPRV9_64_64k   = L0L1_NEPRV9<Sigma, 64, 65536>;
 template <size_t Sigma> using L0L1_NEPRV9_128_64k  = L0L1_NEPRV9<Sigma, 128, 65536>;
@@ -320,13 +320,13 @@ template <size_t Sigma> using L0L1_NEPRV9_1024_64k = L0L1_NEPRV9<Sigma, 1024, 65
 template <size_t Sigma> using L0L1_NEPRV9_2048_64k = L0L1_NEPRV9<Sigma, 2048, 65536>;
 template <size_t Sigma> using L0L1_NEPRV9_4096_64k = L0L1_NEPRV9<Sigma, 4096, 65536>;
 
-static_assert(checkRankVector<L0L1_NEPRV9_64_64k>);
-static_assert(checkRankVector<L0L1_NEPRV9_128_64k>);
-static_assert(checkRankVector<L0L1_NEPRV9_256_64k>);
-static_assert(checkRankVector<L0L1_NEPRV9_512_64k>);
-static_assert(checkRankVector<L0L1_NEPRV9_1024_64k>);
-static_assert(checkRankVector<L0L1_NEPRV9_2048_64k>);
-static_assert(checkRankVector<L0L1_NEPRV9_4096_64k>);
+static_assert(checkString_c<L0L1_NEPRV9_64_64k>);
+static_assert(checkString_c<L0L1_NEPRV9_128_64k>);
+static_assert(checkString_c<L0L1_NEPRV9_256_64k>);
+static_assert(checkString_c<L0L1_NEPRV9_512_64k>);
+static_assert(checkString_c<L0L1_NEPRV9_1024_64k>);
+static_assert(checkString_c<L0L1_NEPRV9_2048_64k>);
+static_assert(checkString_c<L0L1_NEPRV9_4096_64k>);
 
 template <size_t Sigma> using L0L1_NEPRV9_64_64kUA   = L0L1_NEPRV9<Sigma, 64, 65536, false>;
 template <size_t Sigma> using L0L1_NEPRV9_128_64kUA  = L0L1_NEPRV9<Sigma, 128, 65536, false>;
@@ -336,12 +336,12 @@ template <size_t Sigma> using L0L1_NEPRV9_1024_64kUA = L0L1_NEPRV9<Sigma, 1024, 
 template <size_t Sigma> using L0L1_NEPRV9_2048_64kUA = L0L1_NEPRV9<Sigma, 2048, 65536, false>;
 template <size_t Sigma> using L0L1_NEPRV9_4096_64kUA = L0L1_NEPRV9<Sigma, 4096, 65536, false>;
 
-static_assert(checkRankVector<L0L1_NEPRV9_64_64kUA>);
-static_assert(checkRankVector<L0L1_NEPRV9_128_64kUA>);
-static_assert(checkRankVector<L0L1_NEPRV9_256_64kUA>);
-static_assert(checkRankVector<L0L1_NEPRV9_512_64kUA>);
-static_assert(checkRankVector<L0L1_NEPRV9_1024_64kUA>);
-static_assert(checkRankVector<L0L1_NEPRV9_2048_64kUA>);
-static_assert(checkRankVector<L0L1_NEPRV9_4096_64kUA>);
+static_assert(checkString_c<L0L1_NEPRV9_64_64kUA>);
+static_assert(checkString_c<L0L1_NEPRV9_128_64kUA>);
+static_assert(checkString_c<L0L1_NEPRV9_256_64kUA>);
+static_assert(checkString_c<L0L1_NEPRV9_512_64kUA>);
+static_assert(checkString_c<L0L1_NEPRV9_1024_64kUA>);
+static_assert(checkString_c<L0L1_NEPRV9_2048_64kUA>);
+static_assert(checkString_c<L0L1_NEPRV9_4096_64kUA>);
 
 }

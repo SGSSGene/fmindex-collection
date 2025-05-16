@@ -95,7 +95,7 @@ struct Sdsl_wt_epr {
     }
 };
 //(Sdsl wt epr seems broken?, since it doesn't work for Sigma <= 2 and Sigma == 256
-//static_assert(checkRankVector<Sdsl_wt_epr>);
+//static_assert(checkString_c<Sdsl_wt_epr>);
 
 }
 #endif

@@ -125,7 +125,7 @@ auto generateLargeText() -> std::vector<uint64_t> const& {
 
 #ifdef FMC_USE_AWFMINDEX
     #include "AWFMIndex.h"
-    #define RANKVECTORS(Sigma) ALLRANKVECTORS(Sigma), AWFMIndex<Sigma>
+    #define STRINGSWITHRANK(Sigma) ALLSTRINGSWITHRANK(Sigma), AWFMIndex<Sigma>
 #else
-    #define RANKVECTORS(Sigma) ALLRANKVECTORS(Sigma)
+    #define STRINGSWITHRANK(Sigma) ALLSTRINGSWITHRANK(Sigma)
 #endif

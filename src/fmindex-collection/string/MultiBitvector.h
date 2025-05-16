@@ -90,6 +90,6 @@ struct MultiBitvector {
 template <uint64_t TSigma>
 using MultiBitvector_Bitvector = MultiBitvector<TSigma, bitvector::Bitvector>;
 
-static_assert(checkRankVector<MultiBitvector_Bitvector>);
+static_assert(checkString_c<MultiBitvector_Bitvector>);
 
 }

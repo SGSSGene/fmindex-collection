@@ -91,7 +91,7 @@ struct Sdsl_wt_bldc {
         ar(index, totalLength);
     }
 };
-static_assert(checkRankVector<Sdsl_wt_bldc>);
+static_assert(checkString_c<Sdsl_wt_bldc>);
 
 }
 

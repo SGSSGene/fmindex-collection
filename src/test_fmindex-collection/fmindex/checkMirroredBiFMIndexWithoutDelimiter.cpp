@@ -8,7 +8,7 @@
 #include <fmindex-collection/fmindex/MirroredBiFMIndexCursor.h>
 #include <fstream>
 
-TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index without delimiters", "[MirroredBiFMIndex-nd]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index without delimiters", "[MirroredBiFMIndex-nd]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto input = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{1, 2, 0}};

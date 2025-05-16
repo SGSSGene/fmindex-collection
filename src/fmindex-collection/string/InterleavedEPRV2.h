@@ -288,25 +288,25 @@ struct InterleavedEPRV2 {
 };
 
 template <size_t TSigma> using InterleavedEPRV2_8         = InterleavedEPRV2<TSigma,  8,  uint8_t>;
-static_assert(checkRankVector<InterleavedEPRV2_8>);
+static_assert(checkString_c<InterleavedEPRV2_8>);
 
 template <size_t TSigma> using InterleavedEPRV2_16        = InterleavedEPRV2<TSigma,  8, uint16_t>;
-static_assert(checkRankVector<InterleavedEPRV2_16>);
+static_assert(checkString_c<InterleavedEPRV2_16>);
 
 #if SIZE_MAX == UINT64_MAX
 template <size_t TSigma> using InterleavedEPRV2_32        = InterleavedEPRV2<TSigma,  8, uint32_t>;
-static_assert(checkRankVector<InterleavedEPRV2_32>);
+static_assert(checkString_c<InterleavedEPRV2_32>);
 #endif
 
 template <size_t TSigma> using InterleavedEPRV2_8Aligned  = InterleavedEPRV2<TSigma, 64,  uint8_t>;
-static_assert(checkRankVector<InterleavedEPRV2_8Aligned>);
+static_assert(checkString_c<InterleavedEPRV2_8Aligned>);
 
 template <size_t TSigma> using InterleavedEPRV2_16Aligned = InterleavedEPRV2<TSigma, 64, uint16_t>;
-static_assert(checkRankVector<InterleavedEPRV2_16Aligned>);
+static_assert(checkString_c<InterleavedEPRV2_16Aligned>);
 
 #if SIZE_MAX == UINT64_MAX
 template <size_t TSigma> using InterleavedEPRV2_32Aligned = InterleavedEPRV2<TSigma, 64, uint32_t>;
-static_assert(checkRankVector<InterleavedEPRV2_32Aligned>);
+static_assert(checkString_c<InterleavedEPRV2_32Aligned>);
 #endif
 
 

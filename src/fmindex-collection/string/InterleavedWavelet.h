@@ -19,7 +19,7 @@
 
 namespace fmindex_collection::string {
 
-/* Implements the concept `RankVector`
+/* Implements the concept `String_c`
  *
  * \param TSigma size of the alphabet
  *
@@ -311,6 +311,6 @@ struct InterleavedWavelet {
     }
 };
 
-static_assert(checkRankVector<InterleavedWavelet>);
+static_assert(checkString_c<InterleavedWavelet>);
 
 }

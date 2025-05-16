@@ -390,27 +390,27 @@ struct NEPRV8 {
 
 template <size_t Sigma>
 using NEPRV8_64 = NEPRV8<Sigma, 64>;
-static_assert(checkRankVector<NEPRV8_64>);
+static_assert(checkString_c<NEPRV8_64>);
 
 template <size_t Sigma>
 using NEPRV8_128 = NEPRV8<Sigma, 128>;
-static_assert(checkRankVector<NEPRV8_128>);
+static_assert(checkString_c<NEPRV8_128>);
 
 template <size_t Sigma>
 using NEPRV8_256 = NEPRV8<Sigma, 256>;
-static_assert(checkRankVector<NEPRV8_256>);
+static_assert(checkString_c<NEPRV8_256>);
 
 template <size_t Sigma>
 using NEPRV8_512 = NEPRV8<Sigma, 512>;
-static_assert(checkRankVector<NEPRV8_512>);
+static_assert(checkString_c<NEPRV8_512>);
 
 template <size_t Sigma>
 using NEPRV8_1024 = NEPRV8<Sigma, 1024>;
-static_assert(checkRankVector<NEPRV8_1024>);
+static_assert(checkString_c<NEPRV8_1024>);
 
 template <size_t Sigma>
 using NEPRV8_2048 = NEPRV8<Sigma, 2048>;
-static_assert(checkRankVector<NEPRV8_2048>);
+static_assert(checkString_c<NEPRV8_2048>);
 
 
 }

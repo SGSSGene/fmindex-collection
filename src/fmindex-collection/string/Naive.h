@@ -72,6 +72,6 @@ struct Naive {
         ar(occ, totalLength);
     }
 };
-static_assert(checkRankVector<Naive>);
+static_assert(checkString_c<Naive>);
 
 }

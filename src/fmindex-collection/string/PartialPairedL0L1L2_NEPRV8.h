@@ -308,35 +308,35 @@ struct PartialPairedL0L1L2_NEPRV8 {
 
 template <size_t Sigma>
 using PartialPairedL0L1L2_64ShortEPRV8 = PartialPairedL0L1L2_NEPRV8<Sigma, 64, uint8_t, uint16_t>;
-static_assert(checkRankVector<PartialPairedL0L1L2_64ShortEPRV8>);
+static_assert(checkString_c<PartialPairedL0L1L2_64ShortEPRV8>);
 
 template <size_t Sigma>
 using PartialPairedL0L1L2_128ShortEPRV8 = PartialPairedL0L1L2_NEPRV8<Sigma, 128, uint8_t, uint16_t>;
-static_assert(checkRankVector<PartialPairedL0L1L2_128ShortEPRV8>);
+static_assert(checkString_c<PartialPairedL0L1L2_128ShortEPRV8>);
 
 template <size_t Sigma>
 using PartialPairedL0L1L2_64EPRV8 = PartialPairedL0L1L2_NEPRV8<Sigma, 64>;
-static_assert(checkRankVector<PartialPairedL0L1L2_64EPRV8>);
+static_assert(checkString_c<PartialPairedL0L1L2_64EPRV8>);
 
 template <size_t Sigma>
 using PartialPairedL0L1L2_128EPRV8 = PartialPairedL0L1L2_NEPRV8<Sigma, 128>;
-static_assert(checkRankVector<PartialPairedL0L1L2_128EPRV8>);
+static_assert(checkString_c<PartialPairedL0L1L2_128EPRV8>);
 
 template <size_t Sigma>
 using PartialPairedL0L1L2_256EPRV8 = PartialPairedL0L1L2_NEPRV8<Sigma, 256>;
-static_assert(checkRankVector<PartialPairedL0L1L2_256EPRV8>);
+static_assert(checkString_c<PartialPairedL0L1L2_256EPRV8>);
 
 template <size_t Sigma>
 using PartialPairedL0L1L2_512EPRV8 = PartialPairedL0L1L2_NEPRV8<Sigma, 512>;
-static_assert(checkRankVector<PartialPairedL0L1L2_512EPRV8>);
+static_assert(checkString_c<PartialPairedL0L1L2_512EPRV8>);
 
 template <size_t Sigma>
 using PartialPairedL0L1L2_1024EPRV8 = PartialPairedL0L1L2_NEPRV8<Sigma, 1024>;
-static_assert(checkRankVector<PartialPairedL0L1L2_1024EPRV8>);
+static_assert(checkString_c<PartialPairedL0L1L2_1024EPRV8>);
 
 template <size_t Sigma>
 using PartialPairedL0L1L2_2048EPRV8 = PartialPairedL0L1L2_NEPRV8<Sigma, 2048>;
-static_assert(checkRankVector<PartialPairedL0L1L2_2048EPRV8>);
+static_assert(checkString_c<PartialPairedL0L1L2_2048EPRV8>);
 
 
 }

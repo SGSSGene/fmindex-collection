@@ -230,6 +230,6 @@ struct EPRV5 {
     }
 };
 
-static_assert(checkRankVector<EPRV5>);
+static_assert(checkString_c<EPRV5>);
 
 }

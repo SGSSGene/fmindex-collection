@@ -9,7 +9,7 @@
 #include <fmindex-collection/fmindex/BiFMIndexCursor.h>
 #include <fstream>
 
-TEMPLATE_TEST_CASE("checking bidirectional fm index without delimiters", "[BiFMIndex-nd]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("checking bidirectional fm index without delimiters", "[BiFMIndex-nd]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto input = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{1, 2, 0}};
@@ -72,7 +72,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index without delimiters", "[BiFMI
     }
 }
 
-TEMPLATE_TEST_CASE("checking bidirectional fm index without delimiters - bwt/sa", "[BiFMIndex-nd]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("checking bidirectional fm index without delimiters - bwt/sa", "[BiFMIndex-nd]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto input = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{1, 2, 0, 0, 1, 2}};

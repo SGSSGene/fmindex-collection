@@ -9,11 +9,11 @@
 
 namespace fmindex_collection {
 
-template <RankVector Vector, SuffixArray_c TCSA = CSA>
+template <String_c String, SuffixArray_c TCSA = CSA>
 struct FMIndex {
-    static size_t constexpr Sigma = Vector::Sigma;
+    static size_t constexpr Sigma = String::Sigma;
 
-    Vector                      bwt;
+    String                      bwt;
     std::array<size_t, Sigma+1> C{};
     TCSA   csa;
 

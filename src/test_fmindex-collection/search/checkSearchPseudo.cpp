@@ -8,7 +8,7 @@
 #include <fmindex-collection/search/SearchPseudo.h>
 #include <fmindex-collection/search_scheme/generator/all.h>
 
-TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
@@ -41,7 +41,7 @@ TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]", ALLRANKVECTORS(255
     });
 
 }
-TEMPLATE_TEST_CASE("searching with collection and PseudoSearch", "[collection]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("searching with collection and PseudoSearch", "[collection]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},

@@ -269,6 +269,6 @@ struct InterleavedEPRV7 {
 
 };
 
-static_assert(checkRankVector<InterleavedEPRV7>);
+static_assert(checkString_c<InterleavedEPRV7>);
 
 }

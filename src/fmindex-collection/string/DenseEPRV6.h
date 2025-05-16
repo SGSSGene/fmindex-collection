@@ -288,6 +288,6 @@ struct DenseEPRV6 {
     }
 };
 
-static_assert(checkRankVector<DenseEPRV6>);
+static_assert(checkString_c<DenseEPRV6>);
 
 }

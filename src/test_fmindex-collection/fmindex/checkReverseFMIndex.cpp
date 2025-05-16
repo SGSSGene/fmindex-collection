@@ -7,7 +7,7 @@
 #include <fmindex-collection/fmindex/ReverseFMIndex.h>
 #include <fstream>
 
-TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]", ALLRANKVECTORS(255)) {
+TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto bwt = std::vector<uint8_t>{'H', '\0', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};

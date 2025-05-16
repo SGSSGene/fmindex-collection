@@ -20,7 +20,7 @@
 
 namespace fmindex_collection::string {
 
-/* Implements the concept `RankVector`
+/* Implements the concept `String_c`
  *
  * \param TSigma size of the alphabet
  */
@@ -177,7 +177,7 @@ struct Wavelet {
 
 template <uint64_t TSigma>
 using Wavelet_Default = Wavelet<TSigma>;
-static_assert(checkRankVector<Wavelet_Default>);
+static_assert(checkString_c<Wavelet_Default>);
 
 template <size_t Sigma>
 struct PrunedWavelet : Wavelet<Sigma, bitvector::PrunedBitvector> {
@@ -187,7 +187,7 @@ struct PrunedWavelet : Wavelet<Sigma, bitvector::PrunedBitvector> {
 template <uint64_t TSigma>
 using PrunedWavelet_Default = PrunedWavelet<TSigma>;
 
-static_assert(checkRankVector<PrunedWavelet_Default>);
+static_assert(checkString_c<PrunedWavelet_Default>);
 
 
 }

@@ -14,7 +14,7 @@ TEST_CASE("benchmark strings c'tor operation - 4096 alphabet", "[string][!benchm
              .batch(text.size());
 
         call_with_templates<
-            ALLLARGERANKVECTORS(4096)>([&]<typename Vector>() {
+            ALLLARGESTRINGSWITHRANK(4096)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<4096>>) {
                 return;
             }
@@ -40,7 +40,7 @@ TEST_CASE("benchmark vectors symbol() operations - 4096 alphabet", "[string][!be
              .batch(text.size());
 
         call_with_templates<
-            ALLLARGERANKVECTORS(4096)>([&]<typename Vector>() {
+            ALLLARGESTRINGSWITHRANK(4096)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<4096>>) {
                 return;
             }
@@ -69,7 +69,7 @@ TEST_CASE("benchmark vectors rank() operations - 4096 alphabet", "[string][!benc
              .relative(true);
 
         call_with_templates<
-            ALLLARGERANKVECTORS(4096)>([&]<typename Vector>() {
+            ALLLARGESTRINGSWITHRANK(4096)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<4096>>) {
                 return;
             }
@@ -98,7 +98,7 @@ TEST_CASE("benchmark vectors prefix_rank() operations - 4096 alphabet", "[string
              .relative(true);
 
         call_with_templates<
-            ALLLARGERANKVECTORS(4096)>([&]<typename Vector>() {
+            ALLLARGESTRINGSWITHRANK(4096)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<4096>>) {
                 return;
             }
@@ -127,7 +127,7 @@ TEST_CASE("benchmark vectors all_ranks() operations - 4096 alphabet", "[string][
              .relative(true);
 
         call_with_templates<
-            ALLLARGERANKVECTORS(4096)>([&]<typename Vector>() {
+            ALLLARGESTRINGSWITHRANK(4096)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<4096>>) {
                 return;
             }
@@ -156,7 +156,7 @@ TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - 4096 alph
              .relative(true);
 
         call_with_templates<
-            ALLLARGERANKVECTORS(4096)>([&]<typename Vector>() {
+            ALLLARGESTRINGSWITHRANK(4096)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<4096>>) {
                 return;
             }
@@ -186,7 +186,7 @@ TEST_CASE("benchmark vectors in size - alphabet 4096", "[string][!benchmark][409
         benchSize.entries[0][4] = "alphabet 4096";
 
         call_with_templates<
-            ALLLARGERANKVECTORS(4096)>([&]<typename Vector>() {
+            ALLLARGESTRINGSWITHRANK(4096)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<4096>>) {
                 return;
             }

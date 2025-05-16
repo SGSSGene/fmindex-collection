@@ -262,14 +262,14 @@ struct EPRV3 {
 };
 
 template <size_t TSigma> using EPRV3_8  = EPRV3<TSigma,  uint8_t>;
-static_assert(checkRankVector<EPRV3_8>);
+static_assert(checkString_c<EPRV3_8>);
 
 template <size_t TSigma> using EPRV3_16 = EPRV3<TSigma, uint16_t>;
-static_assert(checkRankVector<EPRV3_16>);
+static_assert(checkString_c<EPRV3_16>);
 
 #if SIZE_MAX == UINT64_MAX
 template <size_t TSigma> using EPRV3_32 = EPRV3<TSigma, uint32_t>;
-static_assert(checkRankVector<EPRV3_32>);
+static_assert(checkString_c<EPRV3_32>);
 #endif
 
 }

@@ -19,7 +19,7 @@
 
 namespace fmindex_collection::string {
 
-/* Implements the concept `RankVector`
+/* Implements the concept `String_c`
  *
  * \param TSigma size of the alphabet
  */
@@ -341,6 +341,6 @@ struct Wavelet2 {
 template <uint64_t TSigma>
 using Wavelet2_Default = Wavelet2<TSigma>;
 
-static_assert(checkRankVector<Wavelet2_Default>);
+static_assert(checkString_c<Wavelet2_Default>);
 
 }

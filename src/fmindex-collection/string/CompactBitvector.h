@@ -75,6 +75,6 @@ struct CompactBitvector {
     }
 };
 
-static_assert(RankVector<CompactBitvector>);
+static_assert(String_c<CompactBitvector>);
 
 }

@@ -5,22 +5,22 @@
 
 #ifdef FMC_USE_AWFMINDEX
     #include "AWFMIndex.h"
-    #define RANKVECTORS(Sigma) ALLRANKVECTORS(Sigma), AWFMIndex<Sigma>
+    #define STRINGSWITHRANK(Sigma) ALLSTRINGSWITHRANK(Sigma), AWFMIndex<Sigma>
 #else
-    #define RANKVECTORS(Sigma) ALLRANKVECTORS(Sigma)
+    #define STRINGSWITHRANK(Sigma) ALLSTRINGSWITHRANK(Sigma)
 #endif
 
 TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string][all_sizes]") {
     auto testSigma = []<size_t Sigma>() {
         INFO("Sigma " << Sigma);
         call_with_templates<
-            RANKVECTORS(Sigma)>([&]<typename Vector>() {
-            auto vector_name = getName<Vector>();
+            STRINGSWITHRANK(Sigma)>([&]<typename String>() {
+            auto vector_name = getName<String>();
             INFO(vector_name);
 
-            auto text = generateText<0, Vector::Sigma>(1000);
+            auto text = generateText<0, String::Sigma>(1000);
 
-            auto vec = Vector{std::span{text}};
+            auto vec = String{std::span{text}};
             REQUIRE(vec.size() == text.size());
             {
                 for (size_t i{0}; i < text.size(); ++i) {
@@ -38,7 +38,7 @@ TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string]
                 };
                 for (size_t i{0}; i <= text.size(); ++i) {
                     INFO(i);
-                    for (size_t symb{}; symb < Vector::Sigma; ++symb) {
+                    for (size_t symb{}; symb < String::Sigma; ++symb) {
                         CHECK(vec.rank(i, symb) == countRank(i, symb));
                     }
                 }
@@ -61,11 +61,11 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
 
     SECTION("checks") {
         call_with_templates<
-            ALLRANKVECTORS(255)>([&]<typename Vector>() {
-            auto vector_name = getName<Vector>();
+            ALLSTRINGSWITHRANK(255)>([&]<typename String>() {
+            auto vector_name = getName<String>();
             INFO(vector_name);
 
-            auto vec = Vector{std::span{text}};
+            auto vec = String{std::span{text}};
             // checking construction size
             REQUIRE(vec.size() == text.size());
 
@@ -185,7 +185,7 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
 
             // check all other characters have rank 0
             auto ignore = std::unordered_set<size_t>{' ', 'H', 'W', 'a', 'e', 'l', 'o', 't'};
-            for (size_t s{0}; s < Vector::Sigma; ++s) {
+            for (size_t s{0}; s < String::Sigma; ++s) {
                 if (ignore.contains(s)) continue;
                 for (size_t i{0}; i < 11; ++i) {
                     CHECK(vec.rank(i, s) == 0);
@@ -293,7 +293,7 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
             for (size_t idx{0}; idx < vec.size(); ++idx) {
                 auto [rank, prefix] = vec.all_ranks_and_prefix_ranks(idx);
                 auto rank2 = vec.all_ranks(idx);
-                for (size_t symb{1}; symb < Vector::Sigma; ++symb) {
+                for (size_t symb{1}; symb < String::Sigma; ++symb) {
                     INFO(idx);
                     INFO(symb);
                     CHECK(rank[symb] == vec.rank(idx, symb));
@@ -341,9 +341,9 @@ TEST_CASE("check symbol vectors construction on text longer than 255 characters"
 
     SECTION("checks") {
         call_with_templates<
-            ALLRANKVECTORS(255)>([&]<typename Vector>() {
+            ALLSTRINGSWITHRANK(255)>([&]<typename String>() {
 
-            auto vector = Vector{text};
+            auto vector = String{text};
 
             REQUIRE(vector.size() == text.size());
 
@@ -373,7 +373,7 @@ TEST_CASE("check symbol vectors construction on text longer than 255 characters"
             for (size_t idx{0}; idx <= vector.size(); ++idx) {
                 auto [rank, prefix] = vector.all_ranks_and_prefix_ranks(idx);
                 auto rank2 = vector.all_ranks(idx);
-                for (size_t symb{1}; symb < Vector::Sigma; ++symb) {
+                for (size_t symb{1}; symb < String::Sigma; ++symb) {
                     INFO(idx);
                     INFO(symb);
                     CHECK(countRank(idx, symb) == vector.rank(idx, symb));
@@ -396,15 +396,15 @@ TEST_CASE("check symbol vectors construction on text longer than 255 characters"
 static auto benchs_6 = Benchs{};
 static auto benchs_6_text = std::vector<uint8_t>{};
 static auto benchSize_bwt = BenchSize{};
-TEMPLATE_TEST_CASE("benchmark vectors c'tor operation, on human dna5 data", "[RankVector][bwt][!benchmark][6][time][ctor][.]", ALLRANKVECTORS(6)) {
-    using Vector = TestType;
-    if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<6>>) {
+TEMPLATE_TEST_CASE("benchmark vectors c'tor operation, on human dna5 data", "[String_c][bwt][!benchmark][6][time][ctor][.]", ALLSTRINGSWITHRANK(6)) {
+    using String = TestType;
+    if constexpr (std::same_as<String, fmindex_collection::string::Naive<6>>) {
         return;
     }
     auto& [bench_rank, bench_prefix_rank, bench_all_ranks, bench_all_prefix_ranks, bench_symbol, bench_ctor] = benchs_6;
 
 
-    auto vector_name = getName<Vector>();
+    auto vector_name = getName<String>();
     INFO(vector_name);
 
     SECTION("benchmarking") {
@@ -434,27 +434,27 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor operation, on human dna5 data", "[Ra
             }
         }
 
-        auto vec = Vector{text};
+        auto vec = String{text};
 
 
         size_t minEpochIterations = 2'000'000;
         minEpochIterations = 1;
         bench_ctor.minEpochIterations(minEpochIterations).batch(text.size()).run(vector_name, [&]() {
-            auto vec = Vector{text};
-            ankerl::nanobench::doNotOptimizeAway(const_cast<Vector const&>(vec));
+            auto vec = String{text};
+            ankerl::nanobench::doNotOptimizeAway(const_cast<String const&>(vec));
         });
     }
 }
 
-TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human dna5 data", "[RankVector][bwt][!benchmark][6][time][.]", ALLRANKVECTORS(6)) {
-    using Vector = TestType;
-    if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<6>>) {
+TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human dna5 data", "[String_c][bwt][!benchmark][6][time][.]", ALLSTRINGSWITHRANK(6)) {
+    using String = TestType;
+    if constexpr (std::same_as<String, fmindex_collection::string::Naive<6>>) {
         return;
     }
     auto& [bench_rank, bench_prefix_rank, bench_all_ranks, bench_all_prefix_ranks, bench_symbol, bench_ctor] = benchs_6;
 
 
-    auto vector_name = getName<Vector>();
+    auto vector_name = getName<String>();
     INFO(vector_name);
 
     SECTION("benchmarking") {
@@ -484,7 +484,7 @@ TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human d
             }
         }
 
-        auto vec = Vector{text};
+        auto vec = String{text};
         REQUIRE(text.size() > 0);
 
 
@@ -517,13 +517,13 @@ TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human d
     }
 }
 
-TEMPLATE_TEST_CASE("benchmark vectors size, on human dna5 data", "[RankVector][bwt][!benchmark][6][size][.]", ALLRANKVECTORS(6)) {
-    using Vector = TestType;
-    if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<6>>) {
+TEMPLATE_TEST_CASE("benchmark vectors size, on human dna5 data", "[String_c][bwt][!benchmark][6][size][.]", ALLSTRINGSWITHRANK(6)) {
+    using String = TestType;
+    if constexpr (std::same_as<String, fmindex_collection::string::Naive<6>>) {
         return;
     }
 
-    auto vector_name = getName<Vector>();
+    auto vector_name = getName<String>();
     INFO(vector_name);
 
     SECTION("benchmarking") {
@@ -553,7 +553,7 @@ TEMPLATE_TEST_CASE("benchmark vectors size, on human dna5 data", "[RankVector][b
             }
         }
 
-        auto vec = Vector{text};
+        auto vec = String{text};
 
         auto ofs     = std::stringstream{};
         auto archive = cereal::BinaryOutputArchive{ofs};
