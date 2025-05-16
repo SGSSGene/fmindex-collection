@@ -255,8 +255,8 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMInd
     });
 
     auto expected = std::vector<std::tuple<size_t, size_t>> {
-        std::make_tuple(1ull, 12ull),
-        std::make_tuple(0ull, 12ull),
+        std::make_tuple(1ull,  0ull),
+        std::make_tuple(0ull,  0ull),
         std::make_tuple(1ull,  1ull),
         std::make_tuple(0ull,  1ull),
         std::make_tuple(1ull,  2ull),

@@ -25,7 +25,7 @@ concept Bitvector_c =
     && std::movable<T>
     && requires(T t, std::span<uint8_t const> symbols, size_t idx, uint8_t symb) {
 
-    /** Every BitVector can be constructed via some type of string similar thing
+    /** Every Bitvector_c can be constructed via some type of string similar thing
      */
     { T{symbols} } -> std::same_as<T>;
 

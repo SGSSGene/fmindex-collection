@@ -108,7 +108,7 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
 
     SECTION("compare to a directly created index") {
         auto bwt = std::vector<uint8_t>{'H', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
-        auto sa  = std::vector<uint64_t>{11, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
+        auto sa  = std::vector<uint64_t>{0, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
 
         auto text  = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
         auto index = fmindex_collection::ReverseFMIndex<OccTable>{std::vector<std::vector<uint8_t>>{text}, /*samplingRate*/1, /*threadNbr*/1};
@@ -133,8 +133,7 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
 
         REQUIRE(bwt.size() == index.size());
         REQUIRE(sa.size() == index.size());
-        //!TODO why can't position 0 be located?
-        for (size_t i{1}; i < sa.size(); ++i) {
+        for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
             INFO(sa[i]);
             CHECK(bwt[i] == index.bwt.symbol(i));
