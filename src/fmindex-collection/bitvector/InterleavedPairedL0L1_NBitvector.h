@@ -201,12 +201,12 @@ using InterleavedPairedL0L1_512_4kBitvector  = InterleavedPairedL0L1_NBitvector<
 using InterleavedPairedL0L1_1024_4kBitvector = InterleavedPairedL0L1_NBitvector<1024, 4096>;
 using InterleavedPairedL0L1_2048_4kBitvector = InterleavedPairedL0L1_NBitvector<2048, 4096>;
 
-static_assert(BitVector_c<InterleavedPairedL0L1_64_4kBitvector>);
-static_assert(BitVector_c<InterleavedPairedL0L1_128_4kBitvector>);
-static_assert(BitVector_c<InterleavedPairedL0L1_256_4kBitvector>);
-static_assert(BitVector_c<InterleavedPairedL0L1_512_4kBitvector>);
-static_assert(BitVector_c<InterleavedPairedL0L1_1024_4kBitvector>);
-static_assert(BitVector_c<InterleavedPairedL0L1_2048_4kBitvector>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_64_4kBitvector>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_128_4kBitvector>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_256_4kBitvector>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_512_4kBitvector>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_1024_4kBitvector>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_2048_4kBitvector>);
 
 using InterleavedPairedL0L1_64_64kBitvector   = InterleavedPairedL0L1_NBitvector<64, 65536>;
 using InterleavedPairedL0L1_128_64kBitvector  = InterleavedPairedL0L1_NBitvector<128, 65536>;
@@ -215,12 +215,12 @@ using InterleavedPairedL0L1_512_64kBitvector  = InterleavedPairedL0L1_NBitvector
 using InterleavedPairedL0L1_1024_64kBitvector = InterleavedPairedL0L1_NBitvector<1024, 65536>;
 using InterleavedPairedL0L1_2048_64kBitvector = InterleavedPairedL0L1_NBitvector<2048, 65536>;
 
-static_assert(BitVector_c<InterleavedPairedL0L1_64_64kBitvector>);
-static_assert(BitVector_c<InterleavedPairedL0L1_128_64kBitvector>);
-static_assert(BitVector_c<InterleavedPairedL0L1_256_64kBitvector>);
-static_assert(BitVector_c<InterleavedPairedL0L1_512_64kBitvector>);
-static_assert(BitVector_c<InterleavedPairedL0L1_1024_64kBitvector>);
-static_assert(BitVector_c<InterleavedPairedL0L1_2048_64kBitvector>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_64_64kBitvector>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_128_64kBitvector>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_256_64kBitvector>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_512_64kBitvector>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_1024_64kBitvector>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_2048_64kBitvector>);
 
 using InterleavedPairedL0L1_64_64kBitvectorUA   = InterleavedPairedL0L1_NBitvector<64, 65536, false>;
 using InterleavedPairedL0L1_128_64kBitvectorUA  = InterleavedPairedL0L1_NBitvector<128, 65536, false>;
@@ -229,11 +229,11 @@ using InterleavedPairedL0L1_512_64kBitvectorUA  = InterleavedPairedL0L1_NBitvect
 using InterleavedPairedL0L1_1024_64kBitvectorUA = InterleavedPairedL0L1_NBitvector<1024, 65536, false>;
 using InterleavedPairedL0L1_2048_64kBitvectorUA = InterleavedPairedL0L1_NBitvector<2048, 65536, false>;
 
-static_assert(BitVector_c<InterleavedPairedL0L1_64_64kBitvectorUA>);
-static_assert(BitVector_c<InterleavedPairedL0L1_128_64kBitvectorUA>);
-static_assert(BitVector_c<InterleavedPairedL0L1_256_64kBitvectorUA>);
-static_assert(BitVector_c<InterleavedPairedL0L1_512_64kBitvectorUA>);
-static_assert(BitVector_c<InterleavedPairedL0L1_1024_64kBitvectorUA>);
-static_assert(BitVector_c<InterleavedPairedL0L1_2048_64kBitvectorUA>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_64_64kBitvectorUA>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_128_64kBitvectorUA>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_256_64kBitvectorUA>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_512_64kBitvectorUA>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_1024_64kBitvectorUA>);
+static_assert(Bitvector_c<InterleavedPairedL0L1_2048_64kBitvectorUA>);
 
 }

@@ -112,6 +112,6 @@ struct L1Bitvector {
     }
 };
 
-static_assert(BitVector_c<L1Bitvector>);
+static_assert(Bitvector_c<L1Bitvector>);
 
 }

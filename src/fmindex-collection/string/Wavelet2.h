@@ -23,7 +23,7 @@ namespace fmindex_collection::string {
  *
  * \param TSigma size of the alphabet
  */
-template <size_t TSigma, BitVector_c Bitvector = ::fmindex_collection::bitvector::Bitvector>
+template <size_t TSigma, Bitvector_c Bitvector = ::fmindex_collection::bitvector::Bitvector>
 struct Wavelet2 {
     static constexpr size_t Sigma = TSigma;
 

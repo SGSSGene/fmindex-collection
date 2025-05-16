@@ -11,7 +11,7 @@
 
 namespace fmindex_collection {
 
-template <BitVector_c Vector, SuffixArray_c TCSA = CSA>
+template <Bitvector_c Vector, SuffixArray_c TCSA = CSA>
 struct BinaryMirroredBiFMIndex {
     static size_t constexpr Sigma = 2;
 

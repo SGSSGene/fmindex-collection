@@ -196,12 +196,12 @@ using CompactPairedL1L2_512_4kBitvector  = CompactPairedL1L2_NBitvector<512, 409
 using CompactPairedL1L2_1024_4kBitvector = CompactPairedL1L2_NBitvector<1024, 4096>;
 using CompactPairedL1L2_2048_4kBitvector = CompactPairedL1L2_NBitvector<2048, 4096>;
 
-static_assert(BitVector_c<CompactPairedL1L2_64_4kBitvector>);
-static_assert(BitVector_c<CompactPairedL1L2_128_4kBitvector>);
-static_assert(BitVector_c<CompactPairedL1L2_256_4kBitvector>);
-static_assert(BitVector_c<CompactPairedL1L2_512_4kBitvector>);
-static_assert(BitVector_c<CompactPairedL1L2_1024_4kBitvector>);
-static_assert(BitVector_c<CompactPairedL1L2_2048_4kBitvector>);
+static_assert(Bitvector_c<CompactPairedL1L2_64_4kBitvector>);
+static_assert(Bitvector_c<CompactPairedL1L2_128_4kBitvector>);
+static_assert(Bitvector_c<CompactPairedL1L2_256_4kBitvector>);
+static_assert(Bitvector_c<CompactPairedL1L2_512_4kBitvector>);
+static_assert(Bitvector_c<CompactPairedL1L2_1024_4kBitvector>);
+static_assert(Bitvector_c<CompactPairedL1L2_2048_4kBitvector>);
 
 using CompactPairedL1L2_64_64kBitvector   = CompactPairedL1L2_NBitvector<64, 65536>;
 using CompactPairedL1L2_128_64kBitvector  = CompactPairedL1L2_NBitvector<128, 65536>;
@@ -210,12 +210,12 @@ using CompactPairedL1L2_512_64kBitvector  = CompactPairedL1L2_NBitvector<512, 65
 using CompactPairedL1L2_1024_64kBitvector = CompactPairedL1L2_NBitvector<1024, 65536>;
 using CompactPairedL1L2_2048_64kBitvector = CompactPairedL1L2_NBitvector<2048, 65536>;
 
-static_assert(BitVector_c<CompactPairedL1L2_64_64kBitvector>);
-static_assert(BitVector_c<CompactPairedL1L2_128_64kBitvector>);
-static_assert(BitVector_c<CompactPairedL1L2_256_64kBitvector>);
-static_assert(BitVector_c<CompactPairedL1L2_512_64kBitvector>);
-static_assert(BitVector_c<CompactPairedL1L2_1024_64kBitvector>);
-static_assert(BitVector_c<CompactPairedL1L2_2048_64kBitvector>);
+static_assert(Bitvector_c<CompactPairedL1L2_64_64kBitvector>);
+static_assert(Bitvector_c<CompactPairedL1L2_128_64kBitvector>);
+static_assert(Bitvector_c<CompactPairedL1L2_256_64kBitvector>);
+static_assert(Bitvector_c<CompactPairedL1L2_512_64kBitvector>);
+static_assert(Bitvector_c<CompactPairedL1L2_1024_64kBitvector>);
+static_assert(Bitvector_c<CompactPairedL1L2_2048_64kBitvector>);
 #endif
 
 }

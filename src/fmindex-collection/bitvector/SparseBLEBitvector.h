@@ -24,7 +24,7 @@ namespace fmindex_collection::bitvector {
  * Uses Block length encoding and simplification on the
  * assumption the bit vector is sparse
  */
-template <int64_t BlockLengthE = 2, BitVector_c BV1 = Bitvector, BitVector_c BV2 = Bitvector>
+template <int64_t BlockLengthE = 2, Bitvector_c BV1 = Bitvector, Bitvector_c BV2 = Bitvector>
 struct SparseBLEBitvector {
 
     static constexpr size_t BlockLength = (size_t{1} << BlockLengthE);
@@ -119,6 +119,6 @@ struct SparseBLEBitvector {
         ar(indicatorBitvector, uncompressedBitvector, totalLength);
     }
 };
-static_assert(BitVector_c<SparseBLEBitvector<>>);
+static_assert(Bitvector_c<SparseBLEBitvector<>>);
 
 }
