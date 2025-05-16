@@ -56,42 +56,41 @@ auto computeInterleavingR(StringLhs const& lhsStr, StringRhs const& rhsStr) -> s
 
 template <typename Res = void, typename StringLhs, typename StringRhs, typename TCSA>
 auto mergeImpl(FMIndex<StringLhs, TCSA> const& index1, FMIndex<StringRhs, TCSA> const& index2, size_t seqOffset1, size_t seqOffset2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, StringLhs, Res>, TCSA> {
-    auto R = computeInterleavingR(index1.bwt, index2.bwt);
+    using CSA = decltype(index1.csa);
+    auto csa = CSA::createJoinedCSA(index1.csa, index2.csa);
 
     // Interleave BWT->R and SA->ssa
     auto mergedBWT = std::vector<uint8_t>{};
     mergedBWT.reserve(index1.size() + index2.size());
 
-    using CSA = decltype(index1.csa);
-    auto csa = CSA::createJoinedCSA(index1.csa, index2.csa);
+    // compute normal forward bwt
+    {
+        auto addSSAEntry = [&csa](auto const& index, size_t idx, size_t seqOffset) {
+            auto loc = index.csa.value(idx);
+            if (loc) {
+                auto [seq, pos] = *loc;
+                csa.push_back(std::tuple{seq + seqOffset, pos});
+            } else {
+                csa.push_back(std::nullopt);
+            }
+        };
 
-    auto addSSAEntry = [&csa](auto const& index, size_t idx, size_t seqOffset) {
-        auto loc = index.csa.value(idx);
-        if (loc) {
-            auto [seq, pos] = *loc;
-            csa.push_back(std::tuple{seq + seqOffset, pos});
-        } else {
-            csa.push_back(std::nullopt);
-        }
-
-
-    };
-
-    size_t idx1{}, idx2{};
-    for (bool v : R) {
-        if (!v) {
-            assert(idx1 < index1.size());
-            mergedBWT.push_back(index1.bwt.symbol(idx1));
-            addSSAEntry(index1, idx1, seqOffset1);
-            idx1 += 1;
-        } else {
-            assert(idx2 < index2.size());
-            mergedBWT.push_back(index2.bwt.symbol(idx2));
-            addSSAEntry(index2, idx2, seqOffset2);
-            idx2 += 1;
+        auto R = computeInterleavingR(index1.bwt, index2.bwt);
+        size_t idx1{}, idx2{};
+        for (bool v : R) {
+            if (!v) {
+                assert(idx1 < index1.size());
+                mergedBWT.push_back(index1.bwt.symbol(idx1));
+                addSSAEntry(index1, idx1, seqOffset1);
+                idx1 += 1;
+            } else {
+                assert(idx2 < index2.size());
+                mergedBWT.push_back(index2.bwt.symbol(idx2));
+                addSSAEntry(index2, idx2, seqOffset2);
+                idx2 += 1;
+            }
         }
     }
-    R.clear();
 
     return {mergedBWT, std::move(csa)};
 }
@@ -105,7 +104,8 @@ auto merge(FMIndex<StringLhs, TCSA> const& index1, FMIndex<StringRhs, TCSA> cons
 
 template <typename Res = void, typename StrLhs, typename StrRhs, typename TCSA>
 auto mergeImpl(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> const& index2, size_t seqOffset1, size_t seqOffset2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, StrLhs, Res>, TCSA> {
-    auto csa = TCSA::createJoinedCSA(index1.csa, index2.csa);
+    using CSA = decltype(index1.csa);
+    auto csa = CSA::createJoinedCSA(index1.csa, index2.csa);
 
     // Interleave BWT->R and SA->ssa
     auto mergedBWT = std::vector<uint8_t>{};
@@ -113,7 +113,6 @@ auto mergeImpl(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> co
 
     // compute normal forward bwt
     {
-        auto R = computeInterleavingR(index1.bwt, index2.bwt);
         auto addSSAEntry = [&csa](auto const& index, size_t idx, size_t seqOffset) {
             auto loc = index.csa.value(idx);
             if (loc) {
@@ -123,6 +122,8 @@ auto mergeImpl(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> co
                 csa.push_back(std::nullopt);
             }
         };
+
+        auto R = computeInterleavingR(index1.bwt, index2.bwt);
         size_t idx1{}, idx2{};
         for (bool v : R) {
             if (!v) {
