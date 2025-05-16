@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../string/concepts.h"
+#include "../string/utils.h"
 #include "../suffixarray/CSA.h"
 #include "../utils.h"
 
@@ -14,7 +15,7 @@ struct FMIndex {
     static size_t constexpr Sigma = String::Sigma;
 
     String                      bwt;
-    std::array<size_t, Sigma+1> C{};
+    std::array<size_t, Sigma+1> C{0};
     TCSA   csa;
 
     FMIndex() = default;
@@ -22,15 +23,9 @@ struct FMIndex {
     FMIndex(FMIndex&&) noexcept = default;
     FMIndex(std::span<uint8_t const> _bwt, TCSA _csa)
         : bwt{_bwt}
+        , C{computeAccumulatedC(bwt)}
         , csa{std::move(_csa)}
-    {
-        for (auto c : _bwt) {
-            C[c+1] += 1;
-        }
-        for (size_t i{1}; i < C.size(); ++i) {
-            C[i] = C[i] + C[i-1];
-        }
-    }
+    {}
 
     FMIndex(std::vector<uint8_t> _input, size_t samplingRate, size_t threadNbr) {
         auto input = std::vector<std::vector<uint8_t>>{std::move(_input)};

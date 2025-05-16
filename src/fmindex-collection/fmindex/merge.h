@@ -5,6 +5,7 @@
 
 #include "FMIndex.h"
 #include "BiFMIndex.h"
+#include "../string/utils.h"
 
 #include <cassert>
 #include <type_traits>
@@ -15,47 +16,14 @@ namespace fmindex_collection {
 /**
  * creates the R array for interleaving FM-Indices
  */
-template <typename OccLhs, typename OccRhs, typename value_t = size_t>
-auto computeInterleavingR(OccLhs const& lhsOcc, OccRhs const& rhsOcc) -> std::vector<bool> {
-    if (rhsOcc.size() > std::numeric_limits<value_t>::max()) {
-        throw std::runtime_error{"Can not create interleaving R for this value type, index to large"};
-    }
-
-    auto R = std::vector<bool>{};
-    R.resize(lhsOcc.size() + rhsOcc.size(), false);
-
-    auto nbrOfSeqRhs = rhsOcc.rank(rhsOcc.size(), 0);
-    for (size_t n{}; n < nbrOfSeqRhs; ++n) {
-        size_t idx1{};
-        size_t idx2{n};
-        uint8_t c{};
-        do {
-            assert(idx1 + idx2 < R.size());
-            assert(R[idx1 + idx2] == false);
-            R[idx1 + idx2] = true;
-            c = rhsOcc.symbol(idx2);
-            idx1 = lhsOcc.rank(idx1, c);
-            idx2 = rhsOcc.rank(idx2, c);
-        } while(c != 0);
-    }
-    assert([&]() {
-        size_t a{};
-        for (auto b : R) {
-            a += b;
-        }
-        return a;
-    }() == rhsOcc.size());
-    return R;
-}
-
-/**
- * creates the R array for interleaving FM-Indices
- */
 template <typename StringLhs, typename StringRhs, typename value_t = size_t>
-auto computeInterleavingR(StringLhs const& lhsStr, std::array<size_t, StringLhs::Sigma+1> const& lhsC, StringRhs const& rhsStr, std::array<size_t, StringRhs::Sigma+1> const& rhsC) -> std::vector<bool> {
+auto computeInterleavingR(StringLhs const& lhsStr, StringRhs const& rhsStr) -> std::vector<bool> {
     if (rhsStr.size() > std::numeric_limits<value_t>::max()) {
         throw std::runtime_error{"Can not create interleaving R for this value type, index to large"};
     }
+
+    auto lhsC = string::computeAccumulatedC(lhsStr);
+    auto rhsC = string::computeAccumulatedC(rhsStr);
 
     auto R = std::vector<bool>{};
     R.resize(lhsStr.size() + rhsStr.size(), false);
@@ -86,9 +54,9 @@ auto computeInterleavingR(StringLhs const& lhsStr, std::array<size_t, StringLhs:
 
 
 
-template <typename Res = void, typename OccLhs, typename OccRhs, typename TCSA>
-auto mergeImpl(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const& index2, size_t seqOffset1, size_t seqOffset2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
-    auto R = computeInterleavingR(index1.bwt, index1.C, index2.bwt, index2.C);
+template <typename Res = void, typename StringLhs, typename StringRhs, typename TCSA>
+auto mergeImpl(FMIndex<StringLhs, TCSA> const& index1, FMIndex<StringRhs, TCSA> const& index2, size_t seqOffset1, size_t seqOffset2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, StringLhs, Res>, TCSA> {
+    auto R = computeInterleavingR(index1.bwt, index2.bwt);
 
     // Interleave BWT->R and SA->ssa
     auto mergedBWT = std::vector<uint8_t>{};
@@ -128,13 +96,10 @@ auto mergeImpl(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const&
     return {mergedBWT, std::move(csa)};
 }
 
-template <typename Res = void, typename OccLhs, typename OccRhs, typename TCSA>
-auto merge(FMIndex<OccLhs, TCSA> const& index1, FMIndex<OccRhs, TCSA> const& index2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, OccLhs, Res>, TCSA> {
-//    if (index1.size() >= index2.size()) {
-        auto r = index1.bwt.rank(index1.size(), 0) + index1.C[0];
-        return mergeImpl<Res>(index1, index2, 0, r);
-//    }
-//    return mergeImpl<Res>(index2, index1, index2.occ.rank(index2.size(), 0), 0);
+template <typename Res = void, typename StringLhs, typename StringRhs, typename TCSA>
+auto merge(FMIndex<StringLhs, TCSA> const& index1, FMIndex<StringRhs, TCSA> const& index2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, StringLhs, Res>, TCSA> {
+    auto r = index1.bwt.rank(index1.size(), 0) + index1.C[0];
+    return mergeImpl<Res>(index1, index2, 0, r);
 }
 
 
@@ -148,7 +113,7 @@ auto mergeImpl(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> co
 
     // compute normal forward bwt
     {
-        auto R = computeInterleavingR(index1.bwt, index1.C, index2.bwt, index2.C);
+        auto R = computeInterleavingR(index1.bwt, index2.bwt);
         auto addSSAEntry = [&csa](auto const& index, size_t idx, size_t seqOffset) {
             auto loc = index.csa.value(idx);
             if (loc) {
@@ -180,7 +145,7 @@ auto mergeImpl(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> co
 
     // compute reversed bwt
     {
-        auto R = computeInterleavingR(index1.bwtRev, index1.C, index2.bwtRev, index2.C);
+        auto R = computeInterleavingR(index1.bwtRev, index2.bwtRev);
         size_t idx1{}, idx2{};
         for (bool v : R) {
             if (!v) {
@@ -200,10 +165,7 @@ auto mergeImpl(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> co
 
 template <typename Res = void, typename StrLhs, typename StrRhs, typename TCSA>
 auto merge(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, StrLhs, Res>, TCSA> {
-//    if (index1.size() >= index2.size()) {
-        return mergeImpl(index1, index2, 0, index1.bwt.rank(index1.size(), 0) + index1.C[0]);
-//    }
-//    return mergeImpl(index2, index1, index2.occ.rank(index2.size(), 0), 0);
+    return mergeImpl(index1, index2, 0, index1.bwt.rank(index1.size(), 0) + index1.C[0]);
 }
 
 }

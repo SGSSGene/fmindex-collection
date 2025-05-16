@@ -3,9 +3,12 @@
 #pragma once
 
 #include "../bitset_popcount.h"
+#include "../ternarylogic.h"
+#include "../utils.h"
+#include "EPRV3.h"
+#include "NEPRV8.h"
 #include "concepts.h"
 #include "utils.h"
-#include "EPRV3.h"
 
 #include <bit>
 #include <vector>
@@ -14,11 +17,6 @@
 #include <cereal/types/bitset.hpp>
 #endif
 
-#include <iostream>
-
-#include "../ternarylogic.h"
-
-#include "NEPRV8.h"
 
 namespace fmindex_collection::string {
 
