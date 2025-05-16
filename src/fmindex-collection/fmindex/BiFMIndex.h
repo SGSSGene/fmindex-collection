@@ -61,7 +61,7 @@ struct BiFMIndex {
      * \param _input a list of sequences
      * \param samplingRate rate of the sampling
      */
-    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, bool useDelimiters = true) {
+    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, bool useDelimiters = true, size_t seqOffset = 0) {
 
         auto [totalSize, inputText, inputSizes] = [&]() {
             if (useDelimiters) {
@@ -100,7 +100,7 @@ struct BiFMIndex {
                 removeInvalidSA(sa);
 
                 auto bwt = createBWT32(inputTextSpan, sa);
-                auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
+                auto csa = TCSA(std::move(sa), samplingRate, inputSizes, /*.reverse=*/false, /*.seqOffset=*/seqOffset);
                 return std::make_tuple(std::move(bwt), std::move(csa));
             }();
 

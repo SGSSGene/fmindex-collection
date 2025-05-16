@@ -80,8 +80,8 @@ struct DenseCSA {
     }
 
     template <typename T>
-    DenseCSA(std::vector<T> const& sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false) {
-        size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
+    DenseCSA(std::vector<T> const& sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false, size_t seqOffset=0) {
+        size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()+seqOffset))));
         assert(bitsForSeqId < 64);
 
         size_t largestText{};
@@ -125,7 +125,7 @@ struct DenseCSA {
                         subjPos = len;
                     }
                 }
-                return {subjId, subjPos};
+                return {subjId+seqOffset, subjPos};
             }();
 
             bool sample = (subjPos % samplingRate) == 0;

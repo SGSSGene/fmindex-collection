@@ -27,19 +27,19 @@ struct FMIndex {
         , csa{std::move(_csa)}
     {}
 
-    FMIndex(std::vector<uint8_t> _input, size_t samplingRate, size_t threadNbr) {
+    FMIndex(std::vector<uint8_t> _input, size_t samplingRate, size_t threadNbr, size_t seqOffset=0) {
         auto input = std::vector<std::vector<uint8_t>>{std::move(_input)};
-        *this = FMIndex{std::move(input), samplingRate, threadNbr};
+        *this = FMIndex{std::move(input), samplingRate, threadNbr, seqOffset};
     }
 
-    FMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
+    FMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, size_t seqOffset=0) {
         auto [totalSize, inputText, inputSizes] = createSequences(_input);
 
         if (totalSize < std::numeric_limits<int32_t>::max()) { // only 32bit SA required
             auto [bwt, csa] = [&]() {
                 auto sa  = createSA32(inputText, threadNbr);
                 auto bwt = createBWT32(inputText, sa);
-                auto csa = TCSA{std::move(sa), samplingRate, inputSizes};
+                auto csa = TCSA{std::move(sa), samplingRate, inputSizes, /*.reverse=*/false, /*.seqOffset=*/seqOffset};
 
                 return std::make_tuple(std::move(bwt), std::move(csa));
             }();
@@ -50,7 +50,7 @@ struct FMIndex {
             auto [bwt, csa] = [&]() {
                 auto sa  = createSA64(inputText, threadNbr);
                 auto bwt = createBWT64(inputText, sa);
-                auto csa = TCSA{std::move(sa), samplingRate, inputSizes};
+                auto csa = TCSA{std::move(sa), samplingRate, inputSizes, /*.reverse=*/false, /*.seqOffset=*/seqOffset};
 
                 return std::make_tuple(std::move(bwt), std::move(csa));
             }();

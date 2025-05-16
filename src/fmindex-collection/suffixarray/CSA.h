@@ -93,7 +93,7 @@ struct CSA {
     {}
 
     template <typename T>
-    CSA(std::vector<T> const& sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false)
+    CSA(std::vector<T> const& sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false, size_t seqOffset=0)
         : seqCount{_inputSizes.size()}
     {
         assert(samplingRate != 0);
@@ -101,7 +101,7 @@ struct CSA {
             return std::max(lhs, rhs);
         });
         bitsForPosition = size_t(std::ceil(std::log2(longestSequence)));
-        size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
+        size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size() + seqOffset))));
         if (bitsForPosition + bitsForSeqId > 64) {
             throw std::runtime_error{"requires more than 64bit to encode sequence length and number of sequence"};
         }
@@ -117,10 +117,10 @@ struct CSA {
                 textAnnotationValid.push_back(sample);
                 if (!sample) continue;
                 if (!reverse) {
-                    textAnnotation.emplace_back((refId << bitsForPosition) | posId);
+                    textAnnotation.emplace_back(((refId+seqOffset) << bitsForPosition) | posId);
                 } else {
                     auto len = _inputSizes[refId];
-                    textAnnotation.emplace_back((refId << bitsForPosition) | (len - posId - 1));
+                    textAnnotation.emplace_back(((refId+seqOffset) << bitsForPosition) | (len - posId - 1));
                 }
             }
         }
