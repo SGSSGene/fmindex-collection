@@ -23,10 +23,7 @@ to provide FM-Indices and their internal support structures.
 ### CPM
 ```cmake
 CPMAddPackage(
-  NAME fmindex_collection
-  GITHUB_REPOSITORY SGSSGene/fmindex_collection
-  GIT_TAG v0.0.0 # put newest version here
-  SYSTEM YES
+  URI SGSSGene/fmindex_collection@0.0.0 # put newest version here
 )
 ...
 target_link_libraries(${PROJECT_NAME}
