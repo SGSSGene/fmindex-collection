@@ -121,7 +121,7 @@ auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr, bool con
                 if (!index) {
                     index = std::move(newIndex);
                 } else {
-                    index = merge(*index, newIndex);
+                    index = fmindex_collection::fmindex::merge(*index, newIndex);
                 }
             }
             return *index;
@@ -186,7 +186,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
                     index = std::move(newIndex);
                 } else {
                     std::cout << "merging " << index->size() << " + " << acc << "\n";
-                    index = merge(*index, newIndex);
+                    index = fmindex_collection::fmindex::merge(*index, newIndex);
                 }
 
                 acc = 0;
@@ -226,7 +226,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
                         break;
                     }
                     std::cout << "merging " << l2.size() << " + " << l1.size() << " " << indices.size() << "\n";
-                    auto newIndex = merge(l2, l1);
+                    auto newIndex = fmindex_collection::fmindex::merge(l2, l1);
                     indices.pop_back(); indices.pop_back();
                     indices.emplace_back(std::move(newIndex));
                     sort();
@@ -236,7 +236,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
                 auto const& l1 = *(indices.end()-1);
                 auto const& l2 = *(indices.end()-2);
                 std::cout << "merging " << l2.size() << " + " << l1.size() << " " << indices.size() << "(fin)\n";
-                auto newIndex = merge(l2, l1);
+                auto newIndex = fmindex_collection::fmindex::merge(l2, l1);
                 indices.pop_back(); indices.pop_back();
                 indices.emplace_back(std::move(newIndex));
                 sort();

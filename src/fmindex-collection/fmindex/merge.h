@@ -11,10 +11,19 @@
 #include <type_traits>
 #include <vector>
 
-namespace fmindex_collection {
+namespace fmindex_collection::fmindex {
+
+namespace detail {
 
 /**
- * creates the R array for interleaving FM-Indices
+ * Creates the R array for interleaving SA/BWT/FM-Indices.
+ * \param lhsStr first bwt
+ * \param rhsStr second bwt
+ * \return an boolean array indicating in which slot which entry is expected
+ *
+ * The R array has the same size as lhsStr and rhsStr together. It indicates
+ * with 'false' that an entry from lhsStr is expected and with 'true' an entry from rhsStr.
+ *
  */
 template <typename StringLhs, typename StringRhs, typename value_t = size_t>
 auto computeInterleavingR(StringLhs const& lhsStr, StringRhs const& rhsStr) -> std::vector<bool> {
@@ -52,8 +61,10 @@ auto computeInterleavingR(StringLhs const& lhsStr, StringRhs const& rhsStr) -> s
     return R;
 }
 
+/** Creates a new BWT from two bwt that are merged with the help of an R array
+ */
 template <String_c StringLhs, String_c StringRhs>
-auto computeMergedBwt(std::vector<bool> const& R, StringLhs const& lhsBwt, StringRhs const& rhsBwt) -> std::vector<uint8_t> {
+auto mergeBwt(std::vector<bool> const& R, StringLhs const& lhsBwt, StringRhs const& rhsBwt) -> std::vector<uint8_t> {
     auto mergedBwt = std::vector<uint8_t>{};
     mergedBwt.reserve(lhsBwt.size() + rhsBwt.size());
 
@@ -72,8 +83,10 @@ auto computeMergedBwt(std::vector<bool> const& R, StringLhs const& lhsBwt, Strin
     return mergedBwt;
 }
 
+/** Creates a new CSA from two csa that are merged with the help of an R array
+ */
 template <typename TCSA>
-auto computeCsa(std::vector<bool> const& R, TCSA const& lhsCsa, TCSA const& rhsCsa) -> TCSA {
+auto mergeCsa(std::vector<bool> const& R, TCSA const& lhsCsa, TCSA const& rhsCsa) -> TCSA {
     auto csa = TCSA::createJoinedCSA(lhsCsa, rhsCsa);
     size_t idx1{}, idx2{};
     for (bool v : R) {
@@ -87,38 +100,34 @@ auto computeCsa(std::vector<bool> const& R, TCSA const& lhsCsa, TCSA const& rhsC
     }
     return csa;
 }
+}
 
+/**
+ * Merges two FMIndices into a new one
+ */
 template <typename Res = void, String_c StringLhs, String_c StringRhs, typename TCSA>
-auto mergeImpl(FMIndex<StringLhs, TCSA> const& index1, FMIndex<StringRhs, TCSA> const& index2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, StringLhs, Res>, TCSA> {
-    auto R         = computeInterleavingR(index1.bwt, index2.bwt);
-    auto mergedBwt = computeMergedBwt(R, index1.bwt, index2.bwt);
-    auto csa       = computeCsa(R, index1.csa, index2.csa);
+auto merge(FMIndex<StringLhs, TCSA> const& index1, FMIndex<StringRhs, TCSA> const& index2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, StringLhs, Res>, TCSA> {
+    auto R         = detail::computeInterleavingR(index1.bwt, index2.bwt);
+    auto mergedBwt = detail::mergeBwt(R, index1.bwt, index2.bwt);
+    auto csa       = detail::mergeCsa(R, index1.csa, index2.csa);
 
     return {mergedBwt, std::move(csa)};
 }
 
-template <typename Res = void, String_c StringLhs, String_c StringRhs, typename TCSA>
-auto merge(FMIndex<StringLhs, TCSA> const& index1, FMIndex<StringRhs, TCSA> const& index2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, StringLhs, Res>, TCSA> {
-    return mergeImpl<Res>(index1, index2);
-}
-
-
+/**
+ * Merges two bidirectional FMIndices into a new one
+ */
 template <typename Res = void, String_c StrLhs, String_c StrRhs, typename TCSA>
-auto mergeImpl(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, StrLhs, Res>, TCSA> {
+auto merge(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, StrLhs, Res>, TCSA> {
+    // compute R of fwd BWT and merge bwt and csa
+    auto R            = detail::computeInterleavingR(index1.bwt, index2.bwt);
+    auto mergedBwt    = detail::mergeBwt(R, index1.bwt, index2.bwt);
+    auto csa          = detail::mergeCsa(R, index1.csa, index2.csa);
 
-    auto R            = computeInterleavingR(index1.bwt, index2.bwt);
-    auto mergedBwt    = computeMergedBwt(R, index1.bwt, index2.bwt);
-    auto csa          = computeCsa(R, index1.csa, index2.csa);
-
-    R                 = computeInterleavingR(index1.bwtRev, index2.bwtRev);
-    auto mergedBwtRev = computeMergedBwt(R, index1.bwtRev, index2.bwtRev);
+    // compute R of rev BWT and merge BwtRev (reusing R to save on space)
+    R                 = detail::computeInterleavingR(index1.bwtRev, index2.bwtRev);
+    auto mergedBwtRev = detail::mergeBwt(R, index1.bwtRev, index2.bwtRev);
 
     return {mergedBwt, mergedBwtRev, std::move(csa)};
 }
-
-template <typename Res = void, String_c StrLhs, String_c StrRhs, typename TCSA>
-auto merge(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, StrLhs, Res>, TCSA> {
-    return mergeImpl(index1, index2);
-}
-
 }
