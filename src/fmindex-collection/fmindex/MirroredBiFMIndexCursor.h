@@ -51,9 +51,8 @@ struct MirroredBiFMIndexCursor {
         }
 
         auto cursors = std::array<MirroredBiFMIndexCursor, Sigma>{};
-        cursors[0] = MirroredBiFMIndexCursor{*index, rs1[0], lbRev, rs2[0] - rs1[0]};
-        for (size_t i{1}; i < Sigma; ++i) {
-            cursors[i] = MirroredBiFMIndexCursor{*index, rs1[i], lbRev + prs2[i-1] - prs1[i-1], rs2[i] - rs1[i]};
+        for (size_t i{0}; i < Sigma; ++i) {
+            cursors[i] = MirroredBiFMIndexCursor{*index, rs1[i], lbRev + prs2[i] - prs1[i], rs2[i] - rs1[i]};
         }
         return cursors;
     }
@@ -69,10 +68,8 @@ struct MirroredBiFMIndexCursor {
         }
 
         auto cursors = std::array<MirroredBiFMIndexCursor, Sigma>{};
-        cursors[0] = MirroredBiFMIndexCursor{*index, lb, rs1[0], rs2[0] - rs1[0]};
-        cursors[0].prefetchRight();
-        for (size_t i{1}; i < Sigma; ++i) {
-            cursors[i] = MirroredBiFMIndexCursor{*index, lb + prs2[i-1] - prs1[i-1], rs1[i], rs2[i] - rs1[i]};
+        for (size_t i{0}; i < Sigma; ++i) {
+            cursors[i] = MirroredBiFMIndexCursor{*index, lb + prs2[i] - prs1[i], rs1[i], rs2[i] - rs1[i]};
         }
         return cursors;
     }
@@ -94,20 +91,14 @@ struct MirroredBiFMIndexCursor {
     auto extendLeft(size_t symb) const -> MirroredBiFMIndexCursor {
         auto& bwt = index->bwt;
         size_t newLb    = bwt.rank(lb, symb);
-        size_t newLbRev = lbRev + [&]() -> size_t {
-            if (symb == 0) return {};
-            return bwt.prefix_rank(lb+len, symb-1) - bwt.prefix_rank(lb, symb-1);
-        }();
+        size_t newLbRev = lbRev + bwt.prefix_rank(lb+len, symb) - bwt.prefix_rank(lb, symb);
         size_t newLen   = bwt.rank(lb+len, symb) - newLb;
         auto newCursor = MirroredBiFMIndexCursor{*index, newLb + index->C[symb], newLbRev, newLen};
         return newCursor;
     }
     auto extendRight(size_t symb) const -> MirroredBiFMIndexCursor {
         auto& bwt = index->bwt;
-        size_t newLb    = lb + [&]() -> size_t {
-            if (symb == 0) return {};
-            return bwt.prefix_rank(lbRev+len, symb-1) - bwt.prefix_rank(lbRev, symb-1);
-        }();
+        size_t newLb    = lb + bwt.prefix_rank(lbRev+len, symb) - bwt.prefix_rank(lbRev, symb);
         size_t newLbRev = bwt.rank(lbRev, symb);
         size_t newLen   = bwt.rank(lbRev+len, symb) - newLbRev;
         auto newCursor = MirroredBiFMIndexCursor{*index, newLb, newLbRev + index->C[symb], newLen};

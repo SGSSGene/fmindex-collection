@@ -3,22 +3,22 @@
 #pragma once
 
 #include "../bitset_popcount.h"
+#include "../ternarylogic.h"
+#include "../utils.h"
+#include "EPRV3.h"
+#include "NEPRV8.h"
 #include "concepts.h"
 #include "utils.h"
-#include "EPRV3.h"
+
 
 #include <bit>
+#include <limits>
 #include <vector>
 
 #if __has_include(<cereal/types/bitset.hpp>)
 #include <cereal/types/bitset.hpp>
 #endif
 
-#include <iostream>
-
-#include "../ternarylogic.h"
-
-#include "NEPRV8.h"
 
 namespace fmindex_collection::string {
 
@@ -59,7 +59,7 @@ struct PairedL0L1_NEPRV9 {
 
         uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
             assert(idx <= l1_bits_ct*2);
-            assert(symb < Sigma);
+            assert(symb <= Sigma);
             auto v = neprv8_detail::prefix_rank(bits, symb);
             return skip_first_or_last_n_bits_and_count(v, idx);
         }
@@ -314,7 +314,7 @@ struct PairedL0L1_NEPRV9 {
 
     uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
         assert(idx <= totalLength);
-        assert(symb < Sigma);
+        assert(symb <= Sigma);
         auto bitId = idx % (l1_bits_ct*2);
         auto l1Id = idx / l1_bits_ct;
         auto l0Id = idx / l0_bits_ct;
@@ -326,7 +326,7 @@ struct PairedL0L1_NEPRV9 {
         int64_t right_l0 = (l0Id%2)*2-1;
 
         size_t r{};
-        for (size_t s{0}; s <= symb; ++s) {
+        for (size_t s{0}; s < symb; ++s) {
             auto count = bits[l1Id].rank(bitId, s);
             r += l0[l0Id/2][s] + right_l0 * l1[l1Id/2][s] + right_l1 * count;
             assert(r <= idx);
@@ -336,6 +336,7 @@ struct PairedL0L1_NEPRV9 {
 
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
+        assert(idx <= totalLength);
         auto r = std::array<uint64_t, TSigma>{};
         for (size_t symb{0}; symb < TSigma; ++symb) {
             r[symb] = rank(idx, symb);
@@ -344,10 +345,11 @@ struct PairedL0L1_NEPRV9 {
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
+        assert(idx <= totalLength);
         auto rs = all_ranks(idx);
-        auto prs = rs;
+        auto prs = std::array<uint64_t, TSigma>{};
         for (size_t i{1}; i < prs.size(); ++i) {
-            prs[i] = prs[i] + prs[i-1];
+            prs[i] = prs[i-1] + rs[i-1];
         }
         return {rs, prs};
     }

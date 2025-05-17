@@ -199,23 +199,23 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
             CHECK(vec.prefix_rank( 3, ' ') == 0);
             CHECK(vec.prefix_rank( 4, ' ') == 0);
             CHECK(vec.prefix_rank( 5, ' ') == 0);
-            CHECK(vec.prefix_rank( 6, ' ') == 1);
-            CHECK(vec.prefix_rank( 7, ' ') == 1);
-            CHECK(vec.prefix_rank( 8, ' ') == 1);
-            CHECK(vec.prefix_rank( 9, ' ') == 1);
-            CHECK(vec.prefix_rank(10, ' ') == 1);
+            CHECK(vec.prefix_rank( 6, ' ') == 0);
+            CHECK(vec.prefix_rank( 7, ' ') == 0);
+            CHECK(vec.prefix_rank( 8, ' ') == 0);
+            CHECK(vec.prefix_rank( 9, ' ') == 0);
+            CHECK(vec.prefix_rank(10, ' ') == 0);
 
             CHECK(vec.prefix_rank( 0, 'H') == 0);
-            CHECK(vec.prefix_rank( 1, 'H') == 1);
-            CHECK(vec.prefix_rank( 2, 'H') == 1);
-            CHECK(vec.prefix_rank( 3, 'H') == 1);
-            CHECK(vec.prefix_rank( 4, 'H') == 1);
-            CHECK(vec.prefix_rank( 5, 'H') == 1);
-            CHECK(vec.prefix_rank( 6, 'H') == 2);
-            CHECK(vec.prefix_rank( 7, 'H') == 2);
-            CHECK(vec.prefix_rank( 8, 'H') == 2);
-            CHECK(vec.prefix_rank( 9, 'H') == 2);
-            CHECK(vec.prefix_rank(10, 'H') == 2);
+            CHECK(vec.prefix_rank( 1, 'H') == 0);
+            CHECK(vec.prefix_rank( 2, 'H') == 0);
+            CHECK(vec.prefix_rank( 3, 'H') == 0);
+            CHECK(vec.prefix_rank( 4, 'H') == 0);
+            CHECK(vec.prefix_rank( 5, 'H') == 0);
+            CHECK(vec.prefix_rank( 6, 'H') == 1);
+            CHECK(vec.prefix_rank( 7, 'H') == 1);
+            CHECK(vec.prefix_rank( 8, 'H') == 1);
+            CHECK(vec.prefix_rank( 9, 'H') == 1);
+            CHECK(vec.prefix_rank(10, 'H') == 1);
 
             CHECK(vec.prefix_rank( 0, 'W') == 0);
             CHECK(vec.prefix_rank( 1, 'W') == 1);
@@ -224,22 +224,22 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
             CHECK(vec.prefix_rank( 4, 'W') == 1);
             CHECK(vec.prefix_rank( 5, 'W') == 1);
             CHECK(vec.prefix_rank( 6, 'W') == 2);
-            CHECK(vec.prefix_rank( 7, 'W') == 3);
-            CHECK(vec.prefix_rank( 8, 'W') == 3);
-            CHECK(vec.prefix_rank( 9, 'W') == 3);
-            CHECK(vec.prefix_rank(10, 'W') == 3);
+            CHECK(vec.prefix_rank( 7, 'W') == 2);
+            CHECK(vec.prefix_rank( 8, 'W') == 2);
+            CHECK(vec.prefix_rank( 9, 'W') == 2);
+            CHECK(vec.prefix_rank(10, 'W') == 2);
 
             CHECK(vec.prefix_rank( 0, 'a') == 0);
             CHECK(vec.prefix_rank( 1, 'a') == 1);
-            CHECK(vec.prefix_rank( 2, 'a') == 2);
-            CHECK(vec.prefix_rank( 3, 'a') == 2);
-            CHECK(vec.prefix_rank( 4, 'a') == 2);
-            CHECK(vec.prefix_rank( 5, 'a') == 2);
-            CHECK(vec.prefix_rank( 6, 'a') == 3);
-            CHECK(vec.prefix_rank( 7, 'a') == 4);
-            CHECK(vec.prefix_rank( 8, 'a') == 4);
-            CHECK(vec.prefix_rank( 9, 'a') == 4);
-            CHECK(vec.prefix_rank(10, 'a') == 4);
+            CHECK(vec.prefix_rank( 2, 'a') == 1);
+            CHECK(vec.prefix_rank( 3, 'a') == 1);
+            CHECK(vec.prefix_rank( 4, 'a') == 1);
+            CHECK(vec.prefix_rank( 5, 'a') == 1);
+            CHECK(vec.prefix_rank( 6, 'a') == 2);
+            CHECK(vec.prefix_rank( 7, 'a') == 3);
+            CHECK(vec.prefix_rank( 8, 'a') == 3);
+            CHECK(vec.prefix_rank( 9, 'a') == 3);
+            CHECK(vec.prefix_rank(10, 'a') == 3);
 
             CHECK(vec.prefix_rank( 0, 'e') == 0);
             CHECK(vec.prefix_rank( 1, 'e') == 1);
@@ -249,45 +249,57 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
             CHECK(vec.prefix_rank( 5, 'e') == 2);
             CHECK(vec.prefix_rank( 6, 'e') == 3);
             CHECK(vec.prefix_rank( 7, 'e') == 4);
-            CHECK(vec.prefix_rank( 8, 'e') == 5);
-            CHECK(vec.prefix_rank( 9, 'e') == 5);
-            CHECK(vec.prefix_rank(10, 'e') == 5);
+            CHECK(vec.prefix_rank( 8, 'e') == 4);
+            CHECK(vec.prefix_rank( 9, 'e') == 4);
+            CHECK(vec.prefix_rank(10, 'e') == 4);
 
             CHECK(vec.prefix_rank( 0, 'l') == 0);
             CHECK(vec.prefix_rank( 1, 'l') == 1);
             CHECK(vec.prefix_rank( 2, 'l') == 2);
-            CHECK(vec.prefix_rank( 3, 'l') == 3);
-            CHECK(vec.prefix_rank( 4, 'l') == 4);
-            CHECK(vec.prefix_rank( 5, 'l') == 4);
-            CHECK(vec.prefix_rank( 6, 'l') == 5);
-            CHECK(vec.prefix_rank( 7, 'l') == 6);
-            CHECK(vec.prefix_rank( 8, 'l') == 7);
-            CHECK(vec.prefix_rank( 9, 'l') == 8);
-            CHECK(vec.prefix_rank(10, 'l') == 8);
+            CHECK(vec.prefix_rank( 3, 'l') == 2);
+            CHECK(vec.prefix_rank( 4, 'l') == 2);
+            CHECK(vec.prefix_rank( 5, 'l') == 2);
+            CHECK(vec.prefix_rank( 6, 'l') == 3);
+            CHECK(vec.prefix_rank( 7, 'l') == 4);
+            CHECK(vec.prefix_rank( 8, 'l') == 5);
+            CHECK(vec.prefix_rank( 9, 'l') == 5);
+            CHECK(vec.prefix_rank(10, 'l') == 5);
 
             CHECK(vec.prefix_rank( 0, 'o') == 0);
             CHECK(vec.prefix_rank( 1, 'o') == 1);
             CHECK(vec.prefix_rank( 2, 'o') == 2);
             CHECK(vec.prefix_rank( 3, 'o') == 3);
             CHECK(vec.prefix_rank( 4, 'o') == 4);
-            CHECK(vec.prefix_rank( 5, 'o') == 5);
-            CHECK(vec.prefix_rank( 6, 'o') == 6);
-            CHECK(vec.prefix_rank( 7, 'o') == 7);
-            CHECK(vec.prefix_rank( 8, 'o') == 8);
-            CHECK(vec.prefix_rank( 9, 'o') == 9);
-            CHECK(vec.prefix_rank(10, 'o') == 9);
+            CHECK(vec.prefix_rank( 5, 'o') == 4);
+            CHECK(vec.prefix_rank( 6, 'o') == 5);
+            CHECK(vec.prefix_rank( 7, 'o') == 6);
+            CHECK(vec.prefix_rank( 8, 'o') == 7);
+            CHECK(vec.prefix_rank( 9, 'o') == 8);
+            CHECK(vec.prefix_rank(10, 'o') == 8);
 
-            CHECK(vec.prefix_rank( 0, 't') ==  0);
-            CHECK(vec.prefix_rank( 1, 't') ==  1);
-            CHECK(vec.prefix_rank( 2, 't') ==  2);
-            CHECK(vec.prefix_rank( 3, 't') ==  3);
-            CHECK(vec.prefix_rank( 4, 't') ==  4);
-            CHECK(vec.prefix_rank( 5, 't') ==  5);
-            CHECK(vec.prefix_rank( 6, 't') ==  6);
-            CHECK(vec.prefix_rank( 7, 't') ==  7);
-            CHECK(vec.prefix_rank( 8, 't') ==  8);
-            CHECK(vec.prefix_rank( 9, 't') ==  9);
-            CHECK(vec.prefix_rank(10, 't') == 10);
+            CHECK(vec.prefix_rank( 0, 't') == 0);
+            CHECK(vec.prefix_rank( 1, 't') == 1);
+            CHECK(vec.prefix_rank( 2, 't') == 2);
+            CHECK(vec.prefix_rank( 3, 't') == 3);
+            CHECK(vec.prefix_rank( 4, 't') == 4);
+            CHECK(vec.prefix_rank( 5, 't') == 5);
+            CHECK(vec.prefix_rank( 6, 't') == 6);
+            CHECK(vec.prefix_rank( 7, 't') == 7);
+            CHECK(vec.prefix_rank( 8, 't') == 8);
+            CHECK(vec.prefix_rank( 9, 't') == 9);
+            CHECK(vec.prefix_rank(10, 't') == 9);
+
+            CHECK(vec.prefix_rank( 0, 'z') ==  0);
+            CHECK(vec.prefix_rank( 1, 'z') ==  1);
+            CHECK(vec.prefix_rank( 2, 'z') ==  2);
+            CHECK(vec.prefix_rank( 3, 'z') ==  3);
+            CHECK(vec.prefix_rank( 4, 'z') ==  4);
+            CHECK(vec.prefix_rank( 5, 'z') ==  5);
+            CHECK(vec.prefix_rank( 6, 'z') ==  6);
+            CHECK(vec.prefix_rank( 7, 'z') ==  7);
+            CHECK(vec.prefix_rank( 8, 'z') ==  8);
+            CHECK(vec.prefix_rank( 9, 'z') ==  9);
+            CHECK(vec.prefix_rank(10, 'z') == 10);
 
             // check all_ranks() is equal to prefix_rank() and rank()
             for (size_t idx{0}; idx < vec.size(); ++idx) {
@@ -363,7 +375,7 @@ TEST_CASE("check symbol vectors construction on text longer than 255 characters"
             auto countPrefixRank = [&](size_t idx, uint8_t sym) {
                 size_t acc{};
                 for (size_t i{0}; i < idx; ++i) {
-                    acc = acc + (text[i] <= sym);
+                    acc = acc + (text[i] < sym);
                 }
                 return acc;
             };

@@ -75,6 +75,7 @@ struct Wavelet {
     }
 
     uint8_t symbol(uint64_t idx) const {
+        assert(idx < totalLength);
         uint8_t symb{};
         for (uint8_t b{0}; b < bits; ++b) {
             uint8_t id_offset = (1ull<<b)-1;
@@ -101,6 +102,9 @@ struct Wavelet {
     }
 
     uint64_t rank(uint64_t idx, uint8_t symb) const {
+        assert(idx <= totalLength);
+        assert(symb < TSigma);
+
         auto const& res = lut[symb];
 //        auto res = extractBitsFromSymb(symb);
         for (auto [bit, id] : res) {
@@ -115,6 +119,12 @@ struct Wavelet {
     }
 
     uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+        assert(idx <= totalLength);
+        assert(symb <= TSigma);
+
+        if (symb == 0) return 0;
+        symb -= 1;
+
         uint64_t a{};
         auto const& res = lut[symb];
 //        auto res = extractBitsFromSymb(symb);
@@ -152,6 +162,8 @@ struct Wavelet {
 
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, Sigma> {
+        assert(idx <= totalLength);
+
         auto rs = std::array<uint64_t, Sigma>{};
 
         bv_all(idx, [&]<size_t symb>(size_t count) {
@@ -161,10 +173,12 @@ struct Wavelet {
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
+        assert(idx <= totalLength);
+
         auto rs  = all_ranks(idx);
-        auto prs = rs;
+        auto prs = std::array<uint64_t, Sigma>{};
         for (uint64_t i{1}; i < Sigma; ++i) {
-            prs[i] = prs[i-1] + prs[i];
+            prs[i] = prs[i-1] + rs[i-1];
         }
         return {rs, prs};
     }

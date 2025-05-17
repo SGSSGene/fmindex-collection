@@ -109,7 +109,7 @@ struct InterleavedWavelet {
                 }
                 depth += 1;
             });
-            for (uint64_t i{0}; i <= symb; ++i) {
+            for (uint64_t i{0}; i < symb; ++i) {
                 a += blocks[i];
             }
             return a;
@@ -264,7 +264,7 @@ struct InterleavedWavelet {
         auto superBlockId = idx >> 32;
         auto bitId        = idx &  63;
         uint64_t a={};
-        for (uint64_t i{0}; i<= symb; ++i) {
+        for (uint64_t i{0}; i < symb; ++i) {
             a += superBlocks[superBlockId][i];
         }
         return blocks[blockId].prefix_rank(bitId, symb) + a;
@@ -295,11 +295,9 @@ struct InterleavedWavelet {
         std::array<uint64_t, TSigma> prs;
 
         rs[0] += superBlocks[superBlockId][0];
-        prs[0] = rs[0];
         for (uint64_t i{1}; i < TSigma; ++i) {
-
+            prs[i] = prs[i-1] + rs[i-1];
             rs[i] += superBlocks[superBlockId][i];
-            prs[i] = prs[i-1] + rs[i];
         }
 
         return {rs, prs};

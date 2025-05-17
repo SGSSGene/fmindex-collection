@@ -83,6 +83,8 @@ struct RBBwt {
     }
 
     uint8_t symbol(uint64_t idx) const {
+        assert(idx < size());
+
         auto nbr = partition.rank(idx / encodingBlockSize);
         auto s = partition.symbol(idx / encodingBlockSize);
         if (s == 1) {
@@ -92,6 +94,9 @@ struct RBBwt {
     }
 
     uint64_t rank(uint64_t idx, uint64_t symb) const {
+        assert(idx <= size());
+        assert(symb < Sigma);
+
         auto nbr = partition.rank(idx / encodingBlockSize);
         auto v2  = bitvector2.rank(nbr, symb) * encodingBlockSize;
         auto s = partition.symbol(idx/encodingBlockSize);
@@ -109,6 +114,9 @@ struct RBBwt {
     }
 
     uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
+        assert(idx <= size());
+        assert(symb <= Sigma);
+
         auto nbr = partition.rank(idx / encodingBlockSize);
         auto v2  = bitvector2.prefix_rank(nbr, symb) * encodingBlockSize;
 
@@ -120,7 +128,7 @@ struct RBBwt {
             auto tail = idx % encodingBlockSize;
             auto v = bitvector1.prefix_rank(idx - nbr*encodingBlockSize - tail, symb);
 
-            if (bitvector2.symbol(nbr) <= symb) {
+            if (bitvector2.symbol(nbr) < symb) {
                 v = v + tail;
             }
             return v + v2;
@@ -128,6 +136,8 @@ struct RBBwt {
     }
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
+        assert(idx <= size());
+
         auto nbr = partition.rank(idx / encodingBlockSize);
         auto v2  = bitvector2.all_ranks(nbr);
         auto s = partition.symbol(idx/encodingBlockSize);
@@ -149,10 +159,12 @@ struct RBBwt {
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
+        assert(idx <= size());
+
         auto rs = all_ranks(idx);
-        auto prs = rs;
+        auto prs = std::array<uint64_t, TSigma>{};
         for (size_t i{1}; i < TSigma; ++i) {
-            prs[i] = prs[i-1] + prs[i];
+            prs[i] = prs[i-1] + rs[i-1];
         }
         return {rs, prs};
     }

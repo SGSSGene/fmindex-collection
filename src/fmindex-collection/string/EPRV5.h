@@ -147,7 +147,7 @@ struct EPRV5 {
         auto superBlockId = idx >> level1_size;
         auto bitId        = idx &  63;
         uint64_t a={};
-        for (uint64_t i{0}; i<= symb; ++i) {
+        for (uint64_t i{0}; i < symb; ++i) {
             a +=   level0[level0Id][i]
                  + level1[level1Id][i]
 //                 + level2[level2Id][i]
@@ -194,14 +194,13 @@ struct EPRV5 {
 //                 + level2[level2Id][0]
                  + superBlocks[superBlockId][0];
 
-        prs[0] = rs[0];
         for (uint64_t symb{1}; symb < TSigma; ++symb) {
             auto a =   level0[level0Id][symb]
                      + level1[level1Id][symb]
 //                     + level2[level2Id][symb]
                      + superBlocks[superBlockId][symb];
 
-            prs[symb] = prs[symb-1] + rs[symb] + a;
+            prs[symb] = prs[symb-1] + rs[symb-1] + a;
             rs[symb] += a;
         }
         return {rs, prs};

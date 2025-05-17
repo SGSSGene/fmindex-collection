@@ -11,6 +11,7 @@ add_executable(${PROJECT_NAME}
     bitvector/sparse_benchmark.cpp
     bitvector/unittest.cpp
     checkTernarylogic.cpp
+    fmindex/benchmark_fmindex.cpp
     fmindex/checkBiFMIndex.cpp
     fmindex/checkBiFMIndexCursor.cpp
     fmindex/checkBiFMIndexWithoutDelimiter.cpp

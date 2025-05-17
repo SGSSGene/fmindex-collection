@@ -56,7 +56,7 @@ struct L0L1_NEPRV9 {
         }
 
         uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
-            assert(symb < Sigma);
+            assert(symb <= Sigma);
             assert(idx <= l1_bits_ct);
             auto v = neprv8_detail::prefix_rank(bits, symb);
             return lshift_and_count(v, l1_bits_ct-idx);
@@ -257,7 +257,7 @@ struct L0L1_NEPRV9 {
 
     uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
         assert(idx <= totalLength);
-        assert(symb < Sigma);
+        assert(symb <= Sigma);
         auto bitId = idx % (l1_bits_ct);
         auto l1Id = idx / l1_bits_ct;
         auto l0Id = idx / l0_bits_ct;
@@ -265,7 +265,7 @@ struct L0L1_NEPRV9 {
         assert(l0Id < l0.size());
 
         size_t r{};
-        for (size_t s{0}; s <= symb; ++s) {
+        for (size_t s{0}; s < symb; ++s) {
             auto count = bits[l1Id].rank(bitId, s);
             r += l0[l0Id][s] + l1[l1Id][s] + count;
             assert(r <= idx);
@@ -283,9 +283,9 @@ struct L0L1_NEPRV9 {
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
         auto rs = all_ranks(idx);
-        auto prs = rs;
+        auto prs = std::array<uint64_t, TSigma>{};
         for (size_t i{1}; i < prs.size(); ++i) {
-            prs[i] = prs[i] + prs[i-1];
+            prs[i] = prs[i-1] + rs[i-1];
         }
         return {rs, prs};
     }

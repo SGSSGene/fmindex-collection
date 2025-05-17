@@ -46,9 +46,9 @@ struct InterleavedEPRV2 {
     }
 
     template <size_t N>
-    static auto bits_have_symbols_or_less(uint64_t symb, std::array<uint64_t, N> const& bits) -> uint64_t {
+    static auto bits_less_symbols(uint64_t symb, std::array<uint64_t, N> const& bits) -> uint64_t {
         uint64_t bit_set{};
-        for (size_t i{0}; i <= symb; ++i) {
+        for (size_t i{0}; i < symb; ++i) {
             bit_set |= bits_have_symbols(i, bits);
         }
         return bit_set;
@@ -74,12 +74,12 @@ struct InterleavedEPRV2 {
         }
 
         uint64_t prefix_rank(size_t idx, uint64_t symb) const {
-            auto bits_set = bits_have_symbols_or_less(symb, bits);
+            auto bits_set = bits_less_symbols(symb, bits);
 
             auto bits_masked = std::bitset<64>(bits_set) << (64-idx);
             auto ct = bits_masked.count();
 
-            for (size_t i{0}; i <= symb; ++i) {
+            for (size_t i{0}; i < symb; ++i) {
                 ct += blocks[i];
             }
             return ct;
@@ -206,7 +206,7 @@ struct InterleavedEPRV2 {
         auto superBlockId = idx >> block_size;
         auto bitId        = idx &  63;
         uint64_t a{};
-        for (size_t i{0}; i<= symb; ++i) {
+        for (size_t i{0}; i < symb; ++i) {
             a += superBlocks[superBlockId][i];
         }
         return blocks[blockId].prefix_rank(bitId, symb) + a;
@@ -233,21 +233,20 @@ struct InterleavedEPRV2 {
         auto rs = blocks[blockId].all_ranks(bitId);
 
         rs[0] += superBlocks[superBlockId][0];
-        prs[0] = rs[0];
         for (size_t symb{1}; symb < TSigma; ++symb) {
-            prs[symb] = prs[symb-1] + superBlocks[superBlockId][symb] + rs[symb];
+            prs[symb] = prs[symb-1] + rs[symb-1];
             rs[symb] += superBlocks[superBlockId][symb];
         }
         return {rs, prs};
     }
 
-    uint64_t rank_symbol(size_t idx) const {
+/*    uint64_t rank_symbol(size_t idx) const {
         auto blockId      = idx >> 6;
         auto bitId        = idx & 63;
         auto superBlockId = idx >> block_size;
         auto [rank, symb] = blocks[blockId].rank_symbol(bitId);
         return rank + superBlocks[superBlockId][symb];
-    }
+    }*/
 
     template <typename Archive>
     void serialize(Archive& ar) {

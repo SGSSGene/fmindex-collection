@@ -127,6 +127,8 @@ struct RBBwtV2 {
     }
 
     uint8_t symbol(uint64_t idx) const {
+        assert(idx < totalSize);
+
         auto indicator = topLevelVector.symbol(idx/encodingBlockSize);
         if (indicator == DifferentBlocks-1) { // mixed Level
             auto nbr = topLevelVector.rank(idx/encodingBlockSize, DifferentBlocks-1);
@@ -137,6 +139,9 @@ struct RBBwtV2 {
     }
 
     uint64_t rank(uint64_t idx, uint64_t symb) const {
+        assert(idx <= totalSize);
+        assert(symb < Sigma);
+
         if (idx == 0) return 0;
 //        for (size_t i{0}; i  < totalSize / encodingBlockSize; ++i) {
 //            std::cout << i << " ";
@@ -167,6 +172,9 @@ struct RBBwtV2 {
     }
 
     uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
+        assert(idx <= totalSize);
+        assert(symb <= Sigma);
+
         if (idx == 0) return 0;
         size_t r{};
         auto indicators = topLevelVector.all_ranks(idx/encodingBlockSize);
@@ -191,6 +199,8 @@ struct RBBwtV2 {
     }
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
+        assert(idx <= totalSize);
+
         auto res = std::array<uint64_t, TSigma>{};
         if (idx == 0) return res;
         for (size_t s{0}; s < TSigma; ++s) {
@@ -218,10 +228,12 @@ struct RBBwtV2 {
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
+        assert(idx <= totalSize);
+
         auto rs = all_ranks(idx);
-        auto prs = rs;
+        auto prs = std::array<uint64_t, TSigma>{};
         for (size_t i{1}; i < TSigma; ++i) {
-            prs[i] = prs[i-1] + prs[i];
+            prs[i] = prs[i-1] + rs[i-1];
         }
         return {rs, prs};
     }

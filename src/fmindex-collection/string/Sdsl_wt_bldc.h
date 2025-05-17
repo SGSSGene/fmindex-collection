@@ -51,22 +51,31 @@ struct Sdsl_wt_bldc {
     }
 
     uint8_t symbol(uint64_t idx) const {
+        assert(idx < totalLength);
         return index[idx];
     }
 
     uint64_t rank(uint64_t idx, uint8_t symb) const {
+        assert(idx <= totalLength);
+        assert(symb < TSigma);
+
         return index.rank(idx, symb);
     }
 
     uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+        assert(idx <= totalLength);
+        assert(symb <= Sigma);
+
         uint64_t a{};
-        for (size_t i{0}; i <= symb; ++i) {
+        for (size_t i{0}; i < symb; ++i) {
             a += index.rank(idx, i);
         }
         return a;
     }
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, Sigma> {
+        assert(idx <= totalLength);
+
         std::array<uint64_t, Sigma> rs{0};
         for (size_t i{0}; i < Sigma; ++i) {
             rs[i] = rank(idx, i);
@@ -75,13 +84,15 @@ struct Sdsl_wt_bldc {
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
+        assert(idx <= totalLength);
+
         std::array<uint64_t, Sigma> rs{0};
         std::array<uint64_t, Sigma> prs{0};
         size_t a{};
         for (size_t i{0}; i < Sigma; ++i) {
+            prs[i] = a;
             rs[i] = rank(idx, i);
             a += rs[i];
-            prs[i] = a;
         }
         return {rs, prs};
     }

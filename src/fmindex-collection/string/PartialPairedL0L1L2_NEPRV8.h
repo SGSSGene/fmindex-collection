@@ -4,21 +4,21 @@
 
 #include "../bitset_popcount.h"
 #include "../builtins.h"
-#include "concepts.h"
-#include "utils.h"
+#include "../ternarylogic.h"
+#include "../utils.h"
 #include "EPRV3.h"
 #include "NEPRV8.h"
+#include "concepts.h"
+#include "utils.h"
 
 #include <bit>
+#include <limits>
 #include <vector>
 
 #if __has_include(<cereal/types/bitset.hpp>)
 #include <cereal/types/bitset.hpp>
 #endif
 
-#include <iostream>
-
-#include "../ternarylogic.h"
 
 namespace fmindex_collection::string {
 
@@ -58,7 +58,7 @@ struct PartialPairedL0L1L2_NEPRV8 {
         uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
             assert(idx < popcount_width*2);
 
-            auto v = mark_exact_or_less_large(symb, bits);
+            auto v = mark_less_large(symb, bits);
             return signed_rshift_and_count(v, idx);
         }
 
@@ -214,13 +214,16 @@ struct PartialPairedL0L1L2_NEPRV8 {
     }
 
     uint8_t symbol(uint64_t idx) const {
+        assert(idx < totalLength);
+
         auto level0Id     = idx >>  popcount_width_bits;
         auto bitId        = idx &  (popcount_width-1);
         return bits[level0Id].symbol(bitId);
     }
 
     uint64_t rank(uint64_t idx, uint8_t symb) const {
-        prefetch(idx);
+        assert(idx <= totalLength);
+        assert(symb < Sigma);
 
         auto level0Id     = idx >> popcount_width_bits;
         auto level1Id     = idx >> level0_size;
@@ -235,7 +238,8 @@ struct PartialPairedL0L1L2_NEPRV8 {
     }
 
     uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
-        prefetch(idx);
+        assert(idx <= totalLength);
+        assert(symb <= Sigma);
 
         auto level0Id     = idx >>  popcount_width_bits;
         auto level1Id     = idx >> level0_size;
@@ -251,7 +255,7 @@ struct PartialPairedL0L1L2_NEPRV8 {
 
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
-        prefetch(idx);
+        assert(idx <= totalLength);
 
         auto level0Id     = idx >>  popcount_width_bits;
         auto level1Id     = idx >> level0_size;
@@ -270,7 +274,7 @@ struct PartialPairedL0L1L2_NEPRV8 {
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
-        prefetch(idx);
+        assert(idx <= totalLength);
 
         auto level0Id     = idx >>  popcount_width_bits;
         auto level1Id     = idx >> level0_size;
@@ -286,7 +290,7 @@ struct PartialPairedL0L1L2_NEPRV8 {
                         + superBlocks[superBlockId][symb]
                         + res[symb]*sign;
             if (symb > 0) {
-                prs[symb] = prs[symb-1] + res[symb];
+                prs[symb] = prs[symb-1] + res[symb-1];
             } else {
                 prs[symb] = 0;
             }

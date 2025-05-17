@@ -766,6 +766,30 @@ auto mark_exact_or_less_v3(size_t value, std::bitset<N> const& _a, std::bitset<N
     return {};
 };
 
+/** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
+ *  has the same bit value as Value
+ */
+template <size_t N>
+auto mark_less_v3(size_t value, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
+    assert(value < 9);
+
+    switch(value) {
+    case 0x00: return mask_positive_or_negative<N>[1];
+    case 0x01: return ~_a & ~_b & ~_c;
+    case 0x02: return ~_a & ~_b;
+    case 0x03: return ~_a & (~_b | ~_c);
+    case 0x04: return ~_a;
+    case 0x05: return ~_a | (~_b & ~_c);
+    case 0x06: return ~_a | ~_b;
+    case 0x07: return ~_a | ~_b | ~_c;
+    case 0x08: return mask_positive_or_negative<N>[0];
+    }
+//    unreachable();
+//    __builtin_unreachable();
+    return {};
+};
+
+
 template <size_t N, typename T=std::bitset<N>>
 static std::array<T(*)(T const&, T const&, T const&), 8> lut_mark_exact_or_less = []() {
     auto r = std::array<T(*)(T const&, T const&, T const&), 8>{};
@@ -780,6 +804,22 @@ static std::array<T(*)(T const&, T const&, T const&), 8> lut_mark_exact_or_less 
     return r;
 }();
 
+template <size_t N, typename T=std::bitset<N>>
+static std::array<T(*)(T const&, T const&, T const&), 9> lut_mark_less = []() {
+    auto r = std::array<T(*)(T const&, T const&, T const&), 9>{};
+    r[0] = lut_ternarylogic2<N, T>[0];
+    r[1] = lut_ternarylogic2<N, T>[1];
+    r[2] = lut_ternarylogic2<N, T>[3];
+    r[3] = lut_ternarylogic2<N, T>[7];
+    r[4] = lut_ternarylogic2<N, T>[15];
+    r[5] = lut_ternarylogic2<N, T>[31];
+    r[6] = lut_ternarylogic2<N, T>[63];
+    r[7] = lut_ternarylogic2<N, T>[127];
+    r[8] = lut_ternarylogic2<N, T>[255];
+    return r;
+}();
+
+
 
 /** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
  *  has the same bit value as Value
@@ -791,10 +831,24 @@ auto mark_exact_or_less_v4(size_t value, std::bitset<N> const& _a, std::bitset<N
 };
 
 template <size_t N>
+auto mark_less_v4(size_t value, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
+    assert(value < 9);
+    return lut_mark_less<N>[value](_a, _b, _c);
+};
+
+
+template <size_t N>
 auto mark_exact_or_less_fast(size_t value, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
     assert(value < 8);
     return mark_exact_or_less_v4(value, _a, _b, _c);
 };
+
+template <size_t N>
+auto mark_less_fast(size_t value, std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
+    assert(value < 9);
+    return mark_less_v4(value, _a, _b, _c);
+};
+
 
 template <size_t N>
 auto mark_exact_or_less_all(std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::array<std::bitset<N>, 8> {
@@ -915,5 +969,14 @@ auto mark_exact_or_less_large(size_t value, std::array<std::bitset<N1>, N2> cons
 //    case 0x05: return ~_a | ~_b;
 //    case 0x06: return ~_a | ~_b | ~_c;
 };
+
+/** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
+ *  has the same bit value as Value
+ */
+template <size_t N1, size_t N2>
+auto mark_less_large(size_t value, std::array<std::bitset<N1>, N2> const& _arr) -> std::bitset<N1> {
+    if (value == 0) return mask_positive_or_negative<N1>[1];
+    return mark_exact_or_less_large(value-1, _arr);
+}
 
 }
