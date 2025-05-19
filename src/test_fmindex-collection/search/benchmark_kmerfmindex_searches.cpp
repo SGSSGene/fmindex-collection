@@ -3,18 +3,15 @@
 // SPDX-License-Identifier: CC0-1.0
 
 #include <catch2/catch_all.hpp>
-#include <fmindex-collection/fmindex/BiFMIndex.h>
-#include <fmindex-collection/locate.h>
-#include <fmindex-collection/search/all.h>
-#include <fmindex-collection/search_scheme/generator/all.h>
-#include <fmindex-collection/search_scheme/expand.h>
+#include <fmindex-collection/fmindex/KMerFMIndex.h>
 #include <fmindex-collection/string/all.h>
+#include <fmindex-collection/search/KMerSearch.h>
 #include <nanobench.h>
 
-TEST_CASE("benchmark searches with errors", "[searches][!benchmark][bifmindex]") {
+TEST_CASE("benchmark searches with errors", "[searches][!benchmark][kmerfmindex]") {
     SECTION("benchmarking") {
         using String = fmindex_collection::string::InterleavedBitvector16<256>;
-        using Index = fmindex_collection::BiFMIndex<String>;
+        using Index = fmindex_collection::KMerFMIndex<String, 8>;
 
         srand(0);
 
@@ -98,7 +95,7 @@ TEST_CASE("benchmark searches with errors", "[searches][!benchmark][bifmindex]")
         auto ref = generateSequences(100, 1'000'000);
 
         // generate reads
-        for (size_t errors{0}; errors < 3; ++errors) {
+        for (size_t errors{0}; errors < 1; ++errors) {
             size_t len = 150;
             auto [expected, reads] = generateReads(1000, ref, len, errors);
 
@@ -108,22 +105,8 @@ TEST_CASE("benchmark searches with errors", "[searches][!benchmark][bifmindex]")
                  .relative(true);
 
             {
-                auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, errors), len);
-
-                bench.run("search ng12 - error " + std::to_string(errors), [&]() {
-                    fmindex_collection::search_ng21::search(index, reads, search_scheme, [&](auto qidx, auto cursor, auto errors) {
-                        (void)errors;
-                        (void)qidx;
-                        ankerl::nanobench::doNotOptimizeAway(cursor);
-                    });
-                });
-            }
-
-            {
-                auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, errors), len);
-
-                bench.run("search ng21 - errors " + std::to_string(errors), [&]() {
-                    fmindex_collection::search_ng21::search(index, reads, search_scheme, [&](auto qidx, auto cursor, auto errors) {
+                bench.run("search kmersearch - error " + std::to_string(errors), [&]() {
+                    fmindex_collection::kmersearch::search(index, reads, [&](auto qidx, auto cursor) {
                         (void)errors;
                         (void)qidx;
                         ankerl::nanobench::doNotOptimizeAway(cursor);

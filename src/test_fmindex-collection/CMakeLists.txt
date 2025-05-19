@@ -20,6 +20,8 @@ add_executable(${PROJECT_NAME}
     fmindex/checkDenseReverseFMIndex.cpp
     fmindex/checkFMIndex.cpp
     fmindex/checkFMIndexCursor.cpp
+    fmindex/checkKMerFMIndex.cpp
+    fmindex/checkKMerFMIndexCursor.cpp
     fmindex/checkLeftBiFMIndexCursor.cpp
     fmindex/checkLeftMirroredBiFMIndexCursor.cpp
     fmindex/checkMerge.cpp
@@ -30,6 +32,7 @@ add_executable(${PROJECT_NAME}
     fmindex/checkReverseFMIndexCursor.cpp
     misc/benchmark_binary_search.cpp
     search/benchmark_bifmindex_searches.cpp
+    search/benchmark_kmerfmindex_searches.cpp
     search/checkLocateFMTree.cpp
     search/checkReverseIndexSearch.cpp
     search/checkSearchBacktracking.cpp

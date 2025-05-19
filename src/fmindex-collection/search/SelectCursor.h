@@ -5,6 +5,7 @@
 
 #include "../fmindex/BiFMIndexCursor.h"
 #include "../fmindex/FMIndexCursor.h"
+#include "../fmindex/KMerFMIndexCursor.h"
 #include "../fmindex/MirroredBiFMIndexCursor.h"
 #include "../fmindex/ReverseFMIndexCursor.h"
 
@@ -14,43 +15,53 @@ namespace fmindex_collection {
 template <typename Index>
 struct SelectIndexCursor;
 
-template <typename OccTable, typename TCSA>
-struct SelectIndexCursor<BiFMIndex<OccTable, TCSA>> {
-    using cursor_t = BiFMIndexCursor<BiFMIndex<OccTable, TCSA>>;
+template <typename String, typename TCSA>
+struct SelectIndexCursor<BiFMIndex<String, TCSA>> {
+    using cursor_t = BiFMIndexCursor<BiFMIndex<String, TCSA>>;
 };
 
-template <typename OccTable, typename TCSA>
-struct SelectIndexCursor<FMIndex<OccTable, TCSA>> {
-    using cursor_t = FMIndexCursor<FMIndex<OccTable, TCSA>>;
+template <typename String, typename TCSA>
+struct SelectIndexCursor<FMIndex<String, TCSA>> {
+    using cursor_t = FMIndexCursor<FMIndex<String, TCSA>>;
 };
 
-template <typename OccTable, typename TCSA>
-struct SelectIndexCursor<MirroredBiFMIndex<OccTable, TCSA>> {
-    using cursor_t = MirroredBiFMIndexCursor<MirroredBiFMIndex<OccTable, TCSA>>;
+template <typename String, size_t KMer, typename TCSA>
+struct SelectIndexCursor<KMerFMIndex<String, KMer, TCSA>> {
+    using cursor_t = KMerFMIndexCursor<KMerFMIndex<String, KMer, TCSA>>;
 };
 
-template <typename OccTable, typename TCSA>
-struct SelectIndexCursor<ReverseFMIndex<OccTable, TCSA>> {
-    using cursor_t = ReverseFMIndexCursor<ReverseFMIndex<OccTable, TCSA>>;
+template <typename String, typename TCSA>
+struct SelectIndexCursor<MirroredBiFMIndex<String, TCSA>> {
+    using cursor_t = MirroredBiFMIndexCursor<MirroredBiFMIndex<String, TCSA>>;
+};
+
+template <typename String, typename TCSA>
+struct SelectIndexCursor<ReverseFMIndex<String, TCSA>> {
+    using cursor_t = ReverseFMIndexCursor<ReverseFMIndex<String, TCSA>>;
 };
 
 
 template <typename Index>
 struct SelectLeftIndexCursor;
 
-template <typename OccTable, typename TCSA>
-struct SelectLeftIndexCursor<BiFMIndex<OccTable, TCSA>> {
-    using cursor_t = LeftBiFMIndexCursor<BiFMIndex<OccTable, TCSA>>;
+template <typename String, typename TCSA>
+struct SelectLeftIndexCursor<BiFMIndex<String, TCSA>> {
+    using cursor_t = LeftBiFMIndexCursor<BiFMIndex<String, TCSA>>;
 };
 
-template <typename OccTable, typename TCSA>
-struct SelectLeftIndexCursor<FMIndex<OccTable, TCSA>> {
-    using cursor_t = FMIndexCursor<FMIndex<OccTable, TCSA>>;
+template <typename String, typename TCSA>
+struct SelectLeftIndexCursor<FMIndex<String, TCSA>> {
+    using cursor_t = FMIndexCursor<FMIndex<String, TCSA>>;
 };
 
-template <typename OccTable, typename TCSA>
-struct SelectLeftIndexCursor<MirroredBiFMIndex<OccTable, TCSA>> {
-    using cursor_t = LeftMirroredBiFMIndexCursor<MirroredBiFMIndex<OccTable, TCSA>>;
+template <typename String, size_t KMer, typename TCSA>
+struct SelectLeftIndexCursor<KMerFMIndex<String, KMer, TCSA>> {
+    using cursor_t = KMerFMIndexCursor<KMerFMIndex<String, KMer, TCSA>>;
+};
+
+template <typename String, typename TCSA>
+struct SelectLeftIndexCursor<MirroredBiFMIndex<String, TCSA>> {
+    using cursor_t = LeftMirroredBiFMIndexCursor<MirroredBiFMIndex<String, TCSA>>;
 };
 
 

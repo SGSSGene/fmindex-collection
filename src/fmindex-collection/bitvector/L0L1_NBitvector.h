@@ -137,6 +137,22 @@ struct L0L1_NBitvector {
         return r;
     }
 
+    uint64_t gotoMarkingFwd(size_t idx) const {
+        assert(idx < totalLength);
+        while (!symbol(idx)) {
+            idx += 1;
+        }
+        return idx;
+    }
+
+    uint64_t gotoMarkingBwd(size_t idx) const {
+        assert(idx < totalLength);
+        while (!symbol(idx)) {
+            idx -= 1;
+        }
+        return idx;
+    }
+
     template <typename Archive>
     void serialize(Archive& ar) {
         ar(l0, l1, totalLength, bits);
