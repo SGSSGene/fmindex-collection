@@ -75,7 +75,7 @@ auto mergeBwt(std::vector<bool> const& R, StringLhs const& lhsBwt, StringRhs con
             mergedBwt.push_back(lhsBwt.symbol(idx1));
             idx1 += 1;
         } else {
-            assert(idx2 < index2.size());
+            assert(idx2 < rhsBwt.size());
             mergedBwt.push_back(rhsBwt.symbol(idx2));
             idx2 += 1;
         }
