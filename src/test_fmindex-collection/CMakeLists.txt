@@ -46,6 +46,7 @@ add_executable(${PROJECT_NAME}
     string/benchmark_alphabet_6.cpp
     string/benchmark_alphabet_8.cpp
     string/benchmark_alphabet_16.cpp
+    string/benchmark_alphabet_21.cpp
     string/benchmark_alphabet_32.cpp
     string/benchmark_alphabet_64.cpp
     string/benchmark_alphabet_128.cpp
