@@ -5,7 +5,7 @@
 
 TEST_CASE("benchmark binary search on large numbers", "[!benchmark][binary-search][time]") {
     auto size = []() -> size_t {
-        auto ptr = std::getenv("VECTORSIZE");
+        auto ptr = std::getenv("STRINGSIZE");
         #ifdef NDEBUG
         size_t defVal = 1'000'000;
         #else
