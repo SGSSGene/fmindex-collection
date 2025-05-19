@@ -19,7 +19,10 @@
     fmindex_collection::string::PairedL0L1_NEPRV9_256_64k<Sigma>, \
     fmindex_collection::string::PairedL0L1_NEPRV9_512_64k<Sigma>, \
     fmindex_collection::string::PairedL0L1_NEPRV9_1024_64k<Sigma>, \
-    fmindex_collection::string::PairedL0L1_NEPRV9_2048_64k<Sigma>
+    fmindex_collection::string::PairedL0L1_NEPRV9_2048_64k<Sigma>, \
+    fmindex_collection::string::MultiBitvector_Bitvector<Sigma>, \
+    fmindex_collection::string::InterleavedEPR16<Sigma>, \
+    fmindex_collection::string::InterleavedEPRV2_16<Sigma>
 
 #if FMC_USE_SDSL
 #define ALLSTRINGSWITHRANK(Sigma) \
