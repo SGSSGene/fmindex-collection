@@ -7,7 +7,6 @@
 
 #include <fmindex-collection/fmindex-collection.h>
 #include <fmindex-collection/fmindex/merge.h>
-#include <fmindex-collection/occtable/all.h>
 #include <fmindex-collection/suffixarray/DenseCSA.h>
 
 #include <cereal/archives/binary.hpp>
@@ -122,7 +121,7 @@ auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr, bool con
                 if (!index) {
                     index = std::move(newIndex);
                 } else {
-                    index = merge(*index, newIndex);
+                    index = fmindex_collection::fmindex::merge(*index, newIndex);
                 }
             }
             return *index;
@@ -145,7 +144,9 @@ auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr, bool con
 template <typename CSA, typename Table>
 auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, bool partialBuildUp, bool convertUnknownChar) {
     auto sw = StopWatch{};
-    auto indexPath = path + "." + Table::extension() + ".dense.index";
+//    auto indexPath = path + "." + Table::extension() + ".dense.index";
+    auto indexPath = path + ".tab.dense.index";
+
     if (!std::filesystem::exists(indexPath)) {
         auto [ref, refInfo] = loadQueries<Table::Sigma>(path, false, convertUnknownChar);
         using Index = fmindex_collection::BiFMIndex<Table, fmindex_collection::DenseCSA>;
@@ -185,7 +186,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
                     index = std::move(newIndex);
                 } else {
                     std::cout << "merging " << index->size() << " + " << acc << "\n";
-                    index = merge(*index, newIndex);
+                    index = fmindex_collection::fmindex::merge(*index, newIndex);
                 }
 
                 acc = 0;
@@ -225,7 +226,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
                         break;
                     }
                     std::cout << "merging " << l2.size() << " + " << l1.size() << " " << indices.size() << "\n";
-                    auto newIndex = merge(l2, l1);
+                    auto newIndex = fmindex_collection::fmindex::merge(l2, l1);
                     indices.pop_back(); indices.pop_back();
                     indices.emplace_back(std::move(newIndex));
                     sort();
@@ -235,7 +236,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
                 auto const& l1 = *(indices.end()-1);
                 auto const& l2 = *(indices.end()-2);
                 std::cout << "merging " << l2.size() << " + " << l1.size() << " " << indices.size() << "(fin)\n";
-                auto newIndex = merge(l2, l1);
+                auto newIndex = fmindex_collection::fmindex::merge(l2, l1);
                 indices.pop_back(); indices.pop_back();
                 indices.emplace_back(std::move(newIndex));
                 sort();
@@ -261,14 +262,13 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
 
 
 template <size_t Sigma, typename CB>
-void visitAllTables(CB cb) {
+void visitAllStrings(CB cb) {
 /*    cb.template operator()<fmindex_collection::occtable::naive::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::bitvector::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::compactBitvector::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::compactBitvectorPrefix::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::interleaved8::OccTable<Sigma>>();*/
-    cb.template operator()<fmindex_collection::occtable::Interleaved_16<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::L1Bitvector<Sigma>>();
+    cb.template operator()<fmindex_collection::string::InterleavedBitvector16<Sigma>>();
 /*    cb.template operator()<fmindex_collection::occtable::interleaved32::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::interleaved8Aligned::OccTable<Sigma>>();
     cb.template operator()<fmindex_collection::occtable::interleaved16Aligned::OccTable<Sigma>>();

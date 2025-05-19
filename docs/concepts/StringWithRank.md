@@ -3,11 +3,11 @@
     SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
     SPDX-License-Identifier: CC-BY-4.0
 -->
-# RankVector
+# String with rank support
 
 ## Concept
-The concept `fmindex_collection::RankVector` models
-a vector that stores elements of type `uint8_t` and provides a `rank` function for each symbol.
+The concept `fmindex_collection::String_c` models a string with rank support.
+Its main purpose is to answer the `rank` query for a character any position.
 
 Classes fulfilling this concept are guaranteed to provide following
 functionality:
@@ -24,19 +24,19 @@ functionality:
 
 ## Examples usages
 === "Construction and Usage"
-    Creating a vector with rank support of length 100.
+    Creating a string with rank support of length 100.
     ```c++
     auto data = std::vector<uint8_t>{3, 2, 3, 2, 1, 1, 0, 3, 4, 5};
-    auto vector = T{data};
+    auto string = T{data};
 
     // prints the number of bits
-    std::cout << vector.size() << '\n';
+    std::cout << string.size() << '\n';
 
     // prints value of 5th bit (prints '1')
-    std::cout << vector.symbol(4) << '\n';
+    std::cout << string.symbol(4) << '\n';
 
     // prints how number of '2' in the first 4 numbers (prints '2')
-    std::cout << bitvector.rank(4, 2) << '\n';
+    std::cout << string.rank(4, 2) << '\n';
     ```
 
 ## Implementation
@@ -45,7 +45,7 @@ All implementation are located inside the namespace `fmindex_collection::rankvec
 
 <div markdown class="rankvector_table">
 
-| rank vector (`fmindex_collection::rankvecto::`) | Description |
+| rank vector (`fmindex_collection::string::`) | Description |
 |:-------------------------------------------|--------------|
 | `#!c++ Naive`                              | Stores every thing in `std::vector<size_t>`, requires O(n·log n). |
 | `#!c++ MultiBitvector`                     | Standard FM-Index implementation. Using a bitvector for every alphabet character. |

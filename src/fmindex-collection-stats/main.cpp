@@ -69,16 +69,9 @@ static void analyse_bitvectors() {
         analyse_bitvector<SparseBLEBitvector<4>>("SparseBLEBitvector 16", text);
         analyse_bitvector<SparseBLEBitvector<5>>("SparseBLEBitvector 32", text);
         analyse_bitvector<SparseBLEBitvector<6>>("SparseBLEBitvector 64", text);
-        analyse_bitvector<SparseBLEBitvector<1, SparseBLEBitvector<-1>>>("SparseBLEBitvector  2/2", text);
-        analyse_bitvector<SparseBLEBitvector<2, SparseBLEBitvector<-1>>>("SparseBLEBitvector  4/2", text);
-        analyse_bitvector<SparseBLEBitvector<2, SparseBLEBitvector<-2>>>("SparseBLEBitvector  4/4", text);
-        analyse_bitvector<SparseBLEBitvector<3, SparseBLEBitvector<-1>>>("SparseBLEBitvector  8/2", text);
-        analyse_bitvector<SparseBLEBitvector<3, SparseBLEBitvector<-2>>>("SparseBLEBitvector  8/4", text);
-        analyse_bitvector<SparseBLEBitvector<3, SparseBLEBitvector<-3>>>("SparseBLEBitvector  8/8", text);
-
-        analyse_bitvector<SparseBLEBitvector<2, Bitvector, SparseBLEBitvector<1>>>("SparseBLEBitvector  4/-2", text);
-        analyse_bitvector<SparseBLEBitvector<3, Bitvector, SparseBLEBitvector<1>>>("SparseBLEBitvector  8/-2", text);
-        analyse_bitvector<SparseBLEBitvector<3, Bitvector, SparseBLEBitvector<2>>>("SparseBLEBitvector  8/-4", text);
+        analyse_bitvector<SparseBLEBitvector<2, Bitvector, SparseBLEBitvector<1>>>("SparseBLEBitvector  4/2", text);
+        analyse_bitvector<SparseBLEBitvector<3, Bitvector, SparseBLEBitvector<1>>>("SparseBLEBitvector  8/2", text);
+        analyse_bitvector<SparseBLEBitvector<3, Bitvector, SparseBLEBitvector<2>>>("SparseBLEBitvector  8/4", text);
 
     };
 
@@ -146,13 +139,10 @@ static void analyse_strings() {
         analyse_string<MultiBitvector<Sigma, SparseBitvector<4>>>("SparseMultiBitvector 16", text);
         analyse_string<MultiBitvector<Sigma, SparseBitvector<5>>>("SparseMultiBitvector 32", text);
         analyse_string<MultiBitvector<Sigma, SparseBitvector<6>>>("SparseMultiBitvector 64", text);
-        analyse_string<MultiBitvector<Sigma, SparseBitvector<1, SparseBitvector<-1>>>>("SparseMultiBitvector 2/2", text);
-        analyse_string<MultiBitvector<Sigma, SparseBitvector<2, SparseBitvector<-1>>>>("SparseMultiBitvector 4/2", text);
-        analyse_string<MultiBitvector<Sigma, SparseBitvector<2, SparseBitvector<-2>>>>("SparseMultiBitvector 4/4", text);
-        analyse_string<MultiBitvector<Sigma, SparseBitvector<2, fmindex_collection::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 4/-2", text);
-        analyse_string<MultiBitvector<Sigma, SparseBitvector<3, fmindex_collection::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 8/-2", text);
-        analyse_string<MultiBitvector<Sigma, SparseBitvector<3, fmindex_collection::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 8/-4", text);
-        analyse_string<MultiBitvector<Sigma, SparseBitvector<4, fmindex_collection::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 16/-4", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<2, fmindex_collection::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 4/2", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<3, fmindex_collection::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 8/2", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<3, fmindex_collection::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 8/4", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<4, fmindex_collection::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 16/4", text);
 
         analyse_string<InterleavedBitvector8<Sigma>>("InterleavedBitvector8", text);
         analyse_string<InterleavedBitvector16<Sigma>>("InterleavedBitvector16", text);

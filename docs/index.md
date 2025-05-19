@@ -6,7 +6,7 @@
 # Introduction
 
 **FMIndex Collection** is written in modern C++20 and provides a set of concepts, classes and functions required
-ito provide FM-Indices and their internal support structures.
+to provide FM-Indices and their internal support structures.
 
 ## Functionality
 - fast and compact bitvectors with rank support
@@ -23,10 +23,7 @@ ito provide FM-Indices and their internal support structures.
 ### CPM
 ```cmake
 CPMAddPackage(
-  NAME fmindex_collection
-  GITHUB_REPOSITORY SGSSGene/fmindex_collection
-  GIT_TAG v0.0.0 # put newest version here
-  SYSTEM YES
+  URI SGSSGene/fmindex_collection@0.0.0 # put newest version here
 )
 ...
 target_link_libraries(${PROJECT_NAME}
@@ -43,9 +40,12 @@ void someFunction() {
         {1, 1, 1, 2, 2, 2, 3, 2, 4, 1, 1, 1},
         {1, 2, 1, 2, 3, 4, 3},
     };
+
+    // Pick String with Ranksupport implementation
+    using String = string::InterleavedBitvector16<5>; // largest character + 1 (not allowed to have 0)
+
     // Creating an FM-Inddex
-    using OccTable = occtable::Interleaved_16<5>; // largest character + 1 (not allowed to have 0)
-    auto index = FMIndex<OccTableTable>{reference, /*samplingRate*/16, /*threadNbr*/1};
+    auto index = FMIndex<String>{reference, /*samplingRate*/16, /*threadNbr*/1};
 
     // The stuff you are searching for
     auto queries = std::vector<std::vector<uint8_t>>{{1, 3}, {4, 2}};

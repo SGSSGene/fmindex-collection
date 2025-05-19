@@ -131,17 +131,17 @@ using L0_512BitvectorUA = L0_NBitvector<512, false>;
 using L0_1024BitvectorUA = L0_NBitvector<1024, false>;
 using L0_2048BitvectorUA = L0_NBitvector<2048, false>;
 
-static_assert(BitVector_c<L0_64Bitvector>);
-static_assert(BitVector_c<L0_128Bitvector>);
-static_assert(BitVector_c<L0_256Bitvector>);
-static_assert(BitVector_c<L0_512Bitvector>);
-static_assert(BitVector_c<L0_1024Bitvector>);
-static_assert(BitVector_c<L0_2048Bitvector>);
-static_assert(BitVector_c<L0_64BitvectorUA>);
-static_assert(BitVector_c<L0_128BitvectorUA>);
-static_assert(BitVector_c<L0_256BitvectorUA>);
-static_assert(BitVector_c<L0_512BitvectorUA>);
-static_assert(BitVector_c<L0_1024BitvectorUA>);
-static_assert(BitVector_c<L0_2048BitvectorUA>);
+static_assert(Bitvector_c<L0_64Bitvector>);
+static_assert(Bitvector_c<L0_128Bitvector>);
+static_assert(Bitvector_c<L0_256Bitvector>);
+static_assert(Bitvector_c<L0_512Bitvector>);
+static_assert(Bitvector_c<L0_1024Bitvector>);
+static_assert(Bitvector_c<L0_2048Bitvector>);
+static_assert(Bitvector_c<L0_64BitvectorUA>);
+static_assert(Bitvector_c<L0_128BitvectorUA>);
+static_assert(Bitvector_c<L0_256BitvectorUA>);
+static_assert(Bitvector_c<L0_512BitvectorUA>);
+static_assert(Bitvector_c<L0_1024BitvectorUA>);
+static_assert(Bitvector_c<L0_2048BitvectorUA>);
 
 }

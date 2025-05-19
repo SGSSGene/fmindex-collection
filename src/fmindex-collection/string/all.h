@@ -24,3 +24,4 @@
 #include "Sdsl_wt_bldc.h"
 #include "Sdsl_wt_epr.h"
 #include "Wavelet.h"
+#include "utils.h"

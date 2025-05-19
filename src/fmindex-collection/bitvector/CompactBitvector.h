@@ -224,6 +224,6 @@ struct CompactBitvector {
         ar(totalLength, superblocks);
     }
 };
-static_assert(BitVector_c<CompactBitvector>);
+static_assert(Bitvector_c<CompactBitvector>);
 
 }

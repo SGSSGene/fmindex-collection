@@ -3,22 +3,22 @@
 #pragma once
 
 #include "../bitset_popcount.h"
+#include "../ternarylogic.h"
+#include "../utils.h"
+#include "EPRV3.h"
+#include "NEPRV8.h"
 #include "concepts.h"
 #include "utils.h"
-#include "EPRV3.h"
+
 
 #include <bit>
+#include <limits>
 #include <vector>
 
 #if __has_include(<cereal/types/bitset.hpp>)
 #include <cereal/types/bitset.hpp>
 #endif
 
-#include <iostream>
-
-#include "../ternarylogic.h"
-
-#include "NEPRV8.h"
 
 namespace fmindex_collection::string {
 
@@ -39,24 +39,27 @@ struct PairedL0L1_NEPRV9 {
     struct alignas(AlignV) InBits {
         std::array<std::bitset<l1_bits_ct>, bitct> bits;
 
-        uint8_t symbol(uint64_t idx) const {
+        uint64_t symbol(uint64_t idx) const {
             assert(idx < l1_bits_ct);
-            uint8_t symb{};
+            uint64_t symb{};
             for (uint64_t i{bitct}; i > 0; --i) {
                 auto b = bits[i-1].test(idx);
                 symb = (symb<<1) | b;
             }
+            assert(symb < Sigma);
             return symb;
         }
 
-        uint64_t rank(uint64_t idx, uint8_t symb) const {
+        uint64_t rank(uint64_t idx, uint64_t symb) const {
             assert(idx <= l1_bits_ct*2);
+            assert(symb < Sigma);
             auto v = neprv8_detail::rank(bits, symb);
             return skip_first_or_last_n_bits_and_count(v, idx);
         }
 
         uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
             assert(idx <= l1_bits_ct*2);
+            assert(symb <= Sigma);
             auto v = neprv8_detail::prefix_rank(bits, symb);
             return skip_first_or_last_n_bits_and_count(v, idx);
         }
@@ -73,7 +76,7 @@ struct PairedL0L1_NEPRV9 {
             }
             return v;
         }
-        void setSymbol(size_t i, uint8_t symb) {
+        void setSymbol(size_t i, uint64_t symb) {
             assert(i < l1_bits_ct);
             assert(symb < TSigma);
             for (size_t j{0}; j < bitct; ++j) {
@@ -189,21 +192,109 @@ struct PairedL0L1_NEPRV9 {
         }
     }
 
+    PairedL0L1_NEPRV9(std::span<uint64_t const> _symbols) {
+        auto const _length = _symbols.size();
+        bits.reserve(_length/l1_bits_ct + 2);
+        if (_length == 0) return;
+
+        // fill all inbits
+        for (auto c : _symbols) {
+            auto bitId         = totalLength % l1_bits_ct;
+            bits.back().setSymbol(bitId, c);
+
+            totalLength += 1;
+            if (totalLength % l1_bits_ct == 0) { // next bit will require a new in-bits block
+                bits.emplace_back();
+            }
+        }
+
+        // fill l0/l1 structure
+        {
+            size_t l0BlockCt = (totalLength / (l0_bits_ct*2)) + 1;
+            size_t l1BlockCt = l0BlockCt * (l0_bits_ct / l1_bits_ct);
+            size_t inbitsCt  = l0BlockCt * ((l0_bits_ct*2) / l1_bits_ct);
+
+            l0.resize(l0BlockCt);
+            l1.resize(l1BlockCt);
+            bits.resize(inbitsCt);
+
+            constexpr size_t b1 = l1_bits_ct;
+            constexpr size_t b0 = l0_bits_ct;
+
+            constexpr size_t l1_block_ct = b0 / b1;
+
+            BlockL0 l0_acc{};
+            // walk through all superblocks
+            for (size_t l0I{0}; l0I < l0BlockCt; ++l0I) {
+                // walk left to right and set l1 values (as if they are the begining of a superblock)
+
+                // left part
+                BlockL1 acc{};
+                for (size_t i{0}; i < l1_block_ct; ++i) {
+                    auto& b = bits[l0I*l1_block_ct*2 + i];
+
+                    auto counts = b.all_ranks(0);
+                    for (size_t symb{0}; symb < TSigma; ++symb) {
+                        acc[symb] += counts[symb];
+                    }
+                    if (i % 2 == 0) {
+                        l1[l0I*l1_block_ct + i/2] = acc;
+                    }
+                }
+                for (size_t symb{0}; symb < TSigma; ++symb) {
+                    l0_acc[symb] += acc[symb];
+                }
+                // update l0 (reached center)
+                l0[l0I] = l0_acc;
+                // walk backwards through left part and revert l0
+                for (size_t i{0}; i < l1_block_ct; ++i) {
+                    if (i % 2 == 0) {
+                        for (size_t symb{0}; symb < TSigma; ++symb) {
+                            auto idx = l0I*l1_block_ct + i/2;
+                            l1[idx][symb] = acc[symb] - l1[idx][symb];
+                        }
+                    }
+                }
+
+                // right part
+                acc = {};
+                for (size_t i{l1_block_ct}; i < l1_block_ct*2; ++i) {
+                    auto idx = l0I*l1_block_ct*2 + i;
+                    auto& b = bits[idx];
+                    auto counts = b.all_ranks(0);
+                    for (size_t symb{0}; symb < TSigma; ++symb) {
+                        acc[symb] += counts[symb];
+                    }
+                    if (i % 2 == 0) {
+                        l1[l0I*l1_block_ct + i/2] = acc;
+                    }
+                }
+
+                for (size_t symb{0}; symb < TSigma; ++symb) {
+                    l0_acc[symb] += acc[symb];
+                }
+            }
+        }
+    }
+
+
     size_t size() const {
         return totalLength;
     }
 
-    uint8_t symbol(uint64_t idx) const {
+    uint64_t symbol(uint64_t idx) const {
         assert(idx < totalLength);
         auto bitId = idx % l1_bits_ct;
         auto l1Id  = idx / l1_bits_ct;
         assert(l1Id < bits.size());
-
-        return bits[l1Id].symbol(bitId);
+        auto symb = bits[l1Id].symbol(bitId);
+        assert(symb < Sigma);
+        return symb;
     }
 
-    uint64_t rank(uint64_t idx, uint8_t symb) const {
+    uint64_t rank(uint64_t idx, uint64_t symb) const {
         assert(idx <= totalLength);
+        assert(symb < Sigma);
         auto bitId = idx % (l1_bits_ct*2);
         auto l1Id = idx / l1_bits_ct;
         auto l0Id = idx / l0_bits_ct;
@@ -221,8 +312,9 @@ struct PairedL0L1_NEPRV9 {
         return r;
     }
 
-    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+    uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
         assert(idx <= totalLength);
+        assert(symb <= Sigma);
         auto bitId = idx % (l1_bits_ct*2);
         auto l1Id = idx / l1_bits_ct;
         auto l0Id = idx / l0_bits_ct;
@@ -234,7 +326,7 @@ struct PairedL0L1_NEPRV9 {
         int64_t right_l0 = (l0Id%2)*2-1;
 
         size_t r{};
-        for (size_t s{0}; s <= symb; ++s) {
+        for (size_t s{0}; s < symb; ++s) {
             auto count = bits[l1Id].rank(bitId, s);
             r += l0[l0Id/2][s] + right_l0 * l1[l1Id/2][s] + right_l1 * count;
             assert(r <= idx);
@@ -244,6 +336,7 @@ struct PairedL0L1_NEPRV9 {
 
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
+        assert(idx <= totalLength);
         auto r = std::array<uint64_t, TSigma>{};
         for (size_t symb{0}; symb < TSigma; ++symb) {
             r[symb] = rank(idx, symb);
@@ -252,10 +345,11 @@ struct PairedL0L1_NEPRV9 {
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
+        assert(idx <= totalLength);
         auto rs = all_ranks(idx);
-        auto prs = rs;
+        auto prs = std::array<uint64_t, TSigma>{};
         for (size_t i{1}; i < prs.size(); ++i) {
-            prs[i] = prs[i] + prs[i-1];
+            prs[i] = prs[i-1] + rs[i-1];
         }
         return {rs, prs};
     }
@@ -273,12 +367,12 @@ template <size_t Sigma> using PairedL0L1_NEPRV9_512_4k  = PairedL0L1_NEPRV9<Sigm
 template <size_t Sigma> using PairedL0L1_NEPRV9_1024_4k = PairedL0L1_NEPRV9<Sigma, 1024, 4096>;
 template <size_t Sigma> using PairedL0L1_NEPRV9_2048_4k = PairedL0L1_NEPRV9<Sigma, 2048, 4096>;
 
-static_assert(checkRankVector<PairedL0L1_NEPRV9_64_4k>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_128_4k>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_256_4k>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_512_4k>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_1024_4k>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_2048_4k>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_64_4k>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_128_4k>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_256_4k>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_512_4k>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_1024_4k>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_2048_4k>);
 
 template <size_t Sigma> using PairedL0L1_NEPRV9_64_64k   = PairedL0L1_NEPRV9<Sigma, 64, 65536>;
 template <size_t Sigma> using PairedL0L1_NEPRV9_128_64k  = PairedL0L1_NEPRV9<Sigma, 128, 65536>;
@@ -286,13 +380,15 @@ template <size_t Sigma> using PairedL0L1_NEPRV9_256_64k  = PairedL0L1_NEPRV9<Sig
 template <size_t Sigma> using PairedL0L1_NEPRV9_512_64k  = PairedL0L1_NEPRV9<Sigma, 512, 65536>;
 template <size_t Sigma> using PairedL0L1_NEPRV9_1024_64k = PairedL0L1_NEPRV9<Sigma, 1024, 65536>;
 template <size_t Sigma> using PairedL0L1_NEPRV9_2048_64k = PairedL0L1_NEPRV9<Sigma, 2048, 65536>;
+template <size_t Sigma> using PairedL0L1_NEPRV9_4096_64k = PairedL0L1_NEPRV9<Sigma, 4096, 65536>;
 
-static_assert(checkRankVector<PairedL0L1_NEPRV9_64_64k>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_128_64k>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_256_64k>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_512_64k>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_1024_64k>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_2048_64k>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_64_64k>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_128_64k>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_256_64k>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_512_64k>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_1024_64k>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_2048_64k>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_4096_64k>);
 
 template <size_t Sigma> using PairedL0L1_NEPRV9_64_64kUA   = PairedL0L1_NEPRV9<Sigma, 64, 65536, false>;
 template <size_t Sigma> using PairedL0L1_NEPRV9_128_64kUA  = PairedL0L1_NEPRV9<Sigma, 128, 65536, false>;
@@ -300,12 +396,14 @@ template <size_t Sigma> using PairedL0L1_NEPRV9_256_64kUA  = PairedL0L1_NEPRV9<S
 template <size_t Sigma> using PairedL0L1_NEPRV9_512_64kUA  = PairedL0L1_NEPRV9<Sigma, 512, 65536, false>;
 template <size_t Sigma> using PairedL0L1_NEPRV9_1024_64kUA = PairedL0L1_NEPRV9<Sigma, 1024, 65536, false>;
 template <size_t Sigma> using PairedL0L1_NEPRV9_2048_64kUA = PairedL0L1_NEPRV9<Sigma, 2048, 65536, false>;
+template <size_t Sigma> using PairedL0L1_NEPRV9_4096_64kUA = PairedL0L1_NEPRV9<Sigma, 4096, 65536, false>;
 
-static_assert(checkRankVector<PairedL0L1_NEPRV9_64_64kUA>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_128_64kUA>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_256_64kUA>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_512_64kUA>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_1024_64kUA>);
-static_assert(checkRankVector<PairedL0L1_NEPRV9_2048_64kUA>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_64_64kUA>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_128_64kUA>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_256_64kUA>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_512_64kUA>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_1024_64kUA>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_2048_64kUA>);
+static_assert(checkString_c<PairedL0L1_NEPRV9_4096_64kUA>);
 
 }

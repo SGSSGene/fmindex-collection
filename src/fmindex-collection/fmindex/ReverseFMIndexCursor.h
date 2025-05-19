@@ -31,13 +31,18 @@ struct ReverseFMIndexCursor {
     {}
 
     auto extendRight(uint8_t symb) const -> ReverseFMIndexCursor {
-        size_t newLb  = index->occ.rank(lb, symb);
-        size_t newLen = index->occ.rank(lb+len, symb) - newLb;
-        return {*index, newLb, newLen, depth+1};
+        size_t newLb  = index->bwt.rank(lb, symb);
+        size_t newLen = index->bwt.rank(lb+len, symb) - newLb;
+        return {*index, newLb + index->C[symb], newLen, depth+1};
     }
     auto extendRight() const -> std::array<ReverseFMIndexCursor, Sigma> {
-        auto [rs1, prs1] = index->occ.all_ranks(lb);
-        auto [rs2, prs2] = index->occ.all_ranks(lb+len);
+        auto [rs1, prs1] = index->bwt.all_ranks_and_prefix_ranks(lb);
+        auto [rs2, prs2] = index->bwt.all_ranks_and_prefix_ranks(lb+len);
+
+        for (size_t i{0}; i < rs1.size(); ++i) {
+            rs1[i] += index->C[i];
+            rs2[i] += index->C[i];
+        }
 
         auto cursors = std::array<ReverseFMIndexCursor, Sigma>{};
         cursors[0] = ReverseFMIndexCursor{*index, rs1[0], rs2[0] - rs1[0], depth+1};

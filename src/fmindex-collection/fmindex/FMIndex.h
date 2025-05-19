@@ -3,40 +3,43 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../occtable/concepts.h"
+#include "../string/concepts.h"
+#include "../string/utils.h"
 #include "../suffixarray/CSA.h"
 #include "../utils.h"
 
 namespace fmindex_collection {
 
-template <OccTable Table, SuffixArray_c TCSA = CSA>
+template <String_c String, SuffixArray_c TCSA = CSA>
 struct FMIndex {
-    static size_t constexpr Sigma = Table::Sigma;
+    static size_t constexpr Sigma = String::Sigma;
 
-    Table  occ;
+    String                      bwt;
+    std::array<size_t, Sigma+1> C{0};
     TCSA   csa;
 
     FMIndex() = default;
     FMIndex(FMIndex const&) = delete;
     FMIndex(FMIndex&&) noexcept = default;
-    FMIndex(std::span<uint8_t const> bwt, TCSA _csa)
-        : occ{bwt}
+    FMIndex(std::span<uint8_t const> _bwt, TCSA _csa)
+        : bwt{_bwt}
+        , C{computeAccumulatedC(bwt)}
         , csa{std::move(_csa)}
     {}
 
-    FMIndex(std::vector<uint8_t> _input, size_t samplingRate, size_t threadNbr) {
+    FMIndex(std::vector<uint8_t> _input, size_t samplingRate, size_t threadNbr, size_t seqOffset=0) {
         auto input = std::vector<std::vector<uint8_t>>{std::move(_input)};
-        *this = FMIndex{std::move(input), samplingRate, threadNbr};
+        *this = FMIndex{std::move(input), samplingRate, threadNbr, seqOffset};
     }
 
-    FMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr) {
+    FMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, size_t seqOffset=0) {
         auto [totalSize, inputText, inputSizes] = createSequences(_input);
 
         if (totalSize < std::numeric_limits<int32_t>::max()) { // only 32bit SA required
             auto [bwt, csa] = [&]() {
                 auto sa  = createSA32(inputText, threadNbr);
                 auto bwt = createBWT32(inputText, sa);
-                auto csa = TCSA{std::move(sa), samplingRate, inputSizes};
+                auto csa = TCSA{std::move(sa), samplingRate, inputSizes, /*.reverse=*/false, /*.seqOffset=*/seqOffset};
 
                 return std::make_tuple(std::move(bwt), std::move(csa));
             }();
@@ -47,7 +50,7 @@ struct FMIndex {
             auto [bwt, csa] = [&]() {
                 auto sa  = createSA64(inputText, threadNbr);
                 auto bwt = createBWT64(inputText, sa);
-                auto csa = TCSA{std::move(sa), samplingRate, inputSizes};
+                auto csa = TCSA{std::move(sa), samplingRate, inputSizes, /*.reverse=*/false, /*.seqOffset=*/seqOffset};
 
                 return std::make_tuple(std::move(bwt), std::move(csa));
             }();
@@ -59,19 +62,20 @@ struct FMIndex {
     auto operator=(FMIndex&&) noexcept -> FMIndex& = default;
 
 
-    size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
+/*    size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
         return occ.memoryUsage() + csa.memoryUsage();
-    }
+    }*/
 
     size_t size() const {
-        return occ.size();
+        return bwt.size();
     }
 
     auto locate(size_t idx) const -> std::tuple<size_t, size_t> {
         auto opt = csa.value(idx);
         size_t steps{};
         while(!opt) {
-            idx = occ.rank(idx, occ.symbol(idx));
+            auto symb = bwt.symbol(idx);
+            idx = bwt.rank(idx, symb) + C[symb];
             steps += 1;
             opt = csa.value(idx);
         }
@@ -85,7 +89,7 @@ struct FMIndex {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(occ, csa);
+        ar(bwt, C, csa);
     }
 };
 

@@ -166,6 +166,6 @@ struct PrunedBitvector {
     }
 };
 
-static_assert(BitVector_c<PrunedBitvector>);
+static_assert(Bitvector_c<PrunedBitvector>);
 
 }

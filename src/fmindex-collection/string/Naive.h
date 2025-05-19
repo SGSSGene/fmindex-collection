@@ -5,6 +5,7 @@
 
 #include "concepts.h"
 
+#include <cassert>
 #include <vector>
 
 namespace fmindex_collection::string {
@@ -33,6 +34,7 @@ struct Naive {
     }
 
     uint8_t symbol(size_t idx) const noexcept {
+        assert(idx < size());
         idx += 1;
         for (uint64_t i{0}; i < Sigma-1; ++i) {
             if (occ[idx][i] > occ[idx-1][i]) {
@@ -43,24 +45,31 @@ struct Naive {
     }
 
     uint64_t rank(size_t idx, uint8_t symb) const noexcept {
+        assert(idx <= size());
+        assert(symb < TSigma);
         return occ[idx][symb];
     }
 
     uint64_t prefix_rank(size_t idx, uint8_t symb) const noexcept {
+        assert(idx <= size());
+        assert(symb <= TSigma);
         uint64_t a{};
-        for (uint64_t i{0}; i <= symb; ++i) {
-            a += occ[idx][i];
+        for (uint64_t i{1}; i <= symb; ++i) {
+            a += occ[idx][i-1];
         }
         return a;
     }
 
     auto all_ranks(size_t idx) const -> std::array<uint64_t, Sigma> {
+        assert(idx <= size());
         return occ[idx];
     }
 
     auto all_ranks_and_prefix_ranks(size_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
+        assert(idx <= size());
+
         auto rs  = occ[idx];
-        auto prs = rs;
+        auto prs = std::array<uint64_t, TSigma>{};
         for (size_t i{1}; i < prs.size(); ++i) {
             prs[i] = prs[i] + prs[i-1];
         }
@@ -72,6 +81,6 @@ struct Naive {
         ar(occ, totalLength);
     }
 };
-static_assert(checkRankVector<Naive>);
+static_assert(checkString_c<Naive>);
 
 }

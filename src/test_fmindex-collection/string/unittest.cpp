@@ -3,17 +3,24 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "utils.h"
 
+#ifdef FMC_USE_AWFMINDEX
+    #include "AWFMIndex.h"
+    #define STRINGSWITHRANK(Sigma) ALLSTRINGSWITHRANK(Sigma), AWFMIndex<Sigma>
+#else
+    #define STRINGSWITHRANK(Sigma) ALLSTRINGSWITHRANK(Sigma)
+#endif
+
 TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string][all_sizes]") {
     auto testSigma = []<size_t Sigma>() {
         INFO("Sigma " << Sigma);
         call_with_templates<
-            ALLRANKVECTORS(Sigma)>([&]<typename Vector>() {
-            auto vector_name = getName<Vector>();
+            STRINGSWITHRANK(Sigma)>([&]<typename String>() {
+            auto vector_name = getName<String>();
             INFO(vector_name);
 
-            auto text = generateText<0, Vector::Sigma>(1000);
+            auto text = generateText<0, String::Sigma>(1000);
 
-            auto vec = Vector{std::span{text}};
+            auto vec = String{std::span{text}};
             REQUIRE(vec.size() == text.size());
             {
                 for (size_t i{0}; i < text.size(); ++i) {
@@ -31,7 +38,7 @@ TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string]
                 };
                 for (size_t i{0}; i <= text.size(); ++i) {
                     INFO(i);
-                    for (size_t symb{}; symb < Vector::Sigma; ++symb) {
+                    for (size_t symb{}; symb < String::Sigma; ++symb) {
                         CHECK(vec.rank(i, symb) == countRank(i, symb));
                     }
                 }
@@ -43,7 +50,7 @@ TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string]
         testSigma.operator()<4>();
         testSigma.operator()<5>();
         testSigma.operator()<6>();
-        testSigma.operator()<16>();
+        testSigma.operator()<21>();
         testSigma.operator()<255>();
     }
 
@@ -54,11 +61,11 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
 
     SECTION("checks") {
         call_with_templates<
-            ALLRANKVECTORS(255)>([&]<typename Vector>() {
-            auto vector_name = getName<Vector>();
+            ALLSTRINGSWITHRANK(255)>([&]<typename String>() {
+            auto vector_name = getName<String>();
             INFO(vector_name);
 
-            auto vec = Vector{std::span{text}};
+            auto vec = String{std::span{text}};
             // checking construction size
             REQUIRE(vec.size() == text.size());
 
@@ -178,7 +185,7 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
 
             // check all other characters have rank 0
             auto ignore = std::unordered_set<size_t>{' ', 'H', 'W', 'a', 'e', 'l', 'o', 't'};
-            for (size_t s{0}; s < Vector::Sigma; ++s) {
+            for (size_t s{0}; s < String::Sigma; ++s) {
                 if (ignore.contains(s)) continue;
                 for (size_t i{0}; i < 11; ++i) {
                     CHECK(vec.rank(i, s) == 0);
@@ -192,23 +199,23 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
             CHECK(vec.prefix_rank( 3, ' ') == 0);
             CHECK(vec.prefix_rank( 4, ' ') == 0);
             CHECK(vec.prefix_rank( 5, ' ') == 0);
-            CHECK(vec.prefix_rank( 6, ' ') == 1);
-            CHECK(vec.prefix_rank( 7, ' ') == 1);
-            CHECK(vec.prefix_rank( 8, ' ') == 1);
-            CHECK(vec.prefix_rank( 9, ' ') == 1);
-            CHECK(vec.prefix_rank(10, ' ') == 1);
+            CHECK(vec.prefix_rank( 6, ' ') == 0);
+            CHECK(vec.prefix_rank( 7, ' ') == 0);
+            CHECK(vec.prefix_rank( 8, ' ') == 0);
+            CHECK(vec.prefix_rank( 9, ' ') == 0);
+            CHECK(vec.prefix_rank(10, ' ') == 0);
 
             CHECK(vec.prefix_rank( 0, 'H') == 0);
-            CHECK(vec.prefix_rank( 1, 'H') == 1);
-            CHECK(vec.prefix_rank( 2, 'H') == 1);
-            CHECK(vec.prefix_rank( 3, 'H') == 1);
-            CHECK(vec.prefix_rank( 4, 'H') == 1);
-            CHECK(vec.prefix_rank( 5, 'H') == 1);
-            CHECK(vec.prefix_rank( 6, 'H') == 2);
-            CHECK(vec.prefix_rank( 7, 'H') == 2);
-            CHECK(vec.prefix_rank( 8, 'H') == 2);
-            CHECK(vec.prefix_rank( 9, 'H') == 2);
-            CHECK(vec.prefix_rank(10, 'H') == 2);
+            CHECK(vec.prefix_rank( 1, 'H') == 0);
+            CHECK(vec.prefix_rank( 2, 'H') == 0);
+            CHECK(vec.prefix_rank( 3, 'H') == 0);
+            CHECK(vec.prefix_rank( 4, 'H') == 0);
+            CHECK(vec.prefix_rank( 5, 'H') == 0);
+            CHECK(vec.prefix_rank( 6, 'H') == 1);
+            CHECK(vec.prefix_rank( 7, 'H') == 1);
+            CHECK(vec.prefix_rank( 8, 'H') == 1);
+            CHECK(vec.prefix_rank( 9, 'H') == 1);
+            CHECK(vec.prefix_rank(10, 'H') == 1);
 
             CHECK(vec.prefix_rank( 0, 'W') == 0);
             CHECK(vec.prefix_rank( 1, 'W') == 1);
@@ -217,22 +224,22 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
             CHECK(vec.prefix_rank( 4, 'W') == 1);
             CHECK(vec.prefix_rank( 5, 'W') == 1);
             CHECK(vec.prefix_rank( 6, 'W') == 2);
-            CHECK(vec.prefix_rank( 7, 'W') == 3);
-            CHECK(vec.prefix_rank( 8, 'W') == 3);
-            CHECK(vec.prefix_rank( 9, 'W') == 3);
-            CHECK(vec.prefix_rank(10, 'W') == 3);
+            CHECK(vec.prefix_rank( 7, 'W') == 2);
+            CHECK(vec.prefix_rank( 8, 'W') == 2);
+            CHECK(vec.prefix_rank( 9, 'W') == 2);
+            CHECK(vec.prefix_rank(10, 'W') == 2);
 
             CHECK(vec.prefix_rank( 0, 'a') == 0);
             CHECK(vec.prefix_rank( 1, 'a') == 1);
-            CHECK(vec.prefix_rank( 2, 'a') == 2);
-            CHECK(vec.prefix_rank( 3, 'a') == 2);
-            CHECK(vec.prefix_rank( 4, 'a') == 2);
-            CHECK(vec.prefix_rank( 5, 'a') == 2);
-            CHECK(vec.prefix_rank( 6, 'a') == 3);
-            CHECK(vec.prefix_rank( 7, 'a') == 4);
-            CHECK(vec.prefix_rank( 8, 'a') == 4);
-            CHECK(vec.prefix_rank( 9, 'a') == 4);
-            CHECK(vec.prefix_rank(10, 'a') == 4);
+            CHECK(vec.prefix_rank( 2, 'a') == 1);
+            CHECK(vec.prefix_rank( 3, 'a') == 1);
+            CHECK(vec.prefix_rank( 4, 'a') == 1);
+            CHECK(vec.prefix_rank( 5, 'a') == 1);
+            CHECK(vec.prefix_rank( 6, 'a') == 2);
+            CHECK(vec.prefix_rank( 7, 'a') == 3);
+            CHECK(vec.prefix_rank( 8, 'a') == 3);
+            CHECK(vec.prefix_rank( 9, 'a') == 3);
+            CHECK(vec.prefix_rank(10, 'a') == 3);
 
             CHECK(vec.prefix_rank( 0, 'e') == 0);
             CHECK(vec.prefix_rank( 1, 'e') == 1);
@@ -242,51 +249,63 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
             CHECK(vec.prefix_rank( 5, 'e') == 2);
             CHECK(vec.prefix_rank( 6, 'e') == 3);
             CHECK(vec.prefix_rank( 7, 'e') == 4);
-            CHECK(vec.prefix_rank( 8, 'e') == 5);
-            CHECK(vec.prefix_rank( 9, 'e') == 5);
-            CHECK(vec.prefix_rank(10, 'e') == 5);
+            CHECK(vec.prefix_rank( 8, 'e') == 4);
+            CHECK(vec.prefix_rank( 9, 'e') == 4);
+            CHECK(vec.prefix_rank(10, 'e') == 4);
 
             CHECK(vec.prefix_rank( 0, 'l') == 0);
             CHECK(vec.prefix_rank( 1, 'l') == 1);
             CHECK(vec.prefix_rank( 2, 'l') == 2);
-            CHECK(vec.prefix_rank( 3, 'l') == 3);
-            CHECK(vec.prefix_rank( 4, 'l') == 4);
-            CHECK(vec.prefix_rank( 5, 'l') == 4);
-            CHECK(vec.prefix_rank( 6, 'l') == 5);
-            CHECK(vec.prefix_rank( 7, 'l') == 6);
-            CHECK(vec.prefix_rank( 8, 'l') == 7);
-            CHECK(vec.prefix_rank( 9, 'l') == 8);
-            CHECK(vec.prefix_rank(10, 'l') == 8);
+            CHECK(vec.prefix_rank( 3, 'l') == 2);
+            CHECK(vec.prefix_rank( 4, 'l') == 2);
+            CHECK(vec.prefix_rank( 5, 'l') == 2);
+            CHECK(vec.prefix_rank( 6, 'l') == 3);
+            CHECK(vec.prefix_rank( 7, 'l') == 4);
+            CHECK(vec.prefix_rank( 8, 'l') == 5);
+            CHECK(vec.prefix_rank( 9, 'l') == 5);
+            CHECK(vec.prefix_rank(10, 'l') == 5);
 
             CHECK(vec.prefix_rank( 0, 'o') == 0);
             CHECK(vec.prefix_rank( 1, 'o') == 1);
             CHECK(vec.prefix_rank( 2, 'o') == 2);
             CHECK(vec.prefix_rank( 3, 'o') == 3);
             CHECK(vec.prefix_rank( 4, 'o') == 4);
-            CHECK(vec.prefix_rank( 5, 'o') == 5);
-            CHECK(vec.prefix_rank( 6, 'o') == 6);
-            CHECK(vec.prefix_rank( 7, 'o') == 7);
-            CHECK(vec.prefix_rank( 8, 'o') == 8);
-            CHECK(vec.prefix_rank( 9, 'o') == 9);
-            CHECK(vec.prefix_rank(10, 'o') == 9);
+            CHECK(vec.prefix_rank( 5, 'o') == 4);
+            CHECK(vec.prefix_rank( 6, 'o') == 5);
+            CHECK(vec.prefix_rank( 7, 'o') == 6);
+            CHECK(vec.prefix_rank( 8, 'o') == 7);
+            CHECK(vec.prefix_rank( 9, 'o') == 8);
+            CHECK(vec.prefix_rank(10, 'o') == 8);
 
-            CHECK(vec.prefix_rank( 0, 't') ==  0);
-            CHECK(vec.prefix_rank( 1, 't') ==  1);
-            CHECK(vec.prefix_rank( 2, 't') ==  2);
-            CHECK(vec.prefix_rank( 3, 't') ==  3);
-            CHECK(vec.prefix_rank( 4, 't') ==  4);
-            CHECK(vec.prefix_rank( 5, 't') ==  5);
-            CHECK(vec.prefix_rank( 6, 't') ==  6);
-            CHECK(vec.prefix_rank( 7, 't') ==  7);
-            CHECK(vec.prefix_rank( 8, 't') ==  8);
-            CHECK(vec.prefix_rank( 9, 't') ==  9);
-            CHECK(vec.prefix_rank(10, 't') == 10);
+            CHECK(vec.prefix_rank( 0, 't') == 0);
+            CHECK(vec.prefix_rank( 1, 't') == 1);
+            CHECK(vec.prefix_rank( 2, 't') == 2);
+            CHECK(vec.prefix_rank( 3, 't') == 3);
+            CHECK(vec.prefix_rank( 4, 't') == 4);
+            CHECK(vec.prefix_rank( 5, 't') == 5);
+            CHECK(vec.prefix_rank( 6, 't') == 6);
+            CHECK(vec.prefix_rank( 7, 't') == 7);
+            CHECK(vec.prefix_rank( 8, 't') == 8);
+            CHECK(vec.prefix_rank( 9, 't') == 9);
+            CHECK(vec.prefix_rank(10, 't') == 9);
+
+            CHECK(vec.prefix_rank( 0, 'z') ==  0);
+            CHECK(vec.prefix_rank( 1, 'z') ==  1);
+            CHECK(vec.prefix_rank( 2, 'z') ==  2);
+            CHECK(vec.prefix_rank( 3, 'z') ==  3);
+            CHECK(vec.prefix_rank( 4, 'z') ==  4);
+            CHECK(vec.prefix_rank( 5, 'z') ==  5);
+            CHECK(vec.prefix_rank( 6, 'z') ==  6);
+            CHECK(vec.prefix_rank( 7, 'z') ==  7);
+            CHECK(vec.prefix_rank( 8, 'z') ==  8);
+            CHECK(vec.prefix_rank( 9, 'z') ==  9);
+            CHECK(vec.prefix_rank(10, 'z') == 10);
 
             // check all_ranks() is equal to prefix_rank() and rank()
             for (size_t idx{0}; idx < vec.size(); ++idx) {
                 auto [rank, prefix] = vec.all_ranks_and_prefix_ranks(idx);
                 auto rank2 = vec.all_ranks(idx);
-                for (size_t symb{1}; symb < Vector::Sigma; ++symb) {
+                for (size_t symb{1}; symb < String::Sigma; ++symb) {
                     INFO(idx);
                     INFO(symb);
                     CHECK(rank[symb] == vec.rank(idx, symb));
@@ -334,9 +353,9 @@ TEST_CASE("check symbol vectors construction on text longer than 255 characters"
 
     SECTION("checks") {
         call_with_templates<
-            ALLRANKVECTORS(255)>([&]<typename Vector>() {
+            ALLSTRINGSWITHRANK(255)>([&]<typename String>() {
 
-            auto vector = Vector{text};
+            auto vector = String{text};
 
             REQUIRE(vector.size() == text.size());
 
@@ -356,7 +375,7 @@ TEST_CASE("check symbol vectors construction on text longer than 255 characters"
             auto countPrefixRank = [&](size_t idx, uint8_t sym) {
                 size_t acc{};
                 for (size_t i{0}; i < idx; ++i) {
-                    acc = acc + (text[i] <= sym);
+                    acc = acc + (text[i] < sym);
                 }
                 return acc;
             };
@@ -366,7 +385,7 @@ TEST_CASE("check symbol vectors construction on text longer than 255 characters"
             for (size_t idx{0}; idx <= vector.size(); ++idx) {
                 auto [rank, prefix] = vector.all_ranks_and_prefix_ranks(idx);
                 auto rank2 = vector.all_ranks(idx);
-                for (size_t symb{1}; symb < Vector::Sigma; ++symb) {
+                for (size_t symb{1}; symb < String::Sigma; ++symb) {
                     INFO(idx);
                     INFO(symb);
                     CHECK(countRank(idx, symb) == vector.rank(idx, symb));
@@ -389,15 +408,15 @@ TEST_CASE("check symbol vectors construction on text longer than 255 characters"
 static auto benchs_6 = Benchs{};
 static auto benchs_6_text = std::vector<uint8_t>{};
 static auto benchSize_bwt = BenchSize{};
-TEMPLATE_TEST_CASE("benchmark vectors c'tor operation, on human dna5 data", "[RankVector][bwt][!benchmark][6][time][ctor][.]", ALLRANKVECTORS(6)) {
-    using Vector = TestType;
-    if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<6>>) {
+TEMPLATE_TEST_CASE("benchmark vectors c'tor operation, on human dna5 data", "[String_c][bwt][!benchmark][6][time][ctor][.]", ALLSTRINGSWITHRANK(6)) {
+    using String = TestType;
+    if constexpr (std::same_as<String, fmindex_collection::string::Naive<6>>) {
         return;
     }
     auto& [bench_rank, bench_prefix_rank, bench_all_ranks, bench_all_prefix_ranks, bench_symbol, bench_ctor] = benchs_6;
 
 
-    auto vector_name = getName<Vector>();
+    auto vector_name = getName<String>();
     INFO(vector_name);
 
     SECTION("benchmarking") {
@@ -427,27 +446,27 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor operation, on human dna5 data", "[Ra
             }
         }
 
-        auto vec = Vector{text};
+        auto vec = String{text};
 
 
         size_t minEpochIterations = 2'000'000;
         minEpochIterations = 1;
         bench_ctor.minEpochIterations(minEpochIterations).batch(text.size()).run(vector_name, [&]() {
-            auto vec = Vector{text};
-            ankerl::nanobench::doNotOptimizeAway(const_cast<Vector const&>(vec));
+            auto vec = String{text};
+            ankerl::nanobench::doNotOptimizeAway(const_cast<String const&>(vec));
         });
     }
 }
 
-TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human dna5 data", "[RankVector][bwt][!benchmark][6][time][.]", ALLRANKVECTORS(6)) {
-    using Vector = TestType;
-    if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<6>>) {
+TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human dna5 data", "[String_c][bwt][!benchmark][6][time][.]", ALLSTRINGSWITHRANK(6)) {
+    using String = TestType;
+    if constexpr (std::same_as<String, fmindex_collection::string::Naive<6>>) {
         return;
     }
     auto& [bench_rank, bench_prefix_rank, bench_all_ranks, bench_all_prefix_ranks, bench_symbol, bench_ctor] = benchs_6;
 
 
-    auto vector_name = getName<Vector>();
+    auto vector_name = getName<String>();
     INFO(vector_name);
 
     SECTION("benchmarking") {
@@ -477,7 +496,7 @@ TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human d
             }
         }
 
-        auto vec = Vector{text};
+        auto vec = String{text};
         REQUIRE(text.size() > 0);
 
 
@@ -510,13 +529,13 @@ TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human d
     }
 }
 
-TEMPLATE_TEST_CASE("benchmark vectors size, on human dna5 data", "[RankVector][bwt][!benchmark][6][size][.]", ALLRANKVECTORS(6)) {
-    using Vector = TestType;
-    if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<6>>) {
+TEMPLATE_TEST_CASE("benchmark vectors size, on human dna5 data", "[String_c][bwt][!benchmark][6][size][.]", ALLSTRINGSWITHRANK(6)) {
+    using String = TestType;
+    if constexpr (std::same_as<String, fmindex_collection::string::Naive<6>>) {
         return;
     }
 
-    auto vector_name = getName<Vector>();
+    auto vector_name = getName<String>();
     INFO(vector_name);
 
     SECTION("benchmarking") {
@@ -546,7 +565,7 @@ TEMPLATE_TEST_CASE("benchmark vectors size, on human dna5 data", "[RankVector][b
             }
         }
 
-        auto vec = Vector{text};
+        auto vec = String{text};
 
         auto ofs     = std::stringstream{};
         auto archive = cereal::BinaryOutputArchive{ofs};

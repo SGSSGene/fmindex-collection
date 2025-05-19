@@ -70,7 +70,7 @@ struct EPRV3 {
             };
             uint64_t mask{};
 
-            for (uint64_t i{0}; i <= symb; ++i) {
+            for (uint64_t i{0}; i < symb; ++i) {
                 mask |= [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
                     return (f(std::integer_sequence<uint64_t, Is>{}, i)&...);
                 }(std::make_integer_sequence<uint64_t, bitct>{});
@@ -204,8 +204,8 @@ struct EPRV3 {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> block_size;
         auto bitId        = idx &  63;
-        uint64_t a={};
-        for (uint64_t i{0}; i<= symb; ++i) {
+        uint64_t a{};
+        for (uint64_t i{0}; i < symb; ++i) {
             a += superBlocks[superBlockId][i] + blocks_[blockId][i];
         }
         return bits[blockId].prefix_rank(bitId, symb) + a;
@@ -226,6 +226,7 @@ struct EPRV3 {
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
+        assert(idx <= size());
         prefetch(idx);
 
         auto blockId      = idx >>  6;
@@ -236,9 +237,8 @@ struct EPRV3 {
         auto rs = bits[blockId].all_ranks(bitId);
 
         rs[0] += superBlocks[superBlockId][0] + blocks_[blockId][0];
-        prs[0] = rs[0];
         for (uint64_t symb{1}; symb < TSigma; ++symb) {
-            prs[symb] = prs[symb-1] + superBlocks[superBlockId][symb] + rs[symb] + blocks_[blockId][symb];
+            prs[symb] = prs[symb-1] + rs[symb-1];
             rs[symb] += superBlocks[superBlockId][symb] + blocks_[blockId][symb];
         }
         return {rs, prs};
@@ -262,14 +262,14 @@ struct EPRV3 {
 };
 
 template <size_t TSigma> using EPRV3_8  = EPRV3<TSigma,  uint8_t>;
-static_assert(checkRankVector<EPRV3_8>);
+static_assert(checkString_c<EPRV3_8>);
 
 template <size_t TSigma> using EPRV3_16 = EPRV3<TSigma, uint16_t>;
-static_assert(checkRankVector<EPRV3_16>);
+static_assert(checkString_c<EPRV3_16>);
 
 #if SIZE_MAX == UINT64_MAX
 template <size_t TSigma> using EPRV3_32 = EPRV3<TSigma, uint32_t>;
-static_assert(checkRankVector<EPRV3_32>);
+static_assert(checkString_c<EPRV3_32>);
 #endif
 
 }

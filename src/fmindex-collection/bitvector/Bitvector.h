@@ -169,6 +169,6 @@ struct Bitvector {
     }
 };
 
-static_assert(BitVector_c<Bitvector>);
+static_assert(Bitvector_c<Bitvector>);
 
 }

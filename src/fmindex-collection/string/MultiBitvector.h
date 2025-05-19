@@ -13,7 +13,7 @@
 
 namespace fmindex_collection::string {
 
-template <size_t TSigma, BitVector_c Bitvector = ::fmindex_collection::bitvector::Bitvector>
+template <size_t TSigma, Bitvector_c Bitvector = ::fmindex_collection::bitvector::Bitvector>
 struct MultiBitvector {
     static constexpr size_t Sigma = TSigma;
 
@@ -43,6 +43,7 @@ struct MultiBitvector {
     }
 
     uint8_t symbol(uint64_t idx) const {
+        assert(idx < size());
         for (size_t sym{0}; sym < Sigma; ++sym) {
             if (bitvectors[sym].symbol(idx)) {
                 return sym;
@@ -52,18 +53,24 @@ struct MultiBitvector {
     }
 
     uint64_t rank(uint64_t idx, uint8_t symb) const {
+        assert(symb < TSigma);
+        assert(idx <= size());
+
         return bitvectors[symb].rank(idx);
     }
 
     uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+        assert(symb <= TSigma);
+        assert(idx <= size());
         size_t a{};
-        for (size_t i{0}; i <= symb; ++i) {
-            a += bitvectors[i].rank(idx);
+        for (size_t i{1}; i <= symb; ++i) {
+            a += bitvectors[i-1].rank(idx);
         }
         return a;
     }
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
+        assert(idx <= size());
         auto rs = std::array<uint64_t, TSigma>{};
         for (size_t sym{0}; sym < Sigma; ++sym) {
             rs[sym] = rank(idx, sym);
@@ -72,10 +79,12 @@ struct MultiBitvector {
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
+        assert(idx <= size());
+
         auto rs  = all_ranks(idx);
-        auto prs = rs;
+        auto prs = std::array<uint64_t, TSigma>{};
         for (size_t i{1}; i < Sigma; ++i) {
-            prs[i] = prs[i] + prs[i-1];
+            prs[i] = prs[i-1] + rs[i-1];
         }
         return {rs, prs};
     }
@@ -90,6 +99,6 @@ struct MultiBitvector {
 template <uint64_t TSigma>
 using MultiBitvector_Bitvector = MultiBitvector<TSigma, bitvector::Bitvector>;
 
-static_assert(checkRankVector<MultiBitvector_Bitvector>);
+static_assert(checkString_c<MultiBitvector_Bitvector>);
 
 }

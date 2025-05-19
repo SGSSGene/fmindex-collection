@@ -52,8 +52,9 @@
     {
       "if": "PROJECT_IS_TOP_LEVEL",
       "name": "nanobench",
-      "version": "4.3.11-2",
-      "github_repository": "SGSSGene/nanobench"
+      "version": "4.3.11-3",
+      "github_repository": "SGSSGene/nanobench",
+      "git_tag": "f42e28086e335e168512621529afc3800a733880"
     },
     {
       "if": "PROJECT_IS_TOP_LEVEL",

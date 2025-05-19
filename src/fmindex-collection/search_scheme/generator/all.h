@@ -11,6 +11,8 @@
 #include "kucherov.h"
 #include "lam.h"
 #include "optimum.h"
+#include "pex-bottom-up.h"
+#include "pex-top-down.h"
 #include "pigeon.h"
 #include "suffixFilter.h"
 #include "zeroOnesZero.h"
@@ -95,6 +97,23 @@ inline auto all = []() {
           .description = "designed by hato",
           .generator   = []([[maybe_unused]] int minError, [[maybe_unused]] int maxError, [[maybe_unused]] int sigma, [[maybe_unused]] int dbSize) { return hato(maxError); }
     });
+    add({ .name = "pex-bu",
+          .description = "creates a search scheme, that mimics the pex bottom up strategy",
+          .generator = []([[maybe_unused]] int minError, [[maybe_unused]] int maxError, [[maybe_unused]] int sigma, [[maybe_unused]] int dbSize) { return pex_bu(minError, maxError, false); }
+    });
+    add({ .name = "pex-td",
+          .description = "creates a search scheme, that mimics the pex top down strategy",
+          .generator = []([[maybe_unused]] int minError, [[maybe_unused]] int maxError, [[maybe_unused]] int sigma, [[maybe_unused]] int dbSize) { return pex_td(minError, maxError, false); }
+    });
+    add({ .name = "pex-bu-l",
+          .description = "creates a search scheme, that mimics the pex bottom up strategy",
+          .generator = []([[maybe_unused]] int minError, [[maybe_unused]] int maxError, [[maybe_unused]] int sigma, [[maybe_unused]] int dbSize) { return pex_bu(minError, maxError, true); }
+    });
+    add({ .name = "pex-td-l",
+          .description = "creates a search scheme, that mimics the pex top down strategy",
+          .generator = []([[maybe_unused]] int minError, [[maybe_unused]] int maxError, [[maybe_unused]] int sigma, [[maybe_unused]] int dbSize) { return pex_td(minError, maxError, true); }
+    });
+
     return res;
 }();
 

@@ -14,7 +14,7 @@ TEST_CASE("benchmark strings c'tor operation - 32 alphabet", "[string][!benchmar
              .batch(text.size());
 
         call_with_templates<
-            ALLRANKVECTORS(32)>([&]<typename Vector>() {
+            STRINGSWITHRANK(32)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<32>>) {
                 return;
             }
@@ -40,7 +40,7 @@ TEST_CASE("benchmark vectors symbol() operations - 32 alphabet", "[string][!benc
              .batch(text.size());
 
         call_with_templates<
-            ALLRANKVECTORS(32)>([&]<typename Vector>() {
+            STRINGSWITHRANK(32)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<32>>) {
                 return;
             }
@@ -69,7 +69,7 @@ TEST_CASE("benchmark vectors rank() operations - 32 alphabet", "[string][!benchm
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(32)>([&]<typename Vector>() {
+            STRINGSWITHRANK(32)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<32>>) {
                 return;
             }
@@ -98,7 +98,7 @@ TEST_CASE("benchmark vectors prefix_rank() operations - 32 alphabet", "[string][
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(32)>([&]<typename Vector>() {
+            STRINGSWITHRANK(32)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<32>>) {
                 return;
             }
@@ -127,7 +127,7 @@ TEST_CASE("benchmark vectors all_ranks() operations - 32 alphabet", "[string][!b
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(32)>([&]<typename Vector>() {
+            STRINGSWITHRANK(32)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<32>>) {
                 return;
             }
@@ -156,7 +156,7 @@ TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - 32 alphab
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(32)>([&]<typename Vector>() {
+            STRINGSWITHRANK(32)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<32>>) {
                 return;
             }
@@ -186,7 +186,7 @@ TEST_CASE("benchmark vectors in size - alphabet 32", "[string][!benchmark][32][s
         benchSize.entries[0][4] = "alphabet 32";
 
         call_with_templates<
-            ALLRANKVECTORS(32)>([&]<typename Vector>() {
+            STRINGSWITHRANK(32)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<32>>) {
                 return;
             }
@@ -197,20 +197,22 @@ TEST_CASE("benchmark vectors in size - alphabet 32", "[string][!benchmark][32][s
             auto rng = ankerl::nanobench::Rng{};
 
             auto vec = Vector{text};
-
-            {
-                auto ofs     = std::stringstream{};
-                auto archive = cereal::BinaryOutputArchive{ofs};
-                archive(vec);
-                auto s = ofs.str().size();
-                benchSize.addEntry({
-                    .name = vector_name,
-                    .size = s,
-                    .text_size = text.size(),
-                    .bits_per_char = (s*8)/double(text.size())
-                });
-            }
-
+            auto size = [&]() {
+                if constexpr (requires() { vec.space_usage(); }) {
+                    return vec.space_usage();
+                } else {
+                    auto ofs     = std::stringstream{};
+                    auto archive = cereal::BinaryOutputArchive{ofs};
+                    archive(vec);
+                    return ofs.str().size();
+                }
+            }();
+            benchSize.addEntry({
+                .name = vector_name,
+                .size = size,
+                .text_size = text.size(),
+                .bits_per_char = (size*8)/double(text.size())
+            });
         });
     }
 }

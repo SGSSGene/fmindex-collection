@@ -1,20 +1,19 @@
-// SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
-// SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
+// SPDX-FileCopyrightText: 2023 Knut Reinert & Freie Universität Berlin
+// SPDX-FileCopyrightText: 2023 Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/BiFMIndex.h>
 #include <fmindex-collection/locate.h>
-#include <fmindex-collection/occtable/all.h>
 #include <fmindex-collection/search/all.h>
-#include <nanobench.h>
 #include <fmindex-collection/search_scheme/generator/all.h>
 #include <fmindex-collection/search_scheme/expand.h>
-
+#include <fmindex-collection/string/all.h>
+#include <nanobench.h>
 
 TEST_CASE("check searches with errors", "[searches]") {
-    using OccTable = fmindex_collection::occtable::EprV2_16<256>;
-    using Index = fmindex_collection::BiFMIndex<OccTable>;
+    using String = fmindex_collection::string::InterleavedBitvector16<256>;
+    using Index = fmindex_collection::BiFMIndex<String>;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'B', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'C', 'A', 'A', 'A'}};
@@ -863,133 +862,5 @@ TEST_CASE("check searches with errors", "[searches]") {
             {1, 1, 3},
         };
         CHECK(results == expected);
-    }
-}
-
-TEST_CASE("benchmark searches with errors", "[searches][!benchmark]") {
-    SECTION("benchmarking") {
-        using OccTable = fmindex_collection::occtable::EprV2_16<256>;
-        using Index = fmindex_collection::BiFMIndex<OccTable>;
-
-        srand(0);
-
-        auto generateSequence = [](size_t l) {
-            auto seq = std::vector<uint8_t>{};
-            seq.reserve(l);
-            for (size_t i{0}; i < l; ++i) {
-                seq.emplace_back(1 + rand()%4);
-            }
-            return seq;
-        };
-
-        auto generateSequences = [generateSequence](size_t n, size_t l) {
-            auto ref = std::vector<std::vector<uint8_t>>{};
-            ref.reserve(n);
-            for (size_t i{0}; i < n; ++i) {
-                ref.emplace_back(generateSequence(l));
-            }
-            return ref;
-        };
-
-        auto generateRead = [](std::vector<std::vector<uint8_t>> const& ref, size_t l, size_t e) {
-            auto subjId = rand() % ref.size();
-            auto& r = ref[subjId];
-
-            auto edit = std::vector<char>{};
-            edit.resize(l, 'M');
-            while (e > 0) {
-                auto t = rand() % 3;
-                if (t == 0) { // substitution
-                    auto pos2 = rand() % edit.size();
-                    if (edit[pos2] != 'M') continue;
-                    edit[pos2] = 'S';
-                    --e;
-                } else if (t == 1) { // insertion
-                    auto pos2 = rand() % edit.size();
-                    if (edit[pos2] != 'M') continue;
-                    edit[pos2] = 'I';
-                    --e;
-                } else if (t == 2) { // deletion
-                    auto pos2 = rand() % (edit.size()+1);
-                    edit.insert(edit.begin() + pos2, 'D');
-                    --e;
-                }
-            }
-
-            auto pos = rand() % (r.size()-l-e);
-            auto read = std::vector<uint8_t>{};
-            for (auto t : edit) {
-                if (t == 'M') {
-                    read.push_back(r[pos]);
-                    ++pos;
-                } else if (t == 'S') {
-                    auto c = ((r[pos]-1) + (rand() % 3)) % 4 + 1;
-                    read.push_back(c);
-                    ++pos;
-                } else if (t == 'I') {
-                    auto c = (rand() % 4) + 1;
-                    read.push_back(c);
-                } else if (t == 'D') {
-                    ++pos;
-                }
-            }
-            auto gt = std::make_tuple(subjId, pos);
-            return std::make_tuple(gt, read);
-        };
-
-        auto generateReads = [generateRead](size_t n, std::vector<std::vector<uint8_t>> const& ref, size_t l, size_t e) {
-            auto reads = std::vector<std::vector<uint8_t>>{};
-            auto expected = std::vector<std::tuple<size_t, size_t, size_t>>{};
-            reads.reserve(n);
-            for (size_t i{0}; i < n; ++i) {
-                auto [gt, read] = generateRead(ref, l, e);
-                reads.emplace_back(read);
-                expected.emplace_back(i, std::get<0>(gt), std::get<1>(gt));
-            }
-            return std::make_tuple(expected, reads);
-        };
-
-        // generate reference
-        auto ref = generateSequences(100, 1'000'000);
-
-        // generate reads
-        size_t errors = 2;
-        size_t len = 150;
-        auto [expected, reads] = generateReads(1000, ref, len, errors);
-
-        auto index = Index{ref, /*samplingRate*/1, /*threadNbr*/1};
-        static auto bench = ankerl::nanobench::Bench();
-        bench.batch(reads.size())
-             .relative(true);
-
-        size_t r_ng12{};
-        size_t r_ng21{};
-        {
-            auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, errors), len);
-
-            bench.run("search ng12", [&]() {
-                r_ng12 = 0;
-                fmindex_collection::search_ng21::search(index, reads, search_scheme, [&](auto qidx, auto cursor, auto errors) {
-                    (void)errors;
-                    (void)qidx;
-                    r_ng12 += cursor.count();
-                    ankerl::nanobench::doNotOptimizeAway(cursor);
-                });
-            });
-        }
-
-        {
-            auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, errors), len);
-
-            bench.run("search ng21", [&]() {
-                r_ng21 = 0;
-                fmindex_collection::search_ng21::search(index, reads, search_scheme, [&](auto qidx, auto cursor, auto errors) {
-                    (void)errors;
-                    (void)qidx;
-                    r_ng21 += cursor.count();
-                    ankerl::nanobench::doNotOptimizeAway(cursor);
-                });
-            });
-        }
     }
 }

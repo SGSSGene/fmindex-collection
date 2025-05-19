@@ -9,5 +9,6 @@
 #include "generator/all.h"
 #include "isComplete.h"
 #include "isValid.h"
+#include "isNonRedundant.h"
 #include "nodeCount.h"
 #include "weightedNodeCount.h"

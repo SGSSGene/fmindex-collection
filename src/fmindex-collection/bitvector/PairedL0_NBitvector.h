@@ -141,12 +141,12 @@ using PairedL0_512Bitvector = PairedL0_NBitvector<512>;
 using PairedL0_1024Bitvector = PairedL0_NBitvector<1024>;
 using PairedL0_2048Bitvector = PairedL0_NBitvector<2048>;
 
-static_assert(BitVector_c<PairedL0_64Bitvector>);
-static_assert(BitVector_c<PairedL0_128Bitvector>);
-static_assert(BitVector_c<PairedL0_256Bitvector>);
-static_assert(BitVector_c<PairedL0_512Bitvector>);
-static_assert(BitVector_c<PairedL0_1024Bitvector>);
-static_assert(BitVector_c<PairedL0_2048Bitvector>);
+static_assert(Bitvector_c<PairedL0_64Bitvector>);
+static_assert(Bitvector_c<PairedL0_128Bitvector>);
+static_assert(Bitvector_c<PairedL0_256Bitvector>);
+static_assert(Bitvector_c<PairedL0_512Bitvector>);
+static_assert(Bitvector_c<PairedL0_1024Bitvector>);
+static_assert(Bitvector_c<PairedL0_2048Bitvector>);
 
 using PairedL0_64BitvectorUA  = PairedL0_NBitvector<64, false>;
 using PairedL0_128BitvectorUA = PairedL0_NBitvector<128, false>;
@@ -155,11 +155,11 @@ using PairedL0_512BitvectorUA = PairedL0_NBitvector<512, false>;
 using PairedL0_1024BitvectorUA = PairedL0_NBitvector<1024, false>;
 using PairedL0_2048BitvectorUA = PairedL0_NBitvector<2048, false>;
 
-static_assert(BitVector_c<PairedL0_64BitvectorUA>);
-static_assert(BitVector_c<PairedL0_128BitvectorUA>);
-static_assert(BitVector_c<PairedL0_256BitvectorUA>);
-static_assert(BitVector_c<PairedL0_512BitvectorUA>);
-static_assert(BitVector_c<PairedL0_1024BitvectorUA>);
-static_assert(BitVector_c<PairedL0_2048BitvectorUA>);
+static_assert(Bitvector_c<PairedL0_64BitvectorUA>);
+static_assert(Bitvector_c<PairedL0_128BitvectorUA>);
+static_assert(Bitvector_c<PairedL0_256BitvectorUA>);
+static_assert(Bitvector_c<PairedL0_512BitvectorUA>);
+static_assert(Bitvector_c<PairedL0_1024BitvectorUA>);
+static_assert(Bitvector_c<PairedL0_2048BitvectorUA>);
 
 }

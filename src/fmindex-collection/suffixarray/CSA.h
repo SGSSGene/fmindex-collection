@@ -4,9 +4,7 @@
 #pragma once
 
 
-#include "../BitStack.h"
-#include "../bitvector/Bitvector.h"
-#include "../bitvector/CompactBitvector.h"
+#include "../bitvector/L0L1_NBitvector.h"
 #include "concepts.h"
 
 #include <algorithm>
@@ -18,12 +16,33 @@
 
 namespace fmindex_collection {
 
+namespace suffixarray {
+template <typename T, typename SAEntry, Bitvector_c Bitvector>
+auto createSampling(std::vector<SAEntry> const& sa,
+                    Bitvector const& textAnnotationValid,
+                    std::vector<T> const& textAnnotation) -> std::pair<bitvector::L0L1_512_64kBitvector, std::vector<T>> {
+    auto bv  = bitvector::L0L1_512_64kBitvector{};
+    auto ssa = std::vector<T>{};
+    for (size_t i{0}; i < sa.size(); ++i) {
+        auto textPos = sa[i];
+        auto valid = textAnnotationValid.symbol(textPos);
+        bv.push_back(valid);
+        if (valid) {
+            auto rank = textAnnotationValid.rank(textPos);
+            ssa.push_back(textAnnotation[rank]);
+        }
+    }
+    return {bv, ssa};
+}
+}
+
 struct CSA {
+    using Bitvector = bitvector::L0L1_512_64kBitvector;
     std::vector<uint64_t> ssa;
-    bitvector::CompactBitvector bv;
-    size_t   bitsForPosition;   // bits reserved for position
-    uint64_t bitPositionMask;   // Bit mask, to extract the position from ssa
-    size_t   seqCount;          // Number of sequences
+    Bitvector             bv;
+    size_t                bitsForPosition;   // bits reserved for position
+    uint64_t              bitPositionMask;   // Bit mask, to extract the position from ssa
+    size_t                seqCount;          // Number of sequences
 
 
     static auto createJoinedCSA(CSA const& lhs, CSA const& rhs) -> CSA {
@@ -63,84 +82,50 @@ struct CSA {
         }
     }
 
-    CSA(std::vector<uint64_t> _ssa, BitStack const& bitstack, size_t _bitsForPosition, size_t _seqCount)
+    template <std::ranges::sized_range range_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
+    CSA(std::vector<uint64_t> _ssa, range_t const& bitstack, size_t _bitsForPosition, size_t _seqCount)
         : ssa{std::move(_ssa)}
-        , bv{bitstack.size, [&](size_t idx) {
-            return bitstack.value(idx);
-        }}
+        , bv{bitstack}
         , bitsForPosition{_bitsForPosition}
         , bitPositionMask{(uint64_t{1}<<bitsForPosition)-1}
         , seqCount{_seqCount}
     {}
 
     template <typename T>
-    CSA(std::vector<T> sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false)
+    CSA(std::vector<T> const& sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false, size_t seqOffset=0)
         : seqCount{_inputSizes.size()}
     {
+        assert(samplingRate != 0);
         size_t longestSequence = std::accumulate(_inputSizes.begin(), _inputSizes.end(), size_t{}, [](size_t lhs, auto rhs) {
             return std::max(lhs, rhs);
         });
         bitsForPosition = size_t(std::ceil(std::log2(longestSequence)));
-        size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
+        size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size() + seqOffset))));
         if (bitsForPosition + bitsForSeqId > 64) {
             throw std::runtime_error{"requires more than 64bit to encode sequence length and number of sequence"};
         }
         bitPositionMask = (uint64_t{1}<<bitsForPosition)-1;
 
-        // Generate accumulated input
-        auto accInputSizes = std::vector<size_t>{};
-        accInputSizes.reserve(_inputSizes.size()+1);
-        accInputSizes.emplace_back(0);
-        for (auto len : _inputSizes) {
-            accInputSizes.emplace_back(accInputSizes.back() + len);
-        }
 
-        // Construct bit vector, indicating sequence start in text
-        auto textSeqStart = bitvector::CompactBitvector{};
-        for (auto sizes : _inputSizes) {
-            textSeqStart.push_back(true);
-            for (size_t i{1}; i < sizes; ++i) {
-                textSeqStart.push_back(false);
-            }
-        }
-
-        // Construct sampled suffix array
-        size_t ssaI{}; // Index of the ssa that is inside of sa
-        bv.reserve((sa.size()+samplingRate-1) / samplingRate);
-        for (size_t i{0}; i < sa.size(); ++i) {
-            auto [subjId, subjPos] = [&]() -> std::tuple<size_t, size_t> {
-                // find subject id
-                auto subjId = textSeqStart.rank(sa[i]+1) - 1;
-
-                // compute subj position
-                auto subjPos = sa[i] - accInputSizes[subjId];
-                if (reverse) {
-                    auto len = _inputSizes[subjId];
-                    if (subjPos < len-1) {
-                        subjPos = len - subjPos - 1;
-                    } else {
-                        subjPos = len;
-                    }
+        // create a sampling in text space
+        auto textAnnotationValid = Bitvector{};
+        auto textAnnotation = std::vector<uint64_t>{};
+        for (size_t refId{0}; refId < _inputSizes.size(); ++refId) {
+            for (size_t posId{0}; posId < _inputSizes[refId]; ++posId) {
+                auto sample = (posId % samplingRate) == 0;
+                textAnnotationValid.push_back(sample);
+                if (!sample) continue;
+                if (!reverse) {
+                    textAnnotation.emplace_back(((refId+seqOffset) << bitsForPosition) | posId);
+                } else {
+                    auto len = _inputSizes[refId];
+                    textAnnotation.emplace_back(((refId+seqOffset) << bitsForPosition) | (len - posId - 1));
                 }
-                return {subjId, subjPos};
-            }();
-
-            bool sample = (subjPos % samplingRate) == 0;
-            if (sample) {
-                sa[ssaI] = subjPos | (subjId << bitsForPosition);
-                ++ssaI;
-            }
-            bv.push_back(sample);
-        }
-        sa.resize(ssaI);
-        if constexpr (std::same_as<T, uint64_t>) {
-            ssa = std::move(sa);
-        } else {
-            ssa.resize(sa.size());
-            for (size_t i{0}; i < sa.size(); ++i) {
-                ssa[i] = sa[i];
             }
         }
+        // converts text space into sampled suffix array space
+        std::tie(bv, ssa) = suffixarray::createSampling(sa, textAnnotationValid, textAnnotation);
     }
 
     auto operator=(CSA const&) -> CSA& = delete;
