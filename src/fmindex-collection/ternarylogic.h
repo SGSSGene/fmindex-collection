@@ -977,6 +977,7 @@ template <size_t N1, size_t N2>
 auto mark_less_large(size_t value, std::array<std::bitset<N1>, N2> const& _arr) -> std::bitset<N1> {
     if (value == 0) return mask_positive_or_negative<N1>[1];
     return mark_exact_or_less_large(value-1, _arr);
+
 }
 
 }
