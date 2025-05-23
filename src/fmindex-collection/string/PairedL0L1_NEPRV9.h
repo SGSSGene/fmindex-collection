@@ -107,14 +107,26 @@ struct PairedL0L1_NEPRV9 {
     size_t totalLength{};
 
     PairedL0L1_NEPRV9() = default;
-    PairedL0L1_NEPRV9(std::span<uint8_t const> _symbols) {
+
+    PairedL0L1_NEPRV9(std::span<uint8_t const> _symbols)
+        : PairedL0L1_NEPRV9{internal_tag{}, _symbols}
+    {}
+
+    PairedL0L1_NEPRV9(std::span<uint64_t const> _symbols)
+        : PairedL0L1_NEPRV9{internal_tag{}, _symbols}
+    {}
+
+private:
+    struct internal_tag{};
+    template <typename T>
+    PairedL0L1_NEPRV9(internal_tag, std::span<T const> _symbols) {
         auto const _length = _symbols.size();
         bits.reserve(_length/l1_bits_ct + 2);
         if (_length == 0) return;
 
         // fill all inbits
         for (auto c : _symbols) {
-            auto bitId         = totalLength % l1_bits_ct;
+            auto bitId = totalLength % l1_bits_ct;
             bits.back().setSymbol(bitId, c);
 
             totalLength += 1;
@@ -192,92 +204,7 @@ struct PairedL0L1_NEPRV9 {
         }
     }
 
-    PairedL0L1_NEPRV9(std::span<uint64_t const> _symbols) {
-        auto const _length = _symbols.size();
-        bits.reserve(_length/l1_bits_ct + 2);
-        if (_length == 0) return;
-
-        // fill all inbits
-        for (auto c : _symbols) {
-            auto bitId         = totalLength % l1_bits_ct;
-            bits.back().setSymbol(bitId, c);
-
-            totalLength += 1;
-            if (totalLength % l1_bits_ct == 0) { // next bit will require a new in-bits block
-                bits.emplace_back();
-            }
-        }
-
-        // fill l0/l1 structure
-        {
-            size_t l0BlockCt = (totalLength / (l0_bits_ct*2)) + 1;
-            size_t l1BlockCt = l0BlockCt * (l0_bits_ct / l1_bits_ct);
-            size_t inbitsCt  = l0BlockCt * ((l0_bits_ct*2) / l1_bits_ct);
-
-            l0.resize(l0BlockCt);
-            l1.resize(l1BlockCt);
-            bits.resize(inbitsCt);
-
-            constexpr size_t b1 = l1_bits_ct;
-            constexpr size_t b0 = l0_bits_ct;
-
-            constexpr size_t l1_block_ct = b0 / b1;
-
-            BlockL0 l0_acc{};
-            // walk through all superblocks
-            for (size_t l0I{0}; l0I < l0BlockCt; ++l0I) {
-                // walk left to right and set l1 values (as if they are the begining of a superblock)
-
-                // left part
-                BlockL1 acc{};
-                for (size_t i{0}; i < l1_block_ct; ++i) {
-                    auto& b = bits[l0I*l1_block_ct*2 + i];
-
-                    auto counts = b.all_ranks(0);
-                    for (size_t symb{0}; symb < TSigma; ++symb) {
-                        acc[symb] += counts[symb];
-                    }
-                    if (i % 2 == 0) {
-                        l1[l0I*l1_block_ct + i/2] = acc;
-                    }
-                }
-                for (size_t symb{0}; symb < TSigma; ++symb) {
-                    l0_acc[symb] += acc[symb];
-                }
-                // update l0 (reached center)
-                l0[l0I] = l0_acc;
-                // walk backwards through left part and revert l0
-                for (size_t i{0}; i < l1_block_ct; ++i) {
-                    if (i % 2 == 0) {
-                        for (size_t symb{0}; symb < TSigma; ++symb) {
-                            auto idx = l0I*l1_block_ct + i/2;
-                            l1[idx][symb] = acc[symb] - l1[idx][symb];
-                        }
-                    }
-                }
-
-                // right part
-                acc = {};
-                for (size_t i{l1_block_ct}; i < l1_block_ct*2; ++i) {
-                    auto idx = l0I*l1_block_ct*2 + i;
-                    auto& b = bits[idx];
-                    auto counts = b.all_ranks(0);
-                    for (size_t symb{0}; symb < TSigma; ++symb) {
-                        acc[symb] += counts[symb];
-                    }
-                    if (i % 2 == 0) {
-                        l1[l0I*l1_block_ct + i/2] = acc;
-                    }
-                }
-
-                for (size_t symb{0}; symb < TSigma; ++symb) {
-                    l0_acc[symb] += acc[symb];
-                }
-            }
-        }
-    }
-
-
+public:
     size_t size() const {
         return totalLength;
     }

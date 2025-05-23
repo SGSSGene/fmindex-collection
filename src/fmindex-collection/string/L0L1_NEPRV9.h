@@ -51,7 +51,7 @@ struct L0L1_NEPRV9 {
         uint64_t rank(uint64_t idx, uint64_t symb) const {
             assert(symb < Sigma);
             assert(idx <= l1_bits_ct);
-            auto v = neprv8_detail::rank(bits, symb);
+            auto v = mark_exact_large(symb, bits);
             return lshift_and_count(v, l1_bits_ct-idx);
         }
 
@@ -96,8 +96,8 @@ struct L0L1_NEPRV9 {
         }
     };
 
-    using BlockL1 = std::array<uint16_t, TSigma>;
-    using BlockL0 = std::array<uint64_t, TSigma>;
+    using BlockL1 = std::array<uint16_t, TSigma+1>;
+    using BlockL0 = std::array<uint64_t, TSigma+1>;
 
     std::vector<InBits> bits{{}};
     std::vector<BlockL1> l1{{}};
@@ -105,18 +105,30 @@ struct L0L1_NEPRV9 {
     size_t totalLength{};
 
     L0L1_NEPRV9() = default;
-    L0L1_NEPRV9(std::span<uint8_t const> _symbols) {
+
+    L0L1_NEPRV9(std::span<uint8_t const> _symbols)
+        : L0L1_NEPRV9{internal_tag{}, _symbols}
+    {}
+
+    L0L1_NEPRV9(std::span<uint64_t const> _symbols)
+        : L0L1_NEPRV9{internal_tag{}, _symbols}
+    {}
+
+private:
+    struct internal_tag{};
+    template <typename T>
+    L0L1_NEPRV9(internal_tag, std::span<T const> _symbols) {
         auto const _length = _symbols.size();
         bits.reserve(_length/l1_bits_ct + 2);
         if (_length == 0) return;
 
-        // fill all inbits
+        // fill all in-block bits
         for (auto c : _symbols) {
-            auto bitId         = totalLength % l1_bits_ct;
+            auto bitId = totalLength % l1_bits_ct;
             bits.back().setSymbol(bitId, c);
 
             totalLength += 1;
-            if (totalLength % l1_bits_ct == 0) { // next bit will require a new in-bits block
+            if (totalLength % l1_bits_ct == 0) { // next bit will require a new in-block bits
                 bits.emplace_back();
             }
         }
@@ -144,86 +156,31 @@ struct L0L1_NEPRV9 {
                 l0[l0I] = l0_acc;
 
                 // right part
-                BlockL1 acc{};
+                BlockL0 acc{};
                 for (size_t i{0}; i < l1_block_ct; ++i) {
                     auto idx = l0I*l1_block_ct + i;
-                    l1[idx] = acc;
+                    for (size_t symb{0}; symb <= TSigma; ++symb) {
+                        l1[idx][symb] = acc[symb];
+                    }
                     auto& b = bits[l0I*l1_block_ct + i];
 
                     auto counts = b.all_ranks(l1_bits_ct);
 
+                    size_t a{};
                     for (size_t symb{0}; symb < TSigma; ++symb) {
-                        acc[symb] += counts[symb];
+                        a += counts[symb];
+                        acc[symb+1] += a;
                     }
                 }
 
-                for (size_t symb{0}; symb < TSigma; ++symb) {
+                for (size_t symb{0}; symb <= TSigma; ++symb) {
                     l0_acc[symb] += acc[symb];
                 }
             }
         }
     }
 
-    L0L1_NEPRV9(std::span<uint64_t const> _symbols) {
-        auto const _length = _symbols.size();
-        bits.reserve(_length/l1_bits_ct + 2);
-        if (_length == 0) return;
-
-        // fill all inbits
-        for (auto c : _symbols) {
-            auto bitId         = totalLength % l1_bits_ct;
-            bits.back().setSymbol(bitId, c);
-
-            totalLength += 1;
-            if (totalLength % l1_bits_ct == 0) { // next bit will require a new in-bits block
-                bits.emplace_back();
-            }
-        }
-
-        // fill l0/l1 structure
-        {
-            size_t l0BlockCt = (totalLength / l0_bits_ct) + 1;
-            size_t l1BlockCt = l0BlockCt * (l0_bits_ct / l1_bits_ct);
-            size_t inbitsCt  = l0BlockCt * ((l0_bits_ct) / l1_bits_ct);
-
-            l0.resize(l0BlockCt);
-            l1.resize(l1BlockCt);
-            bits.resize(inbitsCt);
-
-            constexpr size_t b1 = l1_bits_ct;
-            constexpr size_t b0 = l0_bits_ct;
-
-            constexpr size_t l1_block_ct = b0 / b1;
-
-
-            BlockL0 l0_acc{};
-            // walk through all superblocks
-            for (size_t l0I{0}; l0I < l0BlockCt; ++l0I) {
-                // update l0
-                l0[l0I] = l0_acc;
-
-                // right part
-                BlockL1 acc{};
-                for (size_t i{0}; i < l1_block_ct; ++i) {
-                    auto idx = l0I*l1_block_ct + i;
-                    l1[idx] = acc;
-                    auto& b = bits[l0I*l1_block_ct + i];
-
-                    auto counts = b.all_ranks(l1_bits_ct);
-
-                    for (size_t symb{0}; symb < TSigma; ++symb) {
-                        acc[symb] += counts[symb];
-                    }
-                }
-
-                for (size_t symb{0}; symb < TSigma; ++symb) {
-                    l0_acc[symb] += acc[symb];
-                }
-            }
-        }
-    }
-
-
+public:
     size_t size() const {
         return totalLength;
     }
@@ -238,6 +195,7 @@ struct L0L1_NEPRV9 {
         assert(symb < Sigma);
         return symb;
     }
+public:
 
     uint64_t rank(uint64_t idx, uint64_t symb) const {
         assert(idx <= totalLength);
@@ -250,7 +208,7 @@ struct L0L1_NEPRV9 {
 
         auto count = bits[l1Id].rank(bitId, symb);
 
-        auto r =  l0[l0Id][symb] + l1[l1Id][symb] + count;
+        auto r =  l0[l0Id][symb+1] + l1[l1Id][symb+1] + count - l0[l0Id][symb] - l1[l1Id][symb];
         assert(r <= idx);
         return r;
     }
@@ -264,12 +222,9 @@ struct L0L1_NEPRV9 {
         assert(l1Id < bits.size());
         assert(l0Id < l0.size());
 
-        size_t r{};
-        for (size_t s{0}; s < symb; ++s) {
-            auto count = bits[l1Id].rank(bitId, s);
-            r += l0[l0Id][s] + l1[l1Id][s] + count;
-            assert(r <= idx);
-        }
+        size_t r = bits[l1Id].prefix_rank(bitId, symb);
+        r += l0[l0Id][symb] + l1[l1Id][symb];
+        assert(r <= idx);
         return r;
     }
 
