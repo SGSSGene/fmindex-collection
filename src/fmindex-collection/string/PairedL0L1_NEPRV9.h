@@ -98,8 +98,8 @@ struct PairedL0L1_NEPRV9 {
         }
     };
 
-    using BlockL1 = std::array<uint16_t, TSigma>;
-    using BlockL0 = std::array<uint64_t, TSigma>;
+    using BlockL1 = std::array<uint16_t, TSigma+1>;
+    using BlockL0 = std::array<uint64_t, TSigma+1>;
 
     std::vector<InBits> bits{{}};
     std::vector<BlockL1> l1{{}};
@@ -156,19 +156,24 @@ private:
                 // walk left to right and set l1 values (as if they are the begining of a superblock)
 
                 // left part
-                BlockL1 acc{};
+                BlockL0 acc{};
                 for (size_t i{0}; i < l1_block_ct; ++i) {
                     auto& b = bits[l0I*l1_block_ct*2 + i];
 
                     auto counts = b.all_ranks(0);
+
+                    size_t a{};
                     for (size_t symb{0}; symb < TSigma; ++symb) {
-                        acc[symb] += counts[symb];
+                        a += counts[symb];
+                        acc[symb+1] += a;
                     }
                     if (i % 2 == 0) {
-                        l1[l0I*l1_block_ct + i/2] = acc;
+                        for (size_t symb{0}; symb <= TSigma; ++symb) {
+                            l1[l0I*l1_block_ct + i/2][symb] = acc[symb];
+                        }
                     }
                 }
-                for (size_t symb{0}; symb < TSigma; ++symb) {
+                for (size_t symb{0}; symb <= TSigma; ++symb) {
                     l0_acc[symb] += acc[symb];
                 }
                 // update l0 (reached center)
@@ -176,7 +181,7 @@ private:
                 // walk backwards through left part and revert l0
                 for (size_t i{0}; i < l1_block_ct; ++i) {
                     if (i % 2 == 0) {
-                        for (size_t symb{0}; symb < TSigma; ++symb) {
+                        for (size_t symb{0}; symb <= TSigma; ++symb) {
                             auto idx = l0I*l1_block_ct + i/2;
                             l1[idx][symb] = acc[symb] - l1[idx][symb];
                         }
@@ -189,15 +194,20 @@ private:
                     auto idx = l0I*l1_block_ct*2 + i;
                     auto& b = bits[idx];
                     auto counts = b.all_ranks(0);
+
+                    size_t a{};
                     for (size_t symb{0}; symb < TSigma; ++symb) {
-                        acc[symb] += counts[symb];
+                        a += counts[symb];
+                        acc[symb+1] += a;
                     }
                     if (i % 2 == 0) {
-                        l1[l0I*l1_block_ct + i/2] = acc;
+                        for (size_t symb{0}; symb <= TSigma; ++symb) {
+                            l1[l0I*l1_block_ct + i/2][symb] = acc[symb];
+                        }
                     }
                 }
 
-                for (size_t symb{0}; symb < TSigma; ++symb) {
+                for (size_t symb{0}; symb <= TSigma; ++symb) {
                     l0_acc[symb] += acc[symb];
                 }
             }
@@ -234,7 +244,7 @@ public:
 
         auto count = bits[l1Id].rank(bitId, symb);
 
-        auto r = l0[l0Id/2][symb] + right_l0 * l1[l1Id/2][symb] + right_l1 * count;
+        auto r = (l0[l0Id/2][symb+1] - l0[l0Id/2][symb]) + right_l0 * (l1[l1Id/2][symb+1] - l1[l1Id/2][symb]) + right_l1 * count;
         assert(r <= idx);
         return r;
     }
@@ -252,12 +262,9 @@ public:
         int64_t right_l1 = (l1Id%2)*2-1;
         int64_t right_l0 = (l0Id%2)*2-1;
 
-        size_t r{};
-        for (size_t s{0}; s < symb; ++s) {
-            auto count = bits[l1Id].rank(bitId, s);
-            r += l0[l0Id/2][s] + right_l0 * l1[l1Id/2][s] + right_l1 * count;
-            assert(r <= idx);
-        }
+        auto count = bits[l1Id].prefix_rank(bitId, symb);
+        auto r = l0[l0Id/2][symb] + right_l0 * l1[l1Id/2][symb] + right_l1 * count;
+        assert(r <= idx);
         return r;
     }
 

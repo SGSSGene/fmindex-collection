@@ -179,7 +179,6 @@ private:
             }
         }
     }
-
 public:
     size_t size() const {
         return totalLength;
