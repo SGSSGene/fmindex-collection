@@ -24,7 +24,7 @@ namespace fmindex_collection::string {
 
 namespace neprv8_detail {
     template <size_t N, size_t bitct>
-    auto rank(std::array<std::bitset<N>, bitct> const& arr, uint8_t symb) {
+    auto rank(std::array<std::bitset<N>, bitct> const& arr, uint64_t symb) {
         if constexpr (bitct == 3) {
             return mark_exact_fast(symb, arr[2], arr[1], arr[0]);
         } else {
@@ -115,7 +115,7 @@ namespace neprv8_detail {
 
 
     template <size_t N, size_t bitct>
-    auto prefix_rank(std::array<std::bitset<N>, bitct> const& arr, uint8_t symb) {
+    auto prefix_rank(std::array<std::bitset<N>, bitct> const& arr, uint64_t symb) {
         if constexpr (bitct == 3) {
             return mark_less_fast(symb, arr[2], arr[1], arr[0]);
         } else {

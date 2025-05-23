@@ -106,7 +106,7 @@ auto generateLargeText() -> std::vector<uint64_t> const& {
 
         // generates string with values between 1-4
         auto size = []() -> size_t {
-            auto ptr = std::getenv("VECTORSIZE");
+            auto ptr = std::getenv("STRINGSIZE");
             if (ptr) {
                 return std::stoull(ptr);
             }
