@@ -15,6 +15,7 @@
 #include "InterleavedWavelet.h"
 #include "L0L1_NEPRV9.h"
 #include "MultiBitvector.h"
+#include "MultiaryWavelet.h"
 #include "NEPRV8.h"
 #include "Naive.h"
 #include "PairedL0L1_NEPRV9.h"
