@@ -57,6 +57,8 @@ add_executable(${PROJECT_NAME}
     string/benchmark_alphabet_128.cpp
     string/benchmark_alphabet_255.cpp
     string/benchmark_alphabet_4096.cpp
+    string/benchmark_alphabet_16384.cpp
+    string/benchmark_alphabet_65536.cpp
     string/unittest.cpp
     suffixarray/checkCSA.cpp
     utils.cpp
