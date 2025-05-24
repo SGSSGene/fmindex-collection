@@ -158,8 +158,8 @@ private:
                 // left part
                 BlockL0 acc{};
                 for (size_t i{0}; i < l1_block_ct; ++i) {
-                    auto& b = bits[l0I*l1_block_ct*2 + i];
-
+                    auto idx = l0I*l1_block_ct*2 + i;
+                    auto& b = bits[idx];
                     auto counts = b.all_ranks(0);
 
                     size_t a{};

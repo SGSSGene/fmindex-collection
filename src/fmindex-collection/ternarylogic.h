@@ -880,7 +880,7 @@ auto mark_exact_or_less_large(size_t value, std::array<std::bitset<N1>, N2> cons
         case 0x02: return ~_arr[1] | ~_arr[0];
         default: return mask_positive_or_negative<N1>[0];
         }
-    } else {
+    } else if constexpr (N2 < 9) {
         auto v       = mark_exact_or_less_v3(value & 7,      _arr[2], _arr[1], _arr[0]);
         auto tail1 = [&](size_t value, size_t i) {
             if (!value) return ~_arr[i] & v;
@@ -909,11 +909,35 @@ auto mark_exact_or_less_large(size_t value, std::array<std::bitset<N1>, N2> cons
                 v = tail2((value>>5)&3, 5, 6);
                 if constexpr (N2 == 7) {
                     return v;
-                } else {
+                } else { // N2 == 8
                     return tail1(value>>7, 7);
                 }
             }
         }
+    } else {
+        auto v       = mark_exact_or_less_v3(value & 7,      _arr[2], _arr[1], _arr[0]);
+        auto tail1 = [&](size_t value, size_t i) {
+            if (!value) return ~_arr[i] & v;
+            return ~_arr[i] | v;
+        };
+
+        auto tail2 = [&](size_t value, size_t i0, size_t i1) {
+            switch(value) {
+            case 0x00: return ~_arr[i1] & ~_arr[i0] & v;
+            case 0x01: return ~_arr[i1] & (~_arr[i0] | v);
+            case 0x02: return ~_arr[i1] | (~_arr[i0] & v);
+            default:   return ~_arr[i1] | ~_arr[i0] | v;
+            }
+        };
+        size_t i{3};
+        for (;i+1 < N2; i += 2) {
+            v = tail2((value>>i)&3, i, i+1);
+        }
+
+        if (i < N2) {
+            v = tail1((value>>i)&1, i);
+        }
+        return v;
     }
 
 // 0    ~3 ~2 ~1 ~0
