@@ -22,7 +22,7 @@ namespace fmindex_collection::string {
 
 
 template <size_t TSigma, size_t l1_bits_ct, size_t l0_bits_ct, bool Align=true>
-struct L0L1_NEPRV9 {
+struct FlattenBitvectors_L0L1 {
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static_assert(l0_bits_ct-l1_bits_ct <= std::numeric_limits<uint16_t>::max(), "l0_bits_ct can only hold up to uint16_t bits");
 
@@ -104,20 +104,20 @@ struct L0L1_NEPRV9 {
     std::vector<BlockL0> l0{{}};
     size_t totalLength{};
 
-    L0L1_NEPRV9() = default;
+    FlattenBitvectors_L0L1() = default;
 
-    L0L1_NEPRV9(std::span<uint8_t const> _symbols)
-        : L0L1_NEPRV9{internal_tag{}, _symbols}
+    FlattenBitvectors_L0L1(std::span<uint8_t const> _symbols)
+        : FlattenBitvectors_L0L1{internal_tag{}, _symbols}
     {}
 
-    L0L1_NEPRV9(std::span<uint64_t const> _symbols)
-        : L0L1_NEPRV9{internal_tag{}, _symbols}
+    FlattenBitvectors_L0L1(std::span<uint64_t const> _symbols)
+        : FlattenBitvectors_L0L1{internal_tag{}, _symbols}
     {}
 
 private:
     struct internal_tag{};
     template <typename T>
-    L0L1_NEPRV9(internal_tag, std::span<T const> _symbols) {
+    FlattenBitvectors_L0L1(internal_tag, std::span<T const> _symbols) {
         auto const _length = _symbols.size();
         bits.reserve(_length/l1_bits_ct + 2);
         if (_length == 0) return;
@@ -250,50 +250,50 @@ public:
     }
 };
 
-template <size_t Sigma> using L0L1_NEPRV9_64_4k   = L0L1_NEPRV9<Sigma, 64, 4096>;
-template <size_t Sigma> using L0L1_NEPRV9_128_4k  = L0L1_NEPRV9<Sigma, 128, 4096>;
-template <size_t Sigma> using L0L1_NEPRV9_256_4k  = L0L1_NEPRV9<Sigma, 256, 4096>;
-template <size_t Sigma> using L0L1_NEPRV9_512_4k  = L0L1_NEPRV9<Sigma, 512, 4096>;
-template <size_t Sigma> using L0L1_NEPRV9_1024_4k = L0L1_NEPRV9<Sigma, 1024, 4096>;
-template <size_t Sigma> using L0L1_NEPRV9_2048_4k = L0L1_NEPRV9<Sigma, 2048, 4096>;
+template <size_t Sigma> using FlattenBitvectors_64_4k   = FlattenBitvectors_L0L1<Sigma, 64, 4096>;
+template <size_t Sigma> using FlattenBitvectors_128_4k  = FlattenBitvectors_L0L1<Sigma, 128, 4096>;
+template <size_t Sigma> using FlattenBitvectors_256_4k  = FlattenBitvectors_L0L1<Sigma, 256, 4096>;
+template <size_t Sigma> using FlattenBitvectors_512_4k  = FlattenBitvectors_L0L1<Sigma, 512, 4096>;
+template <size_t Sigma> using FlattenBitvectors_1024_4k = FlattenBitvectors_L0L1<Sigma, 1024, 4096>;
+template <size_t Sigma> using FlattenBitvectors_2048_4k = FlattenBitvectors_L0L1<Sigma, 2048, 4096>;
 
-static_assert(checkString_c<L0L1_NEPRV9_64_4k>);
-static_assert(checkString_c<L0L1_NEPRV9_128_4k>);
-static_assert(checkString_c<L0L1_NEPRV9_256_4k>);
-static_assert(checkString_c<L0L1_NEPRV9_512_4k>);
-static_assert(checkString_c<L0L1_NEPRV9_1024_4k>);
-static_assert(checkString_c<L0L1_NEPRV9_2048_4k>);
+static_assert(checkString_c<FlattenBitvectors_64_4k>);
+static_assert(checkString_c<FlattenBitvectors_128_4k>);
+static_assert(checkString_c<FlattenBitvectors_256_4k>);
+static_assert(checkString_c<FlattenBitvectors_512_4k>);
+static_assert(checkString_c<FlattenBitvectors_1024_4k>);
+static_assert(checkString_c<FlattenBitvectors_2048_4k>);
 
-template <size_t Sigma> using L0L1_NEPRV9_64_64k   = L0L1_NEPRV9<Sigma, 64, 65536>;
-template <size_t Sigma> using L0L1_NEPRV9_128_64k  = L0L1_NEPRV9<Sigma, 128, 65536>;
-template <size_t Sigma> using L0L1_NEPRV9_256_64k  = L0L1_NEPRV9<Sigma, 256, 65536>;
-template <size_t Sigma> using L0L1_NEPRV9_512_64k  = L0L1_NEPRV9<Sigma, 512, 65536>;
-template <size_t Sigma> using L0L1_NEPRV9_1024_64k = L0L1_NEPRV9<Sigma, 1024, 65536>;
-template <size_t Sigma> using L0L1_NEPRV9_2048_64k = L0L1_NEPRV9<Sigma, 2048, 65536>;
-template <size_t Sigma> using L0L1_NEPRV9_4096_64k = L0L1_NEPRV9<Sigma, 4096, 65536>;
+template <size_t Sigma> using FlattenBitvectors_64_64k   = FlattenBitvectors_L0L1<Sigma, 64, 65536>;
+template <size_t Sigma> using FlattenBitvectors_128_64k  = FlattenBitvectors_L0L1<Sigma, 128, 65536>;
+template <size_t Sigma> using FlattenBitvectors_256_64k  = FlattenBitvectors_L0L1<Sigma, 256, 65536>;
+template <size_t Sigma> using FlattenBitvectors_512_64k  = FlattenBitvectors_L0L1<Sigma, 512, 65536>;
+template <size_t Sigma> using FlattenBitvectors_1024_64k = FlattenBitvectors_L0L1<Sigma, 1024, 65536>;
+template <size_t Sigma> using FlattenBitvectors_2048_64k = FlattenBitvectors_L0L1<Sigma, 2048, 65536>;
+template <size_t Sigma> using FlattenBitvectors_4096_64k = FlattenBitvectors_L0L1<Sigma, 4096, 65536>;
 
-static_assert(checkString_c<L0L1_NEPRV9_64_64k>);
-static_assert(checkString_c<L0L1_NEPRV9_128_64k>);
-static_assert(checkString_c<L0L1_NEPRV9_256_64k>);
-static_assert(checkString_c<L0L1_NEPRV9_512_64k>);
-static_assert(checkString_c<L0L1_NEPRV9_1024_64k>);
-static_assert(checkString_c<L0L1_NEPRV9_2048_64k>);
-static_assert(checkString_c<L0L1_NEPRV9_4096_64k>);
+static_assert(checkString_c<FlattenBitvectors_64_64k>);
+static_assert(checkString_c<FlattenBitvectors_128_64k>);
+static_assert(checkString_c<FlattenBitvectors_256_64k>);
+static_assert(checkString_c<FlattenBitvectors_512_64k>);
+static_assert(checkString_c<FlattenBitvectors_1024_64k>);
+static_assert(checkString_c<FlattenBitvectors_2048_64k>);
+static_assert(checkString_c<FlattenBitvectors_4096_64k>);
 
-template <size_t Sigma> using L0L1_NEPRV9_64_64kUA   = L0L1_NEPRV9<Sigma, 64, 65536, false>;
-template <size_t Sigma> using L0L1_NEPRV9_128_64kUA  = L0L1_NEPRV9<Sigma, 128, 65536, false>;
-template <size_t Sigma> using L0L1_NEPRV9_256_64kUA  = L0L1_NEPRV9<Sigma, 256, 65536, false>;
-template <size_t Sigma> using L0L1_NEPRV9_512_64kUA  = L0L1_NEPRV9<Sigma, 512, 65536, false>;
-template <size_t Sigma> using L0L1_NEPRV9_1024_64kUA = L0L1_NEPRV9<Sigma, 1024, 65536, false>;
-template <size_t Sigma> using L0L1_NEPRV9_2048_64kUA = L0L1_NEPRV9<Sigma, 2048, 65536, false>;
-template <size_t Sigma> using L0L1_NEPRV9_4096_64kUA = L0L1_NEPRV9<Sigma, 4096, 65536, false>;
+template <size_t Sigma> using FlattenBitvectors_64_64kUA   = FlattenBitvectors_L0L1<Sigma, 64, 65536, false>;
+template <size_t Sigma> using FlattenBitvectors_128_64kUA  = FlattenBitvectors_L0L1<Sigma, 128, 65536, false>;
+template <size_t Sigma> using FlattenBitvectors_256_64kUA  = FlattenBitvectors_L0L1<Sigma, 256, 65536, false>;
+template <size_t Sigma> using FlattenBitvectors_512_64kUA  = FlattenBitvectors_L0L1<Sigma, 512, 65536, false>;
+template <size_t Sigma> using FlattenBitvectors_1024_64kUA = FlattenBitvectors_L0L1<Sigma, 1024, 65536, false>;
+template <size_t Sigma> using FlattenBitvectors_2048_64kUA = FlattenBitvectors_L0L1<Sigma, 2048, 65536, false>;
+template <size_t Sigma> using FlattenBitvectors_4096_64kUA = FlattenBitvectors_L0L1<Sigma, 4096, 65536, false>;
 
-static_assert(checkString_c<L0L1_NEPRV9_64_64kUA>);
-static_assert(checkString_c<L0L1_NEPRV9_128_64kUA>);
-static_assert(checkString_c<L0L1_NEPRV9_256_64kUA>);
-static_assert(checkString_c<L0L1_NEPRV9_512_64kUA>);
-static_assert(checkString_c<L0L1_NEPRV9_1024_64kUA>);
-static_assert(checkString_c<L0L1_NEPRV9_2048_64kUA>);
-static_assert(checkString_c<L0L1_NEPRV9_4096_64kUA>);
+static_assert(checkString_c<FlattenBitvectors_64_64kUA>);
+static_assert(checkString_c<FlattenBitvectors_128_64kUA>);
+static_assert(checkString_c<FlattenBitvectors_256_64kUA>);
+static_assert(checkString_c<FlattenBitvectors_512_64kUA>);
+static_assert(checkString_c<FlattenBitvectors_1024_64kUA>);
+static_assert(checkString_c<FlattenBitvectors_2048_64kUA>);
+static_assert(checkString_c<FlattenBitvectors_4096_64kUA>);
 
 }

@@ -5,7 +5,7 @@
 
 #include "../builtins.h"
 #include "../bitvector/Bitvector.h"
-#include "../string/PairedL0L1_NEPRV9.h"
+#include "../string/PairedFlattenBitvectors_L0L1.h"
 #include "concepts.h"
 
 #include <algorithm>
@@ -24,7 +24,7 @@ namespace fmindex_collection::string {
  *
  * \param TSigma size of the alphabet
  */
-template <size_t TSigma, template <size_t> typename String_t0 = PairedL0L1_NEPRV9_512_64k, size_t L0Size = 1ull<<(std::bit_width(TSigma)/2),
+template <size_t TSigma, template <size_t> typename String_t0 = PairedFlattenBitvectors_512_64k, size_t L0Size = 1ull<<(std::bit_width(TSigma)/2),
                          template <size_t> typename String_t1 = String_t0, size_t L1Size = std::max((TSigma+L0Size-1)/L0Size, size_t{2})>
 struct MultiaryWavelet {
     using StringL0 = String_t0<L0Size>;
@@ -130,5 +130,17 @@ public:
         ar(l0, l1);
     }
 };
+
+static_assert(checkString_c<MultiaryWavelet>);
+
+template <size_t Sigma> using MultiaryWavelet_64_64k  = MultiaryWavelet<Sigma, PairedFlattenBitvectors_64_64k>;
+template <size_t Sigma> using MultiaryWavelet_512_64k = MultiaryWavelet<Sigma, PairedFlattenBitvectors_512_64k>;
+template <size_t Sigma> using MultiaryWavelet_s16     = MultiaryWavelet<Sigma, PairedFlattenBitvectors_512_64k, 4, MultiaryWavelet>;
+template <size_t Sigma> using MultiaryWavelet_s256    = MultiaryWavelet<Sigma, PairedFlattenBitvectors_512_64k, 8, MultiaryWavelet>;
+
+static_assert(checkString_c<MultiaryWavelet_64_64k>);
+static_assert(checkString_c<MultiaryWavelet_512_64k>);
+static_assert(checkString_c<MultiaryWavelet_s16>);
+static_assert(checkString_c<MultiaryWavelet_s256>);
 
 }
