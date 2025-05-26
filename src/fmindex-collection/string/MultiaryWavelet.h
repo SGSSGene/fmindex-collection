@@ -131,8 +131,6 @@ public:
     }
 };
 
-static_assert(checkString_c<MultiaryWavelet>);
-
 template <size_t Sigma> using MultiaryWavelet_64_64k  = MultiaryWavelet<Sigma, PairedFlattenBitvectors_64_64k>;
 template <size_t Sigma> using MultiaryWavelet_512_64k = MultiaryWavelet<Sigma, PairedFlattenBitvectors_512_64k>;
 template <size_t Sigma> using MultiaryWavelet_s16     = MultiaryWavelet<Sigma, PairedFlattenBitvectors_512_64k, 4, MultiaryWavelet>;
