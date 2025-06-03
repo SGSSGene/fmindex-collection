@@ -106,7 +106,9 @@ struct PairedFlattenBitvectors_L0L1 {
     std::vector<BlockL0> l0{{}};
     size_t totalLength{};
 
-    PairedFlattenBitvectors_L0L1() = default;
+    PairedFlattenBitvectors_L0L1()
+        : PairedFlattenBitvectors_L0L1{internal_tag{}, std::span<uint8_t const>{}}
+    {}
 
     PairedFlattenBitvectors_L0L1(std::span<uint8_t const> _symbols)
         : PairedFlattenBitvectors_L0L1{internal_tag{}, _symbols}
@@ -122,7 +124,6 @@ private:
     PairedFlattenBitvectors_L0L1(internal_tag, std::span<T const> _symbols) {
         auto const _length = _symbols.size();
         bits.reserve(_length/l1_bits_ct + 2);
-        if (_length == 0) return;
 
         // fill all inbits
         for (auto c : _symbols) {

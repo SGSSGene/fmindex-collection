@@ -38,7 +38,9 @@ struct MultiaryWavelet {
     static_assert(TSigma <= StringL0::Sigma * StringL1::Sigma);
 
 
-    MultiaryWavelet() = default;
+    MultiaryWavelet()
+        : MultiaryWavelet{internal_tag{}, std::span<uint8_t const>{}}
+    {}
 
     template <typename = uint8_t>
     MultiaryWavelet(std::span<uint8_t const> _symbols)
