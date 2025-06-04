@@ -37,8 +37,8 @@ struct KMerFMIndex {
             bits[lb] = true;
             bits[rb] = true;
             if (lb == rb) return;
-            if (depth > KMer) return;
-            for (size_t symb{1}; symb < Sigma; ++symb) {
+            if (depth >= KMer) return;
+            for (size_t symb{0}; symb < Sigma; ++symb) {
                 auto nlb = C[symb] + bwt.rank(lb, symb);
                 auto nrb = C[symb] + bwt.rank(rb, symb);
                 step(nlb, nrb, depth+1);
