@@ -24,3 +24,4 @@
 #include "SearchPseudo.h"
 #include "SearchNoErrors.h"
 #include "SearchOneError.h"
+#include "search.h"
