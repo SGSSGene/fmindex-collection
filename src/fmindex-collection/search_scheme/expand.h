@@ -26,9 +26,14 @@ inline auto forwards(std::vector<size_t> const& pi) -> std::vector<size_t> {
     }
     return rets;
 }
-
 }
 
+/**
+ * Creates a partitioning of a search scheme of length oldLen to length newLen
+ *
+ * detail: returns a vector of length 'oldLen' which has `newLen` elements spread
+ * uniformly across.
+ */
 inline auto expandCount(size_t oldLen, size_t newLen) -> std::vector<size_t> {
     assert(oldLen > 0);
     assert(newLen > 0);
@@ -59,7 +64,8 @@ inline bool isExpandable(Search s, size_t newLen) {
 }
 
 
-inline auto expandPI(std::vector<size_t> const& pi, std::vector<size_t> counts) -> std::vector<size_t> {
+// Expands a pi vector according to 'counts'
+inline auto expandPI(std::vector<size_t> const& pi, std::vector<size_t> const& counts) -> std::vector<size_t> {
     auto starts = std::vector<size_t>(pi.size(), 0);
     for (size_t i{1}; i < pi.size(); ++i) {
         starts[i] = starts[i-1] + counts[i-1];
@@ -96,7 +102,7 @@ inline auto expandPI(std::vector<size_t> const& pi, size_t _newLen) -> std::vect
     return expandPI(pi, counts);
 }
 
-inline auto expandLowerBound(std::vector<size_t> const& pi, std::vector<size_t> bound, std::vector<size_t> counts) -> std::vector<size_t> {
+inline auto expandLowerBound(std::vector<size_t> const& pi, std::vector<size_t> const& bound, std::vector<size_t> const& counts) -> std::vector<size_t> {
     auto expandedBound = std::vector<size_t>{};
 
     for (size_t i{0}; i < pi.size(); ++i) {
@@ -114,12 +120,12 @@ inline auto expandLowerBound(std::vector<size_t> const& pi, std::vector<size_t> 
     return expandedBound;
 }
 
-inline auto expandLowerBound(std::vector<size_t> const& pi, std::vector<size_t> bound, size_t _newLen) -> std::vector<size_t> {
+inline auto expandLowerBound(std::vector<size_t> const& pi, std::vector<size_t> const& bound, size_t _newLen) -> std::vector<size_t> {
     auto counts = expandCount(pi.size(), _newLen);
     return expandLowerBound(pi, bound, counts);
 }
 
-inline auto expandUpperBound(std::vector<size_t> const& pi, std::vector<size_t> bound, std::vector<size_t> counts) -> std::vector<size_t> {
+inline auto expandUpperBound(std::vector<size_t> const& pi, std::vector<size_t> const& bound, std::vector<size_t> const& counts) -> std::vector<size_t> {
     auto expandedBound = std::vector<size_t>{};
 
     for (size_t i{0}; i < pi.size(); ++i) {
@@ -132,12 +138,12 @@ inline auto expandUpperBound(std::vector<size_t> const& pi, std::vector<size_t> 
 }
 
 
-inline auto expandUpperBound(std::vector<size_t> const& pi, std::vector<size_t> bound, size_t _newLen) -> std::vector<size_t> {
+inline auto expandUpperBound(std::vector<size_t> const& pi, std::vector<size_t> const& bound, size_t _newLen) -> std::vector<size_t> {
     auto counts = expandCount(pi.size(), _newLen);
     return expandUpperBound(pi, bound, counts);
 }
 
-inline auto expand(Search s, size_t newLen) -> std::optional<Search> {
+inline auto expand(Search const& s, size_t newLen) -> std::optional<Search> {
     auto r = Search{};
     r.pi = expandPI(s.pi, newLen);
     r.l  = expandLowerBound(s.pi, s.l, newLen);
@@ -147,7 +153,7 @@ inline auto expand(Search s, size_t newLen) -> std::optional<Search> {
     }
     return {r};
 }
-inline auto expand(Scheme ss, size_t newLen) -> Scheme {
+inline auto expand(Scheme const& ss, size_t newLen) -> Scheme {
     auto r = Scheme{};
     for (auto const& s : ss) {
         auto o = expand(s, newLen);
@@ -160,18 +166,18 @@ inline auto expand(Scheme ss, size_t newLen) -> Scheme {
 
 /** special expand function, that is given how every part should be expanded
  */
-inline auto expand(Search s, std::vector<size_t> parts) -> std::optional<Search> {
+inline auto expand(Search const& s, std::vector<size_t> const& counts) -> std::optional<Search> {
     auto r = Search{};
-    r.pi = expandPI(s.pi, parts);
-    r.l  = expandLowerBound(s.pi, s.l, parts);
-    r.u  = expandUpperBound(s.pi, s.u, parts);
+    r.pi = expandPI(s.pi, counts);
+    r.l  = expandLowerBound(s.pi, s.l, counts);
+    r.u  = expandUpperBound(s.pi, s.u, counts);
     if (not isValid(r)) {
         return std::nullopt;
     }
     return {r};
 }
 
-inline auto expand(Scheme ss, std::vector<size_t> parts) -> Scheme {
+inline auto expand(Scheme const& ss, std::vector<size_t> const& parts) -> Scheme {
     auto r = Scheme{};
     for (auto const& s : ss) {
         auto o = expand(s, parts);
@@ -183,7 +189,7 @@ inline auto expand(Scheme ss, std::vector<size_t> parts) -> Scheme {
 }
 
 template <bool Edit=false>
-auto expandByNC(Scheme ss, size_t _newLen, size_t sigma) -> Scheme {
+auto expandByNC(Scheme const& ss, size_t _newLen, size_t sigma) -> Scheme {
     if (ss.size() == 0) return {};
     auto additionalPos = _newLen - ss[0].pi.size();
     auto counts = std::vector<size_t>(ss[0].pi.size(), 1);
@@ -207,12 +213,14 @@ auto expandByNC(Scheme ss, size_t _newLen, size_t sigma) -> Scheme {
     return expand(ss, counts);
 }
 
+/** Computes a 'count' vector according to best weighted node count
+ */
 template <bool Edit=false>
-auto expandByWNC(Scheme ss, size_t _newLen, size_t sigma, size_t N) -> Scheme {
+auto optimizeByWNC(Scheme const& ss, size_t _newLen, size_t sigma, size_t N) -> std::vector<size_t> {
     if (ss.size() == 0) return {};
-    auto additionalPos = _newLen - ss[0].pi.size();
-    auto counts = std::vector<size_t>(ss[0].pi.size(), 1);
 
+    auto counts = std::vector<size_t>(ss[0].pi.size(), 1);
+    auto additionalPos = _newLen - ss[0].pi.size();
     for (size_t i{0}; i<additionalPos; ++i) {
         double bestVal = std::numeric_limits<double>::max();
         size_t bestPos = 0;
@@ -228,9 +236,67 @@ auto expandByWNC(Scheme ss, size_t _newLen, size_t sigma, size_t N) -> Scheme {
         }
         counts[bestPos] += 1;
     }
-
-    return expand(ss, counts);
+    return counts;
 }
+
+/** Expands from lower by adding position steps by step
+ */
+template <bool Edit=false>
+auto expandByWNC(Scheme ss, size_t _newLen, size_t sigma, size_t N) -> Scheme {
+    return expand(ss, optimizeByWNC(ss, _newLen, sigma, N));
+}
+
+
+template <bool Edit=false>
+auto optimizeByWNCTopDown(Scheme const& _ss, size_t _newLen, size_t sigma, size_t N, size_t steps) -> std::vector<size_t> {
+    if (_ss.size() == 0) return {};
+
+    // uniform distribute part size
+    auto counts = expandCount(_ss[0].pi.size(), _newLen);
+
+    double lastVal = [&]() {
+        auto ess = expand(_ss, counts);
+        auto f = weightedNodeCount<Edit>(ess, sigma, N);
+        return f;
+    }();
+
+
+    // loop through each part and try to improve it, by increasing it size
+    while (true) {
+        double bestVal = lastVal;
+        size_t bestI1;
+        size_t bestI2;
+        for (size_t i1{0}; i1 < _ss[0].pi.size(); ++i1) {
+            for (size_t i2{0}; i2 < _ss[0].pi.size(); ++i2) {
+                if (i1 == i2) continue;
+                if (counts[i1] <= steps) continue;
+                counts[i1] -= steps;
+                counts[i2] += steps;
+                auto ess = expand(_ss, counts);
+                auto f = weightedNodeCount<Edit>(ess, sigma, N);
+                if (f < bestVal) {
+                    bestI1 = i1;
+                    bestI2 = i2;
+                    bestVal = f;
+                }
+                counts[i1] += steps;
+                counts[i2] -= steps;
+            }
+        }
+        if (bestVal == lastVal) break;
+        lastVal = bestVal;
+        counts[bestI1] -= steps;
+        counts[bestI2] += steps;
+    }
+    return counts;
+}
+
+
+template <bool Edit=false>
+auto expandByWNCTopDown(Scheme const& ss, size_t _newLen, size_t sigma, size_t N, size_t steps) -> Scheme {
+    return expand(ss, optimizeByWNCTopDown(ss, _newLen, sigma, N, steps));
+}
+
 
 inline auto limitToHamming(Search s) -> Search {
     auto len = s.pi.size();

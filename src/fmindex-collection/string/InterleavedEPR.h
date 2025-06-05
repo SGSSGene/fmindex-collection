@@ -69,7 +69,9 @@ struct InterleavedEPR {
         }
 
 
-        uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+        uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
+            if (symb == 0) return 0;
+            symb -= 1;
             assert(idx < 64 / bitct);
 
             auto _inblock = inBlock;// & ((1ull<<(idx*bitct)) -1);
@@ -155,21 +157,21 @@ struct InterleavedEPR {
         return blocks[blockId].symbol(bitId);
     }
 
-    uint64_t rank(uint64_t idx, uint8_t symb) const {
+    uint64_t rank(uint64_t idx, uint64_t symb) const {
         auto blockId      = idx / letterFit;
         auto superBlockId = idx / block_size;
         auto bitId        = idx % letterFit;
-        return blocks[blockId].prefix_rank(bitId, symb)
-               - ((symb>0)?(blocks[blockId].prefix_rank(bitId, symb-1)):0)
+        return blocks[blockId].prefix_rank(bitId, symb+1)
+               - blocks[blockId].prefix_rank(bitId, symb)
                + superBlocks[superBlockId][symb];
     }
 
-    uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+    uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
         auto blockId      = idx / letterFit;
         auto superBlockId = idx / block_size;
         auto bitId        = idx % letterFit;
-        uint64_t a={};
-        for (uint64_t i{0}; i<= symb; ++i) {
+        uint64_t a{};
+        for (uint64_t i{0}; i < symb; ++i) {
             a += superBlocks[superBlockId][i];
         }
         return blocks[blockId].prefix_rank(bitId, symb) + a;
@@ -180,19 +182,17 @@ struct InterleavedEPR {
         auto blockId      = idx / letterFit;
         auto superBlockId = idx / block_size;
         auto bitId        = idx % letterFit;
-        auto res = std::array<uint64_t, TSigma>{};
 
-        auto pre = std::array<uint64_t, TSigma>{};
+        auto prs = std::array<uint64_t, TSigma+1>{};
+        for (uint64_t symb{0}; symb < TSigma+1; ++symb) {
+            prs[symb] = blocks[blockId].prefix_rank(bitId, symb);
+        }
+
+        auto rs = std::array<uint64_t, TSigma>{};
         for (uint64_t symb{0}; symb < TSigma; ++symb) {
-            pre[symb] = blocks[blockId].prefix_rank(bitId, symb);
+            rs[symb] = prs[symb+1] - prs[symb] + superBlocks[superBlockId][symb];
         }
-
-        res[0] = pre[0] + superBlocks[superBlockId][0];
-
-        for (uint64_t symb{1}; symb < TSigma; ++symb) {
-            res[symb] = pre[symb] - pre[symb-1] + superBlocks[superBlockId][symb];
-        }
-        return res;
+        return rs;
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
@@ -200,26 +200,16 @@ struct InterleavedEPR {
         auto superBlockId = idx / block_size;
         auto bitId        = idx % letterFit;
 
-        auto rs  = std::array<uint64_t, TSigma>{};
         auto prs = std::array<uint64_t, TSigma>{};
-
-        auto pre = std::array<uint64_t, TSigma>{};
         for (uint64_t symb{0}; symb < TSigma; ++symb) {
-            pre[symb] = blocks[blockId].prefix_rank(bitId, symb);
+            prs[symb] = blocks[blockId].prefix_rank(bitId, symb);
         }
 
-        rs[0] = pre[0];
-        for (uint64_t symb{1}; symb < TSigma; ++symb) {
-            rs[symb]  = pre[symb]-pre[symb-1];
+        auto rs = std::array<uint64_t, TSigma>{};
+        for (uint64_t symb{0}; symb+1 < TSigma; ++symb) {
+            rs[symb] = prs[symb+1] - prs[symb] + superBlocks[superBlockId][symb];
         }
-        for (uint64_t symb{0}; symb < TSigma; ++symb) {
-            rs[symb] += superBlocks[superBlockId][symb];
-        }
-        prs[0] = rs[0];
-        for (uint64_t symb{1}; symb < TSigma; ++symb) {
-            prs[symb]= prs[symb-1] + rs[symb];
-        }
-
+        rs[TSigma-1] = blocks[blockId].prefix_rank(bitId, TSigma) - prs[TSigma-1] + superBlocks[superBlockId][TSigma-1];
         return {rs, prs};
     }
 
@@ -237,11 +227,11 @@ template <size_t TSigma> using InterleavedEPR16Aligned = InterleavedEPR<TSigma, 
 template <size_t TSigma> using InterleavedEPR32Aligned = InterleavedEPR<TSigma, 64, uint32_t>;
 
 
-static_assert(checkRankVector<InterleavedEPR8>);
-static_assert(checkRankVector<InterleavedEPR16>);
-static_assert(checkRankVector<InterleavedEPR32>);
-static_assert(checkRankVector<InterleavedEPR8Aligned>);
-static_assert(checkRankVector<InterleavedEPR16Aligned>);
-static_assert(checkRankVector<InterleavedEPR32Aligned>);
+static_assert(checkString_c<InterleavedEPR8>);
+static_assert(checkString_c<InterleavedEPR16>);
+static_assert(checkString_c<InterleavedEPR32>);
+static_assert(checkString_c<InterleavedEPR8Aligned>);
+static_assert(checkString_c<InterleavedEPR16Aligned>);
+static_assert(checkString_c<InterleavedEPR32Aligned>);
 
 }

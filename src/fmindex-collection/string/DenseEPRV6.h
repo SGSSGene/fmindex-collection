@@ -43,7 +43,7 @@ struct DenseEPRV6 {
             };
             uint64_t mask{};
 
-            for (uint64_t i{0}; i <= symb; ++i) {
+            for (uint64_t i{0}; i < symb; ++i) {
                 mask |= [&]<uint64_t ...Is>(std::integer_sequence<uint64_t, Is...>) {
                     return (f(std::integer_sequence<uint64_t, Is>{}, i)&...);
                 }(std::make_integer_sequence<uint64_t, bitct>{});
@@ -215,7 +215,7 @@ struct DenseEPRV6 {
         auto superBlockId = idx >> level1_size;
         auto bitId        = idx &  63;
         uint64_t a={};
-        for (uint64_t i{0}; i<= symb; ++i) {
+        for (uint64_t i{0}; i < symb; ++i) {
             a +=   level0[level0Id][i]
                  + level1[level1Id][i]
                  + superBlocks[superBlockId*TSigma+i];
@@ -255,13 +255,12 @@ struct DenseEPRV6 {
                  + level1[level1Id][0]
                  + superBlocks[superBlockId*TSigma+0];
 
-        prs[0] = rs[0];
         for (uint64_t symb{1}; symb < TSigma; ++symb) {
             auto a =   level0[level0Id][symb]
                      + level1[level1Id][symb]
                      + superBlocks[superBlockId*TSigma+symb];
 
-            prs[symb] = prs[symb-1] + rs[symb] + a;
+            prs[symb] = prs[symb-1] + rs[symb-1];
             rs[symb] += a;
         }
         return {rs, prs};
@@ -288,6 +287,6 @@ struct DenseEPRV6 {
     }
 };
 
-static_assert(checkRankVector<DenseEPRV6>);
+static_assert(checkString_c<DenseEPRV6>);
 
 }

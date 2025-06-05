@@ -24,7 +24,7 @@ namespace fmindex_collection::string {
 
 namespace neprv8_detail {
     template <size_t N, size_t bitct>
-    auto rank(std::array<std::bitset<N>, bitct> const& arr, uint8_t symb) {
+    auto rank(std::array<std::bitset<N>, bitct> const& arr, uint64_t symb) {
         if constexpr (bitct == 3) {
             return mark_exact_fast(symb, arr[2], arr[1], arr[0]);
         } else {
@@ -115,11 +115,11 @@ namespace neprv8_detail {
 
 
     template <size_t N, size_t bitct>
-    auto prefix_rank(std::array<std::bitset<N>, bitct> const& arr, uint8_t symb) {
+    auto prefix_rank(std::array<std::bitset<N>, bitct> const& arr, uint64_t symb) {
         if constexpr (bitct == 3) {
-            return mark_exact_or_less_fast(symb, arr[2], arr[1], arr[0]);
+            return mark_less_fast(symb, arr[2], arr[1], arr[0]);
         } else {
-            return mark_exact_or_less_large(symb, arr);
+            return mark_less_large(symb, arr);
         }
     }
 }
@@ -311,13 +311,16 @@ struct NEPRV8 {
     }
 
     uint8_t symbol(uint64_t idx) const {
+        assert(idx < size());
+
         auto level0Id     = idx >>  popcount_width_bits;
         auto bitId        = idx &  (popcount_width-1);
         return bits[level0Id].symbol(bitId);
     }
 
     uint64_t rank(uint64_t idx, uint8_t symb) const {
-        //prefetch(idx);
+        assert(idx <= size());
+        assert(symb < TSigma);
 
         auto level0Id     = idx >> popcount_width_bits;
         auto level1Id     = idx >> level0_size;
@@ -331,7 +334,8 @@ struct NEPRV8 {
     }
 
     uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
-        //prefetch(idx);
+        assert(idx <= size());
+        assert(symb <= TSigma);
 
         auto level0Id     = idx >> popcount_width_bits;
         auto level1Id     = idx >> level0_size;
@@ -348,7 +352,7 @@ struct NEPRV8 {
 
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
-        //prefetch(idx);
+        assert(idx <= size());
 
         auto level0Id     = idx >> popcount_width_bits;
         auto level1Id     = idx >> level0_size;
@@ -366,12 +370,12 @@ struct NEPRV8 {
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
-        //prefetch(idx);
+        assert(idx <= size());
 
         auto rs = all_ranks(idx);
-        auto prs = rs;
+        auto prs = std::array<uint64_t, TSigma>{};
         for (size_t i{1}; i < prs.size(); ++i) {
-            prs[i] = prs[i] + prs[i-1];
+            prs[i] = prs[i-1] + rs[i-1];
         }
         return {rs, prs};
     }
@@ -390,27 +394,27 @@ struct NEPRV8 {
 
 template <size_t Sigma>
 using NEPRV8_64 = NEPRV8<Sigma, 64>;
-static_assert(checkRankVector<NEPRV8_64>);
+static_assert(checkString_c<NEPRV8_64>);
 
 template <size_t Sigma>
 using NEPRV8_128 = NEPRV8<Sigma, 128>;
-static_assert(checkRankVector<NEPRV8_128>);
+static_assert(checkString_c<NEPRV8_128>);
 
 template <size_t Sigma>
 using NEPRV8_256 = NEPRV8<Sigma, 256>;
-static_assert(checkRankVector<NEPRV8_256>);
+static_assert(checkString_c<NEPRV8_256>);
 
 template <size_t Sigma>
 using NEPRV8_512 = NEPRV8<Sigma, 512>;
-static_assert(checkRankVector<NEPRV8_512>);
+static_assert(checkString_c<NEPRV8_512>);
 
 template <size_t Sigma>
 using NEPRV8_1024 = NEPRV8<Sigma, 1024>;
-static_assert(checkRankVector<NEPRV8_1024>);
+static_assert(checkString_c<NEPRV8_1024>);
 
 template <size_t Sigma>
 using NEPRV8_2048 = NEPRV8<Sigma, 2048>;
-static_assert(checkRankVector<NEPRV8_2048>);
+static_assert(checkString_c<NEPRV8_2048>);
 
 
 }

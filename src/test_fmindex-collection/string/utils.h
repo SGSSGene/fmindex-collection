@@ -73,7 +73,7 @@ auto generateText() -> std::vector<uint8_t> const& {
 
         // generates string with values between 1-4
         auto size = []() -> size_t {
-            auto ptr = std::getenv("VECTORSIZE");
+            auto ptr = std::getenv("STRINGSIZE");
             if (ptr) {
                 return std::stoull(ptr);
             }
@@ -87,4 +87,45 @@ auto generateText() -> std::vector<uint8_t> const& {
     }();
     return text;
 }
+
+template <size_t min, size_t range>
+auto generateLargeText(size_t length) -> std::vector<uint64_t> {
+    auto rng = ankerl::nanobench::Rng{};
+
+    auto text = std::vector<uint64_t>{};
+    for (size_t i{0}; i<length; ++i) {
+        text.push_back(rng.bounded(range) + min);
+    }
+    return text;
 }
+
+template <size_t min, size_t range>
+auto generateLargeText() -> std::vector<uint64_t> const& {
+    static auto text = []() -> std::vector<uint64_t> {
+        auto rng = ankerl::nanobench::Rng{};
+
+        // generates string with values between 1-4
+        auto size = []() -> size_t {
+            auto ptr = std::getenv("STRINGSIZE");
+            if (ptr) {
+                return std::stoull(ptr);
+            }
+            #ifdef NDEBUG
+                return 1'000'000;
+            #else
+                return 1'000;
+            #endif
+        }();
+        return generateLargeText<min, range>(size);
+    }();
+    return text;
+}
+
+}
+
+#ifdef FMC_USE_AWFMINDEX
+    #include "AWFMIndex.h"
+    #define STRINGSWITHRANK(Sigma) ALLSTRINGSWITHRANK(Sigma), AWFMIndex<Sigma>
+#else
+    #define STRINGSWITHRANK(Sigma) ALLSTRINGSWITHRANK(Sigma)
+#endif

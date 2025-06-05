@@ -46,6 +46,8 @@ struct Sdsl_wt_epr {
     }
 
     uint8_t symbol(uint64_t idx) const {
+        assert(idx < totalLength);
+
         assert([&]() {
             for (size_t s{0}; s < Sigma; ++s) {
                 auto diff = rank(idx+1, s) - rank(idx, s);
@@ -60,18 +62,26 @@ struct Sdsl_wt_epr {
     }
 
     uint64_t rank(uint64_t idx, uint8_t symb) const {
+        assert(idx <= totalLength);
+        assert(symb < TSigma);
+
         return index.rank(idx, symb);
     }
 
     uint64_t prefix_rank(uint64_t idx, uint8_t symb) const {
+        assert(idx <= totalLength);
+        assert(symb <= TSigma);
+
         uint64_t a{};
-        for (size_t i{0}; i <= symb; ++i) {
+        for (size_t i{0}; i < symb; ++i) {
             a += index.rank(idx, i);
         }
         return a;
     }
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, Sigma> {
+        assert(idx <= totalLength);
+
         std::array<uint64_t, Sigma> rs{0};
         for (size_t i{0}; i < Sigma; ++i) {
             rs[i] = rank(idx, i);
@@ -80,6 +90,8 @@ struct Sdsl_wt_epr {
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
+        assert(idx <= totalLength);
+
         std::array<uint64_t, Sigma> rs{0};
         std::array<uint64_t, Sigma> prs{0};
         for (size_t i{0}; i < Sigma; ++i) {
@@ -95,7 +107,7 @@ struct Sdsl_wt_epr {
     }
 };
 //(Sdsl wt epr seems broken?, since it doesn't work for Sigma <= 2 and Sigma == 256
-//static_assert(checkRankVector<Sdsl_wt_epr>);
+//static_assert(checkString_c<Sdsl_wt_epr>);
 
 }
 #endif

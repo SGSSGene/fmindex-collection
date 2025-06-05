@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../occtables/allTables.h"
+#include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
-#include <fmindex-collection/fmindex/RBiFMIndex.h>
+#include <fmindex-collection/fmindex/MirroredBiFMIndex.h>
 
-TEMPLATE_TEST_CASE("checking reversed bidirectional fm index", "[RBiFMIndex]", ALLTABLES) {
+TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index", "[MirroredBiFMIndex]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     // T = 011202110
@@ -14,12 +14,12 @@ TEMPLATE_TEST_CASE("checking reversed bidirectional fm index", "[RBiFMIndex]", A
     auto sa     = std::vector<uint64_t>{ 7, 8, 3, 6, 5, 0, 1, 2, 4};
 
     SECTION("full sa") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         for (size_t i{0}; i < sa.size(); ++i) {
-            bitStack.push(true);
+            bitStack.push_back(true);
         }
         auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::RBiFMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::MirroredBiFMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -28,18 +28,18 @@ TEMPLATE_TEST_CASE("checking reversed bidirectional fm index", "[RBiFMIndex]", A
     }
 
     SECTION("sa with only every second value given - sa sampled") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 0} || (sa[i] == 0);
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::RBiFMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::MirroredBiFMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -57,18 +57,18 @@ TEMPLATE_TEST_CASE("checking reversed bidirectional fm index", "[RBiFMIndex]", A
     }
 
     SECTION("sa with only every second value given - sa sampled - uneven") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 1};
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::RBiFMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::MirroredBiFMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -78,18 +78,18 @@ TEMPLATE_TEST_CASE("checking reversed bidirectional fm index", "[RBiFMIndex]", A
 
 
     SECTION("sa with only every second value given - text sampled") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{sa[i] % 2 == 0};
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::RBiFMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::MirroredBiFMIndex<OccTable>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {

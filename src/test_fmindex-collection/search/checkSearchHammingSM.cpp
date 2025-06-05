@@ -5,7 +5,7 @@
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/BiFMIndex.h>
 #include <fmindex-collection/locate.h>
-#include <fmindex-collection/occtable/all.h>
+#include <fmindex-collection/string/all.h>
 #include <fmindex-collection/search/SearchHammingSM.h>
 #include <fmindex-collection/search/all.h>
 #include <fmindex-collection/search_scheme/generator/all.h>
@@ -14,8 +14,7 @@
 
 
 TEST_CASE("check search with hamming and scoring matrix with errors", "[searches][!benchmark][hamming][scoring-matrix]") {
-//    using OccTable = fmindex_collection::occtable::EprV7<21>;
-    using OccTable = fmindex_collection::occtable::Interleaved_16<21>;
+    using OccTable = fmindex_collection::string::InterleavedBitvector16<21>;
     using Index = fmindex_collection::BiFMIndex<OccTable>;
 
     SECTION("hamming_sm, all search") {

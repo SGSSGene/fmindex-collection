@@ -166,6 +166,6 @@ struct CompactBitvector4Blocks {
         }
     }
 };
-static_assert(BitVector_c<CompactBitvector4Blocks>);
+static_assert(Bitvector_c<CompactBitvector4Blocks>);
 
 }

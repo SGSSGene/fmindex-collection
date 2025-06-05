@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../BitStack.h"
 #include "../bitvector/Bitvector.h"
 #include "../bitvector/CompactBitvector.h"
 #include "../DenseVector.h"
@@ -56,22 +55,22 @@ struct DenseCSA {
         }
     }
 
-    DenseCSA(DenseVector _ssaPos, DenseVector _ssaSeq, size_t _seqCount, BitStack const& bitstack)
+    template <std::ranges::sized_range range_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
+    DenseCSA(DenseVector _ssaPos, DenseVector _ssaSeq, size_t _seqCount, range_t const& bitstack)
         : ssaPos{std::move(_ssaPos)}
         , ssaSeq{std::move(_ssaSeq)}
-        , bv{bitstack.size, [&](size_t idx) {
-            return bitstack.value(idx);
-        }}
+        , bv{bitstack}
         , seqCount{_seqCount} {
         assert(ssaPos.size() == ssaSeq.size());
     }
 
-    DenseCSA(DenseVector _ssaPos, BitStack const& bitstack)
+    template <std::ranges::sized_range range_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
+    DenseCSA(DenseVector _ssaPos, range_t const& bitstack)
         : ssaPos{std::move(_ssaPos)}
         , ssaSeq(1)
-        , bv{bitstack.size, [&](size_t idx) {
-            return bitstack.value(idx);
-        }}
+        , bv{bitstack}
         , seqCount{1} {
         for(size_t i{0}; i < ssaPos.size(); ++i) {
             ssaSeq.push_back(0);
@@ -81,8 +80,8 @@ struct DenseCSA {
     }
 
     template <typename T>
-    DenseCSA(std::vector<T> const& sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false) {
-        size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()))));
+    DenseCSA(std::vector<T> const& sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false, size_t seqOffset=0) {
+        size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()+seqOffset))));
         assert(bitsForSeqId < 64);
 
         size_t largestText{};
@@ -126,7 +125,7 @@ struct DenseCSA {
                         subjPos = len;
                     }
                 }
-                return {subjId, subjPos};
+                return {subjId+seqOffset, subjPos};
             }();
 
             bool sample = (subjPos % samplingRate) == 0;
@@ -165,7 +164,7 @@ struct DenseCSA {
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(ssaPos, ssaSeq, bv);
+        ar(ssaPos, ssaSeq, bv, seqCount);
     }
 };
 static_assert(SuffixArray_c<DenseCSA>);

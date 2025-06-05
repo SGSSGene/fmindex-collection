@@ -22,12 +22,12 @@
  */
 namespace fmindex_collection::string {
 
-template <size_t TSigma, size_t encodingBlockSize, size_t DifferentBlocks = 16, template <size_t, typename...> typename RankVector = Wavelet, template <size_t, typename...> typename MixedVector = RankVector>
+template <size_t TSigma, size_t encodingBlockSize, size_t DifferentBlocks = 16, template <size_t, typename...> typename String = Wavelet, template <size_t, typename...> typename MixedString = String>
 struct RBBwtV2 {
     static constexpr size_t Sigma = TSigma;
 
-    RankVector<DifferentBlocks> topLevelVector{};
-    MixedVector<TSigma>         mixedLevelVector{};
+    String<DifferentBlocks> topLevelVector{};
+    MixedString<TSigma>     mixedLevelVector{};
 
     std::array<std::array<size_t, DifferentBlocks>, TSigma> factors{};
     std::array<std::array<uint8_t, encodingBlockSize>, DifferentBlocks> prefix{};
@@ -99,8 +99,8 @@ struct RBBwtV2 {
                 }
             }
 
-            topLevelVector   = RankVector<DifferentBlocks>{topLevelNames};
-            mixedLevelVector = MixedVector<TSigma>{mixedLevel};
+            topLevelVector   = String<DifferentBlocks>{topLevelNames};
+            mixedLevelVector = MixedString<TSigma>{mixedLevel};
 
 /*            for (size_t i{0}; i < topLevelNames.size(); ++i) {
                 assert(topLevelVector.symbol(i) == topLevelNames[i]);
@@ -127,6 +127,8 @@ struct RBBwtV2 {
     }
 
     uint8_t symbol(uint64_t idx) const {
+        assert(idx < totalSize);
+
         auto indicator = topLevelVector.symbol(idx/encodingBlockSize);
         if (indicator == DifferentBlocks-1) { // mixed Level
             auto nbr = topLevelVector.rank(idx/encodingBlockSize, DifferentBlocks-1);
@@ -137,6 +139,9 @@ struct RBBwtV2 {
     }
 
     uint64_t rank(uint64_t idx, uint64_t symb) const {
+        assert(idx <= totalSize);
+        assert(symb < Sigma);
+
         if (idx == 0) return 0;
 //        for (size_t i{0}; i  < totalSize / encodingBlockSize; ++i) {
 //            std::cout << i << " ";
@@ -167,6 +172,9 @@ struct RBBwtV2 {
     }
 
     uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
+        assert(idx <= totalSize);
+        assert(symb <= Sigma);
+
         if (idx == 0) return 0;
         size_t r{};
         auto indicators = topLevelVector.all_ranks(idx/encodingBlockSize);
@@ -191,6 +199,8 @@ struct RBBwtV2 {
     }
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
+        assert(idx <= totalSize);
+
         auto res = std::array<uint64_t, TSigma>{};
         if (idx == 0) return res;
         for (size_t s{0}; s < TSigma; ++s) {
@@ -218,10 +228,12 @@ struct RBBwtV2 {
     }
 
     auto all_ranks_and_prefix_ranks(uint64_t idx) const -> std::tuple<std::array<uint64_t, TSigma>, std::array<uint64_t, TSigma>> {
+        assert(idx <= totalSize);
+
         auto rs = all_ranks(idx);
-        auto prs = rs;
+        auto prs = std::array<uint64_t, TSigma>{};
         for (size_t i{1}; i < TSigma; ++i) {
-            prs[i] = prs[i-1] + prs[i];
+            prs[i] = prs[i-1] + rs[i-1];
         }
         return {rs, prs};
     }
@@ -236,6 +248,6 @@ struct RBBwtV2 {
 };
 
 template <size_t TSigma> using RBBwtV2Instance = RBBwtV2<TSigma, 4>;
-static_assert(checkRankVector<RBBwtV2Instance>);
+static_assert(checkString_c<RBBwtV2Instance>);
 
 }

@@ -29,7 +29,7 @@
       "download_only": true,
       "cmake_commands": [
         "add_library(sdsl-lite INTERFACE)",
-        "target_include_directories(sdsl-lite INTERFACE SYSTEM ${CPM_CURRENT_SOURCE_DIR}/include)",
+        "target_include_directories(sdsl-lite SYSTEM INTERFACE ${CPM_CURRENT_SOURCE_DIR}/include)",
         "add_library(sdsl-lite::sdsl-lite ALIAS sdsl-lite)"
       ],
       "git_tag_ignore": [
@@ -52,8 +52,9 @@
     {
       "if": "PROJECT_IS_TOP_LEVEL",
       "name": "nanobench",
-      "version": "4.3.11-2",
-      "github_repository": "SGSSGene/nanobench"
+      "version": "4.3.11-3",
+      "github_repository": "SGSSGene/nanobench",
+      "git_tag": "f42e28086e335e168512621529afc3800a733880"
     },
     {
       "if": "PROJECT_IS_TOP_LEVEL",

@@ -28,7 +28,7 @@ struct InterleavedBitvector {
         uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
             uint64_t b = {};
             uint64_t block = 0;
-            for (uint64_t i{0}; i <= symb; ++i) {
+            for (uint64_t i{0}; i < symb; ++i) {
                 b = b | bits[i];
                 block += blocks[i];
             }
@@ -121,7 +121,7 @@ struct InterleavedBitvector {
         auto superBlockId = idx >> block_size;
         auto bitId        = idx &  63;
         uint64_t a={};
-        for (uint64_t i{0}; i<= symb; ++i) {
+        for (uint64_t i{0}; i < symb; ++i) {
             a += superBlocks[superBlockId][i];
         }
         return blocks[blockId].prefix_rank(bitId, symb) + a;
@@ -153,9 +153,8 @@ struct InterleavedBitvector {
         for (uint64_t symb{1}; symb < TSigma; ++symb) {
             rs[symb] += superBlocks[superBlockId][symb];
         }
-        prs[0] = rs[0];
         for (uint64_t symb{1}; symb < TSigma; ++symb) {
-            prs[symb]= prs[symb-1] + rs[symb];
+            prs[symb]= prs[symb-1] + rs[symb-1];
         }
         return {rs, prs};
     }
@@ -174,11 +173,11 @@ template <size_t TSigma> using InterleavedBitvector16Aligned = InterleavedBitvec
 template <size_t TSigma> using InterleavedBitvector32Aligned = InterleavedBitvector<TSigma, 64, uint32_t>;
 
 
-static_assert(checkRankVector<InterleavedBitvector8>);
-static_assert(checkRankVector<InterleavedBitvector16>);
-static_assert(checkRankVector<InterleavedBitvector32>);
-static_assert(checkRankVector<InterleavedBitvector8Aligned>);
-static_assert(checkRankVector<InterleavedBitvector16Aligned>);
-static_assert(checkRankVector<InterleavedBitvector32Aligned>);
+static_assert(checkString_c<InterleavedBitvector8>);
+static_assert(checkString_c<InterleavedBitvector16>);
+static_assert(checkString_c<InterleavedBitvector32>);
+static_assert(checkString_c<InterleavedBitvector8Aligned>);
+static_assert(checkString_c<InterleavedBitvector16Aligned>);
+static_assert(checkString_c<InterleavedBitvector32Aligned>);
 
 }

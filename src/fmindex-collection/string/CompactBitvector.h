@@ -52,8 +52,9 @@ struct CompactBitvector {
     }
 
     uint64_t prefix_rank(size_t idx, uint8_t symb) const noexcept {
-        if (symb == 1) return idx;
-        return rank(idx, 0);
+        if (symb == 0) return 0;
+        if (symb == 1) return rank(idx, 0);
+        return idx;
     }
 
     auto all_ranks(size_t idx) const -> std::array<uint64_t, Sigma> {
@@ -62,9 +63,13 @@ struct CompactBitvector {
     }
 
     auto all_ranks_and_prefix_ranks(size_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> {
+        assert(idx <= size());
+
         auto rs  = all_ranks(idx);
-        auto prs = rs;
-        prs[1] = idx;
+        auto prs = std::array<uint64_t, Sigma>{};
+        for (size_t i{1}; i < prs.size(); ++i) {
+            prs[i] = prs[i-1] + rs[i-1];
+        }
         return {rs, prs};
     }
 
@@ -75,6 +80,6 @@ struct CompactBitvector {
     }
 };
 
-static_assert(RankVector<CompactBitvector>);
+static_assert(String_c<CompactBitvector>);
 
 }

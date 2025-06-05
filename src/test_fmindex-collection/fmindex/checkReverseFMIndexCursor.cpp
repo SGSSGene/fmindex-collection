@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../occtables/allTables.h"
+#include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/ReverseFMIndex.h>
@@ -10,7 +10,7 @@
 TEST_CASE("checking unidirectional reversed fm index cursor", "[ReverseFMIndexCursor]") {
 
     auto data = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 1, 2, 2, 2}};
-    using OccTable = fmindex_collection::occtable::Bitvector<256>;
+    using OccTable = fmindex_collection::string::InterleavedBitvector16<256>;
     using Index = fmindex_collection::ReverseFMIndex<OccTable>;
     auto index = Index{data, 1, 1};
 

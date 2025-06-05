@@ -137,6 +137,22 @@ struct L0L1_NBitvector {
         return r;
     }
 
+    uint64_t gotoMarkingFwd(size_t idx) const {
+        assert(idx < totalLength);
+        while (!symbol(idx)) {
+            idx += 1;
+        }
+        return idx;
+    }
+
+    uint64_t gotoMarkingBwd(size_t idx) const {
+        assert(idx < totalLength);
+        while (!symbol(idx)) {
+            idx -= 1;
+        }
+        return idx;
+    }
+
     template <typename Archive>
     void serialize(Archive& ar) {
         ar(l0, l1, totalLength, bits);
@@ -149,12 +165,12 @@ using L0L1_512_4kBitvector  = L0L1_NBitvector<512, 4096>;
 using L0L1_1024_4kBitvector = L0L1_NBitvector<1024, 4096>;
 using L0L1_2048_4kBitvector = L0L1_NBitvector<2048, 4096>;
 
-static_assert(BitVector_c<L0L1_64_4kBitvector>);
-static_assert(BitVector_c<L0L1_128_4kBitvector>);
-static_assert(BitVector_c<L0L1_256_4kBitvector>);
-static_assert(BitVector_c<L0L1_512_4kBitvector>);
-static_assert(BitVector_c<L0L1_1024_4kBitvector>);
-static_assert(BitVector_c<L0L1_2048_4kBitvector>);
+static_assert(Bitvector_c<L0L1_64_4kBitvector>);
+static_assert(Bitvector_c<L0L1_128_4kBitvector>);
+static_assert(Bitvector_c<L0L1_256_4kBitvector>);
+static_assert(Bitvector_c<L0L1_512_4kBitvector>);
+static_assert(Bitvector_c<L0L1_1024_4kBitvector>);
+static_assert(Bitvector_c<L0L1_2048_4kBitvector>);
 
 using L0L1_64_64kBitvector   = L0L1_NBitvector<64, 65536>;
 using L0L1_128_64kBitvector  = L0L1_NBitvector<128, 65536>;
@@ -163,17 +179,17 @@ using L0L1_512_64kBitvector  = L0L1_NBitvector<512, 65536>;
 using L0L1_1024_64kBitvector = L0L1_NBitvector<1024, 65536>;
 using L0L1_2048_64kBitvector = L0L1_NBitvector<2048, 65536>;
 
-static_assert(BitVector_c<L0L1_64_64kBitvector>);
-static_assert(BitVector_c<L0L1_128_64kBitvector>);
-static_assert(BitVector_c<L0L1_256_64kBitvector>);
-static_assert(BitVector_c<L0L1_512_64kBitvector>);
-static_assert(BitVector_c<L0L1_1024_64kBitvector>);
-static_assert(BitVector_c<L0L1_2048_64kBitvector>);
+static_assert(Bitvector_c<L0L1_64_64kBitvector>);
+static_assert(Bitvector_c<L0L1_128_64kBitvector>);
+static_assert(Bitvector_c<L0L1_256_64kBitvector>);
+static_assert(Bitvector_c<L0L1_512_64kBitvector>);
+static_assert(Bitvector_c<L0L1_1024_64kBitvector>);
+static_assert(Bitvector_c<L0L1_2048_64kBitvector>);
 
 using L0L1_64_64kBitvector_ShiftAndCount   = L0L1_NBitvector<64, 65536, true>;
 using L0L1_512_64kBitvector_ShiftAndCount  = L0L1_NBitvector<512, 65536, true>;
-static_assert(BitVector_c<L0L1_64_64kBitvector_ShiftAndCount>);
-static_assert(BitVector_c<L0L1_512_64kBitvector_ShiftAndCount>);
+static_assert(Bitvector_c<L0L1_64_64kBitvector_ShiftAndCount>);
+static_assert(Bitvector_c<L0L1_512_64kBitvector_ShiftAndCount>);
 
 using L0L1_64_64kBitvectorUA   = L0L1_NBitvector<64, 65536, false, false>;
 using L0L1_128_64kBitvectorUA  = L0L1_NBitvector<128, 65536, false, false>;
@@ -182,11 +198,11 @@ using L0L1_512_64kBitvectorUA  = L0L1_NBitvector<512, 65536, false, false>;
 using L0L1_1024_64kBitvectorUA = L0L1_NBitvector<1024, 65536, false, false>;
 using L0L1_2048_64kBitvectorUA = L0L1_NBitvector<2048, 65536, false, false>;
 
-static_assert(BitVector_c<L0L1_64_64kBitvectorUA>);
-static_assert(BitVector_c<L0L1_128_64kBitvectorUA>);
-static_assert(BitVector_c<L0L1_256_64kBitvectorUA>);
-static_assert(BitVector_c<L0L1_512_64kBitvectorUA>);
-static_assert(BitVector_c<L0L1_1024_64kBitvectorUA>);
-static_assert(BitVector_c<L0L1_2048_64kBitvectorUA>);
+static_assert(Bitvector_c<L0L1_64_64kBitvectorUA>);
+static_assert(Bitvector_c<L0L1_128_64kBitvectorUA>);
+static_assert(Bitvector_c<L0L1_256_64kBitvectorUA>);
+static_assert(Bitvector_c<L0L1_512_64kBitvectorUA>);
+static_assert(Bitvector_c<L0L1_1024_64kBitvectorUA>);
+static_assert(Bitvector_c<L0L1_2048_64kBitvectorUA>);
 
 }

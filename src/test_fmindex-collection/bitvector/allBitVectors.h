@@ -30,3 +30,11 @@
     fmindex_collection::bitvector::PairedL0L1_512_64kBitvector, \
     fmindex_collection::bitvector::PairedL0L1_1024_64kBitvector, \
     fmindex_collection::bitvector::PairedL0L1_2048_64kBitvector
+
+#define ALLSPARSEBITVECTORS \
+    fmindex_collection::bitvector::PairedL0L1_512_64kBitvector, \
+    fmindex_collection::bitvector::SparseBLEBitvector<1, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector>, \
+    fmindex_collection::bitvector::SparseBLEBitvector<2, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector>, \
+    fmindex_collection::bitvector::SparseBLEBitvector<3, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector>, \
+    fmindex_collection::bitvector::SparseBLEBitvector<4, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector>, \
+    fmindex_collection::bitvector::SparseBLEBitvector<5, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector>

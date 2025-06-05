@@ -1,22 +1,22 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../occtables/allTables.h"
+#include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/ReverseFMIndex.h>
 #include <fstream>
 
-TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]", ALLTABLES) {
+TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
     auto bwt = std::vector<uint8_t>{'H', '\0', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
     auto sa  = std::vector<uint64_t>{0, 11, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
 
     SECTION("full sa") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         for (size_t i{0}; i < sa.size(); ++i) {
-            bitStack.push(true);
+            bitStack.push_back(true);
         }
         auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
         auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
@@ -28,11 +28,11 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
     }
 
     SECTION("sa with only every second value given - sa sampled") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 0} || (sa[i] == sa.size()-1);
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }
@@ -59,11 +59,11 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
     }
 
     SECTION("sa with only every second value given - sa sampled - uneven") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 1} || (sa[i] == sa.size()-1);
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }
@@ -83,11 +83,11 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
 
 
     SECTION("sa with only every second value given - text sampled") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = std::vector<uint64_t>{};
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{sa[i] % 2 == 0} || (sa[i] == 11);
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }
@@ -108,7 +108,7 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
 
     SECTION("compare to a directly created index") {
         auto bwt = std::vector<uint8_t>{'H', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
-        auto sa  = std::vector<uint64_t>{11, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
+        auto sa  = std::vector<uint64_t>{0, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
 
         auto text  = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
         auto index = fmindex_collection::ReverseFMIndex<OccTable>{std::vector<std::vector<uint8_t>>{text}, /*samplingRate*/1, /*threadNbr*/1};
@@ -133,11 +133,10 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
 
         REQUIRE(bwt.size() == index.size());
         REQUIRE(sa.size() == index.size());
-        //!TODO why can't position 0 be located?
-        for (size_t i{1}; i < sa.size(); ++i) {
+        for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
             INFO(sa[i]);
-            CHECK(bwt[i] == index.occ.symbol(i));
+            CHECK(bwt[i] == index.bwt.symbol(i));
             INFO(std::get<1>(index.locate(i)));
             CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
         }
@@ -146,9 +145,9 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
     SECTION("serialization/deserialization") {
         SECTION("serialize") {
             auto ofs = std::ofstream{"temp_test_serialization", std::ios::binary};
-            auto bitStack = fmindex_collection::BitStack{};
+            auto bitStack = std::vector<bool>{};
             for (size_t i{0}; i < sa.size(); ++i) {
-                bitStack.push(true);
+                bitStack.push_back(true);
             }
             auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
             auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};

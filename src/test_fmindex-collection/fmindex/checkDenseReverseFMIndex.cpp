@@ -1,13 +1,13 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../occtables/allTables.h"
+#include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/ReverseFMIndex.h>
 #include <fmindex-collection/suffixarray/DenseCSA.h>
 
-TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", ALLTABLES) {
+TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
     using DenseVector = fmindex_collection::DenseVector;
 
@@ -18,9 +18,9 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
     auto sa  = DenseVector{0, 11, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
 
     SECTION("full sa") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         for (size_t i{0}; i < sa.size(); ++i) {
-            bitStack.push(true);
+            bitStack.push_back(true);
         }
         auto csa = fmindex_collection::DenseCSA{sa, bitStack};
         auto index = fmindex_collection::ReverseFMIndex<OccTable, fmindex_collection::DenseCSA>{bwt, std::move(csa)};
@@ -32,11 +32,11 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
     }
 
     SECTION("sa with only every second value given - sa sampled") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = DenseVector(sa.entry_size());
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 0} || (sa[i] == sa.size()-1);
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }
@@ -64,11 +64,11 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
     }
 
     SECTION("sa with only every second value given - sa sampled - uneven") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = DenseVector(sa.entry_size());
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 1} || (sa[i] == sa.size()-1);
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }
@@ -88,11 +88,11 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
 
 
     SECTION("sa with only every second value given - text sampled") {
-        auto bitStack = fmindex_collection::BitStack{};
+        auto bitStack = std::vector<bool>{};
         auto sa2 = DenseVector(sa.entry_size());
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{sa[i] % 2 == 0} || (sa[i] == 11);
-            bitStack.push(add);
+            bitStack.push_back(add);
             if (add) {
                 sa2.push_back(sa[i]);
             }

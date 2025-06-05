@@ -183,13 +183,7 @@ auto createSequences(Sequences auto const& _input, bool reverse=false) -> std::t
         if (not reverse) {
             inputText.insert(inputText.end(), begin(l), end(l));
         } else {
-//!TODO hack for clang, broken in clang 15
-#if __clang__
-            auto l2 = std::vector<uint8_t>(l);
-            std::ranges::reverse(l2);
-#else
             auto l2 = std::views::reverse(l);
-#endif
             inputText.insert(inputText.end(), begin(l2), end(l2));
         }
 
@@ -237,6 +231,123 @@ auto createSequencesAndReverse(Sequences auto const& _input) -> std::tuple<size_
 
         inputSizes.emplace_back(l.size()+1);
     }
+
+    return {totalSize, inputText, inputSizes};
+}
+
+auto computeDelimiterLength(Sequences auto const& _input) -> size_t {
+    // compute longest smallest word
+    size_t delimiterLength{};
+    {
+        size_t l{};
+        for (auto const& record : _input) {
+            for (auto c : record) {
+                if (c == 0) {
+                    l += 1;
+                } else {
+                    if (l > delimiterLength) {
+                        delimiterLength = l;
+                    }
+                    l = 0;
+                }
+            }
+        }
+        // last input has '0', maybe it continues in the front
+        if (l > 0) {
+            for (auto const& c : _input[0]) {
+                if (c == 0) {
+                    l += 1;
+                } else {
+                    if (l > delimiterLength) {
+                        delimiterLength = l;
+                    }
+                    l = 0;
+                    break;
+                }
+            }
+        }
+    }
+    return delimiterLength+1;
+}
+
+auto createSequencesWithoutDelimiter(Sequences auto const& _input, bool reverse=false) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<size_t>> {
+//    auto delimiterLength = computeDelimiterLength(_input);
+
+    // compute total numbers of bytes + artificial delimeterLength
+    size_t totalSize = 0;
+    for (auto const& l : _input) {
+        totalSize += l.size() ;
+    }
+
+    // our concatenated sequences
+    auto inputText = std::vector<uint8_t>{};
+    inputText.reserve(totalSize);
+//    inputText.resize(delimiterLength, 0);
+
+    // list of sizes of the individual sequences (zeroth entry is delimiter length)
+    auto inputSizes = std::vector<size_t>{};
+    inputSizes.reserve(_input.size());
+//    inputSizes.push_back(delimiterLength);
+
+    for (auto const& l : _input) {
+        if (not reverse) {
+            inputText.insert(inputText.end(), begin(l), end(l));
+        } else {
+            auto l2 = std::views::reverse(l);
+            inputText.insert(inputText.end(), begin(l2), end(l2));
+        }
+
+        // fill with delimiters/zeros
+        inputText.resize(inputText.size());
+
+        inputSizes.emplace_back(l.size());
+    }
+    return {totalSize, inputText, inputSizes};
+}
+
+auto createSequencesAndReverseWithoutDelimiter(Sequences auto const& _input) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<size_t>> {
+//    auto delimiterLength = computeDelimiterLength(_input);
+
+    // compute total numbers of bytes of the text including delimiters "$"
+    size_t totalSize = 0;
+    for (auto const& l : _input) {
+        totalSize += l.size();
+    }
+    totalSize = totalSize*2; // including reverse text
+
+    // our concatenated sequences with delimiters
+    auto inputText = std::vector<uint8_t>{};
+    inputText.reserve(totalSize);
+//    inputText.resize(delimiterLength, 0);
+
+    // list of sizes of the individual sequences
+    auto inputSizes = std::vector<size_t>{};
+    inputSizes.reserve(_input.size());
+//    inputSizes.push_back(delimiterLength);
+
+    // add text
+    for (auto const& l : _input) {
+        inputText.insert(inputText.end(), begin(l), end(l));
+
+        // fill with delimiters/zeros
+        inputText.resize(inputText.size());
+
+        inputSizes.emplace_back(l.size());
+    }
+
+    // add reversed text
+    for (auto const& l : std::views::reverse(_input)) {
+        auto l2 = std::views::reverse(l);
+        inputText.insert(inputText.end(), begin(l2), end(l2));
+
+        // fill with delimiters/zeros
+        inputText.resize(inputText.size());
+
+        inputSizes.emplace_back(l.size());
+    }
+
+//    inputText.resize(inputText.size() + delimiterLength, 0);
+//    inputSizes.push_back(delimiterLength);
 
     return {totalSize, inputText, inputSizes};
 }
@@ -336,8 +447,8 @@ auto reconstructText(Index const& index, size_t seqNbr) -> std::vector<uint8_t> 
     uint8_t c{};
     size_t idx = seqNbr;
     do {
-        c = index.occ.symbol(idx);
-        idx = index.occ.rank(idx, c);
+        c = index.bwt.symbol(idx);
+        idx = index.bwt.rank(idx, c) + index.C[c];
         r.push_back(c);
     } while (c != 0);
     r.pop_back(); // remove last zero
@@ -347,7 +458,7 @@ auto reconstructText(Index const& index, size_t seqNbr) -> std::vector<uint8_t> 
 
 template <typename Index>
 auto reconstructText(Index const& index) -> std::vector<std::vector<uint8_t>> {
-    auto nbrOfSeq = index.occ.rank(index.size(), 0);
+    auto nbrOfSeq = index.bwt.rank(index.size(), 0) + index.C[0];
     auto texts = std::vector<std::vector<uint8_t>>{};
     auto seqIds = std::vector<std::tuple<size_t, size_t>>{};
     for (size_t i{}; i < nbrOfSeq; ++i) {

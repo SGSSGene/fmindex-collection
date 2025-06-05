@@ -14,7 +14,7 @@ TEST_CASE("benchmark strings c'tor operation - 6 alphabet", "[string][!benchmark
              .batch(text.size());
 
         call_with_templates<
-            ALLRANKVECTORS(6)>([&]<typename Vector>() {
+            STRINGSWITHRANK(6)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<6>>) {
                 return;
             }
@@ -40,7 +40,7 @@ TEST_CASE("benchmark vectors symbol() operations - 6 alphabet", "[string][!bench
              .batch(text.size());
 
         call_with_templates<
-            ALLRANKVECTORS(6)>([&]<typename Vector>() {
+            STRINGSWITHRANK(6)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<6>>) {
                 return;
             }
@@ -69,7 +69,7 @@ TEST_CASE("benchmark vectors rank() operations - 6 alphabet", "[string][!benchma
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(6)>([&]<typename Vector>() {
+            STRINGSWITHRANK(6)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<6>>) {
                 return;
             }
@@ -98,7 +98,7 @@ TEST_CASE("benchmark vectors prefix_rank() operations - 6 alphabet", "[string][!
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(6)>([&]<typename Vector>() {
+            STRINGSWITHRANK(6)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<6>>) {
                 return;
             }
@@ -127,7 +127,7 @@ TEST_CASE("benchmark vectors all_ranks() operations - 6 alphabet", "[string][!be
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(6)>([&]<typename Vector>() {
+            STRINGSWITHRANK(6)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<6>>) {
                 return;
             }
@@ -156,7 +156,7 @@ TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - 6 alphabe
              .relative(true);
 
         call_with_templates<
-            ALLRANKVECTORS(6)>([&]<typename Vector>() {
+            STRINGSWITHRANK(6)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<6>>) {
                 return;
             }
@@ -186,7 +186,7 @@ TEST_CASE("benchmark vectors in size - alphabet 6", "[string][!benchmark][6][siz
         benchSize.entries[0][4] = "alphabet 6";
 
         call_with_templates<
-            ALLRANKVECTORS(6)>([&]<typename Vector>() {
+            STRINGSWITHRANK(6)>([&]<typename Vector>() {
             if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<6>>) {
                 return;
             }
@@ -197,20 +197,22 @@ TEST_CASE("benchmark vectors in size - alphabet 6", "[string][!benchmark][6][siz
             auto rng = ankerl::nanobench::Rng{};
 
             auto vec = Vector{text};
-
-            {
-                auto ofs     = std::stringstream{};
-                auto archive = cereal::BinaryOutputArchive{ofs};
-                archive(vec);
-                auto s = ofs.str().size();
-                benchSize.addEntry({
-                    .name = vector_name,
-                    .size = s,
-                    .text_size = text.size(),
-                    .bits_per_char = (s*8)/double(text.size())
-                });
-            }
-
+            auto size = [&]() {
+                if constexpr (requires() { vec.space_usage(); }) {
+                    return vec.space_usage();
+                } else {
+                    auto ofs     = std::stringstream{};
+                    auto archive = cereal::BinaryOutputArchive{ofs};
+                    archive(vec);
+                    return ofs.str().size();
+                }
+            }();
+            benchSize.addEntry({
+                .name = vector_name,
+                .size = size,
+                .text_size = text.size(),
+                .bits_per_char = (size*8)/double(text.size())
+            });
         });
     }
 }
