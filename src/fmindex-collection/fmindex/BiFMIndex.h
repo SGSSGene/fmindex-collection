@@ -11,21 +11,6 @@
 #include <algorithm>
 #include <cassert>
 
-#define GCC_COMPILER (defined(__GNUC__) && !defined(__clang__))
-
-#if defined(__GNUC__) && !defined(__clang__)
-    #define WORKAROUND_GCC
-#else
-#endif
-
-//!WORKAROUND: triggers on gcc
-#ifdef WORKAROUND_GCC
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wstringop-overflow"
-#endif
-
-
-
 namespace fmindex_collection {
 
 template <String_c String, SuffixArray_c TCSA = CSA, typename T = std::tuple<size_t, size_t>>
@@ -184,6 +169,3 @@ struct BiFMIndex {
 };
 
 }
-#ifdef WORKAROUND_GCC
-    #pragma GCC diagnostic pop
-#endif
