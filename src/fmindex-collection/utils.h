@@ -216,11 +216,10 @@ auto createBWTAndAnnotatedArray(std::span<uint8_t const> inputText, SparseArray 
         }
 
         auto bwt = createBWT<word_t>(inputText, sa);
-        auto annotatedArray = SparseArray {
-            sa | std::views::transform([&](size_t i) -> std::optional<typename SparseArray::value_t> {
-                return _annotatedSequence.value(i);
-            })
+        auto cb = [&](size_t i) -> std::optional<typename SparseArray::value_t> {
+            return _annotatedSequence.value(i);
         };
+        auto annotatedArray = SparseArray {sa | std::views::transform(cb)};
         return std::make_tuple(std::move(bwt), std::move(annotatedArray));
     };
 
