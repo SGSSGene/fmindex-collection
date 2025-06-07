@@ -58,7 +58,7 @@ struct InterleavedBitvector {
 
     std::vector<Block> blocks;
     std::vector<std::array<uint64_t, TSigma>> superBlocks;
-    size_t totalLength;
+    size_t totalLength{};
 
     InterleavedBitvector() = default;
     InterleavedBitvector(std::span<uint8_t const> _symbols) {

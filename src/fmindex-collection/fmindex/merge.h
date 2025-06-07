@@ -100,6 +100,22 @@ auto mergeCsa(std::vector<bool> const& R, TCSA const& lhsCsa, TCSA const& rhsCsa
     }
     return csa;
 }
+
+template <typename T>
+auto mergeSparseArrays(std::vector<bool> const& R, suffixarray::SparseArray<T> const& lhs, suffixarray::SparseArray<T> const& rhs) {
+    auto counter = std::array<size_t, 2>{0, 0};
+
+    return suffixarray::SparseArray<T>{
+        R | std::views::transform([&](size_t b) {
+            if (!b) {
+                return lhs.value(counter[0]);
+            } else {
+                return rhs.value(counter[1]);
+            }
+            counter[b] += 1;
+        })
+    };
+}
 }
 
 /**
@@ -107,11 +123,17 @@ auto mergeCsa(std::vector<bool> const& R, TCSA const& lhsCsa, TCSA const& rhsCsa
  */
 template <typename Res = void, String_c StringLhs, String_c StringRhs, typename TCSA>
 auto merge(FMIndex<StringLhs, TCSA> const& index1, FMIndex<StringRhs, TCSA> const& index2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, StringLhs, Res>, TCSA> {
+//    auto R              = detail::computeInterleavingR(index1.bwt, index2.bwt);
+//    auto mergedBwt      = detail::mergeBwt(R, index1.bwt, index2.bwt);
+//    auto annotatedArray = detail::mergeSparseArrays(R, index1.annotatedArray, index2.annotatedArray);
+//
+//    return {mergedBwt, std::move(annotatedArray)};
     auto R         = detail::computeInterleavingR(index1.bwt, index2.bwt);
     auto mergedBwt = detail::mergeBwt(R, index1.bwt, index2.bwt);
     auto csa       = detail::mergeCsa(R, index1.csa, index2.csa);
 
     return {mergedBwt, std::move(csa)};
+
 }
 
 /**
@@ -120,14 +142,14 @@ auto merge(FMIndex<StringLhs, TCSA> const& index1, FMIndex<StringRhs, TCSA> cons
 template <typename Res = void, String_c StrLhs, String_c StrRhs, typename TCSA>
 auto merge(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, StrLhs, Res>, TCSA> {
     // compute R of fwd BWT and merge bwt and csa
-    auto R            = detail::computeInterleavingR(index1.bwt, index2.bwt);
-    auto mergedBwt    = detail::mergeBwt(R, index1.bwt, index2.bwt);
-    auto csa          = detail::mergeCsa(R, index1.csa, index2.csa);
+    auto R                 = detail::computeInterleavingR(index1.bwt, index2.bwt);
+    auto mergedBwt         = detail::mergeBwt(R, index1.bwt, index2.bwt);
+    auto annotatedArray = detail::mergeSparseArrays(R, index1.annotatedArray, index2.annotatedArray);
 
     // compute R of rev BWT and merge BwtRev (reusing R to save on space)
     R                 = detail::computeInterleavingR(index1.bwtRev, index2.bwtRev);
     auto mergedBwtRev = detail::mergeBwt(R, index1.bwtRev, index2.bwtRev);
 
-    return {mergedBwt, mergedBwtRev, std::move(csa)};
+    return {mergedBwt, mergedBwtRev, std::move(annotatedArray)};
 }
 }
