@@ -63,7 +63,16 @@ struct BiFMIndex {
 
         // create bwt, bwtRev and annotatedArray
         auto [_bwt, _annotatedArray] = createBWTAndAnnotatedArray(inputText, _annotatedSequence, _threadNbr, omegaSorting);
+        #if defined(__GNUC__) && !defined(__clang__)
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wstringop-overflow"
         std::ranges::reverse(inputText);
+        #pragma GCC diagnostic pop
+
+        #else
+        std::ranges::reverse(inputText);
+
+        #endif
         auto _bwtRev = createBWT(inputText, _threadNbr, omegaSorting);
         decltype(inputText){}.swap(inputText); // inputText memory can be deleted
 
