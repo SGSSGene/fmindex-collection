@@ -14,6 +14,7 @@
 #include <libsais.h>
 #include <libsais64.h>
 #include <numeric>
+#include <optional>
 #include <span>
 #include <stdexcept>
 #include <tuple>
@@ -216,11 +217,11 @@ auto createBWTAndAnnotatedArray(std::span<uint8_t const> inputText, SparseArray 
         }
 
         auto bwt = createBWT<word_t>(inputText, sa);
-        auto annotatedArray = SparseArray {
-            sa | std::views::transform([&](size_t i) -> std::optional<typename SparseArray::value_t> {
-                return _annotatedSequence.value(i);
-            })
+        using Entry = SparseArray::value_t;
+        auto cb = [&](size_t i) -> std::optional<Entry> {
+            return _annotatedSequence.value(i);
         };
+        auto annotatedArray = SparseArray {sa | std::views::transform(cb)};
         return std::make_tuple(std::move(bwt), std::move(annotatedArray));
     };
 
