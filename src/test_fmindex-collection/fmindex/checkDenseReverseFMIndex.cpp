@@ -27,7 +27,8 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]+offset));
         }
     }
 
@@ -48,9 +49,10 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
-            INFO(std::get<1>(index.locate(i)));
+            INFO(std::get<1>(std::get<0>(index.locate(i))));
             INFO(sa[i]);
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]+offset));
             auto res = index.single_locate_step(i);
             INFO(i);
             INFO(sa[i]);
@@ -80,9 +82,10 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
-            INFO(std::get<1>(index.locate(i)));
+            INFO(std::get<1>(std::get<0>(index.locate(i))));
             INFO(sa[i]);
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]+offset));
         }
     }
 
@@ -104,11 +107,11 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
-            INFO(std::get<1>(index.locate(i)));
+            INFO(std::get<1>(std::get<0>(index.locate(i))));
             INFO(sa[i]);
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]+offset));
         }
-
     }
 
     SECTION("compare to a directly created index") {
@@ -123,9 +126,10 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
         for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
             INFO(sa[i]);
-            INFO(std::get<1>(index.locate(i)));
+            INFO(std::get<1>(std::get<0>(index.locate(i))));
 
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]+offset));
         }
     }
 
@@ -142,8 +146,9 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
         for (size_t i{1}; i < sa.size(); ++i) {
             INFO(i);
             INFO(sa[i]);
-            INFO(std::get<1>(index.locate(i)));
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            INFO(std::get<1>(std::get<0>(index.locate(i))));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]+offset));
         }
     }
 

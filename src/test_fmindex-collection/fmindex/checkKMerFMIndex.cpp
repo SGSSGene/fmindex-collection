@@ -23,10 +23,11 @@ TEMPLATE_TEST_CASE("checking unidirectional kmer fm index", "[kmerfmindex]", ALL
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto [seqId, seqPos] = index.locate(i);
+            auto [entry, offset] = index.locate(i);
+            auto [seqId, seqPos] = entry;
             INFO(i);
             CHECK(seqId == 0);
-            CHECK(seqPos == sa[i]);
+            CHECK(seqPos == sa[i]-offset);
         }
     }
 
@@ -46,7 +47,8 @@ TEMPLATE_TEST_CASE("checking unidirectional kmer fm index", "[kmerfmindex]", ALL
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
             auto res = index.single_locate_step(i);
             INFO(i);
             INFO(sa[i]);
@@ -75,7 +77,8 @@ TEMPLATE_TEST_CASE("checking unidirectional kmer fm index", "[kmerfmindex]", ALL
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
         }
     }
 
@@ -96,7 +99,8 @@ TEMPLATE_TEST_CASE("checking unidirectional kmer fm index", "[kmerfmindex]", ALL
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
         }
     }
 
@@ -121,7 +125,8 @@ TEMPLATE_TEST_CASE("checking unidirectional kmer fm index", "[kmerfmindex]", ALL
 
             REQUIRE(index.size() == bwt.size());
             for (size_t i{0}; i < sa.size(); ++i) {
-                CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+                auto [entry, offset] = index.locate(i);
+                CHECK(entry == std::make_tuple(0, sa[i]-offset));
             }
         }
     }
