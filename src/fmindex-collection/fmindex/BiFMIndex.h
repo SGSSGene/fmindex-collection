@@ -13,13 +13,13 @@
 
 #define GCC_COMPILER (defined(__GNUC__) && !defined(__clang__))
 
-#if defined(__GNUC__) && !defined(__clang__) && defined(__MACH__)
-    #define WORKAROUND_GCC_MACOS14
+#if defined(__GNUC__) && !defined(__clang__)
+    #define WORKAROUND_GCC
 #else
 #endif
 
-//!WORKAROUND: only triggers on macos-14 with gcc
-#ifdef WORKAROUND_GCC_MACOS14
+//!WORKAROUND: triggers on gcc
+#ifdef WORKAROUND_GCC
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wstringop-overflow"
 #endif
@@ -45,17 +45,11 @@ struct BiFMIndex {
     BiFMIndex(std::span<uint8_t const> _bwt, std::span<uint8_t const> _bwtRev, TCSA _csa)
         : bwt{_bwt}
         , bwtRev{_bwtRev}
+        , C{computeC(bwt)}
         , annotatedArray{std::views::iota(size_t{0}, _csa.bv.size()) | std::views::transform([&](size_t i) {
             return _csa.value(i);
         })}
     {
-        for (auto c : _bwt) {
-            C[c+1] += 1;
-        }
-        for (size_t i{1}; i < C.size(); ++i) {
-            C[i] = C[i] + C[i-1];
-        }
-
         assert(bwt.size() == bwtRev.size());
         if (bwt.size() != bwtRev.size()) {
             throw std::runtime_error("bwt don't have the same size: " + std::to_string(bwt.size()) + " " + std::to_string(bwtRev.size()));
@@ -65,15 +59,9 @@ struct BiFMIndex {
     BiFMIndex(std::span<uint8_t const> _bwt, std::span<uint8_t const> _bwtRev, suffixarray::SparseArray<T> _annotatedArray)
         : bwt{_bwt}
         , bwtRev{_bwtRev}
+        , C{computeC(bwt)}
         , annotatedArray{std::move(_annotatedArray)}
     {
-        for (auto c : _bwt) {
-            C[c+1] += 1;
-        }
-        for (size_t i{1}; i < C.size(); ++i) {
-            C[i] = C[i] + C[i-1];
-        }
-
         assert(bwt.size() == bwtRev.size());
         if (bwt.size() != bwtRev.size()) {
             throw std::runtime_error("bwt don't have the same size: " + std::to_string(bwt.size()) + " " + std::to_string(bwtRev.size()));
@@ -86,98 +74,19 @@ struct BiFMIndex {
         }
 
         // copy text into custom buffer
-        auto inputText = std::vector<uint8_t>{};
-        auto inputTextSpan = std::span<uint8_t const>{};
-        if (omegaSorting) {
-            inputText.resize(_sequence.size()*2);
-            for (size_t i{0}; i < _sequence.size(); ++i) {
-                inputText[i] = _sequence[i];
-                inputText[i+_sequence.size()] = _sequence[i];
-            }
-            inputTextSpan = {inputText.begin(), inputText.begin() + inputText.size()/2};
-        } else {
-            inputText.resize(_sequence.size());
-            for (size_t i{0}; i < _sequence.size(); ++i) {
-                inputText[i] = _sequence[i];
-            }
-            inputTextSpan = {inputText.begin(), inputText.begin() + inputText.size()};
-        }
+        auto inputText = createInputText(_sequence, omegaSorting);
 
-        auto removeInvalidSA = [&](auto& sa) {
-            if (omegaSorting) { // using omega sorting, remove half of the entries
-                auto halfSize = inputText.size() / 2;
-                auto [first, last] = std::ranges::remove_if(sa, [&](auto e) {
-                    return e >= halfSize;
-                });
-                sa.erase(first, last);
-            }
-        };
+        // create bwt, bwtRev and annotatedArray
+        auto [_bwt, _annotatedArray] = createBWTAndAnnotatedArray(inputText, _annotatedSequence, _threadNbr, omegaSorting);
+        std::ranges::reverse(inputText);
+        auto _bwtRev = createBWT(inputText, _threadNbr, omegaSorting);
+        decltype(inputText){}.swap(inputText); // inputText memory can be deleted
 
-        if (inputText.size() < std::numeric_limits<int32_t>::max()) { // only 32bit SA required
-            // create BurrowsWheelerTransform and CompressedSuffixArray
-            auto [bwt, annotatedArray] = [&]() {
-                auto sa  = createSA32(inputText, _threadNbr);
-                removeInvalidSA(sa);
-
-                auto bwt = createBWT32(inputTextSpan, sa);
-                auto annotatedArray = suffixarray::SparseArray<T>{
-                    sa | std::views::transform([&](size_t i) -> std::optional<T> {
-                        return _annotatedSequence.value(i);
-                    })
-                };
-                return std::make_tuple(std::move(bwt), std::move(annotatedArray));
-            }();
-
-            // create BurrowsWheelerTransform on reversed text
-            auto bwtRev = [&]() {
-                //std::ranges::reverse(inputText); //!TODO produces a weird error
-                for (size_t i{0}; i < inputText.size()/2; ++i) {
-                    std::swap(inputText[i], inputText[inputText.size() - i - 1]);
-                }
-                auto saRev  = createSA32(inputText, _threadNbr);
-                removeInvalidSA(saRev);
-
-                auto bwtRev = createBWT32(inputTextSpan, saRev);
-                return bwtRev;
-            }();
-
-            decltype(inputText){}.swap(inputText); // inputText memory can be deleted
-
-            *this = BiFMIndex{bwt, bwtRev, std::move(annotatedArray)};
-        } else { // required 64bit SA required
-            // create BurrowsWheelerTransform and CompressedSuffixArray
-            auto [bwt, annotatedArray] = [&]() {
-                auto sa  = createSA64(inputText, _threadNbr);
-                removeInvalidSA(sa);
-
-                auto bwt = createBWT64(inputTextSpan, sa);
-                auto annotatedArray = suffixarray::SparseArray<T>{
-                    sa | std::views::transform([&](size_t i) -> std::optional<T> {
-                        return _annotatedSequence.value(i);
-                    })
-                };
-                return std::make_tuple(std::move(bwt), std::move(annotatedArray));
-            }();
-
-            // create BurrowsWheelerTransform on reversed text
-            auto bwtRev = [&]() {
-                //std::ranges::reverse(inputText); //!TODO produces a weird error
-                for (size_t i{0}; i < inputText.size()/2; ++i) {
-                    std::swap(inputText[i], inputText[inputText.size() - i - 1]);
-                }
-                auto saRev  = createSA64(inputText, _threadNbr);
-                removeInvalidSA(saRev);
-                auto bwtRev = createBWT64(inputTextSpan, saRev);
-                return bwtRev;
-            }();
-            (void)bwt;
-            (void)annotatedArray;
-            (void)bwtRev;
-
-            decltype(inputText){}.swap(inputText); // inputText memory can be deleted
-
-            *this = BiFMIndex{bwt, bwtRev, std::move(annotatedArray)};
-        }
+        // initialize this BiFMIndex properly
+        bwt = {_bwt};
+        bwtRev = {_bwtRev};
+        C = computeC(bwt);
+        annotatedArray = std::move(_annotatedArray);
     }
 
 
@@ -275,6 +184,6 @@ struct BiFMIndex {
 };
 
 }
-#ifdef WORKAROUND_GCC_MACOS14
+#ifdef WORKAROUND_GCC
     #pragma GCC diagnostic pop
 #endif

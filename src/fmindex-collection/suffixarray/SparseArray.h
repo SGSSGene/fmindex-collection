@@ -27,6 +27,7 @@ namespace fmindex_collection::suffixarray {
  */
 template <typename T>
 struct SparseArray {
+    using value_t = T;
     using Bitvector = bitvector::L0L1_512_64kBitvector;
     std::vector<T> documentContent;
     Bitvector      bv;

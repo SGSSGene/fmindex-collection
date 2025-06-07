@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../bitvector/concepts.h"
+#include "../string/concepts.h"
 
 #include <array>
 #include <cstddef>
