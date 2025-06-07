@@ -31,7 +31,9 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with buffers on a
 
         auto result = std::vector<std::pair<size_t, size_t>>{};
         for (size_t i{0}; i < cursor.count(); ++i) {
-            auto [il, pl] = index.locate(i + cursor.lb);
+            auto [entry, offset] = index.locate(i + cursor.lb);
+            auto [il, pl] = entry;
+            pl += offset;
             result.emplace_back(il, pl);
         }
         auto expected = std::vector<std::pair<size_t, size_t>>{{1, 4}, {0, 8}};

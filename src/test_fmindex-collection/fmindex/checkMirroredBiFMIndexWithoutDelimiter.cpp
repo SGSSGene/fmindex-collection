@@ -25,42 +25,48 @@ TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index without delimiters"
             auto c2 = cursor.extendLeft(1);
             REQUIRE(c2.len == 2);
             {
-                auto [seq, pos] = index.locate(c2.lb);
+                auto [entry, offset] = index.locate(c2.lb);
+                auto [seq, pos] = entry;
                 CHECK(seq == 1);
-                CHECK(pos == 2);
+                CHECK(pos+offset == 2);
             }
             {
-                auto [seq, pos] = index.locate(c2.lb+1);
+                auto [entry, offset] = index.locate(c2.lb+1);
+                auto [seq, pos] = entry;
                 CHECK(seq == 0);
-                CHECK(pos == 0);
+                CHECK(pos+offset == 0);
             }
         }
         SECTION("case 2 - left") {
             auto c2 = cursor.extendLeft(2);
             REQUIRE(c2.len == 2);
             {
-                auto [seq, pos] = index.locate(c2.lb);
+                auto [entry, offset] = index.locate(c2.lb);
+                auto [seq, pos] = entry;
                 CHECK(seq == 0);
-                CHECK(pos == 1);
+                CHECK(pos+offset == 1);
             }
             {
-                auto [seq, pos] = index.locate(c2.lb+1);
+                auto [entry, offset] = index.locate(c2.lb+1);
+                auto [seq, pos] = entry;
                 CHECK(seq == 1);
-                CHECK(pos == 1);
+                CHECK(pos+offset == 1);
             }
         }
         SECTION("case 0 - left") {
             auto c2 = cursor.extendLeft(0);
             REQUIRE(c2.len == 2);
             {
-                auto [seq, pos] = index.locate(c2.lb);
+                auto [entry, offset] = index.locate(c2.lb);
+                auto [seq, pos] = entry;
                 CHECK(seq == 0);
-                CHECK(pos == 2);
+                CHECK(pos+offset == 2);
             }
             {
-                auto [seq, pos] = index.locate(c2.lb+1);
+                auto [entry, offset] = index.locate(c2.lb+1);
+                auto [seq, pos] = entry;
                 CHECK(seq == 1);
-                CHECK(pos == 0);
+                CHECK(pos+offset == 0);
             }
         }
 
@@ -68,42 +74,48 @@ TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index without delimiters"
             auto c2 = cursor.extendRight(1);
             REQUIRE(c2.len == 2);
             {
-                auto [seq, pos] = index.locate(c2.lb);
+                auto [entry, offset] = index.locate(c2.lb);
+                auto [seq, pos] = entry;
                 CHECK(seq == 1);
-                CHECK(pos == 2);
+                CHECK(pos+offset == 2);
             }
             {
-                auto [seq, pos] = index.locate(c2.lb+1);
+                auto [entry, offset] = index.locate(c2.lb+1);
+                auto [seq, pos] = entry;
                 CHECK(seq == 0);
-                CHECK(pos == 0);
+                CHECK(pos+offset == 0);
             }
         }
         SECTION("case 2 - right") {
             auto c2 = cursor.extendRight(2);
             REQUIRE(c2.len == 2);
             {
-                auto [seq, pos] = index.locate(c2.lb);
+                auto [entry, offset] = index.locate(c2.lb);
+                auto [seq, pos] = entry;
                 CHECK(seq == 0);
-                CHECK(pos == 1);
+                CHECK(pos+offset == 1);
             }
             {
-                auto [seq, pos] = index.locate(c2.lb+1);
+                auto [entry, offset] = index.locate(c2.lb+1);
+                auto [seq, pos] = entry;
                 CHECK(seq == 1);
-                CHECK(pos == 1);
+                CHECK(pos+offset == 1);
             }
         }
         SECTION("case 0 - right") {
             auto c2 = cursor.extendRight(0);
             REQUIRE(c2.len == 2);
             {
-                auto [seq, pos] = index.locate(c2.lb);
+                auto [entry, offset] = index.locate(c2.lb);
+                auto [seq, pos] = entry;
                 CHECK(seq == 0);
-                CHECK(pos == 2);
+                CHECK(pos+offset == 2);
             }
             {
-                auto [seq, pos] = index.locate(c2.lb+1);
+                auto [entry, offset] = index.locate(c2.lb+1);
+                auto [seq, pos] = entry;
                 CHECK(seq == 1);
-                CHECK(pos == 0);
+                CHECK(pos+offset == 0);
             }
         }
 

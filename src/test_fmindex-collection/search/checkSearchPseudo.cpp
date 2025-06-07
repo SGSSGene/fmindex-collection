@@ -97,7 +97,10 @@ TEMPLATE_TEST_CASE("searching with collection and PseudoSearch", "[collection]",
 
     for (size_t i{0}; i < expected.size(); ++i) {
         INFO(i);
-        auto [il, pl] = index.locate(i);
+        auto [entry, offset] = index.locate(i);
+        auto [il, pl] = entry;
+        pl += offset;
+
         auto [ir, pr] = expected[i];
         CHECK(il == ir);
         CHECK(pl == pr);

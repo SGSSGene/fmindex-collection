@@ -17,6 +17,7 @@ namespace fmindex_collection {
  * Depending on the input it will choose a appropriate FMIndex
  */
 struct VariableFMIndex {
+    using ADEntry = std::tuple<size_t, size_t>;
     size_t Sigma{};
 
     std::array<uint8_t, 256> charToRankMapping{};
@@ -82,7 +83,7 @@ struct VariableFMIndex {
             query[i] = charToRankMapping[_query[i]];
         }
 
-        auto result = std::vector<std::tuple<size_t, size_t>>{};
+        auto result = std::vector<std::tuple<ADEntry, size_t>>{};
 
         // check for invalid mapping characters
         {
@@ -108,8 +109,8 @@ struct VariableFMIndex {
                     return;
                 } else {
                     auto cursor = search_no_errors::search(index, query);
-                    for (auto [seqId, pos] : LocateLinear{index, cursor}) {
-                        result.emplace_back(seqId, pos);
+                    for (auto [entry, offset] : LocateLinear{index, cursor}) {
+                        result.emplace_back(entry, offset);
                     }
                 }
             }, index);
@@ -120,8 +121,8 @@ struct VariableFMIndex {
                 } else {
                     search_backtracking::search(index, query, k, [&](auto cursor, auto errors) {
                         (void)errors;
-                        for (auto [seqId, pos] : LocateLinear{index, cursor}) {
-                            result.emplace_back(seqId, pos);
+                        for (auto [entry, offset] : LocateLinear{index, cursor}) {
+                            result.emplace_back(entry, offset);
                         }
                     });
                 }

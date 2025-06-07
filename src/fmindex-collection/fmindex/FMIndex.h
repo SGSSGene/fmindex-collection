@@ -12,6 +12,8 @@ namespace fmindex_collection {
 
 template <String_c String, SuffixArray_c TCSA = CSA>
 struct FMIndex {
+    using ADEntry = std::tuple<size_t, size_t>;
+
     static size_t constexpr Sigma = String::Sigma;
 
     String                      bwt;
@@ -70,7 +72,7 @@ struct FMIndex {
         return bwt.size();
     }
 
-    auto locate(size_t idx) const -> std::tuple<size_t, size_t> {
+    auto locate(size_t idx) const -> std::tuple<ADEntry, size_t> {
         auto opt = csa.value(idx);
         size_t steps{};
         while(!opt) {
@@ -79,11 +81,10 @@ struct FMIndex {
             steps += 1;
             opt = csa.value(idx);
         }
-        auto [chr, pos] = *opt;
-        return std::make_tuple(chr, pos + steps);
+        return {*opt, steps};
     }
 
-    auto single_locate_step(size_t idx) const -> std::optional<std::tuple<size_t, size_t>> {
+    auto single_locate_step(size_t idx) const -> std::optional<ADEntry> {
         return csa.value(idx);
     }
 
