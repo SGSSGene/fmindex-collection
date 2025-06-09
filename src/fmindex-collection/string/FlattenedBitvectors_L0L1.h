@@ -114,13 +114,23 @@ struct FlattenedBitvectors_L0L1 {
         : FlattenedBitvectors_L0L1{internal_tag{}, _symbols}
     {}
 
+    template <std::ranges::range range_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint64_t>
+    FlattenedBitvectors_L0L1(range_t&& _symbols)
+        : FlattenedBitvectors_L0L1{internal_tag{}, _symbols}
+    {}
+
 private:
     struct internal_tag{};
-    template <typename T>
-    FlattenedBitvectors_L0L1(internal_tag, std::span<T const> _symbols) {
-        auto const _length = _symbols.size();
-        bits.reserve(_length/l1_bits_ct + 2);
-        if (_length == 0) return;
+
+    template <std::ranges::range range_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint64_t>
+    FlattenedBitvectors_L0L1(internal_tag, range_t&& _symbols) {
+
+        if constexpr (requires() { _symbols.size(); }) {
+            auto const _length = _symbols.size();
+            bits.reserve(_length/l1_bits_ct + 2);
+        }
 
         // fill all in-block bits
         for (auto c : _symbols) {

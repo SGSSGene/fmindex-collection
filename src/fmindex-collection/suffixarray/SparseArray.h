@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../bitvector/L0L1_NBitvector.h"
+#include "../bitvector/PairedL0L1_NBitvector.h"
 #include "concepts.h"
 
 #include <algorithm>
