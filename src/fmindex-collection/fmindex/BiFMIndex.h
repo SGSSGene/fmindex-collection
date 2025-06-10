@@ -14,21 +14,21 @@
 
 namespace fmindex_collection {
 
-template <String_c String, typename T = std::tuple<size_t, size_t>>
+template <String_c String, typename SparseArray = suffixarray::SparseArray<std::tuple<size_t, size_t>>>
 struct BiFMIndex {
-    using ADEntry = T;
+    using ADEntry = SparseArray::value_t;
 
     static size_t constexpr Sigma = String::Sigma;
 
     String bwt;
     String bwtRev;
     std::array<size_t, Sigma+1> C{};
-    suffixarray::SparseArray<T> annotatedArray;
+    SparseArray annotatedArray;
 
     BiFMIndex() = default;
     BiFMIndex(BiFMIndex&&) noexcept = default;
 
-    BiFMIndex(std::span<uint8_t const> _bwt, std::span<uint8_t const> _bwtRev, suffixarray::SparseArray<T> _annotatedArray)
+    BiFMIndex(std::span<uint8_t const> _bwt, std::span<uint8_t const> _bwtRev, SparseArray _annotatedArray)
         : bwt{_bwt}
         , bwtRev{_bwtRev}
         , C{computeC(bwt)}
@@ -40,7 +40,7 @@ struct BiFMIndex {
         }
     }
 
-    BiFMIndex(Sequence auto const& _sequence, suffixarray::SparseArray<T> const& _annotatedSequence, size_t _threadNbr, bool omegaSorting = false) {
+    BiFMIndex(Sequence auto const& _sequence, SparseArray const& _annotatedSequence, size_t _threadNbr, bool omegaSorting = false) {
         if (_sequence.size() >= std::numeric_limits<size_t>::max()/2) {
             throw std::runtime_error{"sequence is longer than what this system is capable of handling"};
         }
@@ -95,12 +95,12 @@ struct BiFMIndex {
             assert(inputSizes.size() < refId);
         }
 
-        auto annotatedSequence = suffixarray::SparseArray<T>{
-            std::views::iota(size_t{0}, totalSize) | std::views::transform([&](size_t) -> std::optional<T> {
+        auto annotatedSequence = SparseArray {
+            std::views::iota(size_t{0}, totalSize) | std::views::transform([&](size_t) -> std::optional<ADEntry> {
                 assert(refId < inputSizes.size());
                 assert(pos < inputSizes[refId]);
 
-                auto ret = std::optional<T>{std::nullopt};
+                auto ret = std::optional<ADEntry>{std::nullopt};
 
                 if (pos % samplingRate == 0) {
                     ret = std::make_tuple(refId+seqOffset, pos);
@@ -125,7 +125,7 @@ struct BiFMIndex {
         return bwt.size();
     }
 
-    auto locate(size_t idx) const -> std::tuple<T, size_t> {
+    auto locate(size_t idx) const -> std::tuple<ADEntry, size_t> {
         if constexpr (requires(String t) {{ t.hasValue(size_t{}) }; }) {
             bool v = bwt.hasValue(idx);
             uint64_t steps{};
@@ -153,7 +153,7 @@ struct BiFMIndex {
         }
     }
 
-    auto single_locate_step(size_t idx) const -> std::optional<T> {
+    auto single_locate_step(size_t idx) const -> std::optional<ADEntry> {
         return annotatedArray.value(idx);
     }
 
