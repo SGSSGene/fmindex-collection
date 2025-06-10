@@ -17,7 +17,7 @@ TEST_CASE("checking merging of fmindices", "[FMIndex][merge]") {
     using Index  = fmindex_collection::FMIndex<String>;
 
     auto index1 = Index{data1, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1};
-    auto index2 = Index{data2, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1, /*.seqOffset=*/data1.size()};
+    auto index2 = Index{data2, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1, /*.useDelimiter=*/true, /*.seqOffset=*/data1.size()};
 
     auto index12 = fmindex_collection::fmindex::merge(index1, index2);
 

@@ -130,9 +130,9 @@ auto merge(FMIndex<StringLhs, TCSA> const& index1, FMIndex<StringRhs, TCSA> cons
 //    return {mergedBwt, std::move(annotatedArray)};
     auto R         = detail::computeInterleavingR(index1.bwt, index2.bwt);
     auto mergedBwt = detail::mergeBwt(R, index1.bwt, index2.bwt);
-    auto csa       = detail::mergeCsa(R, index1.csa, index2.csa);
+    auto annotatedArray = detail::mergeSparseArrays(R, index1.annotatedArray, index2.annotatedArray);
 
-    return {mergedBwt, std::move(csa)};
+    return {mergedBwt, std::move(annotatedArray)};
 
 }
 

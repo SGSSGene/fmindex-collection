@@ -65,7 +65,6 @@ auto generateText(size_t length) -> std::vector<uint8_t> {
     return text;
 }
 
-
 template <size_t min, size_t range>
 auto generateText() -> std::vector<uint8_t> const& {
     static auto text = []() -> std::vector<uint8_t> {
@@ -87,6 +86,13 @@ auto generateText() -> std::vector<uint8_t> const& {
     }();
     return text;
 }
+
+template <size_t min, size_t range>
+auto generateTexts() -> std::vector<std::vector<uint8_t>> const& {
+    static auto text = std::vector<std::vector<uint8_t>>{generateText<min, range>()};
+    return text;
+}
+
 
 template <size_t min, size_t range>
 auto generateLargeText(size_t length) -> std::vector<uint64_t> {

@@ -64,13 +64,6 @@ struct SparseArray {
         return v;
     }
 
-    void push_back(std::optional<T> value) {
-        bv.push_back(value.has_value());
-        if (value) {
-            documentContent.push_back(*value);
-        }
-    }
-
     template <typename Archive>
     void serialize(Archive& ar) {
         ar(documentContent, bv);

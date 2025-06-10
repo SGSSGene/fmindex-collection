@@ -4,7 +4,6 @@
 #pragma once
 
 #include "../string/concepts.h"
-#include "../suffixarray/CSA.h"
 #include "../suffixarray/SparseArray.h"
 #include "../suffixarray/utils.h"
 #include "../utils.h"
@@ -14,7 +13,7 @@
 
 namespace fmindex_collection {
 
-template <String_c String, typename SparseArray = suffixarray::SparseArray<std::tuple<size_t, size_t>>>
+template <String_c String, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<size_t, size_t>>>
 struct BiFMIndex {
     using ADEntry = SparseArray::value_t;
 

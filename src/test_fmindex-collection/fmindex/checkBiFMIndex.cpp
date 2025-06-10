@@ -5,6 +5,7 @@
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/BiFMIndex.h>
+#include <fmindex-collection/suffixarray/CSA.h>
 #include <fstream>
 
 namespace fmc = fmindex_collection;
