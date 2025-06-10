@@ -7,6 +7,8 @@
 #include <fmindex-collection/fmindex/BiFMIndex.h>
 #include <fstream>
 
+namespace fmc = fmindex_collection;
+
 TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLSTRINGSWITHRANK(255)) {
     using OccTable = TestType;
 
@@ -19,8 +21,8 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLSTRINGSW
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push_back(true);
         }
-        auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -39,8 +41,8 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLSTRINGSW
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -69,8 +71,8 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLSTRINGSW
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -90,8 +92,8 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLSTRINGSW
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -109,15 +111,15 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLSTRINGSW
             for (size_t i{0}; i < sa.size(); ++i) {
                 bitStack.push_back(true);
             }
-            auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-            auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+            auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+            auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(index);
         }
         SECTION("deserialize") {
             auto ifs = std::ifstream{"temp_test_serialization", std::ios::binary};
 
-            auto index = fmindex_collection::BiFMIndex<OccTable>{};
+            auto index = fmc::BiFMIndex<OccTable>{};
             auto archive = cereal::BinaryInputArchive{ifs};
             archive(index);
 
@@ -142,8 +144,8 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 25
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push_back(true);
         }
-        auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -163,8 +165,8 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 25
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -184,8 +186,8 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 25
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -205,8 +207,8 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 25
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {

@@ -6,6 +6,7 @@
 #include "../string/concepts.h"
 #include "../suffixarray/CSA.h"
 #include "../suffixarray/SparseArray.h"
+#include "../suffixarray/utils.h"
 #include "../utils.h"
 
 #include <algorithm>
@@ -13,7 +14,7 @@
 
 namespace fmindex_collection {
 
-template <String_c String, SuffixArray_c TCSA = CSA, typename T = std::tuple<size_t, size_t>>
+template <String_c String, typename T = std::tuple<size_t, size_t>>
 struct BiFMIndex {
     using ADEntry = T;
 
@@ -26,20 +27,6 @@ struct BiFMIndex {
 
     BiFMIndex() = default;
     BiFMIndex(BiFMIndex&&) noexcept = default;
-
-    BiFMIndex(std::span<uint8_t const> _bwt, std::span<uint8_t const> _bwtRev, TCSA _csa)
-        : bwt{_bwt}
-        , bwtRev{_bwtRev}
-        , C{computeC(bwt)}
-        , annotatedArray{std::views::iota(size_t{0}, _csa.bv.size()) | std::views::transform([&](size_t i) {
-            return _csa.value(i);
-        })}
-    {
-        assert(bwt.size() == bwtRev.size());
-        if (bwt.size() != bwtRev.size()) {
-            throw std::runtime_error("bwt don't have the same size: " + std::to_string(bwt.size()) + " " + std::to_string(bwtRev.size()));
-        }
-    }
 
     BiFMIndex(std::span<uint8_t const> _bwt, std::span<uint8_t const> _bwtRev, suffixarray::SparseArray<T> _annotatedArray)
         : bwt{_bwt}
