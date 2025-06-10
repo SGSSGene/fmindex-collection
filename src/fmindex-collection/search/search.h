@@ -4,6 +4,7 @@
 
 #include "SearchPseudo.h"
 #include "SearchNg21V2.h"
+#include "SearchNoErrors.h"
 #include "../search_scheme/generator/h2.h"
 #include "../search_scheme/expand.h"
 
@@ -33,5 +34,12 @@ void search(index_t const& _index, query_t const& _query, size_t _errors, delega
     }
 }
 
+template <typename index_t, Sequence query_t, typename delegate_t>
+void search(index_t const& _index, query_t const& _query, delegate_t&& _delegate) {
+    auto cursor = search_no_errors::search(_index, _query);
+    if (cursor.count()) {
+        _delegate(cursor);
+    }
+}
 
 }

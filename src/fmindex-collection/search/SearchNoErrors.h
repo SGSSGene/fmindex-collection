@@ -10,7 +10,7 @@
 namespace fmindex_collection::search_no_errors {
 
 template <typename index_t, Sequence query_t>
-auto search(index_t const & index, query_t && query) {
+auto search(index_t const & index, query_t const& query) {
     using cursor_t = select_left_cursor_t<index_t>;
     static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
 
@@ -26,8 +26,7 @@ auto search(index_t const & index, query_t && query) {
 }
 
 template <typename index_t, Sequences queries_t, typename delegate_t>
-void search(index_t const & index, queries_t && queries, delegate_t && delegate) {
-
+void search(index_t const & index, queries_t const& queries, delegate_t && delegate) {
     for (size_t qidx{0}; qidx < queries.size(); ++qidx) {
         auto const& query = queries[qidx];
         auto cursor = search(index, query);
