@@ -253,17 +253,6 @@ struct CompressedSparseArrayV4 {
                 return true;
         })}
         {
-/*        auto buffer = std::vector<bool>{};
-        for (auto t : _range) {
-            if (!t) continue;
-            if (*t < std::numeric_limits<uint32_t>::max()) {
-                buffer.emplace_back(false);
-                documentContent4B.push_back(*t);
-            }
-            buffer.emplace_back(true);
-            documentContent8B.push_back(*t);
-        }
-        indicatorType = {buffer};*/
     }
 
     auto operator=(CompressedSparseArrayV4 const&) -> CompressedSparseArrayV4& = delete;
@@ -296,7 +285,6 @@ struct CompressedSparseArrayV4 {
 struct CompressedSparseArrayV5 {
     using Bitvector = bitvector::SparseBLEBitvector<2, bitvector::L0L1_512_64kBitvector, bitvector::L0L1_512_64kBitvector>;
     using String = string::FlattenedBitvectors_512_64k<2>; // 4, or 8 bytes
-//    using Bitvector = bitvector::L0L1_512_64kBitvector;
     std::vector<uint32_t> documentContent4B; // 4 byte
     std::vector<uint64_t> documentContent8B; // 8 byte
     Bitvector             indicator;
@@ -325,17 +313,6 @@ struct CompressedSparseArrayV5 {
                 return true;
         })}
         {
-/*        auto buffer = std::vector<bool>{};
-        for (auto t : _range) {
-            if (!t) continue;
-            if (*t < std::numeric_limits<uint32_t>::max()) {
-                buffer.emplace_back(false);
-                documentContent4B.push_back(*t);
-            }
-            buffer.emplace_back(true);
-            documentContent8B.push_back(*t);
-        }
-        indicatorType = {buffer};*/
     }
 
     auto operator=(CompressedSparseArrayV5 const&) -> CompressedSparseArrayV5& = delete;
