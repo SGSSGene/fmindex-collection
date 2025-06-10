@@ -136,8 +136,20 @@ struct Search {
     }
 };
 
+template <typename index_t, Sequence query_t, typename search_schemes_t, typename delegate_t>
+void search(index_t const & index, query_t && query, search_schemes_t const & search_scheme, delegate_t && delegate)
+{
+    using cursor_t = select_cursor_t<index_t>;
+    static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
 
-template <typename index_t, typename queries_t, typename search_schemes_t, typename delegate_t>
+    for (size_t j{0}; j < search_scheme.size(); ++j) {
+        auto search = search_scheme[j];
+        Search{index, search, query, delegate};
+    }
+}
+
+
+template <typename index_t, Sequences queries_t, typename search_schemes_t, typename delegate_t>
 void search(index_t const & index, queries_t && queries, search_schemes_t const & search_scheme, delegate_t && delegate)
 {
     using cursor_t = select_cursor_t<index_t>;

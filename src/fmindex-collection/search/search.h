@@ -3,6 +3,7 @@
 #pragma once
 
 #include "SearchPseudo.h"
+#include "SearchNg21V2.h"
 #include "../search_scheme/generator/h2.h"
 #include "../search_scheme/expand.h"
 
@@ -25,7 +26,11 @@ void search(index_t const& _index, query_t&& _query, size_t _errors, delegate_t&
         search_scheme = search_scheme::expand(ss, length);
     }
 
-    search_pseudo::search<EditDistance>(_index, _query, search_scheme, _delegate);
+    if constexpr (!EditDistance) {
+        search_pseudo::search<EditDistance>(_index, _query, search_scheme, _delegate);
+    } else {
+        search_ng21V2::search(_index, _query, search_scheme, _delegate);
+    }
 }
 
 }
