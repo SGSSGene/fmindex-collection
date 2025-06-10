@@ -10,7 +10,7 @@
 namespace fmindex_collection {
 
 template <bool EditDistance, typename index_t, Sequence query_t, typename delegate_t>
-void search(index_t const& _index, query_t&& _query, size_t _errors, delegate_t&& _delegate) {
+void search(index_t const& _index, query_t const& _query, size_t _errors, delegate_t&& _delegate) {
     using cursor_t = select_cursor_t<index_t>;
     static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
 
@@ -32,5 +32,6 @@ void search(index_t const& _index, query_t&& _query, size_t _errors, delegate_t&
         search_ng21V2::search(_index, _query, search_scheme, _delegate);
     }
 }
+
 
 }

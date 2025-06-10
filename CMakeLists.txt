@@ -84,6 +84,7 @@ if (PROJECT_IS_TOP_LEVEL)
 
     add_subdirectory(src/fmindex-collection-stats)
     add_subdirectory(src/test_header)
+    add_subdirectory(src/docs_examples)
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         target_compile_options(fmindex-collection INTERFACE /bigobj -DNOMINMAX)

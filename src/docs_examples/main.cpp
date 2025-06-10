@@ -1,37 +1,6 @@
-<!--
-    SPDX-FileCopyrightText: 2006-2025, Knut Reinert & Freie Universität Berlin
-    SPDX-FileCopyrightText: 2016-2025, Knut Reinert & MPI für molekulare Genetik
-    SPDX-License-Identifier: CC-BY-4.0
--->
-# Introduction
+// SPDX-FileCopyrightText: 2025 Simon Gene Gottlieb
+// SPDX-License-Identifier: CC0-1.0
 
-**FMIndex Collection** is written in modern C++20 and provides a set of concepts, classes and functions required
-to provide FM-Indices and their internal support structures.
-
-## Functionality
-- fast and compact bitvectors with rank support
-- fast and compact strings with rank support
-- (bidirectional) FM-Indices
-- search schemes generator
-- several search algorithms (with edit distance or hamming distance)
-
-
-## Dependencies
-- Uses [libsais](https://github.com/IlyaGrebnov/libsais), Thank you [@IlyaGbrenov](https://github.com/IlyaGrebnov)
-
-## Usage
-### CPM
-```cmake
-CPMAddPackage(
-  URI SGSSGene/fmindex_collection@0.0.0 # put newest version here
-)
-...
-target_link_libraries(${PROJECT_NAME}
-    fmindex_collection::fmindex_collection
-)
-```
-### Quick start
-```c++
 #include <fmindex-collection/fmindex-collection.h>
 #include <fmt/format.h>
 
@@ -64,4 +33,3 @@ int main() {
     });
     return 0;
 }
-```
