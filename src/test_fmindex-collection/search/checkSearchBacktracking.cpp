@@ -9,11 +9,11 @@
 #include <fmindex-collection/search_scheme/generator/all.h>
 
 TEMPLATE_TEST_CASE("searching with backtracking", "[search]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
 
-    auto index = fmindex_collection::BiFMIndex<OccTable>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmindex_collection::BiFMIndex<String>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         REQUIRE(input.size()+1 == index.size());
@@ -41,12 +41,12 @@ TEMPLATE_TEST_CASE("searching with backtracking", "[search]", ALLSTRINGSWITHRANK
 }
 
 TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
 
-    auto index = fmindex_collection::BiFMIndex<OccTable>{input, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmindex_collection::BiFMIndex<String>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         auto expected = std::vector<uint8_t>{'A', 'A', 'A', 'A', 'A', 'A', 'B', 'C', 'B', '\0', 'C', '\0',
@@ -106,11 +106,11 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]",
 }
 
 TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
 
-    auto index = fmindex_collection::FMIndex<OccTable>{input, /*samplingRate*/1, /*samplingRate*/1};
+    auto index = fmindex_collection::FMIndex<String>{input, /*samplingRate*/1, /*samplingRate*/1};
 
     SECTION("check symbol call to occurrence table") {
         REQUIRE(input.size()+1 == index.size());
@@ -138,12 +138,12 @@ TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]", ALLST
 }
 
 TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[collection]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
 
-    auto index = fmindex_collection::FMIndex<OccTable>{input, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmindex_collection::FMIndex<String>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         auto expected = std::vector<uint8_t>{'A', 'A', 'A', 'A', 'A', 'A', 'B', 'C', 'B', '\0', 'C', '\0',
@@ -203,11 +203,11 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[
 }
 
 TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
 
-    auto index = fmindex_collection::ReverseFMIndex<OccTable>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmindex_collection::ReverseFMIndex<String>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         REQUIRE(input.size()+1 == index.size());
@@ -235,12 +235,12 @@ TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]"
 
 }
 TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMIndex", "[collection]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
 
-    auto index = fmindex_collection::ReverseFMIndex<OccTable>{input, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmindex_collection::ReverseFMIndex<String>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         auto expected = std::vector<uint8_t>{'A', 'A', 'A', 'A', 'A', 'A', 'B', 'C', 'B', '\0', 'C', '\0',
@@ -303,8 +303,8 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMInd
 
 
 TEST_CASE("backtracking with errors", "[collection]") {
-    using OccTable = fmindex_collection::string::InterleavedBitvector16<256>;
-    using Index = fmindex_collection::FMIndex<OccTable>;
+    using String = fmindex_collection::string::InterleavedBitvector16<256>;
+    using Index = fmindex_collection::FMIndex<String>;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'B', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'C', 'A', 'A', 'A'}};

@@ -74,18 +74,8 @@ struct MirroredBiFMIndexCursor {
         return cursors;
     }
     void prefetchLeft() const {
-/*        if constexpr (OccTablePrefetch<Index>) {
-            auto& occ = index->occ;
-            occ.prefetch(lb);
-            occ.prefetch(lb+len);
-        }*/
     }
     void prefetchRight() const {
-/*        if constexpr (OccTablePrefetch<Index>) {
-            auto& occ = index->occ;
-            occ.prefetch(lbRev);
-            occ.prefetch(lbRev+len);
-        }*/
     }
 
     auto extendLeft(size_t symb) const -> MirroredBiFMIndexCursor {

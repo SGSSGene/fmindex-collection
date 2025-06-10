@@ -14,8 +14,8 @@
 
 
 TEST_CASE("check search with hamming and scoring matrix with errors", "[searches][!benchmark][hamming][scoring-matrix]") {
-    using OccTable = fmindex_collection::string::InterleavedBitvector16<21>;
-    using Index = fmindex_collection::BiFMIndex<OccTable>;
+    using String = fmindex_collection::string::InterleavedBitvector16<21>;
+    using Index = fmindex_collection::BiFMIndex<String>;
 
     SECTION("hamming_sm, all search") {
         srand(0);

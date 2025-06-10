@@ -83,11 +83,6 @@ struct KMerFMIndex {
     auto operator=(KMerFMIndex const&) -> KMerFMIndex& = delete;
     auto operator=(KMerFMIndex&&) noexcept -> KMerFMIndex& = default;
 
-
-/*    size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
-        return occ.memoryUsage() + csa.memoryUsage();
-    }*/
-
     size_t size() const {
         return bwt.size();
     }

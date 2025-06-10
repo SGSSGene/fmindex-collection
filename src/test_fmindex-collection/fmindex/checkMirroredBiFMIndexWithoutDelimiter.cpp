@@ -9,11 +9,11 @@
 #include <fstream>
 
 TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index without delimiters", "[MirroredBiFMIndex-nd]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto input = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{1, 2, 0}};
     SECTION("test index without delimiter") {
-        auto index = fmindex_collection::MirroredBiFMIndex<OccTable>{input, /*.samplingRate=*/ 1, /*.threadNbr=*/1, false};
+        auto index = fmindex_collection::MirroredBiFMIndex<String>{input, /*.samplingRate=*/ 1, /*.threadNbr=*/1, false};
 
         auto cursor = fmindex_collection::MirroredBiFMIndexCursor{index};
         REQUIRE(cursor.count() == index.size());

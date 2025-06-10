@@ -10,8 +10,8 @@
 TEST_CASE("checking biidirectional fm index left cursor", "[LeftMirroredBiFMIndexCursor]") {
 
     auto data = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 2, 2}};
-    using OccTable = fmindex_collection::string::InterleavedBitvector16<256>;
-    using Index = fmindex_collection::MirroredBiFMIndex<OccTable>;
+    using String = fmindex_collection::string::InterleavedBitvector16<256>;
+    using Index = fmindex_collection::MirroredBiFMIndex<String>;
     auto index = Index{data, 1, 1};
 
     auto cursor = fmindex_collection::LeftMirroredBiFMIndexCursor{index};

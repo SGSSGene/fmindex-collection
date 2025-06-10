@@ -8,7 +8,7 @@
 #include <fstream>
 
 TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
     auto sa     = std::vector<uint64_t>{ 10, 11, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };
@@ -19,7 +19,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
             bitStack.push_back(true);
         }
         auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::FMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -43,7 +43,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::FMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -73,7 +73,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::FMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -95,7 +95,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::FMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -112,14 +112,14 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
                 bitStack.push_back(true);
             }
             auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-            auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
+            auto index = fmindex_collection::FMIndex<String>{bwt, std::move(csa)};
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(index);
         }
         SECTION("deserialize") {
             auto ifs = std::ifstream{"temp_test_serialization", std::ios::binary};
 
-            auto index = fmindex_collection::FMIndex<OccTable>{};
+            auto index = fmindex_collection::FMIndex<String>{};
             auto archive = cereal::BinaryInputArchive{ifs};
             archive(index);
 

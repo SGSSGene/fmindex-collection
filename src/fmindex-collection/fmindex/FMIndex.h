@@ -64,10 +64,6 @@ struct FMIndex {
     auto operator=(FMIndex&&) noexcept -> FMIndex& = default;
 
 
-/*    size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
-        return occ.memoryUsage() + csa.memoryUsage();
-    }*/
-
     size_t size() const {
         return bwt.size();
     }

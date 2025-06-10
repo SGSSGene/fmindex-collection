@@ -260,51 +260,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
     }
 }
 
-
 template <size_t Sigma, typename CB>
 void visitAllStrings(CB cb) {
-/*    cb.template operator()<fmindex_collection::occtable::naive::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::bitvector::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::compactBitvector::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::compactBitvectorPrefix::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleaved8::OccTable<Sigma>>();*/
     cb.template operator()<fmindex_collection::string::InterleavedBitvector16<Sigma>>();
-/*    cb.template operator()<fmindex_collection::occtable::interleaved32::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleaved8Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleaved16Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleaved32Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::wavelet::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedWavelet::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedPrefix::OccTable<Sigma>>();
-#ifdef FMC_USE_SDSL
-    cb.template operator()<fmindex_collection::occtable::sdsl_wt_bldc::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::sdsl_wt_epr::OccTable<Sigma>>();
-#endif
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR8::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR16::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR32::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR8Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR16Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR32Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR8V2::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR16V2::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR32V2::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::epr8V3::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::epr16V3::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::epr32V3::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::eprV4::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::eprV5::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::eprV6::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPRV7::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPRV7b::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::eprV8::OccTable<Sigma>>();*/
-    //cb.template operator()<fmindex_collection::occtable::rlebwt::OccTable<Sigma>>();
-    //cb.template operator()<fmindex_collection::occtable::rrlebwt::OccTable<Sigma>>();
 }
-
-
-
-

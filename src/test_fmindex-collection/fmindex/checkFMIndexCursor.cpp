@@ -10,8 +10,8 @@
 TEST_CASE("checking unidirectional fm index cursor", "[FMIndexCursor]") {
 
     auto data = std::vector<uint8_t>{1, 1, 1, 1, 2, 2, 2};
-    using OccTable = fmindex_collection::string::MultiBitvector<256>;
-    using Index = fmindex_collection::FMIndex<OccTable>;
+    using String = fmindex_collection::string::MultiBitvector<256>;
+    using Index = fmindex_collection::FMIndex<String>;
     auto index = Index{data, 1, 1};
 
     auto cursor = fmindex_collection::FMIndexCursor{index};

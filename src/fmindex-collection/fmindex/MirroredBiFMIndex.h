@@ -92,10 +92,6 @@ struct MirroredBiFMIndex {
 
         *this = MirroredBiFMIndex{bwt, std::move(csa)};
     }
-/*
-    size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
-        return occ.memoryUsage() + csa.memoryUsage();
-    }*/
 
     size_t size() const {
         return bwt.size();

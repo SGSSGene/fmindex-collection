@@ -11,7 +11,7 @@
 namespace fmc = fmindex_collection;
 
 TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
     auto bwtRev = std::vector<uint8_t>{'H', '\0', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
@@ -23,7 +23,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", 
             bitStack.push_back(true);
         }
         auto csa = fmc::DenseCSA{sa, bitStack};
-        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -44,7 +44,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", 
         }
 
         auto csa = fmc::DenseCSA{sa2, bitStack};
-        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -74,7 +74,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", 
         }
 
         auto csa = fmc::DenseCSA{sa2, bitStack};
-        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -95,7 +95,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", 
         }
 
         auto csa = fmc::DenseCSA{sa2, bitStack};
-        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -112,13 +112,13 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", 
                 bitStack.push_back(true);
             }
             auto csa = fmc::DenseCSA{sa, bitStack};
-            auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
+            auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(index);
         }
         SECTION("deserialize") {
             auto ifs = std::ifstream{"temp_test_serialization", std::ios::binary};
-            auto index = fmc::BiFMIndex<OccTable>{};
+            auto index = fmc::BiFMIndex<String>{};
             auto archive = cereal::BinaryInputArchive{ifs};
             archive(index);
 
@@ -132,7 +132,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index", "[DenseBiFMIndex]", 
 }
 
 TEMPLATE_TEST_CASE("checking dense bidirectional fm index on longer text (more than 256 chars)", "[DenseBiFMIndex]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto bwt    = std::vector<uint8_t>{'0', '4', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '4', '1', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '2', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1', '4', '4', '4', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '0', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '0', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '3', '4', '3', '3', '3', '4', '4', '4', '\0', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8' };
     auto bwtRev = std::vector<uint8_t>{'4', '\0', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '2', '1', '1', '1', '1', '1', '1', '1', '1', '3', '1', '1', '1', '1', '1', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '1', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '1', '3', '3', '3', '3', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '2', '5', '5', '5', '5', '5', '5', '2', '2', '0', '4', '4', '4', '1', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0' };
@@ -144,7 +144,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index on longer text (more t
             bitStack.push_back(true);
         }
         auto csa = fmc::DenseCSA{sa, bitStack};
-        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -165,7 +165,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index on longer text (more t
         }
 
         auto csa = fmc::DenseCSA{sa2, bitStack};
-        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -186,7 +186,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index on longer text (more t
         }
 
         auto csa = fmc::DenseCSA{sa2, bitStack};
-        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -208,7 +208,7 @@ TEMPLATE_TEST_CASE("checking dense bidirectional fm index on longer text (more t
         }
 
         auto csa = fmc::DenseCSA{sa2, bitStack};
-        auto index = fmc::BiFMIndex<OccTable>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
