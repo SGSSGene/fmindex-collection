@@ -16,6 +16,7 @@ namespace fmindex_collection::search_ng21V2 {
 template <typename index_t, typename search_scheme_t, typename query_t, typename delegate_t>
 struct Search {
     constexpr static size_t Sigma = index_t::Sigma;
+    constexpr static size_t FirstSymb = index_t::FirstSymb;
 
     using cursor_t = BiFMIndexCursor<index_t>;
 
@@ -51,7 +52,6 @@ struct Search {
             return cur.extendLeft();
         }
     }
-
 
     template <char LInfo, char RInfo>
     void search_next(cursor_t const& cur, size_t e, size_t i, size_t lastRank) const noexcept {
@@ -107,7 +107,7 @@ struct Search {
                 search_next<OnMatchL, OnMatchR>(newCur, e, i+1, symb);
             }
 
-            for (size_t s{1}; s < symb; ++s) {
+            for (size_t s{FirstSymb}; s < symb; ++s) {
                 auto newCur = cursors[s];
 
                 if constexpr (Deletion) {
