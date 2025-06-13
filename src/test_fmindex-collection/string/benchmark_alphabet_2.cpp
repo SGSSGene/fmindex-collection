@@ -6,7 +6,7 @@
 
 namespace fmc = fmindex_collection;
 
-#define MYSTRINGS fmc::string::WrappedBitvector<fmc::bitvector::L0L1_512_64kBitvector>, ALLSTRINGSWITHRANK_IMPL(2)
+#define MYSTRINGS ALLSTRINGSWITHRANK_IMPL(2), fmc::string::WrappedBitvector<fmc::bitvector::L0L1_512_64kBitvector>
 
 TEST_CASE("benchmark strings c'tor operation - 2 alphabet", "[string][!benchmark][2][time][ctor]") {
     auto const& text = generateText<0, 2>();
