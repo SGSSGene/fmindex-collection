@@ -5,10 +5,15 @@
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/FMIndex.h>
+#include <fmindex-collection/suffixarray/CSA.h>
+#include <fmindex-collection/suffixarray/utils.h>
+
 #include <fstream>
 
+namespace fmc = fmindex_collection;
+
 TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
     auto sa     = std::vector<uint64_t>{ 10, 11, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };
@@ -18,15 +23,16 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push_back(true);
         }
-        auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::FMIndex<String>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto [seqId, seqPos] = index.locate(i);
+            auto [entry, offset] = index.locate(i);
+            auto [seqId, seqPos] = entry;
             INFO(i);
             CHECK(seqId == 0);
-            CHECK(seqPos == sa[i]);
+            CHECK(seqPos == sa[i]-offset);
         }
     }
 
@@ -41,12 +47,13 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::FMIndex<String>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
             auto res = index.single_locate_step(i);
             INFO(i);
             INFO(sa[i]);
@@ -70,12 +77,13 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::FMIndex<String>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
         }
     }
 
@@ -91,12 +99,13 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::FMIndex<String>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
         }
     }
 
@@ -107,21 +116,22 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
             for (size_t i{0}; i < sa.size(); ++i) {
                 bitStack.push_back(true);
             }
-            auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-            auto index = fmindex_collection::FMIndex<OccTable>{bwt, std::move(csa)};
+            auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+            auto index = fmc::FMIndex<String>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(index);
         }
         SECTION("deserialize") {
             auto ifs = std::ifstream{"temp_test_serialization", std::ios::binary};
 
-            auto index = fmindex_collection::FMIndex<OccTable>{};
+            auto index = fmc::FMIndex<String>{};
             auto archive = cereal::BinaryInputArchive{ifs};
             archive(index);
 
             REQUIRE(index.size() == bwt.size());
             for (size_t i{0}; i < sa.size(); ++i) {
-                CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+                auto [entry, offset] = index.locate(i);
+                CHECK(entry == std::make_tuple(0, sa[i]-offset));
             }
         }
     }

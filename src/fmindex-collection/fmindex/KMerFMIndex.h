@@ -13,6 +13,7 @@ namespace fmindex_collection {
 
 template <String_c String, size_t KMer, SuffixArray_c TCSA = CSA>
 struct KMerFMIndex {
+    using ADEntry = std::tuple<size_t, size_t>;
     static size_t constexpr Sigma = String::Sigma;
 
     String                      bwt;
@@ -82,16 +83,11 @@ struct KMerFMIndex {
     auto operator=(KMerFMIndex const&) -> KMerFMIndex& = delete;
     auto operator=(KMerFMIndex&&) noexcept -> KMerFMIndex& = default;
 
-
-/*    size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
-        return occ.memoryUsage() + csa.memoryUsage();
-    }*/
-
     size_t size() const {
         return bwt.size();
     }
 
-    auto locate(size_t idx) const -> std::tuple<size_t, size_t> {
+    auto locate(size_t idx) const -> std::tuple<ADEntry, size_t> {
         auto opt = csa.value(idx);
         size_t steps{};
         while(!opt) {
@@ -100,11 +96,10 @@ struct KMerFMIndex {
             steps += 1;
             opt = csa.value(idx);
         }
-        auto [chr, pos] = *opt;
-        return std::make_tuple(chr, pos + steps);
+        return {*opt, steps};
     }
 
-    auto single_locate_step(size_t idx) const -> std::optional<std::tuple<size_t, size_t>> {
+    auto single_locate_step(size_t idx) const -> std::optional<ADEntry> {
         return csa.value(idx);
     }
 

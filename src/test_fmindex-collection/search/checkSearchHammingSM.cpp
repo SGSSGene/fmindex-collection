@@ -14,8 +14,8 @@
 
 
 TEST_CASE("check search with hamming and scoring matrix with errors", "[searches][!benchmark][hamming][scoring-matrix]") {
-    using OccTable = fmindex_collection::string::InterleavedBitvector16<21>;
-    using Index = fmindex_collection::BiFMIndex<OccTable>;
+    using String = fmindex_collection::string::InterleavedBitvector16<21>;
+    using Index = fmindex_collection::BiFMIndex<String>;
 
     SECTION("hamming_sm, all search") {
         srand(0);
@@ -99,9 +99,9 @@ TEST_CASE("check search with hamming and scoring matrix with errors", "[searches
             auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
             fmindex_collection::search_hamming_sm::search(index, queries, search_scheme, sm, [&](auto qidx, auto cursor, auto errors) {
                 (void)errors;
-                (void)qidx;
-                for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                    results.emplace_back(qidx, sid, spos);
+                for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                    auto [sid, spos] = entry;
+                    results.emplace_back(qidx, sid, spos+offset);
                 }
             });
             std::ranges::sort(results);
@@ -125,9 +125,9 @@ TEST_CASE("check search with hamming and scoring matrix with errors", "[searches
             auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
             fmindex_collection::search_pseudo::search</*EditDistance=*/false>(index, queries, expanded_search_scheme, [&](auto qidx, auto cursor, auto errors) {
                 (void)errors;
-                (void)qidx;
-                for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                    results.emplace_back(qidx, sid, spos);
+                for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                    auto [sid, spos] = entry;
+                    results.emplace_back(qidx, sid, spos+offset);
                 }
             });
             std::ranges::sort(results);

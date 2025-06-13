@@ -12,8 +12,8 @@
 
 
 TEST_CASE("locating using LocateFMTree", "[locate][fmtree]") {
-    using OccTable = fmindex_collection::string::InterleavedBitvector16<256>;
-    using Index = fmindex_collection::BiFMIndex<OccTable>;
+    using String = fmindex_collection::string::InterleavedBitvector16<256>;
+    using Index = fmindex_collection::BiFMIndex<String>;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'B', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'C', 'A', 'A', 'A'}};
@@ -29,8 +29,9 @@ TEST_CASE("locating using LocateFMTree", "[locate][fmtree]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_pseudo::search</*EditDistance=*/true>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateFMTree{index, cursor, samplingRate, /*.maxDepth=*/3}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateFMTree{index, cursor, samplingRate, /*.maxDepth=*/3}) {
+                auto [sid, spos] = entry;
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -63,8 +64,9 @@ TEST_CASE("locating using LocateFMTree", "[locate][fmtree]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_pseudo::search</*EditDistance=*/true>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            fmindex_collection::locateFMTree<4>(index, cursor, [&](size_t sid, size_t spos) {
-                results.emplace_back(qidx, sid, spos);
+            fmindex_collection::locateFMTree<4>(index, cursor, [&](std::tuple<size_t, size_t> entry, size_t offset) {
+                auto [sid, spos] = entry;
+                results.emplace_back(qidx, sid, spos+offset);
             }, samplingRate);
         });
 

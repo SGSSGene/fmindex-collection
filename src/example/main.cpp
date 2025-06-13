@@ -219,23 +219,26 @@ int main(int argc, char const* const* argv) {
                 if (algorithm.size() == 15 && algorithm.substr(0, 13)  == "pseudo_fmtree") {
                     size_t maxDepth = std::stod(algorithm.substr(13, 2));
                     for (auto const& [queryId, cursor, e] : resultCursors) {
-                        for (auto [seqId, pos] : LocateFMTree{index, cursor, samplingRate, maxDepth}) {
-                            results.emplace_back(queryId, seqId, pos, e);
+                        for (auto [entry, offset] : LocateFMTree{index, cursor, samplingRate, maxDepth}) {
+                            auto [seqId, pos] = entry;
+                            results.emplace_back(queryId, seqId, pos+offset, e);
                         }
                         resultCt += cursor.len;
                     }
                 } else if (algorithm == "pseudo_fmtree") {
                     for (auto const& [queryId, cursor, e] : resultCursors) {
-                        locateFMTree<16>(index, cursor, [&, &queryId=queryId, &e=e](size_t seqId, size_t pos) {
-                            results.emplace_back(queryId, seqId, pos, e);
+                        locateFMTree<16>(index, cursor, [&, &queryId=queryId, &e=e](std::tuple<size_t, size_t> entry, size_t offset) {
+                            auto [seqId, pos] = entry;
+                            results.emplace_back(queryId, seqId, pos+offset, e);
                         }, samplingRate);
                         resultCt += cursor.len;
                     }
 
                 } else {
                     for (auto const& [queryId, cursor, e] : resultCursors) {
-                        for (auto [seqId, pos] : LocateLinear{index, cursor}) {
-                            results.emplace_back(queryId, seqId, pos, e);
+                        for (auto [entry, offset] : LocateLinear{index, cursor}) {
+                            auto [seqId, pos] = entry;
+                            results.emplace_back(queryId, seqId, pos+offset, e);
                         }
                         resultCt += cursor.len;
                     }

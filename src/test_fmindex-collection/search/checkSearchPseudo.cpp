@@ -9,11 +9,11 @@
 #include <fmindex-collection/search_scheme/generator/all.h>
 
 TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
 
-    auto index = fmindex_collection::BiFMIndex<OccTable>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmindex_collection::BiFMIndex<String>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         REQUIRE(input.size()+1 == index.size());
@@ -42,12 +42,12 @@ TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]", ALLSTRINGSWITHRANK
 
 }
 TEMPLATE_TEST_CASE("searching with collection and PseudoSearch", "[collection]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
 
-    auto index = fmindex_collection::BiFMIndex<OccTable>{input, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmindex_collection::BiFMIndex<String>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         auto expected = std::vector<uint8_t>{'A', 'A', 'A', 'A', 'A', 'A', 'B', 'C', 'B', '\0', 'C', '\0',
@@ -97,7 +97,10 @@ TEMPLATE_TEST_CASE("searching with collection and PseudoSearch", "[collection]",
 
     for (size_t i{0}; i < expected.size(); ++i) {
         INFO(i);
-        auto [il, pl] = index.locate(i);
+        auto [entry, offset] = index.locate(i);
+        auto [il, pl] = entry;
+        pl += offset;
+
         auto [ir, pr] = expected[i];
         CHECK(il == ir);
         CHECK(pl == pr);

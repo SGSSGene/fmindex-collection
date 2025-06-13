@@ -104,20 +104,20 @@ auto loadQueries(std::string path, bool reverse, bool convertUnknownChar) {
     return std::make_tuple(queries, queryInfos);
 }
 
-template <typename CSA, typename Table>
+template <typename CSA, typename String>
 auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr, bool convertUnknownChar) {
     auto sw = StopWatch{};
-    auto indexPath = path + "." + Table::extension() + ".index";
+    auto indexPath = path + ".index";
     if (!std::filesystem::exists(indexPath)) {
-        auto [ref, refInfo] = loadQueries<Table::Sigma>(path, false, convertUnknownChar);
+        auto [ref, refInfo] = loadQueries<String::Sigma>(path, false, convertUnknownChar);
         auto index = [&]() {
             auto refs = std::vector<std::vector<uint8_t>>{};
             refs.resize(1);
 
-            auto index = std::optional<fmindex_collection::BiFMIndex<Table>>{};
+            auto index = std::optional<fmindex_collection::BiFMIndex<String>>{};
             for (auto& r : ref) {
                 refs[0] = std::move(r);
-                auto newIndex = fmindex_collection::BiFMIndex<Table>{refs, samplingRate, threadNbr};
+                auto newIndex = fmindex_collection::BiFMIndex<String>{refs, samplingRate, threadNbr};
                 if (!index) {
                     index = std::move(newIndex);
                 } else {
@@ -134,22 +134,21 @@ auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr, bool con
     } else {
         auto ifs     = std::ifstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryInputArchive{ifs};
-        auto index = fmindex_collection::BiFMIndex<Table>{};
+        auto index = fmindex_collection::BiFMIndex<String>{};
         archive(index);
         std::cout << "loading took " << sw.peek() << "s\n";
         return index;
     }
 }
 
-template <typename CSA, typename Table>
+template <typename CSA, typename String>
 auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, bool partialBuildUp, bool convertUnknownChar) {
     auto sw = StopWatch{};
-//    auto indexPath = path + "." + Table::extension() + ".dense.index";
     auto indexPath = path + ".tab.dense.index";
 
     if (!std::filesystem::exists(indexPath)) {
-        auto [ref, refInfo] = loadQueries<Table::Sigma>(path, false, convertUnknownChar);
-        using Index = fmindex_collection::BiFMIndex<Table, fmindex_collection::DenseCSA>;
+        auto [ref, refInfo] = loadQueries<String::Sigma>(path, false, convertUnknownChar);
+        using Index = fmindex_collection::BiFMIndex<String>;
         auto index = [&]() -> Index {
             if (!partialBuildUp) {
                 return {ref, samplingRate, threadNbr};
@@ -253,58 +252,14 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
     } else {
         auto ifs     = std::ifstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryInputArchive{ifs};
-        auto index = fmindex_collection::BiFMIndex<Table, fmindex_collection::DenseCSA>{};
+        auto index = fmindex_collection::BiFMIndex<String>{};
         archive(index);
         std::cout << "loading took " << sw.peek() << "s\n";
         return index;
     }
 }
 
-
 template <size_t Sigma, typename CB>
 void visitAllStrings(CB cb) {
-/*    cb.template operator()<fmindex_collection::occtable::naive::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::bitvector::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::compactBitvector::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::compactBitvectorPrefix::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleaved8::OccTable<Sigma>>();*/
     cb.template operator()<fmindex_collection::string::InterleavedBitvector16<Sigma>>();
-/*    cb.template operator()<fmindex_collection::occtable::interleaved32::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleaved8Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleaved16Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleaved32Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::wavelet::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedWavelet::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedPrefix::OccTable<Sigma>>();
-#ifdef FMC_USE_SDSL
-    cb.template operator()<fmindex_collection::occtable::sdsl_wt_bldc::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::sdsl_wt_epr::OccTable<Sigma>>();
-#endif
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR8::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR16::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR32::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR8Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR16Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR32Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR8V2::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR16V2::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR32V2::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR8V2Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR16V2Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPR32V2Aligned::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::epr8V3::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::epr16V3::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::epr32V3::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::eprV4::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::eprV5::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::eprV6::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPRV7::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::interleavedEPRV7b::OccTable<Sigma>>();
-    cb.template operator()<fmindex_collection::occtable::eprV8::OccTable<Sigma>>();*/
-    //cb.template operator()<fmindex_collection::occtable::rlebwt::OccTable<Sigma>>();
-    //cb.template operator()<fmindex_collection::occtable::rrlebwt::OccTable<Sigma>>();
 }
-
-
-
-

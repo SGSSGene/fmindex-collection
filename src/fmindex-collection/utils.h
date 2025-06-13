@@ -5,6 +5,7 @@
 
 #include "bitset_popcount.h"
 #include "concepts.h"
+#include "string/concepts.h"
 
 #include <algorithm>
 #include <cassert>
@@ -13,6 +14,7 @@
 #include <libsais.h>
 #include <libsais64.h>
 #include <numeric>
+#include <optional>
 #include <span>
 #include <stdexcept>
 #include <tuple>
@@ -144,6 +146,20 @@ inline auto createSA32(std::span<uint8_t const> input, size_t threadNbr) -> std:
     return sa;
 }
 
+template <typename T>
+auto createSA(std::span<uint8_t const> input, size_t threadNbr) -> std::vector<T> {
+    if constexpr (std::same_as<T, uint64_t>) {
+        return createSA64(input, threadNbr);
+    } else if constexpr (std::same_as<T, uint32_t>) {
+        return createSA32(input, threadNbr);
+    } else {
+        []<bool b = false>() {
+            static_assert(b, "Must be of type uint64_t or uint32_t");
+        }();
+    }
+}
+
+
 inline auto createBWT64(std::span<uint8_t const> input, std::span<uint64_t const> sa) -> std::vector<uint8_t> {
     assert(input.size() == sa.size());
     auto bwt = std::vector<uint8_t>{};
@@ -163,6 +179,101 @@ inline auto createBWT32(std::span<uint8_t const> input, std::span<uint32_t const
     }
     return bwt;
 }
+template <typename T>
+auto createBWT(std::span<uint8_t const> input, std::span<T const> sa) -> std::vector<uint8_t> {
+    if constexpr (std::same_as<T, uint64_t>) {
+        return createBWT64(input, sa);
+    } else if constexpr (std::same_as<T, uint32_t>) {
+        return createBWT32(input, sa);
+    } else {
+        []<bool b = false>() {
+            static_assert(b, "Must be of type uint64_t or uint32_t");
+        }();
+    }
+}
+
+template <String_c String>
+auto computeC(String const& s) -> std::array<size_t, String::Sigma+1> {
+    auto res = std::array<size_t, String::Sigma+1>{};
+    for (size_t symb{0}; symb < String::Sigma+1; ++symb) {
+        res[symb] = s.prefix_rank(s.size(), symb);
+    }
+    return res;
+}
+
+template <typename SparseArray>
+auto createBWTAndAnnotatedArray(std::span<uint8_t const> inputText, SparseArray const& _annotatedSequence, size_t _threadNbr, bool _omegaSorting) {
+    auto f = [&]<typename word_t>() {
+        auto sa  = createSA<word_t>(inputText, _threadNbr);
+
+        // if using omega sorting, the input text must be doubled
+        if (_omegaSorting) { // using omega sorting, remove half of the entries
+            auto halfSize = inputText.size() / 2;
+            auto [first, last] = std::ranges::remove_if(sa, [&](auto e) {
+                return e >= halfSize;
+            });
+            sa.erase(first, last);
+            inputText = {inputText.begin(), inputText.begin() + inputText.size()/2};
+        }
+
+        auto bwt = createBWT<word_t>(inputText, sa);
+        using Entry = SparseArray::value_t;
+        auto cb = [&](size_t i) -> std::optional<Entry> {
+            return _annotatedSequence.value(i);
+        };
+        auto annotatedArray = SparseArray {sa | std::views::transform(cb)};
+        return std::make_tuple(std::move(bwt), std::move(annotatedArray));
+    };
+
+    if (inputText.size() < std::numeric_limits<int32_t>::max()) {
+        return f.template operator()<uint32_t>();
+    } else {
+        return f.template operator()<uint64_t>();
+    }
+}
+
+inline auto createBWT(std::span<uint8_t const> inputText, size_t _threadNbr, bool _omegaSorting) {
+    auto f = [&]<typename word_t>() {
+        auto sa  = createSA<word_t>(inputText, _threadNbr);
+
+        // if using omega sorting, the input text must be doubled
+        if (_omegaSorting) { // using omega sorting, remove half of the entries
+            auto halfSize = inputText.size() / 2;
+            auto [first, last] = std::ranges::remove_if(sa, [&](auto e) {
+                return e >= halfSize;
+            });
+            sa.erase(first, last);
+            inputText = {inputText.begin(), inputText.begin() + inputText.size()/2};
+        }
+
+        auto bwt = createBWT<word_t>(inputText, sa);
+        return bwt;
+    };
+
+    if (inputText.size() < std::numeric_limits<int32_t>::max()) {
+        return f.template operator()<uint32_t>();
+    } else {
+        return f.template operator()<uint64_t>();
+    }
+}
+
+inline auto createInputText(std::span<uint8_t const> _input, size_t _omegaSorting) -> std::vector<uint8_t> {
+    auto output = std::vector<uint8_t>{};
+    if (_omegaSorting) {
+        output.resize(_input.size()*2);
+        for (size_t i{0}; i < _input.size(); ++i) {
+            output[i] = _input[i];
+            output[i+_input.size()] = _input[i];
+        }
+    } else {
+        output.resize(_input.size());
+        for (size_t i{0}; i < _input.size(); ++i) {
+            output[i] = _input[i];
+        }
+    }
+    return output;
+}
+
 
 auto createSequences(Sequences auto const& _input, bool reverse=false) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<size_t>> {
     // compute total numbers of bytes of the text including delimiters "$"
@@ -463,7 +574,7 @@ auto reconstructText(Index const& index) -> std::vector<std::vector<uint8_t>> {
     auto seqIds = std::vector<std::tuple<size_t, size_t>>{};
     for (size_t i{}; i < nbrOfSeq; ++i) {
         texts.push_back(reconstructText(index, i));
-        seqIds.emplace_back(std::get<0>(index.locate(i)), i);
+        seqIds.emplace_back(std::get<0>(std::get<0>(index.locate(i))), i);
     }
     std::ranges::sort(seqIds);
     auto res = std::vector<std::vector<uint8_t>>{};

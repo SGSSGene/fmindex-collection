@@ -118,12 +118,24 @@ struct PairedFlattenedBitvectors_L0L1 {
         : PairedFlattenedBitvectors_L0L1{internal_tag{}, _symbols}
     {}
 
+    template <std::ranges::range range_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint64_t>
+    PairedFlattenedBitvectors_L0L1(range_t&& _symbols)
+        : PairedFlattenedBitvectors_L0L1{internal_tag{}, _symbols}
+    {}
+
+
 private:
     struct internal_tag{};
-    template <typename T>
-    PairedFlattenedBitvectors_L0L1(internal_tag, std::span<T const> _symbols) {
-        auto const _length = _symbols.size();
-        bits.reserve(_length/l1_bits_ct + 2);
+
+    template <std::ranges::range range_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint64_t>
+    PairedFlattenedBitvectors_L0L1(internal_tag, range_t&& _symbols) {
+
+        if constexpr (requires() { _symbols.size(); }) {
+            auto const _length = _symbols.size();
+            bits.reserve(_length/l1_bits_ct + 2);
+        }
 
         // fill all inbits
         for (auto c : _symbols) {

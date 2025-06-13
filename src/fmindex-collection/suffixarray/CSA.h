@@ -40,9 +40,9 @@ struct CSA {
     using Bitvector = bitvector::L0L1_512_64kBitvector;
     std::vector<uint64_t> ssa;
     Bitvector             bv;
-    size_t                bitsForPosition;   // bits reserved for position
-    uint64_t              bitPositionMask;   // Bit mask, to extract the position from ssa
-    size_t                seqCount;          // Number of sequences
+    size_t                bitsForPosition{};   // bits reserved for position
+    uint64_t              bitPositionMask{};   // Bit mask, to extract the position from ssa
+    size_t                seqCount{};          // Number of sequences
 
 
     static auto createJoinedCSA(CSA const& lhs, CSA const& rhs) -> CSA {

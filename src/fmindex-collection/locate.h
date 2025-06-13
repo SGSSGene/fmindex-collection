@@ -17,7 +17,7 @@ struct LocateLinear {
         index_t const& index;
         size_t pos;
 
-        auto operator*() const -> std::tuple<size_t, size_t> {
+        auto operator*() const -> std::tuple<typename index_t::ADEntry, size_t> {
             return index.locate(pos);
         }
         auto operator++() -> iter& {
@@ -32,9 +32,10 @@ struct LocateLinear {
     struct rev_iter : iter {
         size_t depth;
 
-        auto operator*() const -> std::tuple<size_t, size_t> {
-            auto [subjNo, subjOffset] = iter::index.locate(iter::pos);
-            return {subjNo, subjOffset - depth};
+        auto operator*() const -> std::tuple<typename index_t::ADEntry, size_t> {
+            auto [entry, offset] = iter::index.locate(iter::pos);
+            assert(offset >= depth);
+            return {entry, offset - depth};
         }
     };
 
@@ -63,7 +64,7 @@ struct LocateLinear {
 
 template <typename index_t, typename cursor_t>
 struct LocateFMTree {
-    std::vector<std::tuple<size_t, size_t>> positions;
+    std::vector<std::tuple<typename index_t::ADEntry, size_t>> positions;
 
     LocateFMTree(index_t const& index, cursor_t cursor, size_t samplingRate, size_t maxDepth) {
         positions.reserve(cursor.count());
@@ -87,8 +88,7 @@ struct LocateFMTree {
                         opt = index.single_locate_step(idx);
                     }
                     if (opt) {
-                        auto [seqid, seqpos] = *opt;
-                        positions.emplace_back(seqid, seqpos + depth + steps);
+                        positions.emplace_back(*opt, depth+steps);
 
                     }
                 }
@@ -96,8 +96,7 @@ struct LocateFMTree {
                 for (size_t pos{cursor.lb}; pos < cursor.lb + cursor.len; ++pos) {
                     auto v = index.single_locate_step(pos);
                     if (v) {
-                        auto [seqid, seqpos] = *v;
-                        positions.emplace_back(seqid, seqpos+depth);
+                        positions.emplace_back(*v, depth);
                     }
                 }
 
@@ -125,8 +124,7 @@ void locateFMTree(index_t const& index, cursor_t cursor, CB const& cb, size_t sa
         for (size_t pos{cursor.lb}; pos < cursor.lb + cursor.len; ++pos) {
             auto v = index.single_locate_step(pos);
             if (v) {
-                auto [seqid, seqpos] = *v;
-                cb(seqid, seqpos + depth);
+                cb(*v, depth);
             }
         }
 
@@ -150,8 +148,7 @@ void locateFMTree(index_t const& index, cursor_t cursor, CB const& cb, size_t sa
                 opt = index.single_locate_step(idx);
             }
             if (opt) {
-                auto [seqid, seqpos] = *opt;
-                cb(seqid, seqpos + depth + steps);
+                cb(*opt, depth + steps);
             }
         }
     }

@@ -5,10 +5,13 @@
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/BiFMIndex.h>
+#include <fmindex-collection/suffixarray/CSA.h>
 #include <fstream>
 
+namespace fmc = fmindex_collection;
+
 TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
     auto bwtRev = std::vector<uint8_t>{'H', '\0', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
@@ -19,12 +22,12 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLSTRINGSW
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push_back(true);
         }
-        auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            CHECK(index.locate(i) == std::make_tuple(std::make_tuple(0, sa[i]), 0));
         }
     }
 
@@ -39,12 +42,13 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLSTRINGSW
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
             auto res = index.single_locate_step(i);
             INFO(i);
             INFO(sa[i]);
@@ -68,12 +72,13 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLSTRINGSW
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
         }
     }
 
@@ -88,12 +93,13 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLSTRINGSW
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
         }
     }
 
@@ -106,21 +112,21 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLSTRINGSW
             for (size_t i{0}; i < sa.size(); ++i) {
                 bitStack.push_back(true);
             }
-            auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-            auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+            auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+            auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(index);
         }
         SECTION("deserialize") {
             auto ifs = std::ifstream{"temp_test_serialization", std::ios::binary};
 
-            auto index = fmindex_collection::BiFMIndex<OccTable>{};
+            auto index = fmc::BiFMIndex<String>{};
             auto archive = cereal::BinaryInputArchive{ifs};
             archive(index);
 
             REQUIRE(index.size() == bwt.size());
             for (size_t i{0}; i < sa.size(); ++i) {
-                CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+                CHECK(index.locate(i) == std::make_tuple(std::make_tuple(0, sa[i]), 0));
             }
         }
     }
@@ -128,7 +134,7 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index", "[BiFMIndex]", ALLSTRINGSW
 }
 
 TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 256 chars)", "[BiFMIndex]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto bwt    = std::vector<uint8_t>{'0', '4', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '4', '1', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '2', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1', '4', '4', '4', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '0', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '0', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '3', '4', '3', '3', '3', '4', '4', '4', '\0', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8' };
     auto bwtRev = std::vector<uint8_t>{'4', '\0', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '2', '1', '1', '1', '1', '1', '1', '1', '1', '3', '1', '1', '1', '1', '1', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '1', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '1', '3', '3', '3', '3', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '4', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '2', '5', '5', '5', '5', '5', '5', '2', '2', '0', '4', '4', '4', '1', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '6', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0' };
@@ -139,12 +145,13 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 25
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push_back(true);
         }
-        auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
         }
     }
 
@@ -159,12 +166,13 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 25
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
         }
     }
 
@@ -179,12 +187,13 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 25
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
         }
     }
 
@@ -199,12 +208,13 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index on longer text (more than 25
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::BiFMIndex<OccTable>{bwt, bwtRev, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::BiFMIndex<String>{bwt, bwtRev, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
         }
     }
 }

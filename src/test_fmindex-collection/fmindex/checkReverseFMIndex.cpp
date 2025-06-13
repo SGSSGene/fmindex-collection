@@ -8,7 +8,7 @@
 #include <fstream>
 
 TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto bwt = std::vector<uint8_t>{'H', '\0', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
     auto sa  = std::vector<uint64_t>{0, 11, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
@@ -19,11 +19,12 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
             bitStack.push_back(true);
         }
         auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::ReverseFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]+offset));
         }
     }
 
@@ -39,13 +40,14 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::ReverseFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
             INFO(sa[i]);
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]+offset));
             auto res = index.single_locate_step(i);
             INFO(i);
             INFO(sa[i]);
@@ -70,14 +72,15 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::ReverseFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
-            INFO(std::get<1>(index.locate(i)));
+            INFO(std::get<1>(std::get<0>(index.locate(i))));
             INFO(sa[i]);
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]+offset));
         }
     }
 
@@ -94,16 +97,16 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::ReverseFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
-            INFO(std::get<1>(index.locate(i)));
+            INFO(std::get<1>(std::get<0>(index.locate(i))));
             INFO(sa[i]);
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]+offset));
         }
-
     }
 
     SECTION("compare to a directly created index") {
@@ -111,16 +114,17 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
         auto sa  = std::vector<uint64_t>{0, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
 
         auto text  = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{std::vector<std::vector<uint8_t>>{text}, /*samplingRate*/1, /*threadNbr*/1};
+        auto index = fmindex_collection::ReverseFMIndex<String>{std::vector<std::vector<uint8_t>>{text}, /*samplingRate*/1, /*threadNbr*/1};
 
         REQUIRE(bwt.size() == index.size());
         REQUIRE(sa.size() == index.size());
         for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
             INFO(sa[i]);
-            INFO(std::get<1>(index.locate(i)));
+            INFO(std::get<1>(std::get<0>(index.locate(i))));
 
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]+offset));
         }
     }
 
@@ -129,7 +133,7 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
         auto sa  = std::vector<uint64_t>{0, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
 
         auto text  = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
-        auto index = fmindex_collection::ReverseFMIndex<OccTable>{std::vector<std::vector<uint8_t>>{text}, /*samplingRate*/2, /*threadNbr*/1};
+        auto index = fmindex_collection::ReverseFMIndex<String>{std::vector<std::vector<uint8_t>>{text}, /*samplingRate*/2, /*threadNbr*/1};
 
         REQUIRE(bwt.size() == index.size());
         REQUIRE(sa.size() == index.size());
@@ -137,8 +141,9 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
             INFO(i);
             INFO(sa[i]);
             CHECK(bwt[i] == index.bwt.symbol(i));
-            INFO(std::get<1>(index.locate(i)));
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            INFO(std::get<1>(std::get<0>(index.locate(i))));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]+offset));
         }
     }
 
@@ -150,19 +155,20 @@ TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]
                 bitStack.push_back(true);
             }
             auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-            auto index = fmindex_collection::ReverseFMIndex<OccTable>{bwt, std::move(csa)};
+            auto index = fmindex_collection::ReverseFMIndex<String>{bwt, std::move(csa)};
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(index);
         }
         SECTION("deserialize") {
             auto ifs = std::ifstream{"temp_test_serialization", std::ios::binary};
-            auto index = fmindex_collection::ReverseFMIndex<OccTable>{};
+            auto index = fmindex_collection::ReverseFMIndex<String>{};
             auto archive = cereal::BinaryInputArchive{ifs};
             archive(index);
 
             REQUIRE(index.size() == bwt.size());
             for (size_t i{0}; i < sa.size(); ++i) {
-                CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+                auto [entry, offset] = index.locate(i);
+                CHECK(entry == std::make_tuple(0, sa[i]+offset));
             }
         }
     }

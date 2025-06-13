@@ -9,12 +9,12 @@
 #include <fmindex-collection/search_scheme/generator/all.h>
 
 TEMPLATE_TEST_CASE("searching with collection and backtracking with buffers on a reversed fmindex", "[collection][search][reverse]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'B', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'C', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
 
-    auto index = fmindex_collection::ReverseFMIndex<OccTable>{input, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmindex_collection::ReverseFMIndex<String>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     auto query = std::vector<uint8_t>{'A', 'C'};
     auto search_scheme = fmindex_collection::search_scheme::generator::backtracking(1, 0, 0);
@@ -31,7 +31,9 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with buffers on a
 
         auto result = std::vector<std::pair<size_t, size_t>>{};
         for (size_t i{0}; i < cursor.count(); ++i) {
-            auto [il, pl] = index.locate(i + cursor.lb);
+            auto [entry, offset] = index.locate(i + cursor.lb);
+            auto [il, pl] = entry;
+            pl += offset;
             result.emplace_back(il, pl);
         }
         auto expected = std::vector<std::pair<size_t, size_t>>{{1, 4}, {0, 8}};

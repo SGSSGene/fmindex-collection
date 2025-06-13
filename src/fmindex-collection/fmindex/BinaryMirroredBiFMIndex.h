@@ -13,6 +13,7 @@ namespace fmindex_collection {
 
 template <Bitvector_c Vector, SuffixArray_c TCSA = CSA>
 struct BinaryMirroredBiFMIndex {
+    using ADEntry = std::tuple<size_t, size_t>;
     static size_t constexpr Sigma = 2;
 
     Vector bwt;
@@ -72,7 +73,7 @@ struct BinaryMirroredBiFMIndex {
         return bwt.size();
     }
 
-    auto locate(size_t idx) const -> std::tuple<size_t, size_t> {
+    auto locate(size_t idx) const -> std::tuple<ADEntry, size_t> {
         if constexpr (requires(Vector t) {{ t.hasValue(size_t{}) }; }) {
             bool v = bwt.hasValue(idx);
             uint64_t steps{};
@@ -81,8 +82,7 @@ struct BinaryMirroredBiFMIndex {
                 steps += 1;
                 v = bwt.hasValue(idx);
             }
-            auto [chr, pos] = csa.value(idx);
-            return {chr, pos+steps};
+            return {csa.value(idx), steps};
         } else {
             auto opt = csa.value(idx);
             uint64_t steps{};
@@ -100,12 +100,11 @@ struct BinaryMirroredBiFMIndex {
                 steps += 1;
                 opt = csa.value(idx);
             }
-            auto [chr, pos] = *opt;
-            return {chr, pos+steps};
+            return {*opt, steps};
         }
     }
 
-    auto single_locate_step(size_t idx) const -> std::optional<std::tuple<size_t, size_t>> {
+    auto single_locate_step(size_t idx) const -> std::optional<ADEntry> {
         return csa.value(idx);
     }
 

@@ -5,7 +5,7 @@
 #include <fmindex-collection/fmindex/FMIndex.h>
 
 TEST_CASE("benchmark fmindex on c'tor operation - 5 alphabet", "[fmindex][!benchmark][5][time][ctor]") {
-    auto const& text = generateText<1, 4>();
+    auto const& text = generateTexts<1, 4>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};

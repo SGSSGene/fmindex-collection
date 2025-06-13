@@ -7,7 +7,7 @@
 #include <fmindex-collection/fmindex/MirroredBiFMIndex.h>
 
 TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index", "[MirroredBiFMIndex]", ALLSTRINGSWITHRANK(255)) {
-    using OccTable = TestType;
+    using String = TestType;
 
     // T = 011202110
     auto bwt    = std::vector<uint8_t>{1, 0, 2, 1, 2, 0, 1, 1, 0};
@@ -19,11 +19,12 @@ TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index", "[MirroredBiFMInd
             bitStack.push_back(true);
         }
         auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::MirroredBiFMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::MirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
         }
     }
 
@@ -39,11 +40,12 @@ TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index", "[MirroredBiFMInd
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::MirroredBiFMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::MirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
             auto res = index.single_locate_step(i);
             INFO(i);
             INFO(sa[i]);
@@ -68,11 +70,12 @@ TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index", "[MirroredBiFMInd
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::MirroredBiFMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::MirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
         }
     }
 
@@ -89,12 +92,12 @@ TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index", "[MirroredBiFMInd
         }
 
         auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::MirroredBiFMIndex<OccTable>{bwt, std::move(csa)};
+        auto index = fmindex_collection::MirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            CHECK(index.locate(i) == std::make_tuple(0, sa[i]));
+            auto [entry, offset] = index.locate(i);
+            CHECK(entry == std::make_tuple(0, sa[i]-offset));
         }
-
     }
 }

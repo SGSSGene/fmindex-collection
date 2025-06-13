@@ -6,13 +6,17 @@
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/FMIndex.h>
 #include <fmindex-collection/fmindex/FMIndexCursor.h>
+#include <fmindex-collection/suffixarray/CSA.h>
+#include <fmindex-collection/suffixarray/utils.h>
+
+namespace fmc = fmindex_collection;
 
 TEST_CASE("checking unidirectional fm index cursor", "[FMIndexCursor]") {
 
-    auto data = std::vector<uint8_t>{1, 1, 1, 1, 2, 2, 2};
-    using OccTable = fmindex_collection::string::MultiBitvector<256>;
-    using Index = fmindex_collection::FMIndex<OccTable>;
-    auto index = Index{data, 1, 1};
+    auto data = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 1, 2, 2, 2}};
+    using String = fmindex_collection::string::MultiBitvector<256>;
+    using Index = fmindex_collection::FMIndex<String>;
+    auto index = Index{data, /*.samplingRate=*/1, /*.threadNbr=*/1};
 
     auto cursor = fmindex_collection::FMIndexCursor{index};
     REQUIRE(cursor.count() == index.size());

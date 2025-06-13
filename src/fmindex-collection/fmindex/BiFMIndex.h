@@ -4,57 +4,71 @@
 #pragma once
 
 #include "../string/concepts.h"
-#include "../suffixarray/CSA.h"
+#include "../suffixarray/SparseArray.h"
+#include "../suffixarray/utils.h"
 #include "../utils.h"
 
 #include <algorithm>
-
-#define GCC_COMPILER (defined(__GNUC__) && !defined(__clang__))
-
-#if defined(__GNUC__) && !defined(__clang__) && defined(__MACH__)
-    #define WORKAROUND_GCC_MACOS14
-#else
-#endif
-
-//!WORKAROUND: only triggers on macos-14 with gcc
-#ifdef WORKAROUND_GCC_MACOS14
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wstringop-overflow"
-#endif
-
-
+#include <cassert>
 
 namespace fmindex_collection {
 
-template <String_c String, SuffixArray_c TCSA = CSA>
+template <String_c String, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<size_t, size_t>>>
 struct BiFMIndex {
+    using ADEntry = SparseArray::value_t;
+
     static size_t constexpr Sigma = String::Sigma;
 
     String bwt;
     String bwtRev;
     std::array<size_t, Sigma+1> C{};
-    TCSA   csa;
+    SparseArray annotatedArray;
 
     BiFMIndex() = default;
     BiFMIndex(BiFMIndex&&) noexcept = default;
 
-    BiFMIndex(std::span<uint8_t const> _bwt, std::span<uint8_t const> _bwtRev, TCSA _csa)
+    BiFMIndex(std::span<uint8_t const> _bwt, std::span<uint8_t const> _bwtRev, SparseArray _annotatedArray)
         : bwt{_bwt}
         , bwtRev{_bwtRev}
-        , csa{std::move(_csa)}
+        , C{computeC(bwt)}
+        , annotatedArray{std::move(_annotatedArray)}
     {
-        for (auto c : _bwt) {
-            C[c+1] += 1;
-        }
-        for (size_t i{1}; i < C.size(); ++i) {
-            C[i] = C[i] + C[i-1];
-        }
-
         assert(bwt.size() == bwtRev.size());
         if (bwt.size() != bwtRev.size()) {
             throw std::runtime_error("bwt don't have the same size: " + std::to_string(bwt.size()) + " " + std::to_string(bwtRev.size()));
         }
     }
+
+    BiFMIndex(Sequence auto const& _sequence, SparseArray const& _annotatedSequence, size_t _threadNbr, bool omegaSorting = false) {
+        if (_sequence.size() >= std::numeric_limits<size_t>::max()/2) {
+            throw std::runtime_error{"sequence is longer than what this system is capable of handling"};
+        }
+
+        // copy text into custom buffer
+        auto inputText = createInputText(_sequence, omegaSorting);
+
+        // create bwt, bwtRev and annotatedArray
+        auto [_bwt, _annotatedArray] = createBWTAndAnnotatedArray(inputText, _annotatedSequence, _threadNbr, omegaSorting);
+        #if defined(__GNUC__) && !defined(__clang__)
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wstringop-overflow"
+        std::ranges::reverse(inputText);
+        #pragma GCC diagnostic pop
+
+        #else
+        std::ranges::reverse(inputText);
+
+        #endif
+        auto _bwtRev = createBWT(inputText, _threadNbr, omegaSorting);
+        decltype(inputText){}.swap(inputText); // inputText memory can be deleted
+
+        // initialize this BiFMIndex properly
+        bwt = {_bwt};
+        bwtRev = {_bwtRev};
+        C = computeC(bwt);
+        annotatedArray = std::move(_annotatedArray);
+    }
+
 
     /**!\brief Creates a BiFMIndex with a specified sampling rate
      *
@@ -71,104 +85,60 @@ struct BiFMIndex {
             }
         }();
 
-        //!TODO not properly pointing to the buffer, when reversing
-        auto inputTextSpan = std::span<uint8_t const>{inputText};
-        if (!useDelimiters) {
-            // double text, so we get omage sorting
-            auto halfSize = inputText.size();
-            inputText.resize(halfSize*2);
-            inputTextSpan = {inputText.begin(), inputText.begin()+halfSize};
+        size_t refId{0};
+        size_t pos{0};
 
-            for (size_t i{0}; i < halfSize; ++i) {
-                inputText[halfSize + i] = inputText[i];
-            }
+        //!TODO what about empty strings?
+        while (inputSizes[refId] == pos) {
+            refId += 1;
+            assert(inputSizes.size() < refId);
         }
-        auto removeInvalidSA = [&](auto& sa) {
-            if (!useDelimiters) { // using omega sorting, remove half of the entries
-                auto halfSize = inputText.size() / 2;
-                auto [first, last] = std::ranges::remove_if(sa, [&](auto e) {
-                    return e >= halfSize;
-                });
-                sa.erase(first, last);
-            }
+
+        auto annotatedSequence = SparseArray {
+            std::views::iota(size_t{0}, totalSize) | std::views::transform([&](size_t) -> std::optional<ADEntry> {
+                assert(refId < inputSizes.size());
+                assert(pos < inputSizes[refId]);
+
+                auto ret = std::optional<ADEntry>{std::nullopt};
+
+                if (pos % samplingRate == 0) {
+                    ret = std::make_tuple(refId+seqOffset, pos);
+                }
+
+                ++pos;
+                if (inputSizes[refId] == pos) {
+                    refId += 1;
+                    pos = 0;
+                }
+                return ret;
+            })
         };
 
-        if (totalSize < std::numeric_limits<int32_t>::max()) { // only 32bit SA required
-            // create BurrowsWheelerTransform and CompressedSuffixArray
-            auto [bwt, csa] = [&]() {
-                auto sa  = createSA32(inputText, threadNbr);
-                removeInvalidSA(sa);
-
-                auto bwt = createBWT32(inputTextSpan, sa);
-                auto csa = TCSA(std::move(sa), samplingRate, inputSizes, /*.reverse=*/false, /*.seqOffset=*/seqOffset);
-                return std::make_tuple(std::move(bwt), std::move(csa));
-            }();
-
-            // create BurrowsWheelerTransform on reversed text
-            auto bwtRev = [&]() {
-                std::ranges::reverse(inputText);
-                auto saRev  = createSA32(inputText, threadNbr);
-                removeInvalidSA(saRev);
-
-                auto bwtRev = createBWT32(inputTextSpan, saRev);
-                return bwtRev;
-            }();
-
-            decltype(inputText){}.swap(inputText); // inputText memory can be deleted
-
-            *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
-        } else { // required 64bit SA required
-            // create BurrowsWheelerTransform and CompressedSuffixArray
-            auto [bwt, csa] = [&]() {
-                auto sa  = createSA64(inputText, threadNbr);
-                removeInvalidSA(sa);
-                auto bwt = createBWT64(inputTextSpan, sa);
-                auto csa = TCSA(std::move(sa), samplingRate, inputSizes);
-                return std::make_tuple(std::move(bwt), std::move(csa));
-            }();
-
-            // create BurrowsWheelerTransform on reversed text
-            auto bwtRev = [&]() {
-                std::ranges::reverse(inputText);
-                auto saRev  = createSA64(inputText, threadNbr);
-                removeInvalidSA(saRev);
-                auto bwtRev = createBWT64(inputTextSpan, saRev);
-                return bwtRev;
-            }();
-
-            decltype(inputText){}.swap(inputText); // inputText memory can be deleted
-
-            *this = BiFMIndex{bwt, bwtRev, std::move(csa)};
-        }
+        *this = BiFMIndex{inputText, annotatedSequence, threadNbr, !useDelimiters};
     }
 
     auto operator=(BiFMIndex const&) -> BiFMIndex& = delete;
     auto operator=(BiFMIndex&&) noexcept -> BiFMIndex& = default;
 
-/*    size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
-        return occ.memoryUsage() + occRev.memoryUsage() + csa.memoryUsage();
-    }*/
-
     size_t size() const {
         return bwt.size();
     }
 
-    auto locate(size_t idx) const -> std::tuple<size_t, size_t> {
+    auto locate(size_t idx) const -> std::tuple<ADEntry, size_t> {
         if constexpr (requires(String t) {{ t.hasValue(size_t{}) }; }) {
             bool v = bwt.hasValue(idx);
             uint64_t steps{};
-            while(!v) {
+            while (!v) {
                 idx = bwt.rank_symbol(idx);
                 steps += 1;
                 v = bwt.hasValue(idx);
             }
-            auto [chr, pos] = csa.value(idx);
-            return {chr, pos+steps};
+            return {*annotatedArray.value(idx), steps};
 
         } else {
-            auto opt = csa.value(idx);
+            auto opt = annotatedArray.value(idx);
             uint64_t steps{};
-            while(!opt) {
+            while (!opt) {
                 if constexpr (requires(String t) { { t.rank_symbol(size_t{}) }; }) {
                     idx = bwt.rank_symbol(idx);
                 } else {
@@ -176,25 +146,21 @@ struct BiFMIndex {
                     idx = bwt.rank(idx, symb) + C[symb];
                 }
                 steps += 1;
-                opt = csa.value(idx);
+                opt = annotatedArray.value(idx);
             }
-            auto [chr, pos] = *opt;
-            return {chr, pos+steps};
+            return {*opt, steps};
         }
     }
 
-    auto single_locate_step(size_t idx) const -> std::optional<std::tuple<size_t, size_t>> {
-        return csa.value(idx);
+    auto single_locate_step(size_t idx) const -> std::optional<ADEntry> {
+        return annotatedArray.value(idx);
     }
 
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(bwt, bwtRev, C, csa);
+        ar(bwt, bwtRev, C, annotatedArray);
     }
 };
 
 }
-#ifdef WORKAROUND_GCC_MACOS14
-    #pragma GCC diagnostic pop
-#endif

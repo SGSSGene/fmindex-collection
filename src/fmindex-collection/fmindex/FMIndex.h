@@ -5,91 +5,122 @@
 
 #include "../string/concepts.h"
 #include "../string/utils.h"
-#include "../suffixarray/CSA.h"
+#include "../suffixarray/SparseArray.h"
 #include "../utils.h"
 
 namespace fmindex_collection {
 
-template <String_c String, SuffixArray_c TCSA = CSA>
+template <String_c String, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<size_t, size_t>>>
 struct FMIndex {
+    using ADEntry = SparseArray::value_t;
+
     static size_t constexpr Sigma = String::Sigma;
 
     String                      bwt;
     std::array<size_t, Sigma+1> C{0};
-    TCSA   csa;
+    SparseArray annotatedArray;
 
     FMIndex() = default;
     FMIndex(FMIndex const&) = delete;
     FMIndex(FMIndex&&) noexcept = default;
-    FMIndex(std::span<uint8_t const> _bwt, TCSA _csa)
+    FMIndex(std::span<uint8_t const> _bwt, SparseArray _annotatedArray)
         : bwt{_bwt}
-        , C{computeAccumulatedC(bwt)}
-        , csa{std::move(_csa)}
+        , C{computeC(bwt)}
+        , annotatedArray{std::move(_annotatedArray)}
     {}
 
-    FMIndex(std::vector<uint8_t> _input, size_t samplingRate, size_t threadNbr, size_t seqOffset=0) {
-        auto input = std::vector<std::vector<uint8_t>>{std::move(_input)};
-        *this = FMIndex{std::move(input), samplingRate, threadNbr, seqOffset};
+    FMIndex(Sequence auto const& _sequence, SparseArray const& _annotatedSequence, size_t _threadNbr, bool omegaSorting = false) {
+        // copy text into custom buffer
+        auto inputText = createInputText(_sequence, omegaSorting);
+
+        // create bwt, bwtRev and annotatedArray
+        auto [_bwt, _annotatedArray] = createBWTAndAnnotatedArray(inputText, _annotatedSequence, _threadNbr, omegaSorting);
+        decltype(inputText){}.swap(inputText); // inputText memory can be deleted
+
+        // initialize this FMIndex properly
+        bwt = {_bwt};
+        C = computeC(bwt);
+        annotatedArray = std::move(_annotatedArray);
     }
 
-    FMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, size_t seqOffset=0) {
-        auto [totalSize, inputText, inputSizes] = createSequences(_input);
+    FMIndex(Sequence auto const& _input, size_t samplingRate, size_t threadNbr, bool useDelimiters = true, size_t seqOffset = 0)
+        : FMIndex{std::vector<std::vector<uint8_t>>{_input}, samplingRate, threadNbr, useDelimiters, seqOffset}
+    {}
 
-        if (totalSize < std::numeric_limits<int32_t>::max()) { // only 32bit SA required
-            auto [bwt, csa] = [&]() {
-                auto sa  = createSA32(inputText, threadNbr);
-                auto bwt = createBWT32(inputText, sa);
-                auto csa = TCSA{std::move(sa), samplingRate, inputSizes, /*.reverse=*/false, /*.seqOffset=*/seqOffset};
 
-                return std::make_tuple(std::move(bwt), std::move(csa));
-            }();
+    /**!\brief Creates a FMIndex with a specified sampling rate
+     *
+     * \param _input a list of sequences
+     * \param samplingRate rate of the sampling
+     */
+    FMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, bool useDelimiters = true, size_t seqOffset = 0) {
 
-            *this = FMIndex{bwt, std::move(csa)};
+        auto [totalSize, inputText, inputSizes] = [&]() {
+            if (useDelimiters) {
+                return createSequences(_input);
+            } else {
+                return createSequencesWithoutDelimiter(_input);
+            }
+        }();
 
-        } else { // required 64bit SA required
-            auto [bwt, csa] = [&]() {
-                auto sa  = createSA64(inputText, threadNbr);
-                auto bwt = createBWT64(inputText, sa);
-                auto csa = TCSA{std::move(sa), samplingRate, inputSizes, /*.reverse=*/false, /*.seqOffset=*/seqOffset};
+        size_t refId{0};
+        size_t pos{0};
 
-                return std::make_tuple(std::move(bwt), std::move(csa));
-            }();
-
-            *this = FMIndex{bwt, std::move(csa)};
+        //!TODO what about empty strings?
+        while (inputSizes[refId] == pos) {
+            refId += 1;
+            assert(inputSizes.size() < refId);
         }
+
+        auto annotatedSequence = SparseArray {
+            std::views::iota(size_t{0}, totalSize) | std::views::transform([&](size_t) -> std::optional<ADEntry> {
+                assert(refId < inputSizes.size());
+                assert(pos < inputSizes[refId]);
+
+                auto ret = std::optional<ADEntry>{std::nullopt};
+
+                if (pos % samplingRate == 0) {
+                    ret = std::make_tuple(refId+seqOffset, pos);
+                }
+
+                ++pos;
+                if (inputSizes[refId] == pos) {
+                    refId += 1;
+                    pos = 0;
+                }
+                return ret;
+            })
+        };
+
+        *this = FMIndex{inputText, annotatedSequence, threadNbr, !useDelimiters};
     }
     auto operator=(FMIndex const&) -> FMIndex& = delete;
     auto operator=(FMIndex&&) noexcept -> FMIndex& = default;
 
 
-/*    size_t memoryUsage() const requires OccTableMemoryUsage<Table> {
-        return occ.memoryUsage() + csa.memoryUsage();
-    }*/
-
     size_t size() const {
         return bwt.size();
     }
 
-    auto locate(size_t idx) const -> std::tuple<size_t, size_t> {
-        auto opt = csa.value(idx);
+    auto locate(size_t idx) const -> std::tuple<ADEntry, size_t> {
+        auto opt = annotatedArray.value(idx);
         size_t steps{};
         while(!opt) {
             auto symb = bwt.symbol(idx);
             idx = bwt.rank(idx, symb) + C[symb];
             steps += 1;
-            opt = csa.value(idx);
+            opt = annotatedArray.value(idx);
         }
-        auto [chr, pos] = *opt;
-        return std::make_tuple(chr, pos + steps);
+        return {*opt, steps};
     }
 
-    auto single_locate_step(size_t idx) const -> std::optional<std::tuple<size_t, size_t>> {
-        return csa.value(idx);
+    auto single_locate_step(size_t idx) const -> std::optional<ADEntry> {
+        return annotatedArray.value(idx);
     }
 
     template <typename Archive>
     void serialize(Archive& ar) {
-        ar(bwt, C, csa);
+        ar(bwt, C, annotatedArray);
     }
 };
 

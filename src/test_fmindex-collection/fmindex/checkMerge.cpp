@@ -17,7 +17,7 @@ TEST_CASE("checking merging of fmindices", "[FMIndex][merge]") {
     using Index  = fmindex_collection::FMIndex<String>;
 
     auto index1 = Index{data1, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1};
-    auto index2 = Index{data2, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1, /*.seqOffset=*/data1.size()};
+    auto index2 = Index{data2, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1, /*.useDelimiter=*/true, /*.seqOffset=*/data1.size()};
 
     auto index12 = fmindex_collection::fmindex::merge(index1, index2);
 
@@ -65,7 +65,9 @@ TEST_CASE("checking merging of fmindices", "[FMIndex][merge]") {
         auto idx0 = index12.bwt.rank(i, 0) + index12.C[0];
         auto idx1 = index12.bwt.rank(i, 1) + index12.C[1];
         auto idx2 = index12.bwt.rank(i, 2) + index12.C[2];
-        auto [seq, pos] = index12.locate(i);
+        auto [entry, offset] = index12.locate(i);
+        auto [seq, pos] = entry;
+        pos = pos + offset;
         INFO(i);
         CHECK(std::get<0>(expectedRanks[i]) == idx0);
         CHECK(std::get<1>(expectedRanks[i]) == idx1);
@@ -87,8 +89,8 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
     auto data2 = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{2, 1, 2, 1, 2, 1, 2, 2}};
     auto data3 = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 2, 2, 1, 1, 2, 2}};
 
-    using OccTable = fmindex_collection::string::InterleavedBitvector16<3>;
-    using Index = fmindex_collection::BiFMIndex<OccTable, fmindex_collection::DenseCSA>;
+    using String = fmindex_collection::string::InterleavedBitvector16<3>;
+    using Index = fmindex_collection::BiFMIndex<String>;
 
     auto index1 = Index{data1, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1};
     auto index2 = Index{data2, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1, /*.useDelimiters =*/true, /*.seqOffset =*/data1.size()};
@@ -141,7 +143,10 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
             auto idx0 = index12.bwt.rank(i, 0) + index12.C[0];
             auto idx1 = index12.bwt.rank(i, 1) + index12.C[1];
             auto idx2 = index12.bwt.rank(i, 2) + index12.C[2];
-            auto [seq, pos] = index12.locate(i);
+            auto [entry, offset] = index12.locate(i);
+            auto [seq, pos] = entry;
+            pos = pos + offset;
+
             INFO(i);
             CHECK(std::get<0>(expectedRanks[i]) == idx0);
             CHECK(std::get<1>(expectedRanks[i]) == idx1);
@@ -221,7 +226,10 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
                 auto idx0 = index123.bwt.rank(i, 0) + index123.C[0];
                 auto idx1 = index123.bwt.rank(i, 1) + index123.C[1];
                 auto idx2 = index123.bwt.rank(i, 2) + index123.C[2];
-                auto [seq, pos] = index123.locate(i);
+                auto [entry, offset] = index123.locate(i);
+                auto [seq, pos] = entry;
+                pos = pos + offset;
+
                 INFO(i);
                 CHECK(std::get<0>(expectedRanks[i]) == idx0);
                 CHECK(std::get<1>(expectedRanks[i]) == idx1);

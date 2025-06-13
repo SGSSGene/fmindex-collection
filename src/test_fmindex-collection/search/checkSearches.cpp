@@ -28,8 +28,9 @@ TEST_CASE("check searches with errors", "[searches]") {
             auto const& query = queries[qidx];
             fmindex_collection::search_backtracking::search(index, query, 1, [&](auto cursor, auto errors) {
                 (void)errors;
-                for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                    results.emplace_back(qidx, sid, spos);
+                for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                    auto [sid, spos] = entry;
+                    results.emplace_back(qidx, sid, spos+offset);
                 }
             });
         }
@@ -53,8 +54,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_backtracking::search(index, queries, 1, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -82,8 +85,10 @@ TEST_CASE("check searches with errors", "[searches]") {
             auto const& query = queries[qidx];
             fmindex_collection::search_backtracking_with_buffers::search(index, query, 1, buffer1, buffer2, [&](auto cursor, auto errors) {
                 (void)errors;
-                for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                    results.emplace_back(qidx, sid, spos);
+                for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                    auto [sid, spos] = entry;
+
+                    results.emplace_back(qidx, sid, spos+offset);
                 }
             });
         }
@@ -106,8 +111,10 @@ TEST_CASE("check searches with errors", "[searches]") {
     SECTION("search no errors, all search") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_no_errors::search(index, queries, [&](auto qidx, auto cursor) {
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -122,8 +129,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_one_error::search(index, queries, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -148,8 +157,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_pseudo::search</*EditDistance=*/true>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -184,8 +195,9 @@ TEST_CASE("check searches with errors", "[searches]") {
             auto const& query = queries[qidx];
             fmindex_collection::search_pseudo::search</*EditDistance=*/true>(index, query, search_scheme, [&](auto cursor, auto errors) {
                 (void)errors;
-                for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                    results.emplace_back(qidx, sid, spos);
+                for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                    auto [sid, spos] = entry;
+                    results.emplace_back(qidx, sid, spos+offset);
                 }
             });
         }
@@ -220,8 +232,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_pseudo::search</*EditDistance=*/false>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -247,8 +261,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng12::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -281,8 +297,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng14::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -307,8 +325,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng15::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -333,8 +353,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng16::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -367,8 +389,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng17::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -393,8 +417,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng20::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -428,8 +454,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -454,8 +482,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21::search_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -481,8 +511,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21::search_best(index, queries, search_schemes, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -509,8 +541,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21::search_best_n(index, queries, search_schemes, 3, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -533,8 +567,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V2::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -559,8 +595,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V3::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -585,8 +623,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V4::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -611,8 +651,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V5::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -637,8 +679,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V6::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -663,8 +707,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V6::search_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -690,8 +736,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V6::search_best(index, queries, search_schemes, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -718,8 +766,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V6::search_best_n(index, queries, search_schemes, 3, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -742,8 +792,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V7::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -768,8 +820,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V7::search_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -792,8 +846,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V7::search_best(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -818,8 +874,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmindex_collection::search_ng21V7::search_best_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
@@ -844,8 +902,10 @@ TEST_CASE("check searches with errors", "[searches]") {
         fmindex_collection::search_ng22::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors, auto const& action) {
             (void)errors;
             (void)action;
-            for (auto [sid, spos] : fmindex_collection::LocateLinear{index, cursor}) {
-                results.emplace_back(qidx, sid, spos);
+            for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
             }
         });
 
