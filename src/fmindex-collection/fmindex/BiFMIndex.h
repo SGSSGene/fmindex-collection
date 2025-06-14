@@ -17,7 +17,8 @@ template <String_c String, SparseArray_c SparseArray = suffixarray::SparseArray<
 struct BiFMIndex {
     using ADEntry = SparseArray::value_t;
 
-    static size_t constexpr Sigma = String::Sigma;
+    static size_t constexpr Sigma     = String::Sigma;
+    static size_t constexpr FirstSymb = 1;
 
     String bwt;
     String bwtRev;
