@@ -52,6 +52,16 @@ constexpr auto to_unsigned_like(T v) noexcept
 {
     return static_cast<std::make_unsigned_t<T>>(v);
 }
+#if defined(_MSC_VER) && !defined(__clang__)
+constexpr auto to_unsigned_like(std::_Signed128 v) noexcept
+{
+    return static_cast<uint64_t>(v);
+}
+constexpr auto to_unsigned_like(std::_Unsigned128 v) noexcept
+{
+    return static_cast<uint64_t>(v);
+}
+#endif
 
 } // namespace seqan::stl::detail::chunk
 
@@ -300,95 +310,8 @@ private:
     V base_;
     std::ranges::range_difference_t<V> n_;
 
-    template <bool>
-    class iterator;
-
-public:
-    chunk_view()
-        requires std::default_initializable<V>
-    = default;
-
-    constexpr explicit chunk_view(V base, std::ranges::range_difference_t<V> n) : base_{std::move(base)}, n_{n}
-    {
-        assert(n > 0);
-    }
-
-    constexpr V base() const &
-        requires std::copy_constructible<V>
-    {
-        return base_;
-    }
-    constexpr V base() &&
-    {
-        return std::move(base_);
-    }
-
-    constexpr auto begin()
-        requires (!seqan::stl::detail::simple_view<V>)
-    {
-        return iterator<false>{this, std::ranges::begin(base_)};
-    }
-
-    constexpr auto begin() const
-        requires std::ranges::forward_range<V const>
-    {
-        return iterator<true>{this, std::ranges::begin(base_)};
-    }
-
-    constexpr auto end()
-        requires (!seqan::stl::detail::simple_view<V>)
-    {
-        if constexpr (std::ranges::common_range<V> && std::ranges::sized_range<V>)
-        {
-            auto missing = (n_ - std::ranges::distance(base_) % n_) % n_;
-            return iterator<false>{this, std::ranges::end(base_), missing};
-        }
-        else if constexpr (std::ranges::common_range<V> && !std::ranges::bidirectional_range<V>)
-        {
-            return iterator<false>{this, std::ranges::end(base_)};
-        }
-        else
-        {
-            return std::default_sentinel;
-        }
-    }
-
-    constexpr auto end() const
-        requires std::ranges::forward_range<V const>
-    {
-        if constexpr (std::ranges::common_range<V const> && std::ranges::sized_range<V const>)
-        {
-            auto missing = (n_ - std::ranges::distance(base_) % n_) % n_;
-            return iterator<true>{this, std::ranges::end(base_), missing};
-        }
-        else if constexpr (std::ranges::common_range<V const> && !std::ranges::bidirectional_range<V const>)
-        {
-            return iterator<true>{this, std::ranges::end(base_)};
-        }
-        else
-        {
-            return std::default_sentinel;
-        }
-    }
-
-    constexpr auto size()
-        requires std::ranges::sized_range<V>
-    {
-        return seqan::stl::detail::chunk::to_unsigned_like(
-            seqan::stl::detail::chunk::div_ceil(std::ranges::distance(base_), n_));
-    }
-    constexpr auto size() const
-        requires std::ranges::sized_range<V const>
-    {
-        return seqan::stl::detail::chunk::to_unsigned_like(
-            seqan::stl::detail::chunk::div_ceil(std::ranges::distance(base_), n_));
-    }
-};
-
-template <std::ranges::view V>
-    requires std::ranges::forward_range<V>
 template <bool Const>
-class chunk_view<V>::iterator
+class iterator
 {
 private:
     using Parent = seqan::stl::detail::maybe_const<Const, chunk_view>;
@@ -579,6 +502,88 @@ public:
         requires std::sized_sentinel_for<std::ranges::sentinel_t<Base>, std::ranges::iterator_t<Base>>
     {
         return -(y - x);
+    }
+};
+
+public:
+    chunk_view()
+        requires std::default_initializable<V>
+    = default;
+
+    constexpr explicit chunk_view(V base, std::ranges::range_difference_t<V> n) : base_{std::move(base)}, n_{n}
+    {
+        assert(n > 0);
+    }
+
+    constexpr V base() const &
+        requires std::copy_constructible<V>
+    {
+        return base_;
+    }
+    constexpr V base() &&
+    {
+        return std::move(base_);
+    }
+
+    constexpr auto begin()
+        requires (!seqan::stl::detail::simple_view<V>)
+    {
+        return iterator<false>{this, std::ranges::begin(base_)};
+    }
+
+    constexpr auto begin() const
+        requires std::ranges::forward_range<V const>
+    {
+        return iterator<true>{this, std::ranges::begin(base_)};
+    }
+
+    constexpr auto end()
+        requires (!seqan::stl::detail::simple_view<V>)
+    {
+        if constexpr (std::ranges::common_range<V> && std::ranges::sized_range<V>)
+        {
+            auto missing = (n_ - std::ranges::distance(base_) % n_) % n_;
+            return iterator<false>{this, std::ranges::end(base_), missing};
+        }
+        else if constexpr (std::ranges::common_range<V> && !std::ranges::bidirectional_range<V>)
+        {
+            return iterator<false>{this, std::ranges::end(base_)};
+        }
+        else
+        {
+            return std::default_sentinel;
+        }
+    }
+
+    constexpr auto end() const
+        requires std::ranges::forward_range<V const>
+    {
+        if constexpr (std::ranges::common_range<V const> && std::ranges::sized_range<V const>)
+        {
+            auto missing = (n_ - std::ranges::distance(base_) % n_) % n_;
+            return iterator<true>{this, std::ranges::end(base_), missing};
+        }
+        else if constexpr (std::ranges::common_range<V const> && !std::ranges::bidirectional_range<V const>)
+        {
+            return iterator<true>{this, std::ranges::end(base_)};
+        }
+        else
+        {
+            return std::default_sentinel;
+        }
+    }
+
+    constexpr auto size()
+        requires std::ranges::sized_range<V>
+    {
+        return seqan::stl::detail::chunk::to_unsigned_like(
+            seqan::stl::detail::chunk::div_ceil(std::ranges::distance(base_), n_));
+    }
+    constexpr auto size() const
+        requires std::ranges::sized_range<V const>
+    {
+        return seqan::stl::detail::chunk::to_unsigned_like(
+            seqan::stl::detail::chunk::div_ceil(std::ranges::distance(base_), n_));
     }
 };
 
