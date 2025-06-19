@@ -4,6 +4,7 @@
 #pragma once
 
 #include "bitset_popcount.h"
+#include "std/chunk_view.hpp"
 #include "concepts.h"
 #include "string/concepts.h"
 
@@ -70,7 +71,7 @@ struct alignas(std::max(alignof(std::bitset<N>), Align?alignAsValue(N):size_t{1}
 
 };
 
-constexpr inline auto view_bool_as_uint64 = std::views::chunk(64) | std::views::transform([](auto r) -> uint64_t {
+constexpr inline auto view_bool_as_uint64 = seqan::stl::views::chunk(64) | std::views::transform([](auto r) -> uint64_t {
     auto v = uint64_t{};
     auto iter = r.begin();
     for (size_t j{0}; iter != r.end(); ++j, ++iter) {
@@ -80,7 +81,7 @@ constexpr inline auto view_bool_as_uint64 = std::views::chunk(64) | std::views::
 });
 
 template <size_t N>
-constexpr inline auto view_as_bitset = std::views::chunk(N / 64) | std::views::transform([](auto r) -> std::bitset<N> {
+constexpr inline auto view_as_bitset = seqan::stl::views::chunk(N / 64) | std::views::transform([](auto r) -> std::bitset<N> {
     static_assert(N % 64 == 0, "must be a multiple of 64");
     auto v = std::bitset<N>{};
     auto iter = r.begin();
