@@ -38,13 +38,14 @@ struct L0_NBitvector {
 
     // constructor accepting view to bools or already compact uint64_t
     template <std::ranges::sized_range range_t>
-    L0_NBitvector(range_t&& _range)
-        : L0_NBitvector{convertToBitsetView<bits_ct>(std::forward<range_t>(_range))}
-    {
+    L0_NBitvector(range_t&& _range) {
+        auto _size = _range.size();
         if constexpr (std::same_as<std::ranges::range_value_t<range_t>, uint64_t>) {
-            totalLength = _range.size()*64;
+            *this = {std::forward<range_t>(_range) | view_as_bitset<bits_ct>};
+            totalLength = _size*64;
         } else if constexpr (std::convertible_to<std::ranges::range_value_t<range_t>, bool>) {
-            totalLength = _range.size();
+            *this = {std::forward<range_t>(_range) | view_bool_as_uint64 | view_as_bitset<bits_ct>};
+            totalLength = _size;
         } else {
             []<bool b=false>() {
                 static_assert(b, "Must be an uint64_t or convertible to bool");
