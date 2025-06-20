@@ -104,20 +104,20 @@ auto loadQueries(std::string path, bool reverse, bool convertUnknownChar) {
     return std::make_tuple(queries, queryInfos);
 }
 
-template <typename CSA, typename String>
+template <typename CSA, size_t Sigma, template <size_t> typename String>
 auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr, bool convertUnknownChar) {
     auto sw = StopWatch{};
     auto indexPath = path + ".index";
     if (!std::filesystem::exists(indexPath)) {
-        auto [ref, refInfo] = loadQueries<String::Sigma>(path, false, convertUnknownChar);
+        auto [ref, refInfo] = loadQueries<Sigma>(path, false, convertUnknownChar);
         auto index = [&]() {
             auto refs = std::vector<std::vector<uint8_t>>{};
             refs.resize(1);
 
-            auto index = std::optional<fmindex_collection::BiFMIndex<String>>{};
+            auto index = std::optional<fmindex_collection::BiFMIndex<Sigma, String>>{};
             for (auto& r : ref) {
                 refs[0] = std::move(r);
-                auto newIndex = fmindex_collection::BiFMIndex<String>{refs, samplingRate, threadNbr};
+                auto newIndex = fmindex_collection::BiFMIndex<Sigma, String>{refs, samplingRate, threadNbr};
                 if (!index) {
                     index = std::move(newIndex);
                 } else {
@@ -134,21 +134,21 @@ auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr, bool con
     } else {
         auto ifs     = std::ifstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryInputArchive{ifs};
-        auto index = fmindex_collection::BiFMIndex<String>{};
+        auto index = fmindex_collection::BiFMIndex<Sigma, String>{};
         archive(index);
         std::cout << "loading took " << sw.peek() << "s\n";
         return index;
     }
 }
 
-template <typename CSA, typename String>
+template <typename CSA, size_t Sigma, template <size_t> typename String>
 auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, bool partialBuildUp, bool convertUnknownChar) {
     auto sw = StopWatch{};
     auto indexPath = path + ".tab.dense.index";
 
     if (!std::filesystem::exists(indexPath)) {
-        auto [ref, refInfo] = loadQueries<String::Sigma>(path, false, convertUnknownChar);
-        using Index = fmindex_collection::BiFMIndex<String>;
+        auto [ref, refInfo] = loadQueries<Sigma>(path, false, convertUnknownChar);
+        using Index = fmindex_collection::BiFMIndex<Sigma, String>;
         auto index = [&]() -> Index {
             if (!partialBuildUp) {
                 return {ref, samplingRate, threadNbr};
@@ -252,7 +252,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
     } else {
         auto ifs     = std::ifstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryInputArchive{ifs};
-        auto index = fmindex_collection::BiFMIndex<String>{};
+        auto index = fmindex_collection::BiFMIndex<Sigma, String>{};
         archive(index);
         std::cout << "loading took " << sw.peek() << "s\n";
         return index;
@@ -261,5 +261,5 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
 
 template <size_t Sigma, typename CB>
 void visitAllStrings(CB cb) {
-    cb.template operator()<fmindex_collection::string::InterleavedBitvector16<Sigma>>();
+    cb.template operator()<Sigma, fmindex_collection::string::InterleavedBitvector16>();
 }

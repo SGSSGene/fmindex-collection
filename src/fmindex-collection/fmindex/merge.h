@@ -134,16 +134,16 @@ auto merge(FMIndex<SigmaLhs, StringLhs, SuffixArray> const& lhs, FMIndex<SigmaRh
 /**
  * Merges two bidirectional FMIndices into a new one
  */
-template <typename Res = void, String_c StrLhs, String_c StrRhs, typename SuffixArray>
-auto merge(BiFMIndex<StrLhs, SuffixArray> const& index1, BiFMIndex<StrRhs, SuffixArray> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, StrLhs, Res>, SuffixArray> {
+template <size_t SigmaLhs, template <size_t> typename StrLhs, size_t SigmaRhs, template <size_t> typename StrRhs, typename SuffixArray>
+auto merge(BiFMIndex<SigmaLhs, StrLhs, SuffixArray> const& lhs, BiFMIndex<SigmaRhs, StrRhs, SuffixArray> const& rhs) -> BiFMIndex<std::max(SigmaLhs, SigmaRhs), StrLhs, SuffixArray> {
     // compute R of fwd BWT and merge bwt and csa
-    auto R              = detail::computeInterleavingR(index1.bwt, index2.bwt);
-    auto mergedBwt      = detail::mergeBwt(R, index1.bwt, index2.bwt);
-    auto annotatedArray = detail::mergeSparseArrays(R, index1.annotatedArray, index2.annotatedArray);
+    auto R              = detail::computeInterleavingR(lhs.bwt, rhs.bwt);
+    auto mergedBwt      = detail::mergeBwt(R, lhs.bwt, rhs.bwt);
+    auto annotatedArray = detail::mergeSparseArrays(R, lhs.annotatedArray, rhs.annotatedArray);
 
     // compute R of rev BWT and merge BwtRev (reusing R to save on space)
-    R                 = detail::computeInterleavingR(index1.bwtRev, index2.bwtRev);
-    auto mergedBwtRev = detail::mergeBwt(R, index1.bwtRev, index2.bwtRev);
+    R                 = detail::computeInterleavingR(lhs.bwtRev, rhs.bwtRev);
+    auto mergedBwtRev = detail::mergeBwt(R, lhs.bwtRev, rhs.bwtRev);
 
     return {mergedBwt, mergedBwtRev, std::move(annotatedArray)};
 }

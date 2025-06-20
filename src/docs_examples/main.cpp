@@ -13,11 +13,8 @@ int main() {
         {1, 2, 1, 2, 3, 4, 3},                // seqId 1
     };
 
-    // Pick String with Ranksupport implementation
-    using String = fmc::string::FlattenedBitvectors_512_64k<5>; // 5 number of different characters
-
-    // Creating an bidirectional FM-Inddex
-    auto index = fmc::BiFMIndex<String>{reference, /*samplingRate*/16, /*threadNbr*/1};
+    // Creating an bidirectional FM-Inddex over an alphabet with numbers 0-4
+    auto index = fmc::BiFMIndex<5>{reference, /*samplingRate*/16, /*threadNbr*/1};
 
     // The stuff you are searching for
     auto query = std::vector<uint8_t>{2, 3};

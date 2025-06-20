@@ -89,8 +89,7 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
     auto data2 = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{2, 1, 2, 1, 2, 1, 2, 2}};
     auto data3 = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 2, 2, 1, 1, 2, 2}};
 
-    using String = fmindex_collection::string::InterleavedBitvector16<3>;
-    using Index = fmindex_collection::BiFMIndex<String>;
+    using Index = fmindex_collection::BiFMIndex<3>;
 
     auto index1 = Index{data1, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1};
     auto index2 = Index{data2, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1, /*.useDelimiters =*/true, /*.seqOffset =*/data1.size()};

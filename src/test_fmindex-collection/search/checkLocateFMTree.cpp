@@ -12,8 +12,7 @@
 
 
 TEST_CASE("locating using LocateFMTree", "[locate][fmtree]") {
-    using String = fmindex_collection::string::InterleavedBitvector16<256>;
-    using Index = fmindex_collection::BiFMIndex<String>;
+    using Index = fmindex_collection::BiFMIndex<256>;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'B', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'C', 'A', 'A', 'A'}};

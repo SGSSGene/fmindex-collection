@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#include "../string/FlattenedBitvectors_L0L1.h"
 #include "../string/concepts.h"
 #include "../suffixarray/SparseArray.h"
 #include "../suffixarray/utils.h"
@@ -13,15 +14,16 @@
 
 namespace fmindex_collection {
 
-template <String_c String, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<size_t, size_t>>>
+template <size_t TSigma, template <size_t> typename String = string::FlattenedBitvectors_512_64k, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<size_t, size_t>>>
+    requires String_c<String<TSigma>>
 struct BiFMIndex {
     using ADEntry = SparseArray::value_t;
 
-    static size_t constexpr Sigma     = String::Sigma;
+    static size_t constexpr Sigma     = TSigma;
     static size_t constexpr FirstSymb = 1;
 
-    String bwt;
-    String bwtRev;
+    String<Sigma> bwt;
+    String<Sigma> bwtRev;
     std::array<size_t, Sigma+1> C{};
     SparseArray annotatedArray;
 
@@ -126,7 +128,7 @@ struct BiFMIndex {
     }
 
     auto locate(size_t idx) const -> std::tuple<ADEntry, size_t> {
-        if constexpr (requires(String t) {{ t.hasValue(size_t{}) }; }) {
+        if constexpr (requires(String<Sigma> t) {{ t.hasValue(size_t{}) }; }) {
             bool v = bwt.hasValue(idx);
             uint64_t steps{};
             while (!v) {
@@ -140,7 +142,7 @@ struct BiFMIndex {
             auto opt = annotatedArray.value(idx);
             uint64_t steps{};
             while (!opt) {
-                if constexpr (requires(String t) { { t.rank_symbol(size_t{}) }; }) {
+                if constexpr (requires(String<Sigma> t) { { t.rank_symbol(size_t{}) }; }) {
                     idx = bwt.rank_symbol(idx);
                 } else {
                     auto symb = bwt.symbol(idx);

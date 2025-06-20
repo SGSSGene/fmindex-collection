@@ -14,8 +14,7 @@
 
 
 TEST_CASE("check search with hamming and scoring matrix with errors", "[searches][!benchmark][hamming][scoring-matrix]") {
-    using String = fmindex_collection::string::InterleavedBitvector16<21>;
-    using Index = fmindex_collection::BiFMIndex<String>;
+    using Index = fmindex_collection::BiFMIndex<21>;
 
     SECTION("hamming_sm, all search") {
         srand(0);

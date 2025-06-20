@@ -13,8 +13,7 @@
 
 TEST_CASE("benchmark searches with errors", "[searches][!benchmark][bifmindex]") {
     SECTION("benchmarking") {
-        using String = fmindex_collection::string::InterleavedBitvector16<256>;
-        using Index = fmindex_collection::BiFMIndex<String>;
+        using Index = fmindex_collection::BiFMIndex<256>;
 
         srand(0);
 

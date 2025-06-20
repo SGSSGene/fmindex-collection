@@ -11,11 +11,9 @@
 #include <fstream>
 
 TEST_CASE("checking bidirectional fm index without delimiters", "[bifmindex-nd]") {
-    using String = fmindex_collection::string::PairedFlattenedBitvectors_512_64k<255>;
-
     auto input = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{1, 2, 0}};
     SECTION("test index without delimiter") {
-        auto index = fmindex_collection::BiFMIndex<String>{input, /*.samplingRate=*/ 1, /*.threadNbr=*/1, false};
+        auto index = fmindex_collection::BiFMIndex<255>{input, /*.samplingRate=*/ 1, /*.threadNbr=*/1, false};
 
         auto cursor = fmindex_collection::BiFMIndexCursor{index};
         REQUIRE(cursor.count() == index.size());
@@ -86,8 +84,6 @@ TEST_CASE("checking bidirectional fm index without delimiters", "[bifmindex-nd]"
 }
 
 TEST_CASE("checking bidirectional fm index without delimiters - bwt/sa", "[bifmindex-nd]") {
-    using String = fmindex_collection::string::PairedFlattenedBitvectors_512_64k<255>;
-
     auto input = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{1, 2, 0, 0, 1, 2}};
     auto expectedSA = std::vector<std::tuple<std::tuple<size_t, size_t>, size_t>> {
         {{0, 2}, 0},
@@ -98,7 +94,7 @@ TEST_CASE("checking bidirectional fm index without delimiters - bwt/sa", "[bifmi
         {{0, 5}, 0},
     };
 
-    auto index = fmindex_collection::BiFMIndex<String>{input, /*.samplingRate=*/ 1, /*.threadNbr=*/1, false};
+    auto index = fmindex_collection::BiFMIndex<255>{input, /*.samplingRate=*/ 1, /*.threadNbr=*/1, false};
     CHECK(index.size() == expectedSA.size());
 
     for (size_t i{}; i < index.size(); ++i) {

@@ -15,9 +15,9 @@ namespace fmindex_collection {
 template <typename Index>
 struct SelectIndexCursor;
 
-template <typename String, typename TCSA>
-struct SelectIndexCursor<BiFMIndex<String, TCSA>> {
-    using cursor_t = BiFMIndexCursor<BiFMIndex<String, TCSA>>;
+template <size_t TSigma, template <size_t> typename String, typename SparseArray>
+struct SelectIndexCursor<BiFMIndex<TSigma, String, SparseArray>> {
+    using cursor_t = BiFMIndexCursor<BiFMIndex<TSigma, String, SparseArray>>;
 };
 
 template <size_t TSigma, template <size_t> typename String, typename SparseArray>
@@ -44,9 +44,9 @@ struct SelectIndexCursor<ReverseFMIndex<String, TCSA>> {
 template <typename Index>
 struct SelectLeftIndexCursor;
 
-template <typename String, typename TCSA>
-struct SelectLeftIndexCursor<BiFMIndex<String, TCSA>> {
-    using cursor_t = LeftBiFMIndexCursor<BiFMIndex<String, TCSA>>;
+template <size_t TSigma, template <size_t> typename String, typename SuffixArray>
+struct SelectLeftIndexCursor<BiFMIndex<TSigma, String, SuffixArray>> {
+    using cursor_t = LeftBiFMIndexCursor<BiFMIndex<TSigma, String, SuffixArray>>;
 };
 
 template <size_t TSigma, template <size_t> typename String, typename SparseArray>

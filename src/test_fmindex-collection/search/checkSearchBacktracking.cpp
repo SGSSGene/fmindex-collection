@@ -10,11 +10,9 @@
 #include <fmindex-collection/search_scheme/generator/all.h>
 
 TEST_CASE("searching with backtracking", "[search]") {
-    using String = fmindex_collection::string::InterleavedBitvector16<255>;
-
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
 
-    auto index = fmindex_collection::BiFMIndex<String>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmindex_collection::BiFMIndex<255>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         REQUIRE(input.size()+1 == index.size());
@@ -42,12 +40,10 @@ TEST_CASE("searching with backtracking", "[search]") {
 }
 
 TEST_CASE("searching with collection and backtracking", "[collection]") {
-    using String = fmindex_collection::string::InterleavedBitvector16<255>;
-
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
 
-    auto index = fmindex_collection::BiFMIndex<String>{input, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmindex_collection::BiFMIndex<255>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         auto expected = std::vector<uint8_t>{'A', 'A', 'A', 'A', 'A', 'A', 'B', 'C', 'B', '\0', 'C', '\0',

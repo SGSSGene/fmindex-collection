@@ -42,7 +42,7 @@ int main(int argc, char const* const* argv) {
     auto reference = std::vector<std::vector<uint8_t>>{{1, 3, 1, 4}, {2, 1, 4, 2, 3}};
     {
         std::cout << "\nBiFMIndex:\n";
-        auto index = BiFMIndex<String<Sigma>>{reference, /*samplingRate*/16, /*threadNbr*/1};
+        auto index = FMIndex<Sigma>{reference, /*samplingRate*/16, /*threadNbr*/1};
         auto queries = std::vector<std::vector<uint8_t>>{{1, 3}, {4, 2}};
 
         search_backtracking::search(index, queries, 0, [&](size_t queryId, auto cursor, size_t errors) {
