@@ -321,6 +321,9 @@ private:
     template <bool Const>
     using iterator = chunk_view_iterator<Const, V>;
 
+    friend iterator<false>;
+    friend iterator<true>;
+
 public:
     chunk_view()
         requires std::default_initializable<V>
@@ -425,7 +428,7 @@ private:
         missing_{missing}
     {}
 
-    friend chunk_view;
+    friend chunk_view<V>;
 
 public:
     using iterator_category = std::input_iterator_tag;
