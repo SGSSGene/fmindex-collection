@@ -3,18 +3,12 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "utils.h"
 
-#ifdef FMC_USE_AWFMINDEX
-    #include "AWFMIndex.h"
-    #define STRINGSWITHRANK(Sigma) ALLSTRINGSWITHRANK(Sigma), AWFMIndex<Sigma>
-#else
-    #define STRINGSWITHRANK(Sigma) ALLSTRINGSWITHRANK(Sigma)
-#endif
-
 TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string][all_sizes]") {
     auto testSigma = []<size_t Sigma>() {
         INFO("Sigma " << Sigma);
         call_with_templates<
-            STRINGSWITHRANK(Sigma)>([&]<typename String>() {
+            STRINGSWITHRANK>([&]<template <size_t> typename _String>() {
+            using String = _String<Sigma>;
             auto vector_name = getName<String>();
             INFO(vector_name);
 
@@ -61,7 +55,8 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
 
     SECTION("checks") {
         call_with_templates<
-            ALLSTRINGSWITHRANK(255)>([&]<typename String>() {
+            ALLSTRINGSWITHRANK>([&]<template <size_t> typename _String>() {
+            using String = _String<255>;
             auto vector_name = getName<String>();
             INFO(vector_name);
 
@@ -353,7 +348,8 @@ TEST_CASE("check symbol vectors construction on text longer than 255 characters"
 
     SECTION("checks") {
         call_with_templates<
-            ALLSTRINGSWITHRANK(255)>([&]<typename String>() {
+            ALLSTRINGSWITHRANK>([&]<template <size_t> typename _String>() {
+            using String = _String<255>;
 
             auto vector = String{text};
 

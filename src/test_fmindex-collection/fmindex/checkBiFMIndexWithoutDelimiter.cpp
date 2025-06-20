@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../string/allStrings.h"
+
+#include "../string/utils.h"
 
 #include <algorithm>
 #include <catch2/catch_all.hpp>
@@ -9,8 +10,8 @@
 #include <fmindex-collection/fmindex/BiFMIndexCursor.h>
 #include <fstream>
 
-TEMPLATE_TEST_CASE("checking bidirectional fm index without delimiters", "[BiFMIndex-nd]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
+TEST_CASE("checking bidirectional fm index without delimiters", "[bifmindex-nd]") {
+    using String = fmindex_collection::string::PairedFlattenedBitvectors_512_64k<255>;
 
     auto input = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{1, 2, 0}};
     SECTION("test index without delimiter") {
@@ -84,8 +85,8 @@ TEMPLATE_TEST_CASE("checking bidirectional fm index without delimiters", "[BiFMI
     }
 }
 
-TEMPLATE_TEST_CASE("checking bidirectional fm index without delimiters - bwt/sa", "[BiFMIndex-nd]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
+TEST_CASE("checking bidirectional fm index without delimiters - bwt/sa", "[bifmindex-nd]") {
+    using String = fmindex_collection::string::PairedFlattenedBitvectors_512_64k<255>;
 
     auto input = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{1, 2, 0, 0, 1, 2}};
     auto expectedSA = std::vector<std::tuple<std::tuple<size_t, size_t>, size_t>> {

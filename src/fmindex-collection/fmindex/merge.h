@@ -121,16 +121,11 @@ auto mergeSparseArrays(std::vector<bool> const& R, suffixarray::SparseArray<T> c
 /**
  * Merges two FMIndices into a new one
  */
-template <typename Res = void, String_c StringLhs, String_c StringRhs, typename TCSA>
-auto merge(FMIndex<StringLhs, TCSA> const& index1, FMIndex<StringRhs, TCSA> const& index2) -> FMIndex<std::conditional_t<std::is_void_v<Res>, StringLhs, Res>, TCSA> {
-//    auto R              = detail::computeInterleavingR(index1.bwt, index2.bwt);
-//    auto mergedBwt      = detail::mergeBwt(R, index1.bwt, index2.bwt);
-//    auto annotatedArray = detail::mergeSparseArrays(R, index1.annotatedArray, index2.annotatedArray);
-//
-//    return {mergedBwt, std::move(annotatedArray)};
-    auto R         = detail::computeInterleavingR(index1.bwt, index2.bwt);
-    auto mergedBwt = detail::mergeBwt(R, index1.bwt, index2.bwt);
-    auto annotatedArray = detail::mergeSparseArrays(R, index1.annotatedArray, index2.annotatedArray);
+template <size_t SigmaLhs, template <size_t> typename StringLhs, size_t SigmaRhs, template <size_t> typename StringRhs, typename SuffixArray>
+auto merge(FMIndex<SigmaLhs, StringLhs, SuffixArray> const& lhs, FMIndex<SigmaRhs, StringRhs, SuffixArray> const& rhs) -> FMIndex<std::max(SigmaLhs, SigmaRhs), StringLhs, SuffixArray> {
+    auto R         = detail::computeInterleavingR(lhs.bwt, rhs.bwt);
+    auto mergedBwt = detail::mergeBwt(R, lhs.bwt, rhs.bwt);
+    auto annotatedArray = detail::mergeSparseArrays(R, lhs.annotatedArray, rhs.annotatedArray);
 
     return {mergedBwt, std::move(annotatedArray)};
 
@@ -139,8 +134,8 @@ auto merge(FMIndex<StringLhs, TCSA> const& index1, FMIndex<StringRhs, TCSA> cons
 /**
  * Merges two bidirectional FMIndices into a new one
  */
-template <typename Res = void, String_c StrLhs, String_c StrRhs, typename TCSA>
-auto merge(BiFMIndex<StrLhs, TCSA> const& index1, BiFMIndex<StrRhs, TCSA> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, StrLhs, Res>, TCSA> {
+template <typename Res = void, String_c StrLhs, String_c StrRhs, typename SuffixArray>
+auto merge(BiFMIndex<StrLhs, SuffixArray> const& index1, BiFMIndex<StrRhs, SuffixArray> const& index2) -> BiFMIndex<std::conditional_t<std::is_void_v<Res>, StrLhs, Res>, SuffixArray> {
     // compute R of fwd BWT and merge bwt and csa
     auto R              = detail::computeInterleavingR(index1.bwt, index2.bwt);
     auto mergedBwt      = detail::mergeBwt(R, index1.bwt, index2.bwt);

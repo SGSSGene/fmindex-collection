@@ -1,13 +1,14 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
+
 #include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/ReverseFMIndex.h>
 #include <fmindex-collection/fmindex/ReverseFMIndexCursor.h>
 
-TEST_CASE("checking unidirectional reversed fm index cursor", "[ReverseFMIndexCursor]") {
+TEST_CASE("checking unidirectional reversed fm index cursor", "[reversefmindexcursor]") {
 
     auto data = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 1, 2, 2, 2}};
     using String = fmindex_collection::string::InterleavedBitvector16<256>;

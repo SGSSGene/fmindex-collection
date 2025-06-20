@@ -1,13 +1,14 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
+
 #include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/MirroredBiFMIndex.h>
 #include <fmindex-collection/fmindex/MirroredBiFMIndexCursor.h>
 
-TEST_CASE("checking biidirectional fm index cursor", "[MirroredBiFMIndexCursor]") {
+TEST_CASE("checking biidirectional fm index cursor", "[mirroredbifmindexcursor]") {
 
     auto data = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 2, 2}};
     using String = fmindex_collection::string::InterleavedBitvector16<256>;

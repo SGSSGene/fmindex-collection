@@ -1,14 +1,16 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../string/allStrings.h"
+
+#include "../string/utils.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/ReverseFMIndex.h>
 #include <fmindex-collection/suffixarray/DenseCSA.h>
 
-TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
+TEST_CASE("checking dense reverse fm index", "[densereversefmindex]") {
+    using String = fmindex_collection::string::PairedFlattenedBitvectors_512_64k<255>;
+
     using DenseVector = fmindex_collection::DenseVector;
 
     INFO("String " << typeid(String).name());
@@ -151,5 +153,4 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
             CHECK(entry == std::make_tuple(0, sa[i]+offset));
         }
     }
-
 }

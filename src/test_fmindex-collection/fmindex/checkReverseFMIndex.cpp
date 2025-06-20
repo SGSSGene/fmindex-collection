@@ -1,14 +1,15 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../string/allStrings.h"
+
+#include "../string/utils.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/ReverseFMIndex.h>
 #include <fstream>
 
-TEMPLATE_TEST_CASE("checking reverse unidirectional fm index", "[ReverseFMIndex]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
+TEST_CASE("checking reverse unidirectional fm index", "[reversefmindex]") {
+    using String = fmindex_collection::string::PairedFlattenedBitvectors_512_64k<255>;
 
     auto bwt = std::vector<uint8_t>{'H', '\0', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};
     auto sa  = std::vector<uint64_t>{0, 11, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};

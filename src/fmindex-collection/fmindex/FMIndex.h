@@ -5,18 +5,20 @@
 
 #include "../string/concepts.h"
 #include "../string/utils.h"
+#include "../string/FlattenedBitvectors_L0L1.h"
 #include "../suffixarray/SparseArray.h"
 #include "../utils.h"
 
 namespace fmindex_collection {
 
-template <String_c String, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<size_t, size_t>>>
+template <size_t TSigma, template <size_t> typename String = string::FlattenedBitvectors_512_64k, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<size_t, size_t>>>
+    requires String_c<String<TSigma>>
 struct FMIndex {
     using ADEntry = SparseArray::value_t;
 
-    static size_t constexpr Sigma = String::Sigma;
+    static size_t constexpr Sigma = TSigma;
 
-    String                      bwt;
+    String<Sigma>               bwt;
     std::array<size_t, Sigma+1> C{0};
     SparseArray annotatedArray;
 

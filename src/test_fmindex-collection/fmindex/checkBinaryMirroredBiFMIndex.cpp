@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
+
 #include "../bitvector/allBitVectors.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/BinaryMirroredBiFMIndex.h>
 
-TEMPLATE_TEST_CASE("checking binary mirrored bidirectional fm index", "[BinaryMirroredBiFMIndex]", ALLBITVECTORS) {
+TEMPLATE_TEST_CASE("checking binary mirrored bidirectional fm index", "[binarymirroredbimmindex]", ALLBITVECTORS) {
     using String = TestType;
     // T = 011101010
     auto bwt    = std::vector<uint8_t> {1,  1,  1,  1,  0,  1,  1,  0,  0,  1,  0,  1,  0,  0,  1,  1,  0,  0};

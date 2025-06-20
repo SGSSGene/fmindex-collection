@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
+
 #include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
@@ -11,11 +12,10 @@
 
 namespace fmc = fmindex_collection;
 
-TEST_CASE("checking unidirectional fm index cursor", "[FMIndexCursor]") {
+TEST_CASE("checking unidirectional fm index cursor", "[fmindexcursor]") {
 
     auto data = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 1, 2, 2, 2}};
-    using String = fmindex_collection::string::MultiBitvector<256>;
-    using Index = fmindex_collection::FMIndex<String>;
+    using Index = fmindex_collection::FMIndex<256>;
     auto index = Index{data, /*.samplingRate=*/1, /*.threadNbr=*/1};
 
     auto cursor = fmindex_collection::FMIndexCursor{index};

@@ -25,9 +25,9 @@ struct VariableFMIndex {
     template <size_t Sigma>
     using Vector = string::InterleavedBitvector16<Sigma>;
 
-    using Index4  = FMIndex<Vector<5>>;
-    using Index5  = FMIndex<Vector<6>>;
-    using Index16 = FMIndex<Vector<17>>;
+    using Index4  = FMIndex<5, Vector>;
+    using Index5  = FMIndex<6, Vector>;
+    using Index16 = FMIndex<17, Vector>;
 
     std::variant<std::monostate, Index4, Index5, Index16> index;
 

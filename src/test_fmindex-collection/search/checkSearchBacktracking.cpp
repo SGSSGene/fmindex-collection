@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
+
 #include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
@@ -8,8 +9,8 @@
 #include <fmindex-collection/search/Backtracking.h>
 #include <fmindex-collection/search_scheme/generator/all.h>
 
-TEMPLATE_TEST_CASE("searching with backtracking", "[search]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
+TEST_CASE("searching with backtracking", "[search]") {
+    using String = fmindex_collection::string::InterleavedBitvector16<255>;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
 
@@ -40,8 +41,8 @@ TEMPLATE_TEST_CASE("searching with backtracking", "[search]", ALLSTRINGSWITHRANK
     });
 }
 
-TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
+TEST_CASE("searching with collection and backtracking", "[collection]") {
+    using String = fmindex_collection::string::InterleavedBitvector16<255>;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
@@ -105,12 +106,10 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]",
     }
 }
 
-TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
-
+TEST_CASE("searching with backtracking with FMIndex", "[search]") {
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
 
-    auto index = fmindex_collection::FMIndex<String>{input, /*samplingRate*/1, /*samplingRate*/1};
+    auto index = fmindex_collection::FMIndex<255>{input, /*samplingRate*/1, /*samplingRate*/1};
 
     SECTION("check symbol call to occurrence table") {
         REQUIRE(input.size()+1 == index.size());
@@ -137,13 +136,11 @@ TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]", ALLST
     });
 }
 
-TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[collection]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
-
+TEST_CASE("searching with collection and backtracking with FMIndex", "[collection]") {
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
 
-    auto index = fmindex_collection::FMIndex<String>{input, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmindex_collection::FMIndex<255>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         auto expected = std::vector<uint8_t>{'A', 'A', 'A', 'A', 'A', 'A', 'B', 'C', 'B', '\0', 'C', '\0',
@@ -202,8 +199,8 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[
     }
 }
 
-TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
+TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]") {
+    using String = fmindex_collection::string::InterleavedBitvector16<255>;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
 
@@ -234,8 +231,8 @@ TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]"
     });
 
 }
-TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMIndex", "[collection]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
+TEST_CASE("searching with collection and backtracking with ReverseFMIndex", "[collection]") {
+    using String = fmindex_collection::string::InterleavedBitvector16<255>;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
@@ -303,8 +300,7 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMInd
 
 
 TEST_CASE("backtracking with errors", "[collection]") {
-    using String = fmindex_collection::string::InterleavedBitvector16<256>;
-    using Index = fmindex_collection::FMIndex<String>;
+    using Index = fmindex_collection::FMIndex<256>;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'B', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'C', 'A', 'A', 'A'}};

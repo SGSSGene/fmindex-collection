@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
+
 #include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
@@ -13,8 +14,7 @@ TEST_CASE("checking merging of fmindices", "[FMIndex][merge]") {
     auto data1 = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 1, 2, 2, 2, 2}};
     auto data2 = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{2, 1, 2, 1, 2, 1, 2, 2}};
 
-    using String = fmindex_collection::string::InterleavedBitvector16<3>;
-    using Index  = fmindex_collection::FMIndex<String>;
+    using Index  = fmindex_collection::FMIndex<3>;
 
     auto index1 = Index{data1, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1};
     auto index2 = Index{data2, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1, /*.useDelimiter=*/true, /*.seqOffset=*/data1.size()};

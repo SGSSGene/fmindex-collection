@@ -1,14 +1,15 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../string/allStrings.h"
+
+#include "../string/utils.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/KMerFMIndex.h>
 #include <fstream>
 
-TEMPLATE_TEST_CASE("checking unidirectional kmer fm index", "[kmerfmindex]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
+TEST_CASE("checking unidirectional kmer fm index", "[kmerfmindex]") {
+    using String = fmindex_collection::string::PairedFlattenedBitvectors_512_64k<255>;
 
     auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
     auto sa     = std::vector<uint64_t>{ 10, 11, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };

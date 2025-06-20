@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../string/allStrings.h"
+
+#include "../string/utils.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/FMIndex.h>
@@ -12,9 +13,7 @@
 
 namespace fmc = fmindex_collection;
 
-TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
-
+TEST_CASE("checking unidirectional fm index", "[fmindex]") {
     auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
     auto sa     = std::vector<uint64_t>{ 10, 11, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };
 
@@ -24,7 +23,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
             bitStack.push_back(true);
         }
         auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmc::FMIndex<String>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
+        auto index = fmc::FMIndex<255>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -48,7 +47,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
         }
 
         auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmc::FMIndex<String>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
+        auto index = fmc::FMIndex<255>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -78,7 +77,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
         }
 
         auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmc::FMIndex<String>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
+        auto index = fmc::FMIndex<255>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -100,7 +99,7 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
         }
 
         auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmc::FMIndex<String>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
+        auto index = fmc::FMIndex<255>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -117,14 +116,14 @@ TEMPLATE_TEST_CASE("checking unidirectional fm index", "[FMIndex]", ALLSTRINGSWI
                 bitStack.push_back(true);
             }
             auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-            auto index = fmc::FMIndex<String>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
+            auto index = fmc::FMIndex<255>{bwt, fmc::suffixarray::convertCSAToAnnotatedDocument(csa)};
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(index);
         }
         SECTION("deserialize") {
             auto ifs = std::ifstream{"temp_test_serialization", std::ios::binary};
 
-            auto index = fmc::FMIndex<String>{};
+            auto index = fmc::FMIndex<255>{};
             auto archive = cereal::BinaryInputArchive{ifs};
             archive(index);
 
