@@ -20,7 +20,7 @@
  * A run length encoded symbols, see unpublished paper
  *
  */
-namespace fmindex_collection::string {
+namespace fmc::string {
 
 template <size_t TSigma, size_t encodingBlockSize, size_t DifferentBlocks = 16, template <size_t, typename...> typename String = Wavelet, template <size_t, typename...> typename MixedString = String>
 struct RBBwtV2 {

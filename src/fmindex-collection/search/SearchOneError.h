@@ -5,7 +5,7 @@
 
 #include "SelectCursor.h"
 
-namespace fmindex_collection::search_one_error {
+namespace fmc::search_one_error {
 
 /* Search algorithm with explicit programmed search scheme
  */

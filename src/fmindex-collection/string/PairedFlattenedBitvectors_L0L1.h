@@ -20,7 +20,7 @@
 #endif
 
 
-namespace fmindex_collection::string {
+namespace fmc::string {
 
 
 template <size_t TSigma, size_t l1_bits_ct, size_t l0_bits_ct, bool Align=true>

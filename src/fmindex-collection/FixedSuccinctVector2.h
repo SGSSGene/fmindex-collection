@@ -10,7 +10,7 @@
 #include <tuple>
 #include <vector>
 
-namespace fmindex_collection {
+namespace fmc {
 
 /* A dense std::vector<uint> implementation using a fixed width (number of bits).
  *

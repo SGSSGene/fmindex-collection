@@ -5,6 +5,23 @@
 -->
 # String with rank support
 
+This class fulfilling this concepts provides a way to do fast rank or prefix_rank queries on strings.
+A class is still augmented via an alphabet size `AlphabetSize` indicating how many different characters are being used inside the string.
+There are three important implementations:
+
+- `#!c++ fmindex_collection::string::InterleavedBitvector16<AlphabetSize>`
+
+    Use if memory doesn't matter and speed is the only concern
+
+- `#!c++ fmindex_collection::string::FlattenedBitvectors<AlphabetSize>`
+
+    Use if memory matters, and the Alphabet is less than 128 characters.
+
+- `#!c++ fmindex_collection::string::PairedFlattenedBitvectors<AlphabetSize>`
+
+    Use if memory matters and the Alphabet is equal or larger than 128 characters.
+
+
 ## Concept
 The concept `fmindex_collection::String_c` models a string with rank support.
 Its main purpose is to answer the `rank` query for a character any position.

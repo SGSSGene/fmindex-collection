@@ -5,7 +5,7 @@
 
 #include "ReverseFMIndex.h"
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <typename Index>
 struct ReverseFMIndexCursor {

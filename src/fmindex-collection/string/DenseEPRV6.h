@@ -11,7 +11,7 @@
 #include <bitset>
 #include <vector>
 
-namespace fmindex_collection::string {
+namespace fmc::string {
 
 template <size_t TSigma>
 struct DenseEPRV6 {

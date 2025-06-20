@@ -20,7 +20,7 @@
  * A run length encoded symbols, see unpublished paper
  *
  */
-namespace fmindex_collection::string {
+namespace fmc::string {
 
 template <size_t TSigma, size_t encodingBlockSize, String_c String = Wavelet<TSigma>, String_c RecString = Wavelet<TSigma>>
 struct RBBwt {

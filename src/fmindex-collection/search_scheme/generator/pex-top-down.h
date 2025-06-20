@@ -5,7 +5,7 @@
 #include "pex-bottom-up.h"
 #include "../isComplete.h"
 
-namespace fmindex_collection::search_scheme::generator {
+namespace fmc::search_scheme::generator {
 
 namespace pex {
 inline auto constructTD(size_t maxError) -> std::unique_ptr<pex::Node> {

@@ -9,7 +9,7 @@
 #include <cassert>
 #include <cstdint>
 
-namespace fmindex_collection::search_scheme {
+namespace fmc::search_scheme {
 
 namespace complete::detail {
 

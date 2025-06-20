@@ -14,8 +14,7 @@
 
 
 TEST_CASE("check search with hamming and scoring matrix with errors", "[searches][!benchmark][hamming][scoring-matrix]") {
-    using String = fmindex_collection::string::InterleavedBitvector16<21>;
-    using Index = fmindex_collection::BiFMIndex<String>;
+    using Index = fmc::BiFMIndex<21>;
 
     SECTION("hamming_sm, all search") {
         srand(0);
@@ -76,10 +75,10 @@ TEST_CASE("check search with hamming and scoring matrix with errors", "[searches
         auto index = Index{input, /*samplingRate*/1, /*threadNbr*/1};
 
 
-        auto search_scheme = fmindex_collection::search_scheme::generator::pigeon_opt(0, 1);
+        auto search_scheme = fmc::search_scheme::generator::pigeon_opt(0, 1);
 
         {
-            auto sm = fmindex_collection::search_hamming_sm::ScoringMatrix<28, 21>{}; // Inversed-Identity is set by default
+            auto sm = fmc::search_hamming_sm::ScoringMatrix<28, 21>{}; // Inversed-Identity is set by default
             sm.setCost(21,  5, 0);
             sm.setCost(22, 13, 0);
             sm.setCost(23,  4, 0);
@@ -89,7 +88,7 @@ TEST_CASE("check search with hamming and scoring matrix with errors", "[searches
             sm.setCost(27, 19, 0);
 
             ankerl::nanobench::Bench().minEpochTime(std::chrono::milliseconds{100}).run("hamming with special scoring matrix and reducing alphabet", [&]() {
-                fmindex_collection::search_hamming_sm::search(index, queries, search_scheme, sm, [&](auto qidx, auto cursor, auto errors) {
+                fmc::search_hamming_sm::search(index, queries, search_scheme, sm, [&](auto qidx, auto cursor, auto errors) {
                     (void)errors;
                     (void)qidx;
                     ankerl::nanobench::doNotOptimizeAway(cursor);
@@ -97,9 +96,9 @@ TEST_CASE("check search with hamming and scoring matrix with errors", "[searches
             });
 
             auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
-            fmindex_collection::search_hamming_sm::search(index, queries, search_scheme, sm, [&](auto qidx, auto cursor, auto errors) {
+            fmc::search_hamming_sm::search(index, queries, search_scheme, sm, [&](auto qidx, auto cursor, auto errors) {
                 (void)errors;
-                for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
                     auto [sid, spos] = entry;
                     results.emplace_back(qidx, sid, spos+offset);
                 }
@@ -112,10 +111,10 @@ TEST_CASE("check search with hamming and scoring matrix with errors", "[searches
         }
 
         {
-            auto expanded_search_scheme = fmindex_collection::search_scheme::expand(search_scheme, queries[0].size());
+            auto expanded_search_scheme = fmc::search_scheme::expand(search_scheme, queries[0].size());
 
             ankerl::nanobench::Bench().minEpochTime(std::chrono::milliseconds{10}).run("hamming without scoring matrix", [&]() {
-                fmindex_collection::search_pseudo::search</*EditDistance=*/false>(index, queries, expanded_search_scheme, [&](auto qidx, auto cursor, auto errors) {
+                fmc::search_pseudo::search</*EditDistance=*/false>(index, queries, expanded_search_scheme, [&](auto qidx, auto cursor, auto errors) {
                     (void)errors;
                     (void)qidx;
                     ankerl::nanobench::doNotOptimizeAway(cursor);
@@ -123,9 +122,9 @@ TEST_CASE("check search with hamming and scoring matrix with errors", "[searches
             });
 
             auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
-            fmindex_collection::search_pseudo::search</*EditDistance=*/false>(index, queries, expanded_search_scheme, [&](auto qidx, auto cursor, auto errors) {
+            fmc::search_pseudo::search</*EditDistance=*/false>(index, queries, expanded_search_scheme, [&](auto qidx, auto cursor, auto errors) {
                 (void)errors;
-                for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+                for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
                     auto [sid, spos] = entry;
                     results.emplace_back(qidx, sid, spos+offset);
                 }

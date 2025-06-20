@@ -6,7 +6,7 @@
 #include "FixedSuccinctVector.h"
 TEST_CASE("test FixedSuccinctVector", "[FixedSuccinctVector]") {
     SECTION("case1") {
-        using Vec = fmindex_collection::FixedSuccinctVector<10>;
+        using Vec = fmc::FixedSuccinctVector<10>;
 
         auto vec = Vec{};
         vec.push_back(512);

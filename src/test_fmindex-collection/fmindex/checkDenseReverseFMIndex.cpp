@@ -1,15 +1,17 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../string/allStrings.h"
+
+#include "../string/utils.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/ReverseFMIndex.h>
 #include <fmindex-collection/suffixarray/DenseCSA.h>
 
-TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
-    using DenseVector = fmindex_collection::DenseVector;
+TEST_CASE("checking dense reverse fm index", "[densereversefmindex]") {
+    using String = fmc::string::PairedFlattenedBitvectors_512_64k<255>;
+
+    using DenseVector = fmc::DenseVector;
 
     INFO("String " << typeid(String).name());
 
@@ -22,8 +24,8 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push_back(true);
         }
-        auto csa = fmindex_collection::DenseCSA{sa, bitStack};
-        auto index = fmindex_collection::ReverseFMIndex<String, fmindex_collection::DenseCSA>{bwt, std::move(csa)};
+        auto csa = fmc::DenseCSA{sa, bitStack};
+        auto index = fmc::ReverseFMIndex<String, fmc::DenseCSA>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -43,8 +45,8 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
             }
         }
 
-        auto csa = fmindex_collection::DenseCSA{sa2, bitStack};
-        auto index = fmindex_collection::ReverseFMIndex<String, fmindex_collection::DenseCSA>{bwt, std::move(csa)};
+        auto csa = fmc::DenseCSA{sa2, bitStack};
+        auto index = fmc::ReverseFMIndex<String, fmc::DenseCSA>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -76,8 +78,8 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
             }
         }
 
-        auto csa = fmindex_collection::DenseCSA{sa2, bitStack};
-        auto index = fmindex_collection::ReverseFMIndex<String, fmindex_collection::DenseCSA>{bwt, std::move(csa)};
+        auto csa = fmc::DenseCSA{sa2, bitStack};
+        auto index = fmc::ReverseFMIndex<String, fmc::DenseCSA>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -101,8 +103,8 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
             }
         }
 
-        auto csa = fmindex_collection::DenseCSA{sa2, bitStack};
-        auto index = fmindex_collection::ReverseFMIndex<String, fmindex_collection::DenseCSA>{bwt, std::move(csa)};
+        auto csa = fmc::DenseCSA{sa2, bitStack};
+        auto index = fmc::ReverseFMIndex<String, fmc::DenseCSA>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -119,7 +121,7 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
         auto sa  = DenseVector{11, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
 
         auto text  = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
-        auto index = fmindex_collection::ReverseFMIndex<String, fmindex_collection::DenseCSA>{std::vector<std::vector<uint8_t>>{text}, /*samplingRate*/1, /*threadNbr*/1};
+        auto index = fmc::ReverseFMIndex<String, fmc::DenseCSA>{std::vector<std::vector<uint8_t>>{text}, /*samplingRate*/1, /*threadNbr*/1};
 
         REQUIRE(bwt.size() == index.size());
         REQUIRE(sa.size() == index.size());
@@ -138,7 +140,7 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
         auto sa  = DenseVector{0, 6, 1, 7, 2, 8, 3, 9, 4, 5, 10};
 
         auto text  = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
-        auto index = fmindex_collection::ReverseFMIndex<String, fmindex_collection::DenseCSA>{std::vector<std::vector<uint8_t>>{text}, /*samplingRate*/2, /*threadNbr*/1};
+        auto index = fmc::ReverseFMIndex<String, fmc::DenseCSA>{std::vector<std::vector<uint8_t>>{text}, /*samplingRate*/2, /*threadNbr*/1};
 
         REQUIRE(bwt.size() == index.size());
         REQUIRE(sa.size() == index.size());
@@ -151,5 +153,4 @@ TEMPLATE_TEST_CASE("checking dense reverse fm index", "[DenseReverseFMIndex]", A
             CHECK(entry == std::make_tuple(0, sa[i]+offset));
         }
     }
-
 }

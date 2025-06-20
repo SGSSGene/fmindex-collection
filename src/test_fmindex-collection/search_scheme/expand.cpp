@@ -6,7 +6,7 @@
 #include <fmindex-collection/search_scheme/expand.h>
 #include <fmindex-collection/search_scheme/isValid.h>
 
-namespace ss = fmindex_collection::search_scheme;
+namespace ss = fmc::search_scheme;
 
 TEST_CASE("check expand", "[expand]") {
     SECTION("no errors 2 to 10") {

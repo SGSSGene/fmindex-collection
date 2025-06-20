@@ -8,23 +8,23 @@
 #include <fmindex-collection/search/BacktrackingWithBuffers.h>
 #include <fmindex-collection/search_scheme/generator/all.h>
 
-TEMPLATE_TEST_CASE("searching with collection and backtracking with buffers on a reversed fmindex", "[collection][search][reverse]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
+TEST_CASE("searching with collection and backtracking with buffers on a reversed fmindex", "[collection][search][reverse]") {
+    using String = fmc::string::InterleavedBitvector16<255>;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'B', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'C', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
 
-    auto index = fmindex_collection::ReverseFMIndex<String>{input, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmc::ReverseFMIndex<String>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     auto query = std::vector<uint8_t>{'A', 'C'};
-    auto search_scheme = fmindex_collection::search_scheme::generator::backtracking(1, 0, 0);
+    auto search_scheme = fmc::search_scheme::generator::backtracking(1, 0, 0);
 
-    using cursor_t = fmindex_collection::select_cursor_t<decltype(index)>;
+    using cursor_t = fmc::select_cursor_t<decltype(index)>;
 
     auto buffer1 = std::vector<std::pair<cursor_t, size_t>>{};
     auto buffer2 = std::vector<std::pair<cursor_t, size_t>>{};
 
-    fmindex_collection::search_backtracking_with_buffers::search(index, query, /*error*/ 0, buffer1, buffer2, [&](auto cursor, auto errors) {
+    fmc::search_backtracking_with_buffers::search(index, query, /*error*/ 0, buffer1, buffer2, [&](auto cursor, auto errors) {
         CHECK(errors == 0);
         CHECK(cursor.lb == 22);
         CHECK(cursor.count() == 2);

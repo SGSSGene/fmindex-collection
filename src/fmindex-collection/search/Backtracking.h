@@ -6,7 +6,7 @@
 #include "SelectCursor.h"
 #include "../concepts.h"
 
-namespace fmindex_collection::search_backtracking {
+namespace fmc::search_backtracking {
 
 /* Search algorithm with explicit programmed search scheme
  * Applies only hamming distance

@@ -11,7 +11,7 @@
 #include <variant>
 #include <vector>
 
-namespace fmindex_collection::search_scheme::generator {
+namespace fmc::search_scheme::generator {
 
 namespace pex {
 struct Node {

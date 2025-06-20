@@ -7,7 +7,7 @@
 #include "../suffixarray/CSA.h"
 #include "../utils.h"
 
-namespace fmindex_collection {
+namespace fmc {
 
 /*
  * Same as the FMIndex, but build internally over the reverse text.

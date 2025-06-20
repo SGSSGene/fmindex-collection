@@ -1,20 +1,20 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
+
 #include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/BiFMIndex.h>
 #include <fmindex-collection/fmindex/BiFMIndexCursor.h>
 
-TEST_CASE("checking bidirectional fm index left cursor", "[LeftBiFMIndexCursor]") {
+TEST_CASE("checking bidirectional fm index left cursor", "[leftbifmindexcursor]") {
 
     auto data = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 1, 2, 2, 2}};
-    using String = fmindex_collection::string::InterleavedBitvector16<256>;
-    using Index = fmindex_collection::BiFMIndex<String>;
+    using Index = fmc::BiFMIndex<256>;
     auto index = Index{data, 1, 1};
 
-    auto cursor = fmindex_collection::LeftBiFMIndexCursor{index};
+    auto cursor = fmc::LeftBiFMIndexCursor{index};
     REQUIRE(cursor.count() == index.size());
     REQUIRE(!cursor.empty());
     REQUIRE(cursor.lb == 0);

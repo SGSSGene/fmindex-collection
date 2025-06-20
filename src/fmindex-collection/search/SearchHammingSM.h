@@ -11,7 +11,7 @@
 /* Hamming distance search, without expanded search scheme
  * , using a scoring matrix
  */
-namespace fmindex_collection::search_hamming_sm {
+namespace fmc::search_hamming_sm {
 
 template <size_t QuerySigma, size_t RefSigma = QuerySigma>
 struct ScoringMatrix {

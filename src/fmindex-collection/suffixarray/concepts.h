@@ -15,7 +15,7 @@
 #include <tuple>
 #include <utility>
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <typename T>
 concept SuffixArray_c = requires(T t, T t2, size_t idx) {

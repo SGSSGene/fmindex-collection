@@ -14,16 +14,12 @@ TEST_CASE("benchmark fmindex on c'tor operation - 5 alphabet", "[fmindex][!bench
              .batch(text.size());
 
         call_with_templates<
-            ALLSTRINGSWITHRANK(5)>([&]<typename String>() {
-            if constexpr (std::same_as<String, fmindex_collection::string::Naive<5>>) {
-                return;
-            }
-
-            auto string_name = getName<String>();
+            ALLSTRINGSWITHRANK>([&]<template <size_t> typename String>() {
+            auto string_name = getName<String<5>>();
             INFO(string_name);
 
             bench.run(string_name, [&]() {
-                using Index = fmindex_collection::FMIndex<String>;
+                using Index = fmc::FMIndex<5, String>;
                 auto index = Index{text, /*.samplingRate=*/16, /*.threadNbr=*/1};
                 ankerl::nanobench::doNotOptimizeAway(const_cast<Index const&>(index));
             });

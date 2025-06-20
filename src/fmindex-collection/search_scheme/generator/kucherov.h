@@ -6,7 +6,7 @@
 #include "../Scheme.h"
 #include <cassert>
 
-namespace fmindex_collection::search_scheme::generator {
+namespace fmc::search_scheme::generator {
 
 inline auto kucherov(int N, int K) -> Scheme {
     assert((N == K+1) or (N == K+2));

@@ -4,8 +4,14 @@
 
 #include "utils.h"
 
-TEST_CASE("benchmark strings c'tor operation - 65536 alphabet", "[string][!benchmark][65536][time][ctor]") {
-    auto const& text = generateLargeText<0, 65536>();
+namespace {
+    constexpr static size_t Sigma = 65536;
+    #define SIGMA_STR "65536"
+    #define ALLSTRINGS ALLLARGESTRINGSWITHRANK
+}
+
+TEST_CASE("benchmark strings c'tor operation - " SIGMA_STR " alphabet", "[string][!benchmark][" SIGMA_STR "][time][ctor]") {
+    auto const& text = generateLargeText<0, Sigma>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -13,25 +19,22 @@ TEST_CASE("benchmark strings c'tor operation - 65536 alphabet", "[string][!bench
              .relative(true)
              .batch(text.size());
 
-        call_with_templates<
-            ALLLARGESTRINGSWITHRANK(65536)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<65536>>) {
-                return;
-            }
+        call_with_templates<ALLSTRINGS>([&]<template <size_t> class _String>() {
+            using String = _String<Sigma>;
+            auto name = getName<String>();
+            INFO(name);
 
-            auto vector_name = getName<Vector>();
-            INFO(vector_name);
-
-            bench.run(vector_name, [&]() {
-                auto vec = Vector{text};
-                ankerl::nanobench::doNotOptimizeAway(const_cast<Vector const&>(vec));
+            bench.run(name, [&]() {
+                auto str = String{text};
+                ankerl::nanobench::doNotOptimizeAway(const_cast<String const&>(str));
             });
         });
     }
 }
 
-TEST_CASE("benchmark vectors symbol() operations - 65536 alphabet", "[string][!benchmark][65536][time][symbol]") {
-    auto const& text = generateLargeText<0, 65536>();
+TEST_CASE("benchmark vectors symbol() operations - " SIGMA_STR " alphabet", "[string][!benchmark][" SIGMA_STR "][time][symbol]") {
+    auto const& text = generateLargeText<0, Sigma>();
+    auto rng = ankerl::nanobench::Rng{};
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
@@ -39,176 +42,142 @@ TEST_CASE("benchmark vectors symbol() operations - 65536 alphabet", "[string][!b
              .relative(true)
              .batch(text.size());
 
-        call_with_templates<
-            ALLLARGESTRINGSWITHRANK(65536)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<65536>>) {
-                return;
-            }
+        call_with_templates<ALLSTRINGS>([&]<template <size_t> class _String>() {
+            using String = _String<Sigma>;
+            auto name = getName<String>();
+            INFO(name);
 
-            auto vector_name = getName<Vector>();
-            INFO(vector_name);
+            auto str = String{text};
 
-            auto rng = ankerl::nanobench::Rng{};
-
-            auto vec = Vector{text};
-
-            bench.run(vector_name, [&]() {
-                auto v = vec.symbol(rng.bounded(text.size()));
+            bench.run(name, [&]() {
+                auto v = str.symbol(rng.bounded(text.size()));
                 ankerl::nanobench::doNotOptimizeAway(v);
             });
         });
     }
 }
 
-TEST_CASE("benchmark vectors rank() operations - 65536 alphabet", "[string][!benchmark][65536][time][rank]") {
-    auto const& text = generateLargeText<0, 65536>();
+TEST_CASE("benchmark vectors rank() operations - " SIGMA_STR " alphabet", "[string][!benchmark][" SIGMA_STR "][time][rank]") {
+    auto const& text = generateLargeText<0, Sigma>();
+    auto rng = ankerl::nanobench::Rng{};
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
         bench.title("rank()")
              .relative(true);
 
-        call_with_templates<
-            ALLLARGESTRINGSWITHRANK(65536)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<65536>>) {
-                return;
-            }
+        call_with_templates<ALLSTRINGS>([&]<template <size_t> class _String>() {
+            using String = _String<Sigma>;
+            auto name = getName<String>();
+            INFO(name);
 
-            auto vector_name = getName<Vector>();
-            INFO(vector_name);
+            auto str = String{text};
 
-            auto rng = ankerl::nanobench::Rng{};
-
-            auto vec = Vector{text};
-
-            bench.run(vector_name, [&]() {
-                auto v = vec.rank(rng.bounded(text.size()+1), rng.bounded(65536));
+            bench.run(name, [&]() {
+                auto v = str.rank(rng.bounded(text.size()+1), rng.bounded(Sigma));
                 ankerl::nanobench::doNotOptimizeAway(v);
             });
         });
     }
 }
 
-TEST_CASE("benchmark vectors prefix_rank() operations - 65536 alphabet", "[string][!benchmark][65536][time][prefix_rank]") {
-    auto const& text = generateLargeText<0, 65536>();
+TEST_CASE("benchmark vectors prefix_rank() operations - " SIGMA_STR " alphabet", "[string][!benchmark][" SIGMA_STR "][time][prefix_rank]") {
+    auto const& text = generateLargeText<0, Sigma>();
+    auto rng = ankerl::nanobench::Rng{};
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
         bench.title("prefix_rank()")
              .relative(true);
 
-        call_with_templates<
-            ALLLARGESTRINGSWITHRANK(65536)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<65536>>) {
-                return;
-            }
+        call_with_templates<ALLSTRINGS>([&]<template <size_t> class _String>() {
+            using String = _String<Sigma>;
+            auto name = getName<String>();
+            INFO(name);
 
-            auto vector_name = getName<Vector>();
-            INFO(vector_name);
+            auto str = String{text};
 
-            auto rng = ankerl::nanobench::Rng{};
-
-            auto vec = Vector{text};
-
-            bench.run(vector_name, [&]() {
-                auto v = vec.prefix_rank(rng.bounded(text.size()+1), rng.bounded(65536));
+            bench.run(name, [&]() {
+                auto v = str.prefix_rank(rng.bounded(text.size()+1), rng.bounded(Sigma));
                 ankerl::nanobench::doNotOptimizeAway(v);
             });
         });
     }
 }
 
-TEST_CASE("benchmark vectors all_ranks() operations - 65536 alphabet", "[string][!benchmark][65536][time][all_ranks]") {
-    auto const& text = generateLargeText<0, 65536>();
+TEST_CASE("benchmark vectors all_ranks() operations - " SIGMA_STR " alphabet", "[string][!benchmark][" SIGMA_STR "][time][all_ranks]") {
+    auto const& text = generateLargeText<0, Sigma>();
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
         bench.title("all_ranks()")
              .relative(true);
 
-        call_with_templates<
-            ALLLARGESTRINGSWITHRANK(65536)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<65536>>) {
-                return;
-            }
-
-            auto vector_name = getName<Vector>();
-            INFO(vector_name);
+        call_with_templates<ALLSTRINGS>([&]<template <size_t> class _String>() {
+            using String = _String<Sigma>;
+            auto name = getName<String>();
+            INFO(name);
 
             auto rng = ankerl::nanobench::Rng{};
 
-            auto vec = Vector{text};
+            auto str = String{text};
 
-            bench.run(vector_name, [&]() {
-                auto v = vec.all_ranks(rng.bounded(text.size()+1));
+            bench.run(name, [&]() {
+                auto v = str.all_ranks(rng.bounded(text.size()+1));
                 ankerl::nanobench::doNotOptimizeAway(v);
             });
         });
     }
 }
 
-TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - 65536 alphabet", "[string][!benchmark][65536][time][all_ranks_and_prefix_ranks]") {
-    auto const& text = generateLargeText<0, 65536>();
+TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - Sigma alphabet", "[string][!benchmark][" SIGMA_STR "][time][all_ranks_and_prefix_ranks]") {
+    auto const& text = generateLargeText<0, Sigma>();
+    auto rng = ankerl::nanobench::Rng{};
 
     SECTION("benchmarking") {
         auto bench = ankerl::nanobench::Bench{};
         bench.title("all_ranks_and_prefix_ranks()")
              .relative(true);
 
-        call_with_templates<
-            ALLLARGESTRINGSWITHRANK(65536)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<65536>>) {
-                return;
-            }
+        call_with_templates<ALLSTRINGS>([&]<template <size_t> class _String>() {
+            using String = _String<Sigma>;
+            auto name = getName<String>();
+            INFO(name);
 
-            auto vector_name = getName<Vector>();
-            INFO(vector_name);
+            auto str = String{text};
 
-            auto rng = ankerl::nanobench::Rng{};
-
-            auto vec = Vector{text};
-
-            bench.run(vector_name, [&]() {
-                auto v = vec.all_ranks_and_prefix_ranks(rng.bounded(text.size()+1));
+            bench.run(name, [&]() {
+                auto v = str.all_ranks_and_prefix_ranks(rng.bounded(text.size()+1));
                 ankerl::nanobench::doNotOptimizeAway(v);
             });
         });
     }
 }
 
-TEST_CASE("benchmark vectors in size - alphabet 65536", "[string][!benchmark][65536][size]") {
-    auto const& text = generateLargeText<0, 65536>();
+TEST_CASE("benchmark vectors in size - alphabet " SIGMA_STR, "[string][!benchmark][" SIGMA_STR "][size]") {
+    auto const& text = generateLargeText<0, Sigma>();
+    auto rng = ankerl::nanobench::Rng{};
 
     SECTION("benchmarking") {
         BenchSize benchSize;
-        benchSize.baseSize = 16.;
+        benchSize.baseSize = 14.;
         benchSize.entries[0][2] = "bits/char";
-        benchSize.entries[0][4] = "alphabet 65536";
+        benchSize.entries[0][4] = "alphabet " SIGMA_STR;
 
-        call_with_templates<
-            ALLLARGESTRINGSWITHRANK(65536)>([&]<typename Vector>() {
-            if constexpr (std::same_as<Vector, fmindex_collection::string::Naive<65536>>) {
-                return;
-            }
+        call_with_templates<ALLSTRINGS>([&]<template <size_t> class _String>() {
+            using String = _String<Sigma>;
+            auto name = getName<String>();
+            INFO(name);
 
-            auto vector_name = getName<Vector>();
-            INFO(vector_name);
-
-            auto rng = ankerl::nanobench::Rng{};
-
-            auto vec = Vector{text};
+            auto str = String{text};
             auto size = [&]() {
-                if constexpr (requires() { vec.space_usage(); }) {
-                    return vec.space_usage();
-                } else {
-                    auto ofs     = std::stringstream{};
-                    auto archive = cereal::BinaryOutputArchive{ofs};
-                    archive(vec);
-                    return ofs.str().size();
-                }
+                auto ofs     = std::stringstream{};
+                auto archive = cereal::BinaryOutputArchive{ofs};
+                archive(str);
+                return ofs.str().size();
             }();
             benchSize.addEntry({
-                .name = vector_name,
+                .name = name,
                 .size = size,
                 .text_size = text.size(),
                 .bits_per_char = (size*8)/double(text.size())

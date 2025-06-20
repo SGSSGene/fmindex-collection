@@ -8,7 +8,7 @@ nav:
   - API:
     - Concepts:
       - concepts/Bitvector.md
-      - concepts/StringWithRank.md
+      - concepts/String.md
       - concepts/SuffixArray.md
       - concepts/Index.md
     - Algorithms:

@@ -8,7 +8,7 @@
 #include <tuple>
 #include <vector>
 
-namespace fmindex_collection {
+namespace fmc {
 
 
 template <typename index_t, typename cursor_t>

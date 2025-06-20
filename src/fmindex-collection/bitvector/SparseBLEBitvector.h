@@ -17,7 +17,7 @@
 #include <span>
 #include <vector>
 
-namespace fmindex_collection::bitvector {
+namespace fmc::bitvector {
 /**
  * SparseBLEBitvector sparse block length encoded bitvector.
  *

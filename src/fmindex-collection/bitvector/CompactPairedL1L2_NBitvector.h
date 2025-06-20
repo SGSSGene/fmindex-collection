@@ -20,7 +20,7 @@
 #include <cereal/types/bitset.hpp>
 #endif
 
-namespace fmindex_collection::bitvector {
+namespace fmc::bitvector {
 
 #if !__clang__ || __clang_major__ >= 19 // !TODO workaround (weird optimization bug?)
 

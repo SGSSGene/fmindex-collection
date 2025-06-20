@@ -25,4 +25,5 @@
 #include "Sdsl_wt_bldc.h"
 #include "Sdsl_wt_epr.h"
 #include "Wavelet.h"
+#include "WrappedBitvector.h"
 #include "utils.h"

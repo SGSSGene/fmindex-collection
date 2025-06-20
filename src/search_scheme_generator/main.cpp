@@ -7,7 +7,6 @@
 #include <fmt/ranges.h>
 #include <unordered_set>
 
-namespace fmc = fmindex_collection;
 namespace ss = fmc::search_scheme;
 
 void help() {

@@ -13,8 +13,7 @@
 
 TEST_CASE("benchmark searches with errors", "[searches][!benchmark][bifmindex]") {
     SECTION("benchmarking") {
-        using String = fmindex_collection::string::InterleavedBitvector16<256>;
-        using Index = fmindex_collection::BiFMIndex<String>;
+        using Index = fmc::BiFMIndex<256>;
 
         srand(0);
 
@@ -108,10 +107,10 @@ TEST_CASE("benchmark searches with errors", "[searches][!benchmark][bifmindex]")
                  .relative(true);
 
             {
-                auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, errors), len);
+                auto search_scheme = fmc::search_scheme::expand(fmc::search_scheme::generator::pigeon_opt(0, errors), len);
 
                 bench.run("search ng12 - error " + std::to_string(errors), [&]() {
-                    fmindex_collection::search_ng21::search(index, reads, search_scheme, [&](auto qidx, auto cursor, auto errors) {
+                    fmc::search_ng21::search(index, reads, search_scheme, [&](auto qidx, auto cursor, auto errors) {
                         (void)errors;
                         (void)qidx;
                         ankerl::nanobench::doNotOptimizeAway(cursor);
@@ -120,10 +119,10 @@ TEST_CASE("benchmark searches with errors", "[searches][!benchmark][bifmindex]")
             }
 
             {
-                auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, errors), len);
+                auto search_scheme = fmc::search_scheme::expand(fmc::search_scheme::generator::pigeon_opt(0, errors), len);
 
                 bench.run("search ng21 - errors " + std::to_string(errors), [&]() {
-                    fmindex_collection::search_ng21::search(index, reads, search_scheme, [&](auto qidx, auto cursor, auto errors) {
+                    fmc::search_ng21::search(index, reads, search_scheme, [&](auto qidx, auto cursor, auto errors) {
                         (void)errors;
                         (void)qidx;
                         ankerl::nanobench::doNotOptimizeAway(cursor);

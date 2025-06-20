@@ -5,7 +5,7 @@
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/search_scheme/isValid.h>
 
-namespace ss = fmindex_collection::search_scheme;
+namespace ss = fmc::search_scheme;
 
 TEST_CASE("check is valid", "[isValid]") {
 

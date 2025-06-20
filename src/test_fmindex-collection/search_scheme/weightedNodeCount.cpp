@@ -7,7 +7,7 @@
 #include <fmindex-collection/search_scheme/generator/backtracking.h>
 #include <fmindex-collection/search_scheme/weightedNodeCount.h>
 
-namespace ss = fmindex_collection::search_scheme;
+namespace ss = fmc::search_scheme;
 namespace gen = ss::generator;
 
 TEST_CASE("check node counts", "[weightedNodeCount]") {

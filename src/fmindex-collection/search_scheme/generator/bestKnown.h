@@ -6,7 +6,7 @@
 #include "backtracking.h"
 #include <cassert>
 
-namespace fmindex_collection::search_scheme::generator {
+namespace fmc::search_scheme::generator {
 
 inline auto bestKnown(size_t N, size_t minK, size_t K) -> Scheme {
     assert(N > 0);

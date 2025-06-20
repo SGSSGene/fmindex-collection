@@ -17,7 +17,7 @@
 #include <cereal/types/vector.hpp>
 #endif
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <typename T>
 concept Bitvector_c =

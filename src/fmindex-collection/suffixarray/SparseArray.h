@@ -20,7 +20,7 @@
 #endif
 
 
-namespace fmindex_collection::suffixarray {
+namespace fmc::suffixarray {
 
 /** A sparse array
  *

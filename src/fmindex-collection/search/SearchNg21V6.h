@@ -12,7 +12,7 @@
  * like search_ng21
  * but using a abort flag instead of return values
  */
-namespace fmindex_collection::search_ng21V6 {
+namespace fmc::search_ng21V6 {
 
 enum class Dir : uint8_t { Left, Right };
 template <typename T>

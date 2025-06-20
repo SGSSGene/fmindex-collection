@@ -1,10 +1,75 @@
 <!--
-    SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
-    SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
+    SPDX-FileCopyrightText: 2006-2025, Knut Reinert & Freie Universität Berlin
+    SPDX-FileCopyrightText: 2016-2025, Knut Reinert & MPI für molekulare Genetik
     SPDX-License-Identifier: CC-BY-4.0
 -->
 # Search
 
+To search two versions of `fmindex_collection::search` are provided.
+
+- `#!c++ search(index const&, query const&, callback const&)`
+
+    Search function, which takes 3 parameters. A exact pattern `query` is being searched for.
+    If it yields any results, they are reported via `callback`.
+
+    + index: a reference to any of the indices like `FMIndex` or `BiFMIndex`.
+    + query: a `std::vector<uint8_t>` query, this query is being searched for
+    + callback: typically a lambda function that expects a single cursor object
+
+
+- `#!c++ search<editDistance>(index const&, query const&, errors, callback const&)`
+
+    Search function, which takes multiple parameters. An approximate pattern `query` is being searched for.
+    Up to `errors` differences are possible.
+
+    + editDistance: if set to `false` hamming distance is applied. Set to `true` levenshtein distance is being applied.
+    + index: a reference to any of the indices like `FMIndex` or `BiFMIndex`.
+    + query: a `std::vector<uint8_t>` query, this query is being searched for
+    + errors: a `size_t` indicating the
+    + callback: typically a lambda function that expects two arguments. First the object, second the number of errors
+
+## Example
+
+For an exact search:
+
+```c++
+namespace fmc::fmindex_collection;
+
+void f(fmc::FMIndex const& index, std::vector<uint8_t> const& query) {
+    fmc::search(index, query, [&](auto cursor) {
+        fmt::print("found {} results with 0 errors\n", cursor.count());
+        for (auto i : cursor) {
+            // index.locate(i) can only find positions hit by the sampling rate. How many position this is off, is indicated by the offset value
+            auto [entry, offset] = index.locate(i);
+            auto [seqId, pos] = entry; // tuple of the sequence id and the position inside the sequence
+            fmt::print("seqId/pos: {}/{}\n", seqId, pos+offset);
+        }
+    });
+}
+```
+
+For a search that allows 2 errors and uses levenshtein distance.
+```c++
+namespace fmc::fmindex_collection;
+
+void f(fmc::BiFMIndex const& index, std::vector<uint8_t> const& query) {
+    fmc::search</*.levenshtein=*/true>(index, query, /*.errors=*/=2, [&](auto cursor, errors) {
+        fmt::print("found {} results with {} errors\n", cursor.count(), errors);
+        for (auto i : cursor) {
+            // index.locate(i) can only find positions hit by the sampling rate. How many position this is off, is indicated by the offset value
+            auto [entry, offset] = index.locate(i);
+            auto [seqId, pos] = entry; // tuple of the sequence id and the position inside the sequence
+            fmt::print("seqId/pos: {}/{}\n", seqId, pos+offset);
+        }
+    });
+}
+```
+
+
+
+# Advanced
+
+Besides the `fmindex_collection::search` multiple other search functions exists, that provide all kinds of research related information
 If you don't know what to use, use `search_ng21`.
 
 | search algorithm (inside `fmindex_collection::`)                | Description |

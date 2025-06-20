@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <fstream>
 
-namespace fmindex_collection {
+namespace fmc {
 
 // loads an fm index from disk
 template <typename Index>

@@ -16,7 +16,7 @@
 #include <fmindex-collection/search_scheme/isComplete.h>
 #include <fmindex-collection/search_scheme/isValid.h>
 
-namespace ss = fmindex_collection::search_scheme;
+namespace ss = fmc::search_scheme;
 namespace gen = ss::generator;
 
 TEST_CASE("check search scheme generator backtracking for completeness", "[isComplete][backtracking]") {

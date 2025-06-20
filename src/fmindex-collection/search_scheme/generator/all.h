@@ -24,7 +24,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace fmindex_collection::search_scheme::generator {
+namespace fmc::search_scheme::generator {
 
 struct GeneratorEntry {
     std::string name;

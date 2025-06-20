@@ -20,7 +20,7 @@
 #endif
 
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <typename T, typename SymbolType = uint8_t>
 concept String_c =

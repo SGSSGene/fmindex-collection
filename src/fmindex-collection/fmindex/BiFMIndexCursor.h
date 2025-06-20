@@ -5,7 +5,7 @@
 
 #include "BiFMIndex.h"
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <typename Index>
 struct LeftBiFMIndexCursor;
@@ -177,8 +177,8 @@ auto end(LeftBiFMIndexCursor<Index> const& _cursor) {
 namespace std {
 
 template <typename index_t>
-struct hash<fmindex_collection::BiFMIndexCursor<index_t>> {
-    auto operator()(fmindex_collection::BiFMIndexCursor<index_t> const& cursor) const -> size_t {
+struct hash<fmc::BiFMIndexCursor<index_t>> {
+    auto operator()(fmc::BiFMIndexCursor<index_t> const& cursor) const -> size_t {
         return hash<size_t>()(cursor.lb)
             ^ hash<size_t>()(cursor.len);
     }
