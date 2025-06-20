@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2006-2024 Knut Reinert & Freie Universität Berlin
-// SPDX-FileCopyrightText: 2016-2024 Knut Reinert & MPI für molekulare Genetik
+// SPDX-FileCopyrightText: 2006-2025 Knut Reinert & Freie Universität Berlin
+// SPDX-FileCopyrightText: 2016-2025 Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: BSD-3-Clause
 
 /*!\file
@@ -144,7 +144,11 @@ constexpr C to(R && r, Args &&... args)
                              }),
                      std::forward<Args>(args)...);
     else
+    #if defined(_MSC_VER) && !defined(__clang__) // MSVC
+        __assume(false);
+    #else // GCC– Clang
         __builtin_unreachable();
+    #endif
 }
 
 template <template <class...> class C, std::ranges::input_range R, class... Args>
@@ -166,7 +170,11 @@ constexpr auto to(R && r, Args &&... args)
                              std::declval<seqan::stl::detail::to::input_iterator<R>>(),
                              std::declval<Args>()...))>(std::forward<R>(r), std::forward<Args>(args)...);
     else
+    #if defined(_MSC_VER) && !defined(__clang__) // MSVC
+        __assume(false);
+    #else // GCC– Clang
         __builtin_unreachable();
+    #endif
 }
 
 } // namespace seqan::stl::ranges
