@@ -9,7 +9,7 @@
 #include <cassert>
 #include <numeric>
 
-namespace fmindex_collection::search_scheme {
+namespace fmc::search_scheme {
 
 /**
  * If its not edit distance, its Hamming distance

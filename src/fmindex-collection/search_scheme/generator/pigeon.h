@@ -7,7 +7,7 @@
 
 #include <cassert>
 
-namespace fmindex_collection::search_scheme::generator {
+namespace fmc::search_scheme::generator {
 
 inline auto pigeon_trivial(size_t minK, size_t K) -> Scheme {
     auto N = K+1;

@@ -12,7 +12,7 @@
 #include <fstream>
 #include <unordered_set>
 
-using namespace fmindex_collection;
+using namespace fmc;
 
 constexpr size_t Sigma = 5;
 

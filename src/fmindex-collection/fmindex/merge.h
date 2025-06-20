@@ -11,7 +11,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace fmindex_collection::fmindex {
+namespace fmc::fmindex {
 
 namespace detail {
 

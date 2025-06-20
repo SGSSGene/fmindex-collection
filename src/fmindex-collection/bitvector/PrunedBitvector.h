@@ -15,7 +15,7 @@
 #include <vector>
 #include <iostream>
 
-namespace fmindex_collection::bitvector {
+namespace fmc::bitvector {
 
 /**
  * Like Bitvector but collapses to a few bytes if everything is zero

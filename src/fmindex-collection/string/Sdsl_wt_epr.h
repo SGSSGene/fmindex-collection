@@ -18,7 +18,7 @@
 #include <span>
 #include <vector>
 
-namespace fmindex_collection::string {
+namespace fmc::string {
 /** !TODO This structure is not working as expected
  */
 template <size_t TSigma>

@@ -9,7 +9,7 @@
 #include "../suffixarray/SparseArray.h"
 #include "../utils.h"
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <size_t TSigma, template <size_t> typename String = string::FlattenedBitvectors_512_64k, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<size_t, size_t>>>
     requires String_c<String<TSigma>>

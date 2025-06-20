@@ -114,14 +114,14 @@ auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr, bool con
             auto refs = std::vector<std::vector<uint8_t>>{};
             refs.resize(1);
 
-            auto index = std::optional<fmindex_collection::BiFMIndex<Sigma, String>>{};
+            auto index = std::optional<fmc::BiFMIndex<Sigma, String>>{};
             for (auto& r : ref) {
                 refs[0] = std::move(r);
-                auto newIndex = fmindex_collection::BiFMIndex<Sigma, String>{refs, samplingRate, threadNbr};
+                auto newIndex = fmc::BiFMIndex<Sigma, String>{refs, samplingRate, threadNbr};
                 if (!index) {
                     index = std::move(newIndex);
                 } else {
-                    index = fmindex_collection::fmindex::merge(*index, newIndex);
+                    index = fmc::fmindex::merge(*index, newIndex);
                 }
             }
             return *index;
@@ -134,7 +134,7 @@ auto loadIndex(std::string path, size_t samplingRate, size_t threadNbr, bool con
     } else {
         auto ifs     = std::ifstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryInputArchive{ifs};
-        auto index = fmindex_collection::BiFMIndex<Sigma, String>{};
+        auto index = fmc::BiFMIndex<Sigma, String>{};
         archive(index);
         std::cout << "loading took " << sw.peek() << "s\n";
         return index;
@@ -148,7 +148,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
 
     if (!std::filesystem::exists(indexPath)) {
         auto [ref, refInfo] = loadQueries<Sigma>(path, false, convertUnknownChar);
-        using Index = fmindex_collection::BiFMIndex<Sigma, String>;
+        using Index = fmc::BiFMIndex<Sigma, String>;
         auto index = [&]() -> Index {
             if (!partialBuildUp) {
                 return {ref, samplingRate, threadNbr};
@@ -185,7 +185,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
                     index = std::move(newIndex);
                 } else {
                     std::cout << "merging " << index->size() << " + " << acc << "\n";
-                    index = fmindex_collection::fmindex::merge(*index, newIndex);
+                    index = fmc::fmindex::merge(*index, newIndex);
                 }
 
                 acc = 0;
@@ -225,7 +225,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
                         break;
                     }
                     std::cout << "merging " << l2.size() << " + " << l1.size() << " " << indices.size() << "\n";
-                    auto newIndex = fmindex_collection::fmindex::merge(l2, l1);
+                    auto newIndex = fmc::fmindex::merge(l2, l1);
                     indices.pop_back(); indices.pop_back();
                     indices.emplace_back(std::move(newIndex));
                     sort();
@@ -235,7 +235,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
                 auto const& l1 = *(indices.end()-1);
                 auto const& l2 = *(indices.end()-2);
                 std::cout << "merging " << l2.size() << " + " << l1.size() << " " << indices.size() << "(fin)\n";
-                auto newIndex = fmindex_collection::fmindex::merge(l2, l1);
+                auto newIndex = fmc::fmindex::merge(l2, l1);
                 indices.pop_back(); indices.pop_back();
                 indices.emplace_back(std::move(newIndex));
                 sort();
@@ -252,7 +252,7 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
     } else {
         auto ifs     = std::ifstream{indexPath, std::ios::binary};
         auto archive = cereal::BinaryInputArchive{ifs};
-        auto index = fmindex_collection::BiFMIndex<Sigma, String>{};
+        auto index = fmc::BiFMIndex<Sigma, String>{};
         archive(index);
         std::cout << "loading took " << sw.peek() << "s\n";
         return index;
@@ -261,5 +261,5 @@ auto loadDenseIndex(std::string path, size_t samplingRate, size_t threadNbr, boo
 
 template <size_t Sigma, typename CB>
 void visitAllStrings(CB cb) {
-    cb.template operator()<Sigma, fmindex_collection::string::InterleavedBitvector16>();
+    cb.template operator()<Sigma, fmc::string::InterleavedBitvector16>();
 }

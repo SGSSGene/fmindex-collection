@@ -9,8 +9,6 @@
 #include <fmindex-collection/suffixarray/CSA.h>
 #include <fstream>
 
-namespace fmc = fmindex_collection;
-
 TEST_CASE("checking bidirectional fm index", "[bifmindex]") {
     auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
     auto bwtRev = std::vector<uint8_t>{'H', '\0', 'W', 'a', 'e', 'l', 'l', 'l', 't', 'o', ' ', '\0'};

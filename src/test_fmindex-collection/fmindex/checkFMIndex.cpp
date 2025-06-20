@@ -11,8 +11,6 @@
 
 #include <fstream>
 
-namespace fmc = fmindex_collection;
-
 TEST_CASE("checking unidirectional fm index", "[fmindex]") {
     auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
     auto sa     = std::vector<uint64_t>{ 10, 11, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };

@@ -9,7 +9,7 @@
 #include "../suffixarray/CSA.h"
 #include "../utils.h"
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <String_c String, size_t KMer, SuffixArray_c TCSA = CSA>
 struct KMerFMIndex {

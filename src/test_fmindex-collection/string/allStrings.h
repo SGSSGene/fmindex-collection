@@ -7,49 +7,49 @@
 #include <fmindex-collection/string/all.h>
 
 #define ALLSTRINGSWITHRANK_IMPL \
-    fmindex_collection::string::InterleavedBitvector16, \
-    fmindex_collection::string::FlattenedBitvectors_64_64k, \
-    fmindex_collection::string::FlattenedBitvectors_128_64k, \
-    fmindex_collection::string::FlattenedBitvectors_256_64k, \
-    fmindex_collection::string::FlattenedBitvectors_512_64k, \
-    fmindex_collection::string::FlattenedBitvectors_1024_64k, \
-    fmindex_collection::string::FlattenedBitvectors_2048_64k, \
-    fmindex_collection::string::PairedFlattenedBitvectors_64_64k, \
-    fmindex_collection::string::PairedFlattenedBitvectors_128_64k, \
-    fmindex_collection::string::PairedFlattenedBitvectors_256_64k, \
-    fmindex_collection::string::PairedFlattenedBitvectors_512_64k, \
-    fmindex_collection::string::PairedFlattenedBitvectors_1024_64k, \
-    fmindex_collection::string::PairedFlattenedBitvectors_2048_64k, \
-    fmindex_collection::string::MultiBitvector_Bitvector, \
-    fmindex_collection::string::InterleavedEPR16, \
-    fmindex_collection::string::InterleavedEPRV2_16, \
-    fmindex_collection::string::MultiaryWavelet_64_64k, \
-    fmindex_collection::string::MultiaryWavelet_512_64k, \
-    fmindex_collection::string::MultiaryWavelet_s16, \
-    fmindex_collection::string::MultiaryWavelet_s256
+    fmc::string::InterleavedBitvector16, \
+    fmc::string::FlattenedBitvectors_64_64k, \
+    fmc::string::FlattenedBitvectors_128_64k, \
+    fmc::string::FlattenedBitvectors_256_64k, \
+    fmc::string::FlattenedBitvectors_512_64k, \
+    fmc::string::FlattenedBitvectors_1024_64k, \
+    fmc::string::FlattenedBitvectors_2048_64k, \
+    fmc::string::PairedFlattenedBitvectors_64_64k, \
+    fmc::string::PairedFlattenedBitvectors_128_64k, \
+    fmc::string::PairedFlattenedBitvectors_256_64k, \
+    fmc::string::PairedFlattenedBitvectors_512_64k, \
+    fmc::string::PairedFlattenedBitvectors_1024_64k, \
+    fmc::string::PairedFlattenedBitvectors_2048_64k, \
+    fmc::string::MultiBitvector_Bitvector, \
+    fmc::string::InterleavedEPR16, \
+    fmc::string::InterleavedEPRV2_16, \
+    fmc::string::MultiaryWavelet_64_64k, \
+    fmc::string::MultiaryWavelet_512_64k, \
+    fmc::string::MultiaryWavelet_s16, \
+    fmc::string::MultiaryWavelet_s256
 
 
 #if FMC_USE_SDSL
 #define ALLSTRINGSWITHRANK \
     ALLSTRINGSWITHRANK_IMPL, \
-    fmindex_collection::string::Sdsl_wt_bldc, \
-    fmindex_collection::string::Sdsl_wt_epr
+    fmc::string::Sdsl_wt_bldc, \
+    fmc::string::Sdsl_wt_epr
 #else
 #define ALLSTRINGSWITHRANK ALLSTRINGSWITHRANK_IMPL
 #endif
 #if 1
 #define ALLLARGESTRINGSWITHRANK \
-    /*fmindex_collection::string::FlattenedBitvectors_512_64k,*/ \
-    /*fmindex_collection::string::FlattenedBitvectors_2048_64k,*/ \
-    /*fmindex_collection::string::PairedFlattenedBitvectors_512_64k,*/ \
-    /*fmindex_collection::string::PairedFlattenedBitvectors_2048_64k,*/ \
-    fmindex_collection::string::MultiaryWavelet<0, fmindex_collection::string::PairedFlattenedBitvectors_64_64k>::partial_t, \
-    fmindex_collection::string::MultiaryWavelet<0>::partial_t, \
-    fmindex_collection::string::MultiaryWavelet<0, fmindex_collection::string::PairedFlattenedBitvectors_512_64k, fmindex_collection::string::MultiaryWavelet, 4>::partial_t, \
-    fmindex_collection::string::MultiaryWavelet<0, fmindex_collection::string::PairedFlattenedBitvectors_512_64k, fmindex_collection::string::MultiaryWavelet, 8>::partial_t, \
-    fmindex_collection::string::MultiaryWavelet<0, fmindex_collection::string::PairedFlattenedBitvectors_512_64k, fmindex_collection::string::MultiaryWavelet, 16>::partial_t, \
-    fmindex_collection::string::MultiaryWavelet<0, fmindex_collection::string::PairedFlattenedBitvectors_512_64k, fmindex_collection::string::MultiaryWavelet, 32>::partial_t, \
-    fmindex_collection::string::MultiaryWavelet<0, fmindex_collection::string::PairedFlattenedBitvectors_512_64k, fmindex_collection::string::MultiaryWavelet, 64>::partial_t
+    /*fmc::string::FlattenedBitvectors_512_64k,*/ \
+    /*fmc::string::FlattenedBitvectors_2048_64k,*/ \
+    /*fmc::string::PairedFlattenedBitvectors_512_64k,*/ \
+    /*fmc::string::PairedFlattenedBitvectors_2048_64k,*/ \
+    fmc::string::MultiaryWavelet<0, fmc::string::PairedFlattenedBitvectors_64_64k>::partial_t, \
+    fmc::string::MultiaryWavelet<0>::partial_t, \
+    fmc::string::MultiaryWavelet<0, fmc::string::PairedFlattenedBitvectors_512_64k, fmc::string::MultiaryWavelet, 4>::partial_t, \
+    fmc::string::MultiaryWavelet<0, fmc::string::PairedFlattenedBitvectors_512_64k, fmc::string::MultiaryWavelet, 8>::partial_t, \
+    fmc::string::MultiaryWavelet<0, fmc::string::PairedFlattenedBitvectors_512_64k, fmc::string::MultiaryWavelet, 16>::partial_t, \
+    fmc::string::MultiaryWavelet<0, fmc::string::PairedFlattenedBitvectors_512_64k, fmc::string::MultiaryWavelet, 32>::partial_t, \
+    fmc::string::MultiaryWavelet<0, fmc::string::PairedFlattenedBitvectors_512_64k, fmc::string::MultiaryWavelet, 64>::partial_t
 #else
 #define ALLLARGESTRINGSWITHRANK
 #endif

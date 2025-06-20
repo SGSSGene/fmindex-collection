@@ -17,7 +17,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace fmindex_collection::string {
+namespace fmc::string {
 
 /* Implements the concept `String_c`
  *

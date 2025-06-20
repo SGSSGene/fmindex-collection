@@ -12,7 +12,7 @@
 #include <fmindex-collection/search_scheme/generator/all.h>
 #include <unordered_set>
 
-using namespace fmindex_collection;
+using namespace fmc;
 
 
 class abort_search {};

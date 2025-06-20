@@ -11,7 +11,7 @@
 
 #include <variant>
 
-namespace fmindex_collection {
+namespace fmc {
 
 /**
  * Depending on the input it will choose a appropriate FMIndex

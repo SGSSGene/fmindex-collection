@@ -13,7 +13,7 @@
 #include <optional>
 #include <tuple>
 
-namespace fmindex_collection {
+namespace fmc {
 
 struct DenseCSA {
     DenseVector ssaPos;             // sampled suffix array - position inside the sequence

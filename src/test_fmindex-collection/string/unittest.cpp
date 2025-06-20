@@ -406,7 +406,7 @@ static auto benchs_6_text = std::vector<uint8_t>{};
 static auto benchSize_bwt = BenchSize{};
 TEMPLATE_TEST_CASE("benchmark vectors c'tor operation, on human dna5 data", "[String_c][bwt][!benchmark][6][time][ctor][.]", ALLSTRINGSWITHRANK(6)) {
     using String = TestType;
-    if constexpr (std::same_as<String, fmindex_collection::string::Naive<6>>) {
+    if constexpr (std::same_as<String, fmc::string::Naive<6>>) {
         return;
     }
     auto& [bench_rank, bench_prefix_rank, bench_all_ranks, bench_all_prefix_ranks, bench_symbol, bench_ctor] = benchs_6;
@@ -456,7 +456,7 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor operation, on human dna5 data", "[St
 
 TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human dna5 data", "[String_c][bwt][!benchmark][6][time][.]", ALLSTRINGSWITHRANK(6)) {
     using String = TestType;
-    if constexpr (std::same_as<String, fmindex_collection::string::Naive<6>>) {
+    if constexpr (std::same_as<String, fmc::string::Naive<6>>) {
         return;
     }
     auto& [bench_rank, bench_prefix_rank, bench_all_ranks, bench_all_prefix_ranks, bench_symbol, bench_ctor] = benchs_6;
@@ -527,7 +527,7 @@ TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human d
 
 TEMPLATE_TEST_CASE("benchmark vectors size, on human dna5 data", "[String_c][bwt][!benchmark][6][size][.]", ALLSTRINGSWITHRANK(6)) {
     using String = TestType;
-    if constexpr (std::same_as<String, fmindex_collection::string::Naive<6>>) {
+    if constexpr (std::same_as<String, fmc::string::Naive<6>>) {
         return;
     }
 

@@ -11,11 +11,11 @@
 TEST_CASE("checking unidirectional reversed fm index cursor", "[reversefmindexcursor]") {
 
     auto data = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 1, 2, 2, 2}};
-    using String = fmindex_collection::string::InterleavedBitvector16<256>;
-    using Index = fmindex_collection::ReverseFMIndex<String>;
+    using String = fmc::string::InterleavedBitvector16<256>;
+    using Index = fmc::ReverseFMIndex<String>;
     auto index = Index{data, 1, 1};
 
-    auto cursor = fmindex_collection::ReverseFMIndexCursor{index};
+    auto cursor = fmc::ReverseFMIndexCursor{index};
     REQUIRE(cursor.count() == index.size());
     REQUIRE(!cursor.empty());
     REQUIRE(cursor.lb == 0);

@@ -10,10 +10,10 @@
 
 TEST_CASE("checking bidirectional fm index cursor", "[bifmindexcursor]") {
     auto data = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 1, 2, 2, 2}};
-    using Index = fmindex_collection::BiFMIndex<256>;
+    using Index = fmc::BiFMIndex<256>;
     auto index = Index{data, 1, 1};
 
-    auto cursor = fmindex_collection::BiFMIndexCursor{index};
+    auto cursor = fmc::BiFMIndexCursor{index};
     REQUIRE(cursor.count() == index.size());
     REQUIRE(!cursor.empty());
     REQUIRE(cursor.lb == 0);

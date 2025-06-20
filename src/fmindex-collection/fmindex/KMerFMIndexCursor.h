@@ -7,7 +7,7 @@
 
 #include <compare>
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <typename Index>
 struct KMerFMIndexCursor {

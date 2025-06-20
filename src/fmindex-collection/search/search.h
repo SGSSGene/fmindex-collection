@@ -8,7 +8,7 @@
 #include "../search_scheme/generator/h2.h"
 #include "../search_scheme/expand.h"
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <bool EditDistance, typename index_t, Sequence query_t, typename delegate_t>
 void search(index_t const& _index, query_t const& _query, size_t _errors, delegate_t&& _delegate) {

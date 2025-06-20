@@ -14,7 +14,7 @@
  * Like Ng17, but aborts early
  * !TODO intext verification, configurable early abort
  */
-namespace fmindex_collection::search_ng17ea {
+namespace fmc::search_ng17ea {
 
 struct BandMatrix {
 private:

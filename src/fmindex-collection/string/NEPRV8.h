@@ -19,7 +19,7 @@
 
 #include "../ternarylogic.h"
 
-namespace fmindex_collection::string {
+namespace fmc::string {
 
 
 namespace neprv8_detail {

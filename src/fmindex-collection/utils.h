@@ -30,7 +30,7 @@
 #   include <omp.h>
 #endif
 
-namespace fmindex_collection {
+namespace fmc {
 
 // helper to compute 'alignas' values
 constexpr inline auto alignAsValue(size_t bits) -> size_t {

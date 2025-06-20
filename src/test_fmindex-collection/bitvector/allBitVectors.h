@@ -6,35 +6,35 @@
 #include <fmindex-collection/bitvector/all.h>
 
 #define ALLBITVECTORS \
-    fmindex_collection::bitvector::L0_64Bitvector, \
-    fmindex_collection::bitvector::L0_128Bitvector, \
-    fmindex_collection::bitvector::L0_256Bitvector, \
-    fmindex_collection::bitvector::L0_512Bitvector, \
-    fmindex_collection::bitvector::L0_1024Bitvector, \
-    fmindex_collection::bitvector::L0_2048Bitvector, \
-    fmindex_collection::bitvector::PairedL0_64Bitvector, \
-    fmindex_collection::bitvector::PairedL0_128Bitvector, \
-    fmindex_collection::bitvector::PairedL0_256Bitvector, \
-    fmindex_collection::bitvector::PairedL0_512Bitvector, \
-    fmindex_collection::bitvector::PairedL0_1024Bitvector, \
-    fmindex_collection::bitvector::PairedL0_2048Bitvector, \
-    fmindex_collection::bitvector::L0L1_64_64kBitvector, \
-    fmindex_collection::bitvector::L0L1_128_64kBitvector, \
-    fmindex_collection::bitvector::L0L1_256_64kBitvector, \
-    fmindex_collection::bitvector::L0L1_512_64kBitvector, \
-    fmindex_collection::bitvector::L0L1_1024_64kBitvector, \
-    fmindex_collection::bitvector::L0L1_2048_64kBitvector, \
-    fmindex_collection::bitvector::PairedL0L1_64_64kBitvector, \
-    fmindex_collection::bitvector::PairedL0L1_128_64kBitvector, \
-    fmindex_collection::bitvector::PairedL0L1_256_64kBitvector, \
-    fmindex_collection::bitvector::PairedL0L1_512_64kBitvector, \
-    fmindex_collection::bitvector::PairedL0L1_1024_64kBitvector, \
-    fmindex_collection::bitvector::PairedL0L1_2048_64kBitvector
+    fmc::bitvector::L0_64Bitvector, \
+    fmc::bitvector::L0_128Bitvector, \
+    fmc::bitvector::L0_256Bitvector, \
+    fmc::bitvector::L0_512Bitvector, \
+    fmc::bitvector::L0_1024Bitvector, \
+    fmc::bitvector::L0_2048Bitvector, \
+    fmc::bitvector::PairedL0_64Bitvector, \
+    fmc::bitvector::PairedL0_128Bitvector, \
+    fmc::bitvector::PairedL0_256Bitvector, \
+    fmc::bitvector::PairedL0_512Bitvector, \
+    fmc::bitvector::PairedL0_1024Bitvector, \
+    fmc::bitvector::PairedL0_2048Bitvector, \
+    fmc::bitvector::L0L1_64_64kBitvector, \
+    fmc::bitvector::L0L1_128_64kBitvector, \
+    fmc::bitvector::L0L1_256_64kBitvector, \
+    fmc::bitvector::L0L1_512_64kBitvector, \
+    fmc::bitvector::L0L1_1024_64kBitvector, \
+    fmc::bitvector::L0L1_2048_64kBitvector, \
+    fmc::bitvector::PairedL0L1_64_64kBitvector, \
+    fmc::bitvector::PairedL0L1_128_64kBitvector, \
+    fmc::bitvector::PairedL0L1_256_64kBitvector, \
+    fmc::bitvector::PairedL0L1_512_64kBitvector, \
+    fmc::bitvector::PairedL0L1_1024_64kBitvector, \
+    fmc::bitvector::PairedL0L1_2048_64kBitvector
 
 #define ALLSPARSEBITVECTORS \
-    fmindex_collection::bitvector::PairedL0L1_512_64kBitvector, \
-    fmindex_collection::bitvector::SparseBLEBitvector<1, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector>, \
-    fmindex_collection::bitvector::SparseBLEBitvector<2, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector>, \
-    fmindex_collection::bitvector::SparseBLEBitvector<3, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector>, \
-    fmindex_collection::bitvector::SparseBLEBitvector<4, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector>, \
-    fmindex_collection::bitvector::SparseBLEBitvector<5, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector, fmindex_collection::bitvector::PairedL0L1_512_64kBitvector>
+    fmc::bitvector::PairedL0L1_512_64kBitvector, \
+    fmc::bitvector::SparseBLEBitvector<1, fmc::bitvector::PairedL0L1_512_64kBitvector, fmc::bitvector::PairedL0L1_512_64kBitvector>, \
+    fmc::bitvector::SparseBLEBitvector<2, fmc::bitvector::PairedL0L1_512_64kBitvector, fmc::bitvector::PairedL0L1_512_64kBitvector>, \
+    fmc::bitvector::SparseBLEBitvector<3, fmc::bitvector::PairedL0L1_512_64kBitvector, fmc::bitvector::PairedL0L1_512_64kBitvector>, \
+    fmc::bitvector::SparseBLEBitvector<4, fmc::bitvector::PairedL0L1_512_64kBitvector, fmc::bitvector::PairedL0L1_512_64kBitvector>, \
+    fmc::bitvector::SparseBLEBitvector<5, fmc::bitvector::PairedL0L1_512_64kBitvector, fmc::bitvector::PairedL0L1_512_64kBitvector>

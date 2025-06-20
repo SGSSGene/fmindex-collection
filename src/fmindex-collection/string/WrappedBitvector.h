@@ -13,7 +13,7 @@
 #include <ranges>
 #include <vector>
 
-namespace fmindex_collection::string {
+namespace fmc::string {
 
 template <Bitvector_c Bitvector>
 struct WrappedBitvector {

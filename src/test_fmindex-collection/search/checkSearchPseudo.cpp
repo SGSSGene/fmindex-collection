@@ -11,7 +11,7 @@
 TEST_CASE("searching with PseudoSearch", "[search]") {
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
 
-    auto index = fmindex_collection::BiFMIndex<255>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmc::BiFMIndex<255>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         REQUIRE(input.size()+1 == index.size());
@@ -30,8 +30,8 @@ TEST_CASE("searching with PseudoSearch", "[search]") {
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
-    auto search_scheme = fmindex_collection::search_scheme::generator::backtracking(1, 0, 0);
-    fmindex_collection::search_pseudo::search<true>(index, query, search_scheme, [](auto qidx, auto result, auto errors) {
+    auto search_scheme = fmc::search_scheme::generator::backtracking(1, 0, 0);
+    fmc::search_pseudo::search<true>(index, query, search_scheme, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);
         CHECK(result.lb == 1);
@@ -43,7 +43,7 @@ TEST_CASE("searching with collection and PseudoSearch", "[collection]") {
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
 
-    auto index = fmindex_collection::BiFMIndex<255>{input, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmc::BiFMIndex<255>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         auto expected = std::vector<uint8_t>{'A', 'A', 'A', 'A', 'A', 'A', 'B', 'C', 'B', '\0', 'C', '\0',
@@ -56,8 +56,8 @@ TEST_CASE("searching with collection and PseudoSearch", "[collection]") {
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
-    auto search_scheme = fmindex_collection::search_scheme::generator::backtracking(1, 0, 0);
-    fmindex_collection::search_pseudo::search<true>(index, query, search_scheme, [](auto qidx, auto result, auto errors) {
+    auto search_scheme = fmc::search_scheme::generator::backtracking(1, 0, 0);
+    fmc::search_pseudo::search<true>(index, query, search_scheme, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);
         CHECK(result.lb == 2);

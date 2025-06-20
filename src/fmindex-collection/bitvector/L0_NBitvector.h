@@ -15,7 +15,7 @@
 #include <span>
 #include <vector>
 
-namespace fmindex_collection::bitvector {
+namespace fmc::bitvector {
 
 /**
  * L0_NBitvector a bit vector with only bits and blocks

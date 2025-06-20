@@ -11,9 +11,9 @@
 #include <ranges>
 #include <vector>
 
-namespace fmindex_collection::string {
+namespace fmc::string {
 
-template <size_t TSigma, Bitvector_c Bitvector = ::fmindex_collection::bitvector::Bitvector>
+template <size_t TSigma, Bitvector_c Bitvector = ::fmc::bitvector::Bitvector>
 struct MultiBitvector {
     static constexpr size_t Sigma = TSigma;
 

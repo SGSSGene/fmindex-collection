@@ -8,7 +8,7 @@
 #include <fmindex-collection/fmindex/MirroredBiFMIndex.h>
 
 TEST_CASE("checking mirrored bidirectional fm index", "[mirroredbifmindex]") {
-    using String = fmindex_collection::string::PairedFlattenedBitvectors_512_64k<255>;
+    using String = fmc::string::PairedFlattenedBitvectors_512_64k<255>;
 
     // T = 011202110
     auto bwt    = std::vector<uint8_t>{1, 0, 2, 1, 2, 0, 1, 1, 0};
@@ -19,8 +19,8 @@ TEST_CASE("checking mirrored bidirectional fm index", "[mirroredbifmindex]") {
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push_back(true);
         }
-        auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::MirroredBiFMIndex<String>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::MirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -40,8 +40,8 @@ TEST_CASE("checking mirrored bidirectional fm index", "[mirroredbifmindex]") {
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::MirroredBiFMIndex<String>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::MirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -70,8 +70,8 @@ TEST_CASE("checking mirrored bidirectional fm index", "[mirroredbifmindex]") {
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::MirroredBiFMIndex<String>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::MirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -92,8 +92,8 @@ TEST_CASE("checking mirrored bidirectional fm index", "[mirroredbifmindex]") {
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::MirroredBiFMIndex<String>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::MirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {

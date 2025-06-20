@@ -10,15 +10,13 @@
 #include <fmindex-collection/suffixarray/CSA.h>
 #include <fmindex-collection/suffixarray/utils.h>
 
-namespace fmc = fmindex_collection;
-
 TEST_CASE("checking unidirectional fm index cursor", "[fmindexcursor]") {
 
     auto data = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 1, 2, 2, 2}};
-    using Index = fmindex_collection::FMIndex<256>;
+    using Index = fmc::FMIndex<256>;
     auto index = Index{data, /*.samplingRate=*/1, /*.threadNbr=*/1};
 
-    auto cursor = fmindex_collection::FMIndexCursor{index};
+    auto cursor = fmc::FMIndexCursor{index};
     REQUIRE(cursor.count() == index.size());
     REQUIRE(!cursor.empty());
     REQUIRE(cursor.lb == 0);

@@ -5,7 +5,6 @@
 #include <fmindex-collection/search_scheme/all.h>
 #include <fmt/format.h>
 
-namespace fmc = fmindex_collection;
 namespace ss = fmc::search_scheme;
 
 int main(int argc, char** argv) {

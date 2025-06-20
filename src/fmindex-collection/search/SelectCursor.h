@@ -10,7 +10,7 @@
 #include "../fmindex/ReverseFMIndexCursor.h"
 
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <typename Index>
 struct SelectIndexCursor;

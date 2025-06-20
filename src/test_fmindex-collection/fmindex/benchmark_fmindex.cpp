@@ -19,7 +19,7 @@ TEST_CASE("benchmark fmindex on c'tor operation - 5 alphabet", "[fmindex][!bench
             INFO(string_name);
 
             bench.run(string_name, [&]() {
-                using Index = fmindex_collection::FMIndex<5, String>;
+                using Index = fmc::FMIndex<5, String>;
                 auto index = Index{text, /*.samplingRate=*/16, /*.threadNbr=*/1};
                 ankerl::nanobench::doNotOptimizeAway(const_cast<Index const&>(index));
             });

@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <ranges>
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <typename T>
 concept Sequence  = std::ranges::sized_range<T>

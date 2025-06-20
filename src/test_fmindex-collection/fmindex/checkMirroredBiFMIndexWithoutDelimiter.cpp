@@ -10,13 +10,13 @@
 #include <fstream>
 
 TEST_CASE("checking mirrored bidirectional fm index without delimiters", "[mirroredbifmindex-nd]") {
-    using String = fmindex_collection::string::PairedFlattenedBitvectors_512_64k<255>;
+    using String = fmc::string::PairedFlattenedBitvectors_512_64k<255>;
 
     auto input = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{1, 2, 0}};
     SECTION("test index without delimiter") {
-        auto index = fmindex_collection::MirroredBiFMIndex<String>{input, /*.samplingRate=*/ 1, /*.threadNbr=*/1, false};
+        auto index = fmc::MirroredBiFMIndex<String>{input, /*.samplingRate=*/ 1, /*.threadNbr=*/1, false};
 
-        auto cursor = fmindex_collection::MirroredBiFMIndexCursor{index};
+        auto cursor = fmc::MirroredBiFMIndexCursor{index};
         REQUIRE(cursor.count() == index.size());
         REQUIRE(!cursor.empty());
         REQUIRE(cursor.lb == 0);

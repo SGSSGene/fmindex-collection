@@ -9,7 +9,7 @@
 #include <fstream>
 
 TEST_CASE("checking unidirectional kmer fm index", "[kmerfmindex]") {
-    using String = fmindex_collection::string::PairedFlattenedBitvectors_512_64k<255>;
+    using String = fmc::string::PairedFlattenedBitvectors_512_64k<255>;
 
     auto bwt    = std::vector<uint8_t>{'t', '\0', 'o', '\0', ' ', 'H', 'W', 'a', 'l', 'e', 'l', 'l'};
     auto sa     = std::vector<uint64_t>{ 10, 11, 5, 0,  6,  1,  7,  2,  3,  8,  4,  9 };
@@ -19,8 +19,8 @@ TEST_CASE("checking unidirectional kmer fm index", "[kmerfmindex]") {
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push_back(true);
         }
-        auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::KMerFMIndex<String, 2>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::KMerFMIndex<String, 2>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -43,8 +43,8 @@ TEST_CASE("checking unidirectional kmer fm index", "[kmerfmindex]") {
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::KMerFMIndex<String, 2>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::KMerFMIndex<String, 2>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -73,8 +73,8 @@ TEST_CASE("checking unidirectional kmer fm index", "[kmerfmindex]") {
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::KMerFMIndex<String, 2>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::KMerFMIndex<String, 2>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -95,8 +95,8 @@ TEST_CASE("checking unidirectional kmer fm index", "[kmerfmindex]") {
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::KMerFMIndex<String, 2>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::KMerFMIndex<String, 2>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -112,15 +112,15 @@ TEST_CASE("checking unidirectional kmer fm index", "[kmerfmindex]") {
             for (size_t i{0}; i < sa.size(); ++i) {
                 bitStack.push_back(true);
             }
-            auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-            auto index = fmindex_collection::KMerFMIndex<String, 2>{bwt, std::move(csa)};
+            auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+            auto index = fmc::KMerFMIndex<String, 2>{bwt, std::move(csa)};
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(index);
         }
         SECTION("deserialize") {
             auto ifs = std::ifstream{"temp_test_serialization", std::ios::binary};
 
-            auto index = fmindex_collection::KMerFMIndex<String, 2>{};
+            auto index = fmc::KMerFMIndex<String, 2>{};
             auto archive = cereal::BinaryInputArchive{ifs};
             archive(index);
 

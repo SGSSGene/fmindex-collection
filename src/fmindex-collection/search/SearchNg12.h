@@ -10,7 +10,7 @@
 #include <functional>
 #include <vector>
 
-namespace fmindex_collection::search_ng12 {
+namespace fmc::search_ng12 {
 
 enum class Dir : uint8_t { Left, Right };
 template <typename T>

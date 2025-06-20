@@ -20,7 +20,7 @@
 #endif
 
 
-namespace fmindex_collection::string {
+namespace fmc::string {
 
 /*
  * PartialPairedL0L1L2 EPRv2 Implementation

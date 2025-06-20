@@ -13,9 +13,9 @@
 TEST_CASE("checking bidirectional fm index without delimiters", "[bifmindex-nd]") {
     auto input = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{1, 2, 0}};
     SECTION("test index without delimiter") {
-        auto index = fmindex_collection::BiFMIndex<255>{input, /*.samplingRate=*/ 1, /*.threadNbr=*/1, false};
+        auto index = fmc::BiFMIndex<255>{input, /*.samplingRate=*/ 1, /*.threadNbr=*/1, false};
 
-        auto cursor = fmindex_collection::BiFMIndexCursor{index};
+        auto cursor = fmc::BiFMIndexCursor{index};
         REQUIRE(cursor.count() == index.size());
         REQUIRE(!cursor.empty());
         REQUIRE(cursor.lb == 0);
@@ -94,7 +94,7 @@ TEST_CASE("checking bidirectional fm index without delimiters - bwt/sa", "[bifmi
         {{0, 5}, 0},
     };
 
-    auto index = fmindex_collection::BiFMIndex<255>{input, /*.samplingRate=*/ 1, /*.threadNbr=*/1, false};
+    auto index = fmc::BiFMIndex<255>{input, /*.samplingRate=*/ 1, /*.threadNbr=*/1, false};
     CHECK(index.size() == expectedSA.size());
 
     for (size_t i{}; i < index.size(); ++i) {

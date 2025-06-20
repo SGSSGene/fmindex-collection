@@ -54,7 +54,7 @@ void analyse_bitvector(std::string label, std::vector<uint8_t> const& text) {
 }
 
 static void analyse_bitvectors() {
-    using namespace fmindex_collection::bitvector;
+    using namespace fmc::bitvector;
 
 
     double onePercentage;
@@ -123,11 +123,11 @@ void analyse_string(std::string label, std::vector<uint8_t> const& text) {
     (void)string;
 }
 
-template <int64_t BL, typename Bitvector = fmindex_collection::bitvector::Bitvector, typename Bitvector2 = fmindex_collection::bitvector::Bitvector>
-using SparseBitvector = fmindex_collection::bitvector::SparseBLEBitvector<BL, Bitvector, Bitvector2>;
+template <int64_t BL, typename Bitvector = fmc::bitvector::Bitvector, typename Bitvector2 = fmc::bitvector::Bitvector>
+using SparseBitvector = fmc::bitvector::SparseBLEBitvector<BL, Bitvector, Bitvector2>;
 
 static void analyse_strings() {
-    using namespace fmindex_collection::string;
+    using namespace fmc::string;
     for (auto e : {7}) {
         constexpr static size_t Sigma = 21;
         auto text = generateString<Sigma>(my_pow10(e));
@@ -139,10 +139,10 @@ static void analyse_strings() {
         analyse_string<MultiBitvector<Sigma, SparseBitvector<4>>>("SparseMultiBitvector 16", text);
         analyse_string<MultiBitvector<Sigma, SparseBitvector<5>>>("SparseMultiBitvector 32", text);
         analyse_string<MultiBitvector<Sigma, SparseBitvector<6>>>("SparseMultiBitvector 64", text);
-        analyse_string<MultiBitvector<Sigma, SparseBitvector<2, fmindex_collection::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 4/2", text);
-        analyse_string<MultiBitvector<Sigma, SparseBitvector<3, fmindex_collection::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 8/2", text);
-        analyse_string<MultiBitvector<Sigma, SparseBitvector<3, fmindex_collection::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 8/4", text);
-        analyse_string<MultiBitvector<Sigma, SparseBitvector<4, fmindex_collection::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 16/4", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<2, fmc::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 4/2", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<3, fmc::bitvector::Bitvector, SparseBitvector<1>>>>("SparseMultiBitvector 8/2", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<3, fmc::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 8/4", text);
+        analyse_string<MultiBitvector<Sigma, SparseBitvector<4, fmc::bitvector::Bitvector, SparseBitvector<2>>>>("SparseMultiBitvector 16/4", text);
 
         analyse_string<InterleavedBitvector8<Sigma>>("InterleavedBitvector8", text);
         analyse_string<InterleavedBitvector16<Sigma>>("InterleavedBitvector16", text);

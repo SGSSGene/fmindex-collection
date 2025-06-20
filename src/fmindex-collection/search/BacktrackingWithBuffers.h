@@ -6,7 +6,7 @@
 #include "SelectCursor.h"
 #include "../concepts.h"
 
-namespace fmindex_collection::search_backtracking_with_buffers {
+namespace fmc::search_backtracking_with_buffers {
 
 /* Search algorithm with explicit programmed search scheme
  */

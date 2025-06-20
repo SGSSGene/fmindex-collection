@@ -10,8 +10,8 @@
 
 TEST_CASE("benchmark searches with errors", "[searches][!benchmark][kmerfmindex]") {
     SECTION("benchmarking") {
-        using String = fmindex_collection::string::InterleavedBitvector16<256>;
-        using Index = fmindex_collection::KMerFMIndex<String, 8>;
+        using String = fmc::string::InterleavedBitvector16<256>;
+        using Index = fmc::KMerFMIndex<String, 8>;
 
         srand(0);
 
@@ -106,7 +106,7 @@ TEST_CASE("benchmark searches with errors", "[searches][!benchmark][kmerfmindex]
 
             {
                 bench.run("search kmersearch - error " + std::to_string(errors), [&]() {
-                    fmindex_collection::kmersearch::search(index, reads, [&](auto qidx, auto cursor) {
+                    fmc::kmersearch::search(index, reads, [&](auto qidx, auto cursor) {
                         (void)errors;
                         (void)qidx;
                         ankerl::nanobench::doNotOptimizeAway(cursor);

@@ -9,7 +9,7 @@
 
 #include <algorithm>
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <String_c String, SuffixArray_c TCSA = CSA>
 struct MirroredBiFMIndex {

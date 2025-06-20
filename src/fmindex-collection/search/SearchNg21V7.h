@@ -12,7 +12,7 @@
  * like search_ng21V6 (with abort flag)
  * but using two buffers
  */
-namespace fmindex_collection::search_ng21V7 {
+namespace fmc::search_ng21V7 {
 
 enum class Dir : uint8_t { Left, Right };
 template <typename T>

@@ -4,8 +4,6 @@
 #include <fmindex-collection/fmindex-collection.h>
 #include <fmt/format.h>
 
-namespace fmc = fmindex_collection;
-
 int main() {
     // your database/the data you want to search through, (value 0 should be avoided)
     auto reference = std::vector<std::vector<uint8_t>> {

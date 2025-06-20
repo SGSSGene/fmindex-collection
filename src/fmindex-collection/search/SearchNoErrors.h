@@ -7,7 +7,7 @@
 #include "SelectCursor.h"
 
 
-namespace fmindex_collection::search_no_errors {
+namespace fmc::search_no_errors {
 
 template <typename index_t, Sequence query_t>
 auto search(index_t const & index, query_t const& query) {
