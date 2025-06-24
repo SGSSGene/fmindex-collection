@@ -63,7 +63,7 @@ TEST_CASE("searching with collection and backtracking", "[collection]") {
         CHECK(result.count() == 18);
     });
 
-    auto expected = std::vector<std::tuple<size_t, size_t>> {
+    auto expected = std::vector<std::tuple<uint32_t, uint32_t>> {
         std::make_tuple(1ull, 11ull),
         std::make_tuple(0ull, 11ull),
         std::make_tuple(1ull, 10ull),
@@ -156,7 +156,7 @@ TEST_CASE("searching with collection and backtracking with FMIndex", "[collectio
         CHECK(result.count() == 18);
     });
 
-    auto expected = std::vector<std::tuple<size_t, size_t>> {
+    auto expected = std::vector<std::tuple<uint32_t, uint32_t>> {
         std::make_tuple(1ull, 11ull),
         std::make_tuple(0ull, 11ull),
         std::make_tuple(1ull, 10ull),
@@ -253,7 +253,7 @@ TEST_CASE("searching with collection and backtracking with ReverseFMIndex", "[co
         CHECK(result.count() == 18);
     });
 
-    auto expected = std::vector<std::tuple<size_t, size_t>> {
+    auto expected = std::vector<std::tuple<uint32_t, uint32_t>> {
         std::make_tuple(1ull,  0ull),
         std::make_tuple(0ull,  0ull),
         std::make_tuple(1ull,  1ull),

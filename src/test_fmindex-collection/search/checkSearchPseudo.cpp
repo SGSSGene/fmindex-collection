@@ -64,7 +64,7 @@ TEST_CASE("searching with collection and PseudoSearch", "[collection]") {
         CHECK(result.count() == 18);
     });
 
-    auto expected = std::vector<std::tuple<size_t, size_t>> {
+    auto expected = std::vector<std::tuple<uint32_t, uint32_t>> {
         std::make_tuple(1ull, 11ull),
         std::make_tuple(0ull, 11ull),
         std::make_tuple(1ull, 10ull),

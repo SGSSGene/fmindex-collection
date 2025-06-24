@@ -63,7 +63,7 @@ TEST_CASE("locating using LocateFMTree", "[locate][fmtree]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_pseudo::search</*EditDistance=*/true>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            fmc::locateFMTree<4>(index, cursor, [&](std::tuple<size_t, size_t> entry, size_t offset) {
+            fmc::locateFMTree<4>(index, cursor, [&](std::tuple<uint32_t, uint32_t> entry, size_t offset) {
                 auto [sid, spos] = entry;
                 results.emplace_back(qidx, sid, spos+offset);
             }, samplingRate);

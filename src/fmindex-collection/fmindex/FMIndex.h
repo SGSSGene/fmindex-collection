@@ -11,7 +11,7 @@
 
 namespace fmc {
 
-template <size_t TSigma, template <size_t> typename String = string::FlattenedBitvectors_512_64k, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<size_t, size_t>>>
+template <size_t TSigma, template <size_t> typename String = string::FlattenedBitvectors_512_64k, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<uint32_t, uint32_t>>>
     requires String_c<String<TSigma>>
 struct FMIndex {
     using ADEntry = SparseArray::value_t;

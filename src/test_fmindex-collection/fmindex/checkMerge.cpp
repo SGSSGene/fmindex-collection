@@ -41,7 +41,7 @@ TEST_CASE("checking merging of fmindices", "[FMIndex][merge]") {
         { 2, 8, 17},
         { 2, 8, 18},
     };
-    auto expectedSA = std::vector<std::tuple<size_t, size_t>> {
+    auto expectedSA = std::vector<std::tuple<uint32_t, uint32_t>> {
         {1, 8},
         {0, 8},
         {0, 0},
@@ -118,7 +118,7 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
             { 2, 8, 17},
             { 2, 8, 18},
         };
-        auto expectedSA = std::vector<std::tuple<size_t, size_t>> {
+        auto expectedSA = std::vector<std::tuple<uint32_t, uint32_t>> {
             {1, 8},
             {0, 8},
             {0, 0},
@@ -192,7 +192,7 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
                 {3, 13, 26},
                 {3, 13, 27},
             };
-            auto expectedSA = std::vector<std::tuple<size_t, size_t>> {
+            auto expectedSA = std::vector<std::tuple<uint32_t, uint32_t>> {
                 {2, 8},
                 {1, 8},
                 {0, 8},
