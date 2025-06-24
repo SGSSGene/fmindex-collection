@@ -242,6 +242,8 @@ TEST_CASE("mark_exact_or_less - test to ternary logic function", "[ternary_logic
     }
 }
 
+//!WORKAROUND !TODO not running on msvc because 14.44 is crashing with internal compiler error (14.43 is working fine)
+ #if !defined(_MSC_VER) || defined(__clang__) // not MSVC
 TEST_CASE("mark_exact_or_less_large - test to ternary logic function", "[ternary_logic][mark_exact_or_less_large]") {
     auto check_equality = [&]<size_t Bits, size_t BitWidth=4>() {
         for (size_t loop{0}; loop < 1<<BitWidth; loop += Bits) {
@@ -328,6 +330,7 @@ TEST_CASE("mark_exact_or_less_large - test to ternary logic function", "[ternary
         CHECK(v == mask);
     }
 }
+#endif
 #if 1
 
 TEST_CASE("mark_exact_or_less - testing and benchmarking", "[ternary_logic][!benchmark][mark_exact_or_less]") {
