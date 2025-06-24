@@ -4,9 +4,9 @@
 
 #include "SparseArray.h"
 
-namespace fmindex_collection::suffixarray {
+namespace fmc::suffixarray {
 
-template <SuffixArray_c TCSA, SparseArray_c SparseArray = fmindex_collection::suffixarray::SparseArray<std::tuple<size_t, size_t>>>
+template <SuffixArray_c TCSA, SparseArray_c SparseArray = fmc::suffixarray::SparseArray<std::tuple<uint32_t, uint32_t>>>
 auto convertCSAToAnnotatedDocument(TCSA const& _csa) -> SparseArray {
     return SparseArray{std::views::iota(size_t{0}, _csa.bv.size()) | std::views::transform([&](size_t i) {
         return _csa.value(i);

@@ -14,7 +14,7 @@
 #include <tuple>
 
 
-namespace fmindex_collection {
+namespace fmc {
 
 namespace suffixarray {
 template <typename T, typename SAEntry, Bitvector_c Bitvector>

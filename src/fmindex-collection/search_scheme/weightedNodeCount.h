@@ -10,7 +10,7 @@
 #include <cmath>
 #include <numeric>
 
-namespace fmindex_collection::search_scheme {
+namespace fmc::search_scheme {
 
 /**
  * \tparam Edit use edit distance, other wise Hamming distance

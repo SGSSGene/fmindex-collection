@@ -15,7 +15,7 @@
 #include <optional>
 #include <type_traits>
 
-namespace fmindex_collection::search_scheme {
+namespace fmc::search_scheme {
 namespace expand_detail {
 
 inline auto forwards(std::vector<size_t> const& pi) -> std::vector<size_t> {

@@ -12,8 +12,7 @@
 
 
 TEST_CASE("locating using LocateFMTree", "[locate][fmtree]") {
-    using String = fmindex_collection::string::InterleavedBitvector16<256>;
-    using Index = fmindex_collection::BiFMIndex<String>;
+    using Index = fmc::BiFMIndex<256>;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'B', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'C', 'A', 'A', 'A'}};
@@ -24,12 +23,12 @@ TEST_CASE("locating using LocateFMTree", "[locate][fmtree]") {
     auto queries = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'C', 'C'}, std::vector<uint8_t>{'B', 'B'}};
 
     SECTION("test LocateFMTree") {
-        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmc::search_scheme::expand(fmc::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
-        fmindex_collection::search_pseudo::search</*EditDistance=*/true>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
+        fmc::search_pseudo::search</*EditDistance=*/true>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmindex_collection::LocateFMTree{index, cursor, samplingRate, /*.maxDepth=*/3}) {
+            for (auto [entry, offset] : fmc::LocateFMTree{index, cursor, samplingRate, /*.maxDepth=*/3}) {
                 auto [sid, spos] = entry;
                 results.emplace_back(qidx, sid, spos+offset);
             }
@@ -59,12 +58,12 @@ TEST_CASE("locating using LocateFMTree", "[locate][fmtree]") {
     }
 
     SECTION("test locateFMTree") {
-        auto search_scheme = fmindex_collection::search_scheme::expand(fmindex_collection::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
+        auto search_scheme = fmc::search_scheme::expand(fmc::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
-        fmindex_collection::search_pseudo::search</*EditDistance=*/true>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
+        fmc::search_pseudo::search</*EditDistance=*/true>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            fmindex_collection::locateFMTree<4>(index, cursor, [&](std::tuple<size_t, size_t> entry, size_t offset) {
+            fmc::locateFMTree<4>(index, cursor, [&](std::tuple<uint32_t, uint32_t> entry, size_t offset) {
                 auto [sid, spos] = entry;
                 results.emplace_back(qidx, sid, spos+offset);
             }, samplingRate);

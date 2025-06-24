@@ -24,8 +24,8 @@ TEST_CASE("check Compressed Suffix Array (CSA)", "[suffixarray][CSA]") {
     // rld$Hello$Wo  1 2   8
 
 
-    auto [totalSize, input, inputSizes] = fmindex_collection::createSequences(fmindex_collection::test::createInputData({"Hello", "World"}));
-    auto sa                             = fmindex_collection::createSA64(input, 1);
+    auto [totalSize, input, inputSizes] = fmc::createSequences(fmc::test::createInputData({"Hello", "World"}));
+    auto sa                             = fmc::createSA64(input, 1);
 
 
     auto check = [&](auto const& csa, auto const& expected) {
@@ -39,9 +39,9 @@ TEST_CASE("check Compressed Suffix Array (CSA)", "[suffixarray][CSA]") {
     };
 
     SECTION("sampling 3") {
-        auto csa = fmindex_collection::CSA {sa, /*.samplingRate =*/ 3, inputSizes};
+        auto csa = fmc::CSA {sa, /*.samplingRate =*/ 3, inputSizes};
 
-        auto expected = std::vector<std::optional<std::tuple<size_t, size_t>>>(12);
+        auto expected = std::vector<std::optional<std::tuple<uint32_t, uint32_t>>>(12);
         expected[2] = {0, 0};
         expected[3] = {1, 0};
         expected[6] = {1, 3};
@@ -50,9 +50,9 @@ TEST_CASE("check Compressed Suffix Array (CSA)", "[suffixarray][CSA]") {
     }
 
     SECTION("sampling 4") {
-        auto csa = fmindex_collection::CSA {sa, /*.samplingRate =*/ 4, inputSizes};
+        auto csa = fmc::CSA {sa, /*.samplingRate =*/ 4, inputSizes};
 
-        auto expected = std::vector<std::optional<std::tuple<size_t, size_t>>>(12);
+        auto expected = std::vector<std::optional<std::tuple<uint32_t, uint32_t>>>(12);
         expected[2] = {0, 0};
         expected[3] = {1, 0};
         expected[4] = {1, 4};
@@ -61,9 +61,9 @@ TEST_CASE("check Compressed Suffix Array (CSA)", "[suffixarray][CSA]") {
     }
 
     SECTION("sampling 5") {
-        auto csa = fmindex_collection::CSA {sa, /*.samplingRate =*/ 5, inputSizes};
+        auto csa = fmc::CSA {sa, /*.samplingRate =*/ 5, inputSizes};
 
-        auto expected = std::vector<std::optional<std::tuple<size_t, size_t>>>(12);
+        auto expected = std::vector<std::optional<std::tuple<uint32_t, uint32_t>>>(12);
         expected[0] = {1, 5};
         expected[1] = {0, 5};
         expected[2] = {0, 0};
@@ -72,9 +72,9 @@ TEST_CASE("check Compressed Suffix Array (CSA)", "[suffixarray][CSA]") {
     }
 
     SECTION("sampling 8") {
-        auto csa = fmindex_collection::CSA {sa, /*.samplingRate =*/ 8, inputSizes};
+        auto csa = fmc::CSA {sa, /*.samplingRate =*/ 8, inputSizes};
 
-        auto expected = std::vector<std::optional<std::tuple<size_t, size_t>>>(12);
+        auto expected = std::vector<std::optional<std::tuple<uint32_t, uint32_t>>>(12);
         expected[2] = {0, 0};
         expected[3] = {1, 0};
         check(csa, expected);
@@ -98,8 +98,8 @@ TEST_CASE("check Dense Compressed Suffix Array (DenseCSA)", "[suffixarray][Dense
     // rld$Hello$Wo  1 2   8
 
 
-    auto [totalSize, input, inputSizes] = fmindex_collection::createSequences(fmindex_collection::test::createInputData({"Hello", "World"}));
-    auto sa                             = fmindex_collection::createSA64(input, 1);
+    auto [totalSize, input, inputSizes] = fmc::createSequences(fmc::test::createInputData({"Hello", "World"}));
+    auto sa                             = fmc::createSA64(input, 1);
 
 
     auto check = [&](auto const& csa, auto const& expected) {
@@ -113,9 +113,9 @@ TEST_CASE("check Dense Compressed Suffix Array (DenseCSA)", "[suffixarray][Dense
     };
 
     SECTION("sampling 3") {
-        auto csa = fmindex_collection::DenseCSA {sa, /*.samplingRate =*/ 3, inputSizes};
+        auto csa = fmc::DenseCSA {sa, /*.samplingRate =*/ 3, inputSizes};
 
-        auto expected = std::vector<std::optional<std::tuple<size_t, size_t>>>(12);
+        auto expected = std::vector<std::optional<std::tuple<uint32_t, uint32_t>>>(12);
         expected[2] = {0, 0};
         expected[3] = {1, 0};
         expected[6] = {1, 3};
@@ -124,9 +124,9 @@ TEST_CASE("check Dense Compressed Suffix Array (DenseCSA)", "[suffixarray][Dense
     }
 
     SECTION("sampling 4") {
-        auto csa = fmindex_collection::DenseCSA {sa, /*.samplingRate =*/ 4, inputSizes};
+        auto csa = fmc::DenseCSA {sa, /*.samplingRate =*/ 4, inputSizes};
 
-        auto expected = std::vector<std::optional<std::tuple<size_t, size_t>>>(12);
+        auto expected = std::vector<std::optional<std::tuple<uint32_t, uint32_t>>>(12);
         expected[2] = {0, 0};
         expected[3] = {1, 0};
         expected[4] = {1, 4};
@@ -135,9 +135,9 @@ TEST_CASE("check Dense Compressed Suffix Array (DenseCSA)", "[suffixarray][Dense
     }
 
     SECTION("sampling 5") {
-        auto csa = fmindex_collection::DenseCSA {sa, /*.samplingRate =*/ 5, inputSizes};
+        auto csa = fmc::DenseCSA {sa, /*.samplingRate =*/ 5, inputSizes};
 
-        auto expected = std::vector<std::optional<std::tuple<size_t, size_t>>>(12);
+        auto expected = std::vector<std::optional<std::tuple<uint32_t, uint32_t>>>(12);
         expected[0] = {1, 5};
         expected[1] = {0, 5};
         expected[2] = {0, 0};
@@ -146,9 +146,9 @@ TEST_CASE("check Dense Compressed Suffix Array (DenseCSA)", "[suffixarray][Dense
     }
 
     SECTION("sampling 8") {
-        auto csa = fmindex_collection::DenseCSA {sa, /*.samplingRate =*/ 8, inputSizes};
+        auto csa = fmc::DenseCSA {sa, /*.samplingRate =*/ 8, inputSizes};
 
-        auto expected = std::vector<std::optional<std::tuple<size_t, size_t>>>(12);
+        auto expected = std::vector<std::optional<std::tuple<uint32_t, uint32_t>>>(12);
         expected[2] = {0, 0};
         expected[3] = {1, 0};
         check(csa, expected);

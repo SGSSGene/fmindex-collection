@@ -21,7 +21,7 @@
 #endif
 
 
-namespace fmindex_collection::suffixarray {
+namespace fmc::suffixarray {
 
 /** A compressed sparse array
  *

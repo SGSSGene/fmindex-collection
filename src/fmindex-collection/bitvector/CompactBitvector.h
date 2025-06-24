@@ -12,7 +12,7 @@
 #include <ranges>
 #include <vector>
 
-namespace fmindex_collection::bitvector {
+namespace fmc::bitvector {
 
 /**
  * CompactBitvector with interleaved superblocks, blocks and bits

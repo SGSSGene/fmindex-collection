@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <size_t N>
 inline std::array<std::bitset<N>, N+1> const leftshift_masks = []() {

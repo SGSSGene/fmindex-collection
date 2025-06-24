@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <functional>
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <size_t R, size_t N, typename T=std::bitset<N>>
 auto ternarylogic_impl(T const& a, T const& b, T const& c) -> T {

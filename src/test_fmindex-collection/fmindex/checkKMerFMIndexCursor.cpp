@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
+
 #include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
@@ -10,11 +11,11 @@
 TEST_CASE("checking unidirectional kmer fm index cursor", "[kmerfmindexcursor]") {
 
     auto data = std::vector<uint8_t>{1, 1, 1, 1, 2, 2, 2};
-    using String = fmindex_collection::string::MultiBitvector<256>;
-    using Index = fmindex_collection::KMerFMIndex<String, 2>;
+    using String = fmc::string::MultiBitvector<256>;
+    using Index = fmc::KMerFMIndex<String, 2>;
     auto index = Index{data, 1, 1};
 
-    auto cursor = fmindex_collection::KMerFMIndexCursor{index};
+    auto cursor = fmc::KMerFMIndexCursor{index};
     REQUIRE(cursor.count() == index.size());
     REQUIRE(!cursor.empty());
     REQUIRE(cursor.lb == 0);

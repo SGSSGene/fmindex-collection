@@ -10,7 +10,7 @@
 #include <cassert>
 #include <vector>
 
-namespace fmindex_collection::string {
+namespace fmc::string {
 
 template <size_t TSigma>
 struct InterleavedEPRV7 {

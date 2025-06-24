@@ -5,7 +5,7 @@
 #include "../concepts.h"
 #include "SelectCursor.h"
 
-namespace fmindex_collection::kmersearch {
+namespace fmc::kmersearch {
 
 template <typename index_t, Sequence query_t>
 auto search(index_t const& index, query_t const& query) -> std::optional<select_left_cursor_t<index_t>> {

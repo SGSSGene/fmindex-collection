@@ -3,18 +3,12 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "utils.h"
 
-#ifdef FMC_USE_AWFMINDEX
-    #include "AWFMIndex.h"
-    #define STRINGSWITHRANK(Sigma) ALLSTRINGSWITHRANK(Sigma), AWFMIndex<Sigma>
-#else
-    #define STRINGSWITHRANK(Sigma) ALLSTRINGSWITHRANK(Sigma)
-#endif
-
 TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string][all_sizes]") {
     auto testSigma = []<size_t Sigma>() {
         INFO("Sigma " << Sigma);
         call_with_templates<
-            STRINGSWITHRANK(Sigma)>([&]<typename String>() {
+            STRINGSWITHRANK>([&]<template <size_t> typename _String>() {
+            using String = _String<Sigma>;
             auto vector_name = getName<String>();
             INFO(vector_name);
 
@@ -61,7 +55,8 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
 
     SECTION("checks") {
         call_with_templates<
-            ALLSTRINGSWITHRANK(255)>([&]<typename String>() {
+            ALLSTRINGSWITHRANK>([&]<template <size_t> typename _String>() {
+            using String = _String<255>;
             auto vector_name = getName<String>();
             INFO(vector_name);
 
@@ -353,7 +348,8 @@ TEST_CASE("check symbol vectors construction on text longer than 255 characters"
 
     SECTION("checks") {
         call_with_templates<
-            ALLSTRINGSWITHRANK(255)>([&]<typename String>() {
+            ALLSTRINGSWITHRANK>([&]<template <size_t> typename _String>() {
+            using String = _String<255>;
 
             auto vector = String{text};
 
@@ -410,7 +406,7 @@ static auto benchs_6_text = std::vector<uint8_t>{};
 static auto benchSize_bwt = BenchSize{};
 TEMPLATE_TEST_CASE("benchmark vectors c'tor operation, on human dna5 data", "[String_c][bwt][!benchmark][6][time][ctor][.]", ALLSTRINGSWITHRANK(6)) {
     using String = TestType;
-    if constexpr (std::same_as<String, fmindex_collection::string::Naive<6>>) {
+    if constexpr (std::same_as<String, fmc::string::Naive<6>>) {
         return;
     }
     auto& [bench_rank, bench_prefix_rank, bench_all_ranks, bench_all_prefix_ranks, bench_symbol, bench_ctor] = benchs_6;
@@ -460,7 +456,7 @@ TEMPLATE_TEST_CASE("benchmark vectors c'tor operation, on human dna5 data", "[St
 
 TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human dna5 data", "[String_c][bwt][!benchmark][6][time][.]", ALLSTRINGSWITHRANK(6)) {
     using String = TestType;
-    if constexpr (std::same_as<String, fmindex_collection::string::Naive<6>>) {
+    if constexpr (std::same_as<String, fmc::string::Naive<6>>) {
         return;
     }
     auto& [bench_rank, bench_prefix_rank, bench_all_ranks, bench_all_prefix_ranks, bench_symbol, bench_ctor] = benchs_6;
@@ -531,7 +527,7 @@ TEMPLATE_TEST_CASE("benchmark vectors symbol() and rank() operations, on human d
 
 TEMPLATE_TEST_CASE("benchmark vectors size, on human dna5 data", "[String_c][bwt][!benchmark][6][size][.]", ALLSTRINGSWITHRANK(6)) {
     using String = TestType;
-    if constexpr (std::same_as<String, fmindex_collection::string::Naive<6>>) {
+    if constexpr (std::same_as<String, fmc::string::Naive<6>>) {
         return;
     }
 

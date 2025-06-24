@@ -14,7 +14,7 @@
  * As ng14
  * but direction change is predetermined
  */
-namespace fmindex_collection::search_ng15 {
+namespace fmc::search_ng15 {
 
 struct Block {
     size_t pi;

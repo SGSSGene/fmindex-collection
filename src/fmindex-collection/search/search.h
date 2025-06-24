@@ -3,13 +3,15 @@
 #pragma once
 
 #include "SearchPseudo.h"
+#include "SearchNg21V2.h"
+#include "SearchNoErrors.h"
 #include "../search_scheme/generator/h2.h"
 #include "../search_scheme/expand.h"
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <bool EditDistance, typename index_t, Sequence query_t, typename delegate_t>
-void search(index_t const& _index, query_t&& _query, size_t _errors, delegate_t&& _delegate) {
+void search(index_t const& _index, query_t const& _query, size_t _errors, delegate_t&& _delegate) {
     using cursor_t = select_cursor_t<index_t>;
     static_assert(not cursor_t::Reversed, "reversed fmindex is not supported");
 
@@ -25,7 +27,19 @@ void search(index_t const& _index, query_t&& _query, size_t _errors, delegate_t&
         search_scheme = search_scheme::expand(ss, length);
     }
 
-    search_pseudo::search<EditDistance>(_index, _query, search_scheme, _delegate);
+    if constexpr (!EditDistance) {
+        search_pseudo::search<EditDistance>(_index, _query, search_scheme, _delegate);
+    } else {
+        search_ng21V2::search(_index, _query, search_scheme, _delegate);
+    }
+}
+
+template <typename index_t, Sequence query_t, typename delegate_t>
+void search(index_t const& _index, query_t const& _query, delegate_t&& _delegate) {
+    auto cursor = search_no_errors::search(_index, _query);
+    if (cursor.count()) {
+        _delegate(cursor);
+    }
 }
 
 }

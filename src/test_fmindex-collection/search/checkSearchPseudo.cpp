@@ -8,12 +8,10 @@
 #include <fmindex-collection/search/SearchPseudo.h>
 #include <fmindex-collection/search_scheme/generator/all.h>
 
-TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
-
+TEST_CASE("searching with PseudoSearch", "[search]") {
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
 
-    auto index = fmindex_collection::BiFMIndex<String>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmc::BiFMIndex<255>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         REQUIRE(input.size()+1 == index.size());
@@ -32,8 +30,8 @@ TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]", ALLSTRINGSWITHRANK
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
-    auto search_scheme = fmindex_collection::search_scheme::generator::backtracking(1, 0, 0);
-    fmindex_collection::search_pseudo::search<true>(index, query, search_scheme, [](auto qidx, auto result, auto errors) {
+    auto search_scheme = fmc::search_scheme::generator::backtracking(1, 0, 0);
+    fmc::search_pseudo::search<true>(index, query, search_scheme, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);
         CHECK(result.lb == 1);
@@ -41,13 +39,11 @@ TEMPLATE_TEST_CASE("searching with PseudoSearch", "[search]", ALLSTRINGSWITHRANK
     });
 
 }
-TEMPLATE_TEST_CASE("searching with collection and PseudoSearch", "[collection]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
-
+TEST_CASE("searching with collection and PseudoSearch", "[collection]") {
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
 
-    auto index = fmindex_collection::BiFMIndex<String>{input, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmc::BiFMIndex<255>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         auto expected = std::vector<uint8_t>{'A', 'A', 'A', 'A', 'A', 'A', 'B', 'C', 'B', '\0', 'C', '\0',
@@ -60,15 +56,15 @@ TEMPLATE_TEST_CASE("searching with collection and PseudoSearch", "[collection]",
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
-    auto search_scheme = fmindex_collection::search_scheme::generator::backtracking(1, 0, 0);
-    fmindex_collection::search_pseudo::search<true>(index, query, search_scheme, [](auto qidx, auto result, auto errors) {
+    auto search_scheme = fmc::search_scheme::generator::backtracking(1, 0, 0);
+    fmc::search_pseudo::search<true>(index, query, search_scheme, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);
         CHECK(result.lb == 2);
         CHECK(result.count() == 18);
     });
 
-    auto expected = std::vector<std::tuple<size_t, size_t>> {
+    auto expected = std::vector<std::tuple<uint32_t, uint32_t>> {
         std::make_tuple(1ull, 11ull),
         std::make_tuple(0ull, 11ull),
         std::make_tuple(1ull, 10ull),

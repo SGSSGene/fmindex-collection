@@ -14,7 +14,7 @@
 /**
  * As ng15 and 20 combined
  */
-namespace fmindex_collection::search_ng16 {
+namespace fmc::search_ng16 {
 
 struct BandMatrix {
 private:

@@ -7,8 +7,6 @@
 #include <fstream>
 #include <nanobench.h>
 
-namespace fmc = fmindex_collection;
-
 TEST_CASE("check if signed_rshift_and_count works", "[signed_rshift_and_count]") {
     SECTION("all ones") {
         auto b = std::bitset<64>{};

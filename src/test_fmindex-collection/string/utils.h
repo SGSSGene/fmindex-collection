@@ -35,23 +35,14 @@ auto getName() {
 
 namespace {
 
-template <typename T>
-struct X;
-template <typename ...T>
-struct X<std::tuple<T...>> {
-    void operator()(auto f) {
-        (f.template operator()<T>(), ...);
-    }
-};
-
-template <typename Tuple>
-void call_with_templates_as_tuple(auto f) {
-    X<Tuple>{}(f);
-}
-
 template <typename ...T>
 void call_with_templates(auto f) {
-    call_with_templates_as_tuple<std::tuple<T...>>(f);
+    (f.template operator()<T>(), ...);
+}
+
+template <template <size_t> class ...T>
+void call_with_templates(auto f) {
+    (f.template operator()<T>(), ...);
 }
 
 template <size_t min, size_t range>
@@ -131,7 +122,7 @@ auto generateLargeText() -> std::vector<uint64_t> const& {
 
 #ifdef FMC_USE_AWFMINDEX
     #include "AWFMIndex.h"
-    #define STRINGSWITHRANK(Sigma) ALLSTRINGSWITHRANK(Sigma), AWFMIndex<Sigma>
+    #define STRINGSWITHRANK ALLSTRINGSWITHRANK, AWFMIndex
 #else
-    #define STRINGSWITHRANK(Sigma) ALLSTRINGSWITHRANK(Sigma)
+    #define STRINGSWITHRANK ALLSTRINGSWITHRANK
 #endif

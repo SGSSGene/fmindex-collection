@@ -9,7 +9,7 @@
 
 #include <algorithm>
 
-namespace fmindex_collection {
+namespace fmc {
 
 template <Bitvector_c Vector, SuffixArray_c TCSA = CSA>
 struct BinaryMirroredBiFMIndex {

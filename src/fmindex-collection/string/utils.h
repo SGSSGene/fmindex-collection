@@ -4,7 +4,7 @@
 
 #include "concepts.h"
 
-namespace fmindex_collection::string {
+namespace fmc::string {
 
 template <String_c String>
 auto computeAccumulatedC(String const& str) -> std::array<size_t, String::Sigma+1> {

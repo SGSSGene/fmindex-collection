@@ -17,13 +17,13 @@
 #include <stdexcept>
 #include <vector>
 
-namespace fmindex_collection::string {
+namespace fmc::string {
 
 /* Implements the concept `String_c`
  *
  * \param TSigma size of the alphabet
  */
-template <size_t TSigma, Bitvector_c Bitvector = ::fmindex_collection::bitvector::Bitvector>
+template <size_t TSigma, Bitvector_c Bitvector = ::fmc::bitvector::Bitvector>
 struct Wavelet2 {
     static constexpr size_t Sigma = TSigma;
 

@@ -40,7 +40,7 @@ TEST_CASE("benchmark sparse array", "[sparsearray][!benchmark][time]") {
     using Load = uint64_t;
 
     auto rng = ankerl::nanobench::Rng{};
-    static auto indicatorBV = fmindex_collection::bitvector::PairedL0L1_512_64kBitvector{std::views::iota(size_t{}, size) | std::views::transform([&](size_t) -> bool {
+    static auto indicatorBV = fmc::bitvector::PairedL0L1_512_64kBitvector{std::views::iota(size_t{}, size) | std::views::transform([&](size_t) -> bool {
         return rng.bounded(rate) == 0;
     })};
 
@@ -110,7 +110,7 @@ TEST_CASE("benchmark sparse array", "[sparsearray][!benchmark][time]") {
 
         if ((mode & 0x08) != 0) {
             auto bv = indicatorBV;
-            auto sparseArray = fmindex_collection::suffixarray::SparseArray<Load>{
+            auto sparseArray = fmc::suffixarray::SparseArray<Load>{
                 std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<Load> {
                     if (!indicatorBV.symbol(i)) return std::nullopt;
                     return i;
@@ -124,7 +124,7 @@ TEST_CASE("benchmark sparse array", "[sparsearray][!benchmark][time]") {
         }
 
         if ((mode & 0x10) != 0) {
-            auto sparseArray = fmindex_collection::suffixarray::CompressedSparseArray {
+            auto sparseArray = fmc::suffixarray::CompressedSparseArray {
                 std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<Load> {
                     if (!indicatorBV.symbol(i)) return std::nullopt;
                     return i;
@@ -138,7 +138,7 @@ TEST_CASE("benchmark sparse array", "[sparsearray][!benchmark][time]") {
         }
 
         if ((mode & 0x20) != 0) {
-            auto sparseArray = fmindex_collection::suffixarray::CompressedSparseArrayV2 {
+            auto sparseArray = fmc::suffixarray::CompressedSparseArrayV2 {
                 std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<Load> {
                     if (!indicatorBV.symbol(i)) return std::nullopt;
                     return i;
@@ -152,7 +152,7 @@ TEST_CASE("benchmark sparse array", "[sparsearray][!benchmark][time]") {
         }
 
         if ((mode & 0x40) != 0) {
-            auto sparseArray = fmindex_collection::suffixarray::CompressedSparseArrayV3 {
+            auto sparseArray = fmc::suffixarray::CompressedSparseArrayV3 {
                 std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<Load> {
                     if (!indicatorBV.symbol(i)) return std::nullopt;
                     return i;
@@ -165,7 +165,7 @@ TEST_CASE("benchmark sparse array", "[sparsearray][!benchmark][time]") {
             });
         }
         if ((mode & 0x80) != 0) {
-            auto sparseArray = fmindex_collection::suffixarray::CompressedSparseArrayV4 {
+            auto sparseArray = fmc::suffixarray::CompressedSparseArrayV4 {
                 std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<Load> {
                     if (!indicatorBV.symbol(i)) return std::nullopt;
                     return i;
@@ -179,7 +179,7 @@ TEST_CASE("benchmark sparse array", "[sparsearray][!benchmark][time]") {
         }
 
         if ((mode & 0x100) != 0) {
-            auto sparseArray = fmindex_collection::suffixarray::CompressedSparseArrayV5 {
+            auto sparseArray = fmc::suffixarray::CompressedSparseArrayV5 {
                 std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<Load> {
                     if (!indicatorBV.symbol(i)) return std::nullopt;
                     return i;
@@ -227,7 +227,7 @@ TEST_CASE("benchmark sparse array - size", "[sparsearray][!benchmark][size]") {
     using Load = uint64_t;
 
     auto rng = ankerl::nanobench::Rng{};
-    static auto indicatorBV = fmindex_collection::bitvector::PairedL0L1_512_64kBitvector{std::views::iota(size_t{}, size) | std::views::transform([&](size_t) -> bool {
+    static auto indicatorBV = fmc::bitvector::PairedL0L1_512_64kBitvector{std::views::iota(size_t{}, size) | std::views::transform([&](size_t) -> bool {
         return rng.bounded(rate) == 0;
     })};
 
@@ -312,7 +312,7 @@ TEST_CASE("benchmark sparse array - size", "[sparsearray][!benchmark][size]") {
         }
 
         if ((mode & 0x08) != 0) {
-            auto sparseArray = fmindex_collection::suffixarray::SparseArray<Load>{
+            auto sparseArray = fmc::suffixarray::SparseArray<Load>{
                 std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<Load> {
                     if (!indicatorBV.symbol(i)) return std::nullopt;
                     return i;
@@ -335,7 +335,7 @@ TEST_CASE("benchmark sparse array - size", "[sparsearray][!benchmark][size]") {
         }
 
         if ((mode & 0x10) != 0) {
-            auto sparseArray = fmindex_collection::suffixarray::CompressedSparseArray {
+            auto sparseArray = fmc::suffixarray::CompressedSparseArray {
                 std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<Load> {
                     if (!indicatorBV.symbol(i)) return std::nullopt;
                     return i;
@@ -358,7 +358,7 @@ TEST_CASE("benchmark sparse array - size", "[sparsearray][!benchmark][size]") {
         }
 
         if ((mode & 0x20) != 0) {
-            auto sparseArray = fmindex_collection::suffixarray::CompressedSparseArrayV2 {
+            auto sparseArray = fmc::suffixarray::CompressedSparseArrayV2 {
                 std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<Load> {
                     if (!indicatorBV.symbol(i)) return std::nullopt;
                     return i;
@@ -380,7 +380,7 @@ TEST_CASE("benchmark sparse array - size", "[sparsearray][!benchmark][size]") {
             });*/
         }
         if ((mode & 0x40) != 0) {
-            auto sparseArray = fmindex_collection::suffixarray::CompressedSparseArrayV3 {
+            auto sparseArray = fmc::suffixarray::CompressedSparseArrayV3 {
                 std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<Load> {
                     if (!indicatorBV.symbol(i)) return std::nullopt;
                     return i;
@@ -402,7 +402,7 @@ TEST_CASE("benchmark sparse array - size", "[sparsearray][!benchmark][size]") {
             });*/
         }
         if ((mode & 0x80) != 0) {
-            auto sparseArray = fmindex_collection::suffixarray::CompressedSparseArrayV4 {
+            auto sparseArray = fmc::suffixarray::CompressedSparseArrayV4 {
                 std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<Load> {
                     if (!indicatorBV.symbol(i)) return std::nullopt;
                     return i;
@@ -425,7 +425,7 @@ TEST_CASE("benchmark sparse array - size", "[sparsearray][!benchmark][size]") {
         }
 
         if ((mode & 0x100) != 0) {
-            auto sparseArray = fmindex_collection::suffixarray::CompressedSparseArrayV5 {
+            auto sparseArray = fmc::suffixarray::CompressedSparseArrayV5 {
                 std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<Load> {
                     if (!indicatorBV.symbol(i)) return std::nullopt;
                     return i;

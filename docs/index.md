@@ -1,6 +1,6 @@
 <!--
-    SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
-    SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
+    SPDX-FileCopyrightText: 2006-2025, Knut Reinert & Freie Universität Berlin
+    SPDX-FileCopyrightText: 2016-2025, Knut Reinert & MPI für molekulare Genetik
     SPDX-License-Identifier: CC-BY-4.0
 -->
 # Introduction
@@ -30,32 +30,38 @@ target_link_libraries(${PROJECT_NAME}
     fmindex_collection::fmindex_collection
 )
 ```
-### C++
+### Quick start
 ```c++
 #include <fmindex-collection/fmindex-collection.h>
 #include <fmt/format.h>
-void someFunction() {
-    // your database/the data you want to search through
+
+namespace fmc = fmindex_collection;
+
+int main() {
+    // your database/the data you want to search through, (value 0 should be avoided)
     auto reference = std::vector<std::vector<uint8_t>> {
-        {1, 1, 1, 2, 2, 2, 3, 2, 4, 1, 1, 1},
-        {1, 2, 1, 2, 3, 4, 3},
+        {1, 1, 1, 2, 2, 2, 3, 2, 4, 1, 1, 1}, // seqId 0
+        {1, 2, 1, 2, 3, 4, 3},                // seqId 1
     };
 
     // Pick String with Ranksupport implementation
-    using String = string::InterleavedBitvector16<5>; // largest character + 1 (not allowed to have 0)
+    using String = fmc::string::FlattenedBitvectors_512_64k<5>; // 5 number of different characters
 
-    // Creating an FM-Inddex
-    auto index = FMIndex<String>{reference, /*samplingRate*/16, /*threadNbr*/1};
+    // Creating an bidirectional FM-Inddex
+    auto index = fmc::BiFMIndex<String>{reference, /*samplingRate*/16, /*threadNbr*/1};
 
     // The stuff you are searching for
-    auto queries = std::vector<std::vector<uint8_t>>{{1, 3}, {4, 2}};
+    auto query = std::vector<uint8_t>{2, 3};
 
-    search_backtracking::search(index, queries, /*.numberOfAllowedErrors=*/0, [&](size_t queryId, auto cursor, size_t errors) {
-        (void)errors;
-        fmt::print("found something {} {}\n", queryId, cursor.count());
+    fmc::search</*EditDistance=*/true>(index, query, /*.errors=*/0, [&](auto cursor, size_t errors) {
+        fmt::print("found {} results with {} errors\n", cursor.count(), errors);
         for (auto i : cursor) {
-            auto [chr, pos] = index.locate(i);
-            fmt::print("chr/pos: {}/{}\n", chr, pos);
+            // index.locate(i) can only find positions hit by the sampling rate. How many position this is off, is indicated by the offset value
+            auto [entry, offset] = index.locate(i);
+            auto [seqId, pos] = entry; // tuple of the sequence id and the position inside the sequence
+            fmt::print("seqId/pos: {}/{}\n", seqId, pos+offset);
         }
     });
+    return 0;
+}
 ```

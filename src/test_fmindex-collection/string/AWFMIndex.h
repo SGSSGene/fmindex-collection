@@ -99,8 +99,8 @@ inline void awFmIndexCreateStringWithRankSupport(struct AwFmIndex* _RESTRICT_ co
 
 // If AWFMIndex doesn't implement the correct version, fall back to L0L1NEPRV9 version, which has similar memory usage
 template <size_t TSigma>
-struct AWFMIndex : fmindex_collection::string::L0L1_NEPRV9<TSigma, 64, 65536> {
-    using fmindex_collection::string::L0L1_NEPRV9<TSigma, 64, 65536>::L0L1_NEPRV9;
+struct AWFMIndex : fmc::string::L0L1_NEPRV9<TSigma, 64, 65536> {
+    using fmc::string::L0L1_NEPRV9<TSigma, 64, 65536>::L0L1_NEPRV9;
 };
 /**
  * This is a quick and dirty implementation

@@ -11,7 +11,7 @@
 #include <cassert>
 #include <vector>
 
-namespace fmindex_collection::string {
+namespace fmc::string {
 
 struct CompactBitvector {
     static constexpr size_t Sigma = 2;

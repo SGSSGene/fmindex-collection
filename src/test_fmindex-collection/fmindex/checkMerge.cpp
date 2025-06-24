@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
+
 #include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
@@ -13,13 +14,12 @@ TEST_CASE("checking merging of fmindices", "[FMIndex][merge]") {
     auto data1 = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 1, 2, 2, 2, 2}};
     auto data2 = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{2, 1, 2, 1, 2, 1, 2, 2}};
 
-    using String = fmindex_collection::string::InterleavedBitvector16<3>;
-    using Index  = fmindex_collection::FMIndex<String>;
+    using Index  = fmc::FMIndex<3>;
 
     auto index1 = Index{data1, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1};
     auto index2 = Index{data2, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1, /*.useDelimiter=*/true, /*.seqOffset=*/data1.size()};
 
-    auto index12 = fmindex_collection::fmindex::merge(index1, index2);
+    auto index12 = fmc::fmindex::merge(index1, index2);
 
     auto expectedRanks = std::vector<std::tuple<size_t, size_t, size_t>> {
         { 0, 2,  9},
@@ -41,7 +41,7 @@ TEST_CASE("checking merging of fmindices", "[FMIndex][merge]") {
         { 2, 8, 17},
         { 2, 8, 18},
     };
-    auto expectedSA = std::vector<std::tuple<size_t, size_t>> {
+    auto expectedSA = std::vector<std::tuple<uint32_t, uint32_t>> {
         {1, 8},
         {0, 8},
         {0, 0},
@@ -89,15 +89,14 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
     auto data2 = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{2, 1, 2, 1, 2, 1, 2, 2}};
     auto data3 = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 2, 2, 1, 1, 2, 2}};
 
-    using String = fmindex_collection::string::InterleavedBitvector16<3>;
-    using Index = fmindex_collection::BiFMIndex<String>;
+    using Index = fmc::BiFMIndex<3>;
 
     auto index1 = Index{data1, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1};
     auto index2 = Index{data2, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1, /*.useDelimiters =*/true, /*.seqOffset =*/data1.size()};
     auto index3 = Index{data3, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1, /*.useDelimiters =*/true, /*.seqOffset =*/data1.size() + data2.size()};
 
     SECTION("merging index1 and index2 into index12") {
-        auto index12 = fmindex_collection::fmindex::merge(index1, index2);
+        auto index12 = fmc::fmindex::merge(index1, index2);
 
         auto expectedRanks = std::vector<std::tuple<size_t, size_t, size_t>> {
             { 0, 2,  9},
@@ -119,7 +118,7 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
             { 2, 8, 17},
             { 2, 8, 18},
         };
-        auto expectedSA = std::vector<std::tuple<size_t, size_t>> {
+        auto expectedSA = std::vector<std::tuple<uint32_t, uint32_t>> {
             {1, 8},
             {0, 8},
             {0, 0},
@@ -162,7 +161,7 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
         CHECK(texts[1] == data2[0]);
 
         SECTION("merging index12 and index3 into index123") {
-            auto index123 = fmindex_collection::fmindex::merge(index12, index3);
+            auto index123 = fmc::fmindex::merge(index12, index3);
 
             auto expectedRanks = std::vector<std::tuple<size_t, size_t, size_t>> {
                 {0,  3, 14},
@@ -193,7 +192,7 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
                 {3, 13, 26},
                 {3, 13, 27},
             };
-            auto expectedSA = std::vector<std::tuple<size_t, size_t>> {
+            auto expectedSA = std::vector<std::tuple<uint32_t, uint32_t>> {
                 {2, 8},
                 {1, 8},
                 {0, 8},

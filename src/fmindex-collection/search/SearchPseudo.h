@@ -8,7 +8,7 @@
 #include "../search_scheme/Scheme.h"
 #include "SelectCursor.h"
 
-namespace fmindex_collection::search_pseudo {
+namespace fmc::search_pseudo {
 
 template <bool EditDistance, typename index_t, typename search_scheme_t, Sequence query_t, typename delegate_t>
 struct Search {

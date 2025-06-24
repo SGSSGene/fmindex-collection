@@ -12,7 +12,7 @@
 #include <fmindex-collection/search_scheme/generator/all.h>
 #include <unordered_set>
 
-using namespace fmindex_collection;
+using namespace fmc;
 
 
 class abort_search {};
@@ -23,7 +23,7 @@ int main(int argc, char const* const* argv) {
 
     auto config = loadConfig(argc, argv);
     auto count = std::map<std::string, int>{};
-    visitAllStrings<Sigma>([&]<typename String>() {
+    visitAllStrings<Sigma>([&]<size_t, template <size_t> typename String>() {
         auto ext = std::string{"str"};
         count[ext] += 1;
         if (count.at(ext) != 1) {
@@ -76,14 +76,14 @@ int main(int argc, char const* const* argv) {
     }
 
 
-    visitAllStrings<Sigma>([&, &queries=queries]<typename String>() {
+    visitAllStrings<Sigma>([&, &queries=queries]<size_t Sigma, template <size_t> typename String>() {
         std::string name = "str";
         if (config.extensions.count(name) == 0) return;
 
         fmt::print("start loading {} ...", name);
         fflush(stdout);
         size_t samplingRate = 16;
-        auto index = loadDenseIndex<CSA, String>(config.indexPath, samplingRate, config.threads, config.partialBuildUp, config.convertUnknownChar);
+        auto index = loadDenseIndex<CSA, Sigma, String>(config.indexPath, samplingRate, config.threads, config.partialBuildUp, config.convertUnknownChar);
         fmt::print("done\n");
         for (auto const& algorithm : config.algorithms) {
             fmt::print("using algorithm {}\n", algorithm);

@@ -1,13 +1,14 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-#include "../string/allStrings.h"
+
+#include "../string/utils.h"
 
 #include <catch2/catch_all.hpp>
 #include <fmindex-collection/fmindex/MirroredBiFMIndex.h>
 
-TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index", "[MirroredBiFMIndex]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
+TEST_CASE("checking mirrored bidirectional fm index", "[mirroredbifmindex]") {
+    using String = fmc::string::PairedFlattenedBitvectors_512_64k<255>;
 
     // T = 011202110
     auto bwt    = std::vector<uint8_t>{1, 0, 2, 1, 2, 0, 1, 1, 0};
@@ -18,8 +19,8 @@ TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index", "[MirroredBiFMInd
         for (size_t i{0}; i < sa.size(); ++i) {
             bitStack.push_back(true);
         }
-        auto csa = fmindex_collection::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::MirroredBiFMIndex<String>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::MirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -39,8 +40,8 @@ TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index", "[MirroredBiFMInd
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::MirroredBiFMIndex<String>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::MirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -69,8 +70,8 @@ TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index", "[MirroredBiFMInd
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::MirroredBiFMIndex<String>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::MirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -91,8 +92,8 @@ TEMPLATE_TEST_CASE("checking mirrored bidirectional fm index", "[MirroredBiFMInd
             }
         }
 
-        auto csa = fmindex_collection::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmindex_collection::MirroredBiFMIndex<String>{bwt, std::move(csa)};
+        auto csa = fmc::CSA{sa2, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
+        auto index = fmc::MirroredBiFMIndex<String>{bwt, std::move(csa)};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {

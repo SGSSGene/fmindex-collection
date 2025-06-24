@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
+
 #include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
@@ -8,12 +9,10 @@
 #include <fmindex-collection/search/Backtracking.h>
 #include <fmindex-collection/search_scheme/generator/all.h>
 
-TEMPLATE_TEST_CASE("searching with backtracking", "[search]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
-
+TEST_CASE("searching with backtracking", "[search]") {
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
 
-    auto index = fmindex_collection::BiFMIndex<String>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmc::BiFMIndex<255>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         REQUIRE(input.size()+1 == index.size());
@@ -32,7 +31,7 @@ TEMPLATE_TEST_CASE("searching with backtracking", "[search]", ALLSTRINGSWITHRANK
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
-    fmindex_collection::search_backtracking::search(index, query, 0, [](auto qidx, auto result, auto errors) {
+    fmc::search_backtracking::search(index, query, 0, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);
         CHECK(result.lb == 1);
@@ -40,13 +39,11 @@ TEMPLATE_TEST_CASE("searching with backtracking", "[search]", ALLSTRINGSWITHRANK
     });
 }
 
-TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
-
+TEST_CASE("searching with collection and backtracking", "[collection]") {
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
 
-    auto index = fmindex_collection::BiFMIndex<String>{input, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmc::BiFMIndex<255>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         auto expected = std::vector<uint8_t>{'A', 'A', 'A', 'A', 'A', 'A', 'B', 'C', 'B', '\0', 'C', '\0',
@@ -59,14 +56,14 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]",
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
-    fmindex_collection::search_backtracking::search(index, query, 0, [](auto qidx, auto result, auto errors) {
+    fmc::search_backtracking::search(index, query, 0, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);
         CHECK(result.lb == 2);
         CHECK(result.count() == 18);
     });
 
-    auto expected = std::vector<std::tuple<size_t, size_t>> {
+    auto expected = std::vector<std::tuple<uint32_t, uint32_t>> {
         std::make_tuple(1ull, 11ull),
         std::make_tuple(0ull, 11ull),
         std::make_tuple(1ull, 10ull),
@@ -105,12 +102,10 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking", "[collection]",
     }
 }
 
-TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
-
+TEST_CASE("searching with backtracking with FMIndex", "[search]") {
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
 
-    auto index = fmindex_collection::FMIndex<String>{input, /*samplingRate*/1, /*samplingRate*/1};
+    auto index = fmc::FMIndex<255>{input, /*samplingRate*/1, /*samplingRate*/1};
 
     SECTION("check symbol call to occurrence table") {
         REQUIRE(input.size()+1 == index.size());
@@ -129,7 +124,7 @@ TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]", ALLST
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
-    fmindex_collection::search_backtracking::search(index, query, 0, [](auto qidx, auto result, auto errors) {
+    fmc::search_backtracking::search(index, query, 0, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);
         CHECK(result.lb == 1);
@@ -137,13 +132,11 @@ TEMPLATE_TEST_CASE("searching with backtracking with FMIndex", "[search]", ALLST
     });
 }
 
-TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[collection]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
-
+TEST_CASE("searching with collection and backtracking with FMIndex", "[collection]") {
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
 
-    auto index = fmindex_collection::FMIndex<String>{input, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmc::FMIndex<255>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         auto expected = std::vector<uint8_t>{'A', 'A', 'A', 'A', 'A', 'A', 'B', 'C', 'B', '\0', 'C', '\0',
@@ -156,14 +149,14 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
-    fmindex_collection::search_backtracking::search(index, query, 0, [](auto qidx, auto result, auto errors) {
+    fmc::search_backtracking::search(index, query, 0, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);
         CHECK(result.lb == 2);
         CHECK(result.count() == 18);
     });
 
-    auto expected = std::vector<std::tuple<size_t, size_t>> {
+    auto expected = std::vector<std::tuple<uint32_t, uint32_t>> {
         std::make_tuple(1ull, 11ull),
         std::make_tuple(0ull, 11ull),
         std::make_tuple(1ull, 10ull),
@@ -202,12 +195,12 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with FMIndex", "[
     }
 }
 
-TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
+TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]") {
+    using String = fmc::string::InterleavedBitvector16<255>;
 
     auto input  = std::vector<uint8_t>{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'};
 
-    auto index = fmindex_collection::ReverseFMIndex<String>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmc::ReverseFMIndex<String>{std::vector<std::vector<uint8_t>>{input}, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         REQUIRE(input.size()+1 == index.size());
@@ -226,7 +219,7 @@ TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]"
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
-    fmindex_collection::search_backtracking::search(index, query, 0, [](auto qidx, auto result, auto errors) {
+    fmc::search_backtracking::search(index, query, 0, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);
         CHECK(result.lb == 1);
@@ -234,13 +227,13 @@ TEMPLATE_TEST_CASE("searching with backtracking with ReverseFMIndex", "[search]"
     });
 
 }
-TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMIndex", "[collection]", ALLSTRINGSWITHRANK(255)) {
-    using String = TestType;
+TEST_CASE("searching with collection and backtracking with ReverseFMIndex", "[collection]") {
+    using String = fmc::string::InterleavedBitvector16<255>;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'C', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'B', 'A', 'A', 'A'}};
 
-    auto index = fmindex_collection::ReverseFMIndex<String>{input, /*samplingRate*/1, /*threadNbr*/1};
+    auto index = fmc::ReverseFMIndex<String>{input, /*samplingRate*/1, /*threadNbr*/1};
 
     SECTION("check symbol call to occurrence table") {
         auto expected = std::vector<uint8_t>{'A', 'A', 'A', 'A', 'A', 'A', 'B', 'C', 'B', '\0', 'C', '\0',
@@ -253,14 +246,14 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMInd
     }
 
     auto query = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'A'}};
-    fmindex_collection::search_backtracking::search(index, query, 0, [](auto qidx, auto result, auto errors) {
+    fmc::search_backtracking::search(index, query, 0, [](auto qidx, auto result, auto errors) {
         CHECK(qidx == 0);
         CHECK(errors == 0);
         CHECK(result.lb == 2);
         CHECK(result.count() == 18);
     });
 
-    auto expected = std::vector<std::tuple<size_t, size_t>> {
+    auto expected = std::vector<std::tuple<uint32_t, uint32_t>> {
         std::make_tuple(1ull,  0ull),
         std::make_tuple(0ull,  0ull),
         std::make_tuple(1ull,  1ull),
@@ -303,8 +296,7 @@ TEMPLATE_TEST_CASE("searching with collection and backtracking with ReverseFMInd
 
 
 TEST_CASE("backtracking with errors", "[collection]") {
-    using String = fmindex_collection::string::InterleavedBitvector16<256>;
-    using Index = fmindex_collection::FMIndex<String>;
+    using Index = fmc::FMIndex<256>;
 
     auto input  = std::vector<std::vector<uint8_t>>{{'A', 'A', 'A', 'C', 'A', 'A', 'A', 'B', 'A', 'A', 'A'},
                                                     {'A', 'A', 'A', 'B', 'A', 'A', 'A', 'C', 'A', 'A', 'A'}};
@@ -314,9 +306,9 @@ TEST_CASE("backtracking with errors", "[collection]") {
     auto queries = std::vector<std::vector<uint8_t>> {std::vector<uint8_t>{'C', 'C'}, std::vector<uint8_t>{'B', 'B'}};
 
     auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
-    fmindex_collection::search_backtracking::search(index, queries, 1, [&](auto qidx, auto cursor, auto errors) {
+    fmc::search_backtracking::search(index, queries, 1, [&](auto qidx, auto cursor, auto errors) {
         (void)errors;
-        for (auto [entry, offset] : fmindex_collection::LocateLinear{index, cursor}) {
+        for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
             auto [sid, spos] = entry;
             results.emplace_back(qidx, sid, spos+offset);
         }

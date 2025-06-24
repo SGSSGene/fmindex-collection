@@ -11,7 +11,7 @@
 #include <cassert>
 #include <vector>
 
-namespace fmindex_collection::string {
+namespace fmc::string {
 
 template <size_t TSigma, uint64_t TAlignment, typename block_t>
 struct InterleavedEPR {
