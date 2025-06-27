@@ -200,6 +200,69 @@ TEST_CASE("check bit vectors are working", "[bitvector]") {
         });
     }
 
+    SECTION("very longer text - only zeros") {
+        call_with_templates<
+            ALLBITVECTORS, ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+            auto vector_name = getName<Vector>();
+            INFO(vector_name);
+
+            srand(0);
+            auto text = std::vector<uint8_t>{};
+            auto rank = std::vector<size_t>{0};
+            for (size_t i{}; i < 65536ull*10; ++i) {
+                text.push_back(0);
+                rank.push_back(rank.back() + text.back());
+            }
+
+            auto vec = Vector{text};
+            REQUIRE(vec.size() == text.size());
+
+            // check that symbol() call works
+            for (size_t i{0}; i < text.size(); ++i) {
+                INFO(i);
+                CHECK(vec.symbol(i) == bool(text.at(i)));
+            }
+
+            // test complete vector on rank()
+            for (size_t i{0}; i < text.size(); ++i) {
+                INFO(i);
+                CHECK(vec.rank(i) == rank.at(i));
+            }
+        });
+    }
+
+    SECTION("very longer text - only ones") {
+        call_with_templates<
+            ALLBITVECTORS, ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+            auto vector_name = getName<Vector>();
+            INFO(vector_name);
+
+            srand(0);
+            auto text = std::vector<uint8_t>{};
+            auto rank = std::vector<size_t>{0};
+            for (size_t i{}; i < 65536ull*10; ++i) {
+                text.push_back(1);
+                rank.push_back(rank.back() + text.back());
+            }
+
+            auto vec = Vector{text};
+            REQUIRE(vec.size() == text.size());
+
+            // check that symbol() call works
+            for (size_t i{0}; i < text.size(); ++i) {
+                INFO(i);
+                CHECK(vec.symbol(i) == bool(text.at(i)));
+            }
+
+            // test complete vector on rank()
+            for (size_t i{0}; i < text.size(); ++i) {
+                INFO(i);
+                CHECK(vec.rank(i) == rank.at(i));
+            }
+        });
+    }
+
+
     SECTION("short text, push() back must have same result as c'tor") {
         call_with_templates<
             ALLBITVECTORS, ALLSPARSEBITVECTORS>([&]<typename Vector>() {

@@ -67,15 +67,18 @@ struct L0L1_NBitvector {
         l1.resize(_length/l1_bits_ct + 1);
         bits.resize(_length/l1_bits_ct + 1);
 
+        uint64_t l1_a{};
         for (auto const& b : _range) {
             auto l1_id = totalLength / l1_bits_ct;
             auto l0_id = totalLength / l0_bits_ct;
             bits[l1_id].bits = b;
             totalLength += l1_bits_ct;
-            l1[l1_id+1] = l1[l1_id] + bits[l1_id].count();
+            l1_a = l1_a + bits[l1_id].count();
+            l1[l1_id+1] = l1_a;
             if (totalLength % l0_bits_ct == 0) {
-                l0[l0_id+1] = l0[l0_id] + l1[l1_id+1];
+                l0[l0_id+1] = l0[l0_id] + l1_a;
                 l1[l1_id+1] = 0;
+                l1_a = 0;
             }
         }
     }
