@@ -12,6 +12,7 @@
 #define SEQAN_STD_CHUNK_VIEW
 
 #include <cassert>
+#include <cstdint>
 #include <ranges>
 
 #ifdef __cpp_lib_ranges_chunk
@@ -61,6 +62,18 @@ constexpr auto to_unsigned_like(std::_Signed128 v) noexcept
     return static_cast<uint64_t>(v);
 }
 constexpr auto to_unsigned_like(std::_Unsigned128 v) noexcept
+{
+    return static_cast<uint64_t>(v);
+}
+#endif
+
+//!WORKAROUND GCC/Clang
+// GCC uses __int128 as range type
+#if defined(__GNUC__)
+// required for GCC using __int128 in some cases
+template <typename T>
+    requires (!std::integral<T> && std::convertible_to<T, uint64_t>)
+constexpr auto to_unsigned_like(T v) noexcept
 {
     return static_cast<uint64_t>(v);
 }
