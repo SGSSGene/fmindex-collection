@@ -243,7 +243,7 @@ auto optimizeByWNC(Scheme const& ss, size_t _newLen, size_t sigma, size_t N) -> 
  */
 template <bool Edit=false>
 auto expandByWNC(Scheme ss, size_t _newLen, size_t sigma, size_t N) -> Scheme {
-    return expand(ss, optimizeByWNC(ss, _newLen, sigma, N));
+    return expand(ss, optimizeByWNC<Edit>(ss, _newLen, sigma, N));
 }
 
 
@@ -294,7 +294,7 @@ auto optimizeByWNCTopDown(Scheme const& _ss, size_t _newLen, size_t sigma, size_
 
 template <bool Edit=false>
 auto expandByWNCTopDown(Scheme const& ss, size_t _newLen, size_t sigma, size_t N, size_t steps) -> Scheme {
-    return expand(ss, optimizeByWNCTopDown(ss, _newLen, sigma, N, steps));
+    return expand(ss, optimizeByWNCTopDown<Edit>(ss, _newLen, sigma, N, steps));
 }
 
 
