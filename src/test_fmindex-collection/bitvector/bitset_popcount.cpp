@@ -57,7 +57,7 @@ TEST_CASE("count_first_or_last_n_bits", "[count_bits]") {
     }
 }
 
-TEST_CASE("benchmark skipe_first_or_last_n_bits", "[misc][!benchmark]") {
+TEST_CASE("benchmark skip_first_or_last_n_bits", "[misc][!benchmark]") {
     auto rng = ankerl::nanobench::Rng{};
 
     SECTION("test shift and count for uint64_t") {
