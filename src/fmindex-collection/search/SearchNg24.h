@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#include "Restore.h"
 #include "SelectCursor.h"
 
 #include <array>
@@ -13,23 +14,6 @@
  *  - handling of matches followed by insertions or deletions
  */
 namespace fmc::search_ng24 {
-
-template <typename T, typename T2>
-struct Store {
-    T* value;
-    T oldValue;
-    Store(T& _value, T2 newValue)
-        : value{&_value}
-        , oldValue{*value}
-    {
-        *value = static_cast<T>(newValue);
-    }
-    Store(Store&& store) = delete;
-    ~Store() {
-        *value = oldValue;
-    }
-};
-
 
 template <typename index_t, typename query_t, typename search_t, typename delegate_t>
 struct Search {
@@ -139,18 +123,18 @@ struct Search {
 
             if (matchAllowed) {
                 auto const& newCur = cursors[nextSymb];
-                auto s1 = Store{side[Right].lastRank, nextSymb};
-                auto s2 = Store{side[Right].lastQRank, nextSymb};
-                auto sp = Store{part, part+1};
+                auto s1 = Restore{side[Right].lastRank, nextSymb};
+                auto s2 = Restore{side[Right].lastQRank, nextSymb};
+                auto sp = Restore{part, part+1};
                 bool f = search_next<OnMatchL, OnMatchR>(newCur);
                 if (f) return true;
             }
 
-            auto se = Store{e, e+1};
+            auto se = Restore{e, e+1};
             for (uint64_t i{1}; i < Sigma; ++i) {
                 auto const& newCur = cursors[i];
 
-                auto s1 = Store{side[Right].lastRank, i};
+                auto s1 = Restore{side[Right].lastRank, i};
                 if constexpr (Deletion) {
                     if (TInfo != 'M' || side[Right].lastQRank != i) {
                         bool f = search_next<OnDeletionL, OnDeletionR>(newCur); // deletion occurred in query
@@ -160,25 +144,25 @@ struct Search {
 
                 if (i == nextSymb) continue;
 
-                auto s2 = Store{side[Right].lastQRank, nextSymb};
-                auto sp = Store{part, part+1};
+                auto s2 = Restore{side[Right].lastQRank, nextSymb};
+                auto sp = Restore{part, part+1};
                 bool f = search_next<OnSubstituteL, OnSubstituteR>(newCur); // as substitution
                 if (f) return true;
             }
 
             if constexpr (Insertion) {
                 if (TInfo != 'M' || side[Right].lastQRank != nextSymb) {
-                    auto s2 = Store{side[Right].lastQRank, nextSymb};
-                    auto sp = Store{part, part+1};
+                    auto s2 = Restore{side[Right].lastQRank, nextSymb};
+                    auto sp = Restore{part, part+1};
                     bool f = search_next<OnInsertionL, OnInsertionR>(cur); // insertion occurred in query
                     if (f) return true;
                 }
             }
         } else if (matchAllowed) {
-            auto s1 = Store{side[Right].lastRank, nextSymb};
-            auto s2 = Store{side[Right].lastQRank, nextSymb};
+            auto s1 = Restore{side[Right].lastRank, nextSymb};
+            auto s2 = Restore{side[Right].lastQRank, nextSymb};
             auto newCur = extend<Right>(cur, nextSymb);
-            auto sp = Store{part, part+1};
+            auto sp = Restore{part, part+1};
             bool f = search_next<OnMatchL, OnMatchR>(newCur);
             if (f) return true;
         }
@@ -222,9 +206,9 @@ struct Search {
         if constexpr (Insertion) {
             if (mismatchAllowed) {
                 if (TInfo != 'M' || side[Right].lastQRank != curQSymb) {
-                    auto se = Store{e, e+1};
-                    auto s2 = Store{side[Right].lastQRank, curQSymb};
-                    auto sp = Store{part, part+1};
+                    auto se = Restore{e, e+1};
+                    auto s2 = Restore{side[Right].lastQRank, curQSymb};
+                    auto sp = Restore{part, part+1};
 
                     bool f = search_next<OnInsertionL, OnInsertionR>(cur);
                     if (f) return true;
@@ -247,30 +231,30 @@ struct Search {
 
         if (curISymb == curQSymb) {
             if (matchAllowed) {
-                auto s1 = Store{side[Right].lastRank, curQSymb};
-                auto s2 = Store{side[Right].lastQRank, curQSymb};
-                auto sp = Store{part, part+1};
+                auto s1 = Restore{side[Right].lastRank, curQSymb};
+                auto s2 = Restore{side[Right].lastQRank, curQSymb};
+                auto sp = Restore{part, part+1};
                 bool f = search_next<OnMatchL, OnMatchR>(icursorNext);
                 if (f) return true;
             }
             if constexpr (Deletion) {
                 if (mismatchAllowed) {
                     if (TInfo != 'M' || side[Right].lastQRank != curISymb) {
-                        auto se = Store{e, e+1};
-                        auto s1 = Store{side[Right].lastRank, curISymb};
+                        auto se = Restore{e, e+1};
+                        auto s1 = Restore{side[Right].lastRank, curISymb};
                         bool f = search_next<OnDeletionL, OnDeletionR>(icursorNext);
                         if (f) return true;
                     }
                 }
             }
         } else if (mismatchAllowed) {
-            auto se = Store{e, e+1};
+            auto se = Restore{e, e+1};
 
             // search substitute
             {
-                auto s1 = Store{side[Right].lastRank, curISymb};
-                auto s2 = Store{side[Right].lastQRank, curQSymb};
-                auto sp = Store{part, part+1};
+                auto s1 = Restore{side[Right].lastRank, curISymb};
+                auto s2 = Restore{side[Right].lastQRank, curQSymb};
+                auto sp = Restore{part, part+1};
 
                 bool f = search_next<OnSubstituteL, OnSubstituteR>(icursorNext);
                 if (f) return true;
@@ -278,7 +262,7 @@ struct Search {
 
             if constexpr (Deletion) {
                 if (TInfo != 'M' || side[Right].lastQRank != curISymb) {
-                    auto s1 = Store{side[Right].lastRank, curISymb};
+                    auto s1 = Restore{side[Right].lastRank, curISymb};
                     bool f = search_next<OnDeletionL, OnDeletionR>(icursorNext);
                     if (f) return true;
                 }
