@@ -5,6 +5,8 @@
 
 #include "Backtracking.h"
 #include "BacktrackingWithBuffers.h"
+#include "SearchDoubleIndex.h"
+#include "SearchDoubleIndex2.h"
 #include "SearchNg12.h"
 #include "SearchNg14.h"
 #include "SearchNg15.h"

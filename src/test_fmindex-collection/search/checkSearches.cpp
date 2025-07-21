@@ -970,4 +970,85 @@ TEST_CASE("check searches with errors", "[searches]") {
         };
         CHECK(results == expected);
     }
+
+    SECTION("search double index, all search") {
+        auto search_scheme = fmc::search_scheme::expand(fmc::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
+
+        auto queryIndex = Index{queries, /*samplingRate*/1, /*threadNbr*/1};
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmc::search_double_index::search<true>(index, queryIndex, search_scheme, /*.threshold=*/1, /*.optMode=*/7, [&](auto cursor, auto qcursor, auto errors) {
+            (void)errors;
+            auto qidxs = std::vector<size_t>{};
+            for (auto [entry, offset] : fmc::LocateLinear{queryIndex, qcursor}) {
+                auto [sid, spos] = entry;
+                qidxs.push_back(sid);
+            }
+
+            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                for (auto qidx : qidxs) {
+                    results.emplace_back(qidx, sid, spos+offset);
+                }
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 3},
+            {0, 1, 7},
+            {1, 0, 7},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+    SECTION("search double index 2, all search") {
+        auto search_scheme = fmc::search_scheme::expand(fmc::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+
+        using QIndex = fmc::LinearFMIndex<Index::Sigma>;
+        auto ordered_queries = queries;
+
+        //!TODO this function is not really ready (also doesn't deliver on the speed promises)
+        for (auto const& search : search_scheme) {
+            // bring queries parts into correct order
+            for (size_t qid{0}; qid < queries.size(); ++qid) {
+                for (size_t i{0}; i < search.pi.size(); ++i) {
+                    ordered_queries[qid][search.pi.size() - i - 1] = queries[qid][search.pi[i]];
+                }
+            }
+            auto queryIndex = QIndex{ordered_queries};
+
+            fmc::search_double_index2::search<true>(index, queryIndex, search, /*.threshold=*/1, /*.optMode=*/7, [&](auto cursor, auto qcursor, auto errors) {
+                (void)errors;
+                auto qidxs = std::vector<size_t>{};
+                for (auto row : qcursor) {
+                    qidxs.push_back(queryIndex.locate(row));
+                }
+
+                for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
+                    auto [sid, spos] = entry;
+
+                    for (auto qidx : qidxs) {
+                        results.emplace_back(qidx, sid, spos+offset);
+                    }
+                }
+            });
+        }
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 3},
+            {0, 1, 7},
+            {1, 0, 7},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
 }

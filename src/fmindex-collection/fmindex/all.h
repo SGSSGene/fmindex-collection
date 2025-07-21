@@ -7,6 +7,8 @@
 #include "fmindex/BiFMIndexCursor.h"
 #include "fmindex/FMIndex.h"
 #include "fmindex/FMIndexCursor.h"
+#include "fmindex/LinearFMIndex.h"
+#include "fmindex/LinearFMIndexCursor.h"
 #include "fmindex/MirroredBiFMIndex.h"
 #include "fmindex/MirroredBiFMIndexCursor.h"
 #include "fmindex/ReverseFMIndex.h"
