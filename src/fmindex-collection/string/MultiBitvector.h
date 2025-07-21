@@ -97,7 +97,7 @@ struct MultiBitvector {
 };
 
 template <uint64_t TSigma>
-using MultiBitvector_Bitvector = MultiBitvector<TSigma, bitvector::Bitvector>;
+using MultiBitvector_Bitvector = MultiBitvector<TSigma>;
 
 static_assert(checkString_c<MultiBitvector_Bitvector>);
 

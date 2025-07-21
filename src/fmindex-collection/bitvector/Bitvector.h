@@ -95,10 +95,11 @@ struct Bitvector {
                 break;
             }
 
-            l1[l1_id+1] = l1[l1_id] + std::popcount(bits);
+            auto ct = size_t{l1[l1_id]} + std::popcount(bits);
+            l1[l1_id+1] = ct;
             // check if next superblock is full
             if (totalLength % 256 == 0) {
-                l0[l0_id+1] = l0[l0_id] + l1[l1_id+1];
+                l0[l0_id+1] = l0[l0_id] + ct;
                 l1[l1_id+1] = 0;
             }
         }
@@ -121,10 +122,11 @@ struct Bitvector {
         }
         totalLength += 1;
         if (totalLength % 64 == 0) { // new block
-            blocks.emplace_back(blocks.back() + std::popcount(bits.back()));
+            auto ct = size_t{blocks.back()} + std::popcount(bits.back());
+            blocks.emplace_back(ct);
             bits.emplace_back();
             if (totalLength % 256 == 0) { // new super block + new block
-                superblocks.emplace_back(superblocks.back() + blocks.back());
+                superblocks.emplace_back(superblocks.back() + ct);
                 blocks.back() = 0;
             }
         }
