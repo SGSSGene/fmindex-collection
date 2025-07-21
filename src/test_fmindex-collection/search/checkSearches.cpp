@@ -971,6 +971,35 @@ TEST_CASE("check searches with errors", "[searches]") {
         CHECK(results == expected);
     }
 
+    SECTION("search ng24, hamming distance, all search") {
+        auto search_scheme = fmc::search_scheme::expand(fmc::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmc::search_ng24::search</*EditDistance=*/false>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 2},
+            {0, 0, 3},
+            {0, 1, 6},
+            {0, 1, 7},
+            {1, 0, 6},
+            {1, 0, 7},
+            {1, 1, 2},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+
     SECTION("search double index, all search") {
         auto search_scheme = fmc::search_scheme::expand(fmc::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
@@ -1050,5 +1079,86 @@ TEST_CASE("check searches with errors", "[searches]") {
         };
         CHECK(results == expected);
     }
+
+    SECTION("search ng24sm, all search") {
+        auto search_scheme = fmc::search_scheme::expand(fmc::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
+        auto scoringMatrix = fmc::search_ng24sm::ScoringMatrix<Index::Sigma>{/*ambiguous=*/0};
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmc::search_ng24sm::search(index, queries, search_scheme, scoringMatrix, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 3},
+            {0, 1, 7},
+            {1, 0, 7},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+    SECTION("search ng24sm, hamming distance, all search") {
+        auto search_scheme = fmc::search_scheme::expand(fmc::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
+        auto scoringMatrix = fmc::search_ng24sm::ScoringMatrix<Index::Sigma>{/*ambiguous=*/0};
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmc::search_ng24sm::search</*EditDistance=*/false>(index, queries, search_scheme, scoringMatrix, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 2},
+            {0, 0, 3},
+            {0, 1, 6},
+            {0, 1, 7},
+            {1, 0, 6},
+            {1, 0, 7},
+            {1, 1, 2},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+
+    SECTION("search ng24sm, all search_n") {
+        auto search_scheme = fmc::search_scheme::expand(fmc::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
+        auto scoringMatrix = fmc::search_ng24sm::ScoringMatrix<Index::Sigma>{/*ambiguous=*/0};
+
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmc::search_ng24sm::search_n(index, queries, search_scheme, /*n=*/3, scoringMatrix, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 3},
+            {0, 1, 7},
+            {1, 0, 7},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
 
 }

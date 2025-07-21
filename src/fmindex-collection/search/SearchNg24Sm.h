@@ -9,11 +9,57 @@
 #include <cstddef>
 
 /**
- * like search_ng21 but:
- *  - correct handling of left/right avoidance of ID and other combinations
- *  - handling of matches followed by insertions or deletions
+ * like search_ng24 but uses a scoring matrix
  */
-namespace fmc::search_ng24 {
+namespace fmc::search_ng24sm {
+
+/** Scoring matrix
+ * sets identity to 0
+ * removes first column and row (no matching possible)
+ */
+template <size_t QuerySigma, size_t RefSigma = QuerySigma>
+struct ScoringMatrix {
+    // 0: no pairing
+    // 1: ambiguous match
+    // 2: mismatch match
+    std::array<std::array<size_t, RefSigma>, QuerySigma> matrix;
+
+    std::array<std::vector<size_t>, QuerySigma> ambiguousList;
+    std::array<std::vector<size_t>, QuerySigma> mismatchList;
+    size_t allowedAmbiguous{};
+
+    ScoringMatrix(size_t _allowedAmbiguous)
+        : allowedAmbiguous{_allowedAmbiguous}
+    {
+        for (size_t y{1}; y < RefSigma; ++y) {
+            for (size_t x{1}; x < QuerySigma; ++x) {
+                setMismatch(x, y);
+            }
+        }
+    }
+
+    // sets the pairing as an ambiguous match
+    void setAmbiguous(size_t queryRank, size_t refRank) {
+        std::erase(ambiguousList[queryRank], refRank);
+        std::erase(mismatchList[queryRank], refRank);
+        matrix[queryRank][refRank] = 0;
+        if (queryRank == refRank) return;
+        matrix[queryRank][refRank] = 1;
+        ambiguousList[queryRank].push_back(refRank);
+    }
+
+    // sets the pairing as a mismatch
+    void setMismatch(size_t queryRank, size_t refRank) {
+        std::erase(ambiguousList[queryRank], refRank);
+        std::erase(mismatchList[queryRank], refRank);
+        matrix[queryRank][refRank] = 0;
+        if (queryRank == refRank) return;
+        matrix[queryRank][refRank] = 2;
+        mismatchList[queryRank].push_back(refRank);
+    }
+
+};
+
 
 template <bool Edit, typename index_t, typename query_t, typename search_t, typename delegate_t>
 struct Search {
@@ -21,9 +67,12 @@ struct Search {
 
     using cursor_t = select_cursor_t<index_t>;
 
+    using SM = ScoringMatrix<Sigma>;
+
     index_t const& index;
     query_t const& query;
     search_t const& search;
+    SM const& scoringMatrix;
     delegate_t const& delegate;
 
     struct Side {
@@ -33,13 +82,18 @@ struct Search {
     mutable std::array<Side, 2> side;
     mutable size_t e{};
     mutable size_t part{};
+    mutable size_t remainingAmbiguous{};
+    mutable size_t remainingMismatches{};
 
-    Search(index_t const& _index, query_t const& _query, search_t const& _search, delegate_t const& _delegate)
-        : index     {_index}
-        , query     {_query}
-        , search    {_search}
-        , delegate  {_delegate}
+    Search(index_t const& _index, query_t const& _query, search_t const& _search, SM const& _scoringMatrix, size_t _maxErrors, delegate_t const& _delegate)
+        : index         {_index}
+        , query         {_query}
+        , search        {_search}
+        , scoringMatrix {_scoringMatrix}
+        , delegate      {_delegate}
     {
+        remainingAmbiguous  = std::min(_maxErrors, scoringMatrix.allowedAmbiguous);
+        remainingMismatches = _maxErrors - remainingAmbiguous;
     }
 
     bool run() {
@@ -133,31 +187,68 @@ struct Search {
             }
 
             auto se = Restore{e, e+1};
-            for (uint64_t i{1}; i < Sigma; ++i) {
-                auto const& newCur = cursors[i];
 
-                auto s1 = Restore{side[Right].lastRank, i};
+            // search for as ambiguous substitutes
+            if (remainingAmbiguous > 0) {
+                auto s1 = Restore{side[Right].lastRank};
+                auto s2 = Restore{side[Right].lastQRank, nextSymb};
+                auto sp = Restore{part, part+1};
+                auto sr = Restore{remainingAmbiguous, remainingAmbiguous-1};
+
+                for (auto symb : scoringMatrix.ambiguousList[nextSymb]) {
+                    auto const& newCur = cursors[symb];
+                    side[Right].lastRank = symb;
+                    bool f = search_next<OnSubstituteL, OnSubstituteR>(newCur); // as substitution
+                    if (f) return true;
+                }
+            }
+
+            if (remainingMismatches > 0) {
+                auto sr = Restore{remainingMismatches, remainingMismatches-1};
+
                 if constexpr (Deletion) {
-                    if (TInfo != 'M' || side[Right].lastQRank != i) {
-                        bool f = search_next<OnDeletionL, OnDeletionR>(newCur); // deletion occurred in query
+                    auto s1 = Restore{side[Right].lastRank};
+                    for (size_t symb{1}; symb < Sigma; ++symb) {
+                        if (TInfo != 'M' || side[Right].lastQRank != symb) {
+                            auto const& newCur = cursors[symb];
+                            side[Right].lastRank = symb;
+                            bool f = search_next<OnDeletionL, OnDeletionR>(newCur); // deletion occurred in query
+                            if (f) return true;
+                        }
+                    }
+                }
+                {
+                    auto s1 = Restore{side[Right].lastRank};
+                    auto s2 = Restore{side[Right].lastQRank, nextSymb};
+                    auto sp = Restore{part, part+1};
+
+                    if (remainingAmbiguous == 0) { // if no ambiguous remaining, also search for them
+                        for (auto symb : scoringMatrix.ambiguousList[nextSymb]) {
+                            auto const& newCur = cursors[symb];
+                            side[Right].lastRank = symb;
+                            bool f = search_next<OnSubstituteL, OnSubstituteR>(newCur); // as substitution
+                            if (f) return true;
+                        }
+                    }
+
+                    for (auto symb : scoringMatrix.mismatchList[nextSymb]) {
+                        auto const& newCur = cursors[symb];
+                        side[Right].lastRank = symb;
+                        bool f = search_next<OnSubstituteL, OnSubstituteR>(newCur); // as substitution
                         if (f) return true;
                     }
                 }
-
-                if (i == nextSymb) continue;
-
-                auto s2 = Restore{side[Right].lastQRank, nextSymb};
-                auto sp = Restore{part, part+1};
-                bool f = search_next<OnSubstituteL, OnSubstituteR>(newCur); // as substitution
-                if (f) return true;
             }
 
             if constexpr (Insertion) {
-                if (TInfo != 'M' || side[Right].lastQRank != nextSymb) {
-                    auto s2 = Restore{side[Right].lastQRank, nextSymb};
-                    auto sp = Restore{part, part+1};
-                    bool f = search_next<OnInsertionL, OnInsertionR>(cur); // insertion occurred in query
-                    if (f) return true;
+                if (remainingMismatches > 0) {
+                    auto sr = Restore{remainingMismatches, remainingMismatches-1};
+                    if (TInfo != 'M' || side[Right].lastQRank != nextSymb) {
+                        auto s2 = Restore{side[Right].lastQRank, nextSymb};
+                        auto sp = Restore{part, part+1};
+                        bool f = search_next<OnInsertionL, OnInsertionR>(cur); // insertion occurred in query
+                        if (f) return true;
+                    }
                 }
             }
         } else if (matchAllowed) {
@@ -240,7 +331,8 @@ struct Search {
                 if (f) return true;
             }
             if constexpr (Deletion) {
-                if (mismatchAllowed) {
+                if (mismatchAllowed && remainingMismatches > 0) {
+                    auto sr = Restore{remainingMismatches, remainingMismatches-1};
                     if (TInfo != 'M' || side[Right].lastQRank != curISymb) {
                         auto se = Restore{e, e+1};
                         auto s1 = Restore{side[Right].lastRank, curISymb};
@@ -258,15 +350,34 @@ struct Search {
                 auto s2 = Restore{side[Right].lastQRank, curQSymb};
                 auto sp = Restore{part, part+1};
 
-                bool f = search_next<OnSubstituteL, OnSubstituteR>(icursorNext);
-                if (f) return true;
+                auto matchType = scoringMatrix.matrix[curQSymb][curISymb];
+                if (matchType == 1) { // ambiguous match
+                    if (remainingAmbiguous > 0) {
+                        auto sr = Restore{remainingAmbiguous, remainingAmbiguous-1};
+                        bool f = search_next<OnSubstituteL, OnSubstituteR>(icursorNext);
+                        if (f) return true;
+                    } else if (remainingMismatches > 0) {
+                        auto sr = Restore{remainingMismatches, remainingMismatches-1};
+                        bool f = search_next<OnSubstituteL, OnSubstituteR>(icursorNext);
+                        if (f) return true;
+                    }
+                } else if (matchType == 2) { // mismatch
+                    if (remainingMismatches > 0) {
+                        auto sr = Restore{remainingMismatches, remainingMismatches-1};
+                        bool f = search_next<OnSubstituteL, OnSubstituteR>(icursorNext);
+                        if (f) return true;
+                    }
+                }
             }
 
             if constexpr (Deletion) {
-                if (TInfo != 'M' || side[Right].lastQRank != curISymb) {
-                    auto s1 = Restore{side[Right].lastRank, curISymb};
-                    bool f = search_next<OnDeletionL, OnDeletionR>(icursorNext);
-                    if (f) return true;
+                if (remainingMismatches > 0) {
+                    auto sr = Restore{remainingMismatches, remainingMismatches-1};
+                    if (TInfo != 'M' || side[Right].lastQRank != curISymb) {
+                        auto s1 = Restore{side[Right].lastRank, curISymb};
+                        bool f = search_next<OnDeletionL, OnDeletionR>(icursorNext);
+                        if (f) return true;
+                    }
                 }
             }
         }
@@ -275,10 +386,8 @@ struct Search {
 
 };
 
-
-
 template <bool Edit=true, typename index_t, Sequence query_t, typename search_scheme_t, typename delegate_t>
-void search(index_t const& index, query_t const& query, search_scheme_t const& search_scheme, delegate_t&& delegate) {
+void search(index_t const& index, query_t const& query, search_scheme_t const& search_scheme, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
     using cursor_t = select_cursor_t<index_t>;
     using R = std::decay_t<decltype(delegate(std::declval<cursor_t>(), 0))>;
 
@@ -292,21 +401,37 @@ void search(index_t const& index, query_t const& query, search_scheme_t const& s
             };
         }
     }();
+    size_t maxErrors{};
+    for (auto const& search : search_scheme) {
+        maxErrors = std::max(search.u.back(), maxErrors);
+    }
+
 
     for (auto const& search : search_scheme) {
-        bool f = Search<Edit, index_t, query_t, decltype(search), decltype(internal_delegate)>{index, query, search, internal_delegate}.run();
+        bool f = Search<Edit, index_t, query_t, decltype(search), decltype(internal_delegate)>{index, query, search, scoringMatrix, maxErrors, internal_delegate}.run();
         if (f) {
             return;
         }
     }
 }
 
+template <bool Edit=true, typename index_t, Sequences queries_t, typename search_scheme_t, typename delegate_t>
+void search(index_t const& index, queries_t&& queries, search_scheme_t const& search_scheme, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
+    if (search_scheme.empty()) return;
+
+    for (size_t qidx{}; qidx < queries.size(); ++qidx) {
+        search<Edit>(index, queries[qidx], search_scheme, scoringMatrix, [&](auto const& cur, size_t e) {
+            delegate(qidx, cur, e);
+        });
+    }
+}
+
 template <bool Edit=true, typename index_t, Sequence query_t, typename search_scheme_t, typename delegate_t>
-void search_n(index_t const& index, query_t&& query, search_scheme_t const& search_scheme, size_t n, delegate_t&& delegate) {
+void search_n(index_t const& index, query_t const& query, search_scheme_t const& search_scheme, size_t n, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
     if (search_scheme.empty()) return;
 
     size_t ct{};
-    search<Edit>(index, query, search_scheme, [&] (auto cur, size_t e) {
+    search<Edit>(index, query, search_scheme, scoringMatrix, [&] (auto cur, size_t e) {
         if (cur.count() + ct > n) {
             cur.len = n-ct;
         }
@@ -318,23 +443,12 @@ void search_n(index_t const& index, query_t&& query, search_scheme_t const& sear
 
 
 template <bool Edit=true, typename index_t, Sequences queries_t, typename search_scheme_t, typename delegate_t>
-void search(index_t const& index, queries_t&& queries, search_scheme_t const& search_scheme, delegate_t&& delegate) {
-    if (search_scheme.empty()) return;
-
-    for (size_t qidx{}; qidx < queries.size(); ++qidx) {
-        search<Edit>(index, queries[qidx], search_scheme, [&](auto const& cur, size_t e) {
-            delegate(qidx, cur, e);
-        });
-    }
-}
-
-template <bool Edit=true, typename index_t, Sequences queries_t, typename search_scheme_t, typename delegate_t>
-void search_n(index_t const& index, queries_t&& queries, search_scheme_t const& search_scheme, size_t n, delegate_t&& delegate) {
+void search_n(index_t const& index, queries_t&& queries, search_scheme_t const& search_scheme, size_t n, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
     if (search_scheme.empty()) return;
 
     for (size_t qidx{}; qidx < queries.size(); ++qidx) {
         size_t ct{};
-        search<Edit>(index, queries[qidx], search_scheme, [&] (auto cur, size_t e) {
+        search<Edit>(index, queries[qidx], search_scheme, scoringMatrix, [&] (auto cur, size_t e) {
             if (cur.count() + ct > n) {
                 cur.len = n-ct;
             }
