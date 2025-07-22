@@ -4,6 +4,7 @@
 
 #include "Restore.h"
 #include "SelectCursor.h"
+#include "CachedSearchScheme.h"
 
 #include <array>
 #include <cstddef>
@@ -386,8 +387,8 @@ struct Search {
 
 };
 
-template <bool Edit=true, typename index_t, Sequence query_t, typename search_scheme_t, typename delegate_t>
-void search(index_t const& index, query_t const& query, search_scheme_t const& search_scheme, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
+template <bool Edit=true, typename index_t, Sequence query_t, typename delegate_t>
+void search(index_t const& index, query_t const& query, search_scheme::Scheme const& search_scheme, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
     using cursor_t = select_cursor_t<index_t>;
     using R = std::decay_t<decltype(delegate(std::declval<cursor_t>(), 0))>;
 
@@ -415,8 +416,8 @@ void search(index_t const& index, query_t const& query, search_scheme_t const& s
     }
 }
 
-template <bool Edit=true, typename index_t, Sequences queries_t, typename search_scheme_t, typename delegate_t>
-void search(index_t const& index, queries_t&& queries, search_scheme_t const& search_scheme, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
+template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
+void search(index_t const& index, queries_t&& queries, search_scheme::Scheme const& search_scheme, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
     if (search_scheme.empty()) return;
 
     for (size_t qidx{}; qidx < queries.size(); ++qidx) {
@@ -426,8 +427,24 @@ void search(index_t const& index, queries_t&& queries, search_scheme_t const& se
     }
 }
 
-template <bool Edit=true, typename index_t, Sequence query_t, typename search_scheme_t, typename delegate_t>
-void search_n(index_t const& index, query_t const& query, search_scheme_t const& search_scheme, size_t n, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
+template <bool Edit=true, typename index_t, Sequence query_t, typename delegate_t>
+void search(index_t const& index, query_t const& query, size_t maxErrors, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
+    auto const& search_scheme = getCachedSearchScheme<Edit>(query.size(), 0, maxErrors);
+    search<Edit>(index, query, search_scheme, scoringMatrix, delegate);
+}
+
+template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
+void search(index_t const& index, queries_t&& queries, size_t maxErrors, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
+    for (size_t qidx{}; qidx < queries.size(); ++qidx) {
+        auto const& search_scheme = getCachedSearchScheme<Edit>(queries[qidx].size(), 0, maxErrors);
+        search<Edit>(index, queries[qidx], search_scheme, scoringMatrix, [&](auto const& cur, size_t e) {
+            delegate(qidx, cur, e);
+        });
+    }
+}
+
+template <bool Edit=true, typename index_t, Sequence query_t, typename delegate_t>
+void search_n(index_t const& index, query_t const& query, search_scheme::Scheme const& search_scheme, size_t n, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
     if (search_scheme.empty()) return;
 
     size_t ct{};
@@ -442,8 +459,8 @@ void search_n(index_t const& index, query_t const& query, search_scheme_t const&
 }
 
 
-template <bool Edit=true, typename index_t, Sequences queries_t, typename search_scheme_t, typename delegate_t>
-void search_n(index_t const& index, queries_t&& queries, search_scheme_t const& search_scheme, size_t n, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
+template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
+void search_n(index_t const& index, queries_t&& queries, search_scheme::Scheme const& search_scheme, size_t n, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
     if (search_scheme.empty()) return;
 
     for (size_t qidx{}; qidx < queries.size(); ++qidx) {
@@ -458,4 +475,28 @@ void search_n(index_t const& index, queries_t&& queries, search_scheme_t const& 
         });
     }
 }
+
+template <bool Edit=true, typename index_t, Sequence query_t, typename delegate_t>
+void search_n(index_t const& index, query_t const& query, size_t maxErrors, size_t n, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
+    auto const& search_scheme = getCachedSearchScheme<Edit>(query.size(), 0, maxErrors);
+    search_n<Edit>(index, query, search_scheme, n, scoringMatrix, delegate);
+}
+
+
+template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
+void search_n(index_t const& index, queries_t&& queries, size_t maxErrors, size_t n, ScoringMatrix<index_t::Sigma> const& scoringMatrix, delegate_t&& delegate) {
+    for (size_t qidx{}; qidx < queries.size(); ++qidx) {
+        size_t ct{};
+        auto const& search_scheme = getCachedSearchScheme<Edit>(queries[qidx].size(), 0, maxErrors);
+        search<Edit>(index, queries[qidx], search_scheme, scoringMatrix, [&] (auto cur, size_t e) {
+            if (cur.count() + ct > n) {
+                cur.len = n-ct;
+            }
+            ct += cur.count();
+            delegate(qidx, cur, e);
+            return ct == n;
+        });
+    }
+}
+
 }
