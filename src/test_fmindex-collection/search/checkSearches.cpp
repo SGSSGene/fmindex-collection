@@ -1306,5 +1306,148 @@ TEST_CASE("check searches with errors", "[searches]") {
         CHECK(results == expected);
     }
 
+    SECTION("search, all search, no search scheme") {
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmc::search</*EditDistance=*/true>(index, queries, /*.maxErrors=*/1, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
 
+                results.emplace_back(qidx, sid, spos+offset);
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 3},
+            {0, 1, 7},
+            {1, 0, 7},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+    SECTION("search, all search_n, no search scheme") {
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmc::search_n</*EditDistance=*/true>(index, queries, /*.maxErrors=*/1, /*.n=*/3, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 3},
+            {0, 1, 7},
+            {1, 0, 7},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+    SECTION("search, hamming distance, all search, no search scheme") {
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmc::search</*EditDistance=*/false>(index, queries, /*.maxErrors=*/1, [&](auto qidx, auto cursor, auto errors) {
+            (void)errors;
+            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
+                auto [sid, spos] = entry;
+
+                results.emplace_back(qidx, sid, spos+offset);
+            }
+        });
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 2},
+            {0, 0, 3},
+            {0, 1, 6},
+            {0, 1, 7},
+            {1, 0, 6},
+            {1, 0, 7},
+            {1, 1, 2},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+    SECTION("simple search, all search") {
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmc::Search {
+            .index      = index,
+            .queries    = queries,
+            .errors     = 1,
+            .reportFunc = [&](auto qidx, auto sid, auto spos, auto errors) {
+                (void)errors;
+                results.emplace_back(qidx, sid, spos);
+            },
+        }();
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 3},
+            {0, 1, 7},
+            {1, 0, 7},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+    SECTION("simple search, all search_n") {
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmc::Search {
+            .index      = index,
+            .queries    = queries,
+            .errors     = 1,
+            .maxResults = 3,
+            .reportFunc = [&](auto qidx, auto sid, auto spos, auto errors) {
+                (void)errors;
+                results.emplace_back(qidx, sid, spos);
+            },
+        }();
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 3},
+            {0, 1, 7},
+            {1, 0, 7},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
+
+    SECTION("simple search, hamming distance, all search") {
+        auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
+        fmc::Search {
+            .index        = index,
+            .queries      = queries,
+            .editDistance = false,
+            .errors       = 1,
+            .reportFunc   = [&](auto qidx, auto sid, auto spos, auto errors) {
+                (void)errors;
+                results.emplace_back(qidx, sid, spos);
+            },
+        }();
+
+        std::ranges::sort(results);
+
+        auto expected = std::vector<std::tuple<size_t, size_t, size_t>> {
+            {0, 0, 2},
+            {0, 0, 3},
+            {0, 1, 6},
+            {0, 1, 7},
+            {1, 0, 6},
+            {1, 0, 7},
+            {1, 1, 2},
+            {1, 1, 3},
+        };
+        CHECK(results == expected);
+    }
 }
