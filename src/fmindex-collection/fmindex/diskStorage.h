@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Simon Gene Gottlieb
 // SPDX-License-Identifier: BSD-3-Clause
+#pragma once
 
 #include <cereal/archives/binary.hpp>
 #include <filesystem>
