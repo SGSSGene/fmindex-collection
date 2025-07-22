@@ -4,7 +4,8 @@
 #pragma once
 
 #include "fmindex/all.h"
-#include "suffixarray/CSA.h"
-#include "string/all.h"
-#include "search_scheme/all.h"
+#include "fmindex/diskStorage.h"
 #include "search/all.h"
+#include "search_scheme/all.h"
+#include "string/all.h"
+#include "suffixarray/CSA.h"
