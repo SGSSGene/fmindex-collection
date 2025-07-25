@@ -55,7 +55,7 @@ struct MultiaryWavelet {
     MultiaryWavelet(std::span<uint8_t const> _symbols)
         : MultiaryWavelet{internal_tag{}, _symbols}
     {
-        static_assert(Sigma < 256, "This constructor can only be used, if Alphabet size is smaller than 256");
+        static_assert(Sigma <= 256, "This constructor can only be used, if Alphabet size is smaller than 256");
     }
 
     MultiaryWavelet(std::span<uint64_t const> _symbols)
@@ -109,6 +109,9 @@ public:
     uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
         assert(idx <= size());
         assert(symb <= TSigma);
+        if (symb == TSigma) {
+            return idx;
+        }
 
         auto l0c = symb / StringL1::Sigma;
         auto l1c = symb % StringL1::Sigma;
