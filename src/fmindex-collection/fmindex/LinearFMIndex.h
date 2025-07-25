@@ -101,7 +101,7 @@ struct LinearFMIndex {
             }
         }
         size_ = _inputs.size();
-        ordered = lastOrder;
+        ordered = std::move(lastOrder);
     }
 
     auto size() const {
