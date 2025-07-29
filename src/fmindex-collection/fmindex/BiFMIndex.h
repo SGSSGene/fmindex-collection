@@ -56,13 +56,12 @@ struct BiFMIndex {
     {}
 
 
-    BiFMIndex(Sequence auto const& _sequence, SparseArray const& _annotatedSequence, size_t _threadNbr, bool omegaSorting = false, bool mirrorInput = false) {
+    BiFMIndex(Sequence auto const& _sequence, SparseArray const& _annotatedSequence, size_t _threadNbr, bool mirrorInput = false) {
         if (_sequence.size() >= std::numeric_limits<size_t>::max()/2) {
             throw std::runtime_error{"sequence is longer than what this system is capable of handling"};
         }
-        if (!omegaSorting && !TDelim) {
-            throw std::runtime_error{"omega sorting must be activated for 'no delimiter' usage"};
-        }
+
+        bool omegaSorting = !TDelim; // Use omega sorting if no delimiter is being used
 
         // copy text into custom buffer
         auto inputText = createInputText(_sequence, omegaSorting, mirrorInput);
@@ -99,10 +98,9 @@ struct BiFMIndex {
      * \param _input a list of sequences
      * \param samplingRate rate of the sampling
      */
-    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, bool useDelimiters = true, size_t seqOffset = 0) {
-
+    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, size_t seqOffset = 0, bool mirrorError = false) {
         auto [totalSize, inputText, inputSizes] = [&]() {
-            if (useDelimiters) {
+            if (TDelim) {
                 return createSequences(_input);
             } else {
                 return createSequencesWithoutDelimiter(_input);
@@ -138,7 +136,7 @@ struct BiFMIndex {
             })
         };
 
-        *this = BiFMIndex{inputText, annotatedSequence, threadNbr, !useDelimiters};
+        *this = BiFMIndex{inputText, annotatedSequence, threadNbr, mirrorError};
     }
 
     auto operator=(BiFMIndex const&) -> BiFMIndex& = delete;
