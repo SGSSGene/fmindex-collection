@@ -98,7 +98,7 @@ struct BiFMIndex {
      * \param _input a list of sequences
      * \param samplingRate rate of the sampling
      */
-    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, size_t seqOffset = 0, bool mirrorError = false) {
+    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, size_t seqOffset = 0, bool mirrorInput = false) {
         auto [totalSize, inputText, inputSizes] = [&]() {
             if (TDelim) {
                 return createSequences(_input);
@@ -116,27 +116,54 @@ struct BiFMIndex {
             assert(inputSizes.size() < refId);
         }
 
+        auto size = totalSize;
+        if (mirrorInput) size = size*2;
+
+
         auto annotatedSequence = SparseArray {
-            std::views::iota(size_t{0}, totalSize) | std::views::transform([&](size_t) -> std::optional<ADEntry> {
-                assert(refId < inputSizes.size());
-                assert(pos < inputSizes[refId]);
+            std::views::iota(size_t{0}, size) | std::views::transform([&](size_t phase) -> std::optional<ADEntry> {
+                if (phase < totalSize) { // going forward
+                    assert(refId < inputSizes.size());
+                    assert(pos < inputSizes[refId]);
 
-                auto ret = std::optional<ADEntry>{std::nullopt};
+                    auto ret = std::optional<ADEntry>{std::nullopt};
 
-                if (pos % samplingRate == 0) {
-                    ret = std::make_tuple(refId+seqOffset, pos);
+                    if (pos % samplingRate == 0) {
+                        ret = std::make_tuple(refId+seqOffset, pos);
+                    }
+
+                    ++pos;
+                    if (inputSizes[refId] == pos) {
+                        refId += 1;
+                        pos = 0;
+                    }
+                    return ret;
+                } else { // going backwards
+                    if (phase == totalSize) { // reset values
+                        pos = 0;
+                        refId = 0;
+                    }
+
+                    assert(refId < inputSizes.size());
+                    assert(pos < inputSizes[inputSizes.size() - refId - 1]);
+
+                    auto ret = std::optional<ADEntry>{std::nullopt};
+
+                    if (pos % samplingRate == 0) {
+                        ret = std::make_tuple(inputSizes.size()*2 - refId+seqOffset-1, inputSizes[refId] - pos-1);
+                    }
+
+                    ++pos;
+                    if (inputSizes[inputSizes.size() - refId - 1] == pos) {
+                        refId += 1;
+                        pos = 0;
+                    }
+                    return ret;
                 }
-
-                ++pos;
-                if (inputSizes[refId] == pos) {
-                    refId += 1;
-                    pos = 0;
-                }
-                return ret;
             })
         };
 
-        *this = BiFMIndex{inputText, annotatedSequence, threadNbr, mirrorError};
+        *this = BiFMIndex{inputText, annotatedSequence, threadNbr, mirrorInput};
     }
 
     auto operator=(BiFMIndex const&) -> BiFMIndex& = delete;

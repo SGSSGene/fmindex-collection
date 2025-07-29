@@ -9,8 +9,6 @@
 #include "fmindex/FMIndexCursor.h"
 #include "fmindex/LinearFMIndex.h"
 #include "fmindex/LinearFMIndexCursor.h"
-#include "fmindex/MirroredBiFMIndex.h"
-#include "fmindex/MirroredBiFMIndexCursor.h"
 #include "fmindex/ReverseFMIndex.h"
 #include "fmindex/ReverseFMIndexCursor.h"
 #include "fmindex/VariableFMIndex.h"

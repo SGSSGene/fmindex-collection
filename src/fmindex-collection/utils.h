@@ -243,8 +243,8 @@ inline auto createInputText(std::span<uint8_t const> _input, bool _omegaSorting,
         output.resize(_input.size()*4);
         for (size_t i{0}; i < _input.size(); ++i) {
             output[_input.size()*0+i]   = _input[i];
-            output[_input.size()*1+i]   = _input[i];
-            output[_input.size()*3-i-1] = _input[i];
+            output[_input.size()*2-i-1] = _input[i];
+            output[_input.size()*2+i]   = _input[i];
             output[_input.size()*4-i-1] = _input[i];
         }
     } else if (_mirrorInput) {
