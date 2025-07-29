@@ -16,25 +16,25 @@
 namespace fmc::string {
 
 template <size_t Sigma, Bitvector_c Bitvector = fmc::bitvector::L0L1_512_64kBitvector>
-struct WrappedBitvector;
+struct WrappedBitvectorImpl;
 
 template <Bitvector_c Bitvector>
-struct WrappedBitvector<2, Bitvector> {
+struct WrappedBitvectorImpl<2, Bitvector> {
     static constexpr size_t Sigma = 2;
 
     Bitvector bitvector;
 
-    WrappedBitvector(std::span<uint8_t const> _symbols)
+    WrappedBitvectorImpl(std::span<uint8_t const> _symbols)
         : bitvector{ _symbols | std::views::transform([&](size_t s) -> bool {
             return s == 1;
         })}
     {}
 
-    WrappedBitvector() = default;
-    WrappedBitvector(WrappedBitvector const&) = default;
-    WrappedBitvector(WrappedBitvector&&) noexcept = default;
-    auto operator=(WrappedBitvector const&) -> WrappedBitvector& = default;
-    auto operator=(WrappedBitvector&&) noexcept -> WrappedBitvector& = default;
+    WrappedBitvectorImpl() = default;
+    WrappedBitvectorImpl(WrappedBitvectorImpl const&) = default;
+    WrappedBitvectorImpl(WrappedBitvectorImpl&&) noexcept = default;
+    auto operator=(WrappedBitvectorImpl const&) -> WrappedBitvectorImpl& = default;
+    auto operator=(WrappedBitvectorImpl&&) noexcept -> WrappedBitvectorImpl& = default;
 
 
     size_t size() const noexcept {
@@ -108,6 +108,9 @@ struct WrappedBitvector<2, Bitvector> {
     }
 };
 
-static_assert(String_c<WrappedBitvector<2, bitvector::L0L1_512_64kBitvector>>);
+template <size_t>
+using WrappedBitvector = WrappedBitvectorImpl<2, fmc::bitvector::L0L1_512_64kBitvector>;
+
+static_assert(String_c<WrappedBitvectorImpl<2, bitvector::L0L1_512_64kBitvector>>);
 
 }
