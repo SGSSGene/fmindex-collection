@@ -234,11 +234,11 @@ struct Search {
 
         auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
             if constexpr (Right) {
-                auto symb = index.bwtRev.symbol(cur.lbRev);
+                auto symb = cur.symbolRight();
                 auto cur_  = cur.extendRight(symb);
                 return {symb, cur_};
             } else {
-                auto symb = index.bwt.symbol(cur.lb);
+                auto symb = cur.symbolLeft();
                 auto cur_  = cur.extendLeft(symb);
                 return {symb, cur_};
             }
@@ -406,11 +406,11 @@ struct Search {
 
         auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
             if constexpr (Right) {
-                auto symb = index.bwtRev.symbol(cur.lbRev);
+                auto symb = cur.symbolRight();
                 auto cur_  = cur.extendRight(symb);
                 return {symb, cur_};
             } else {
-                auto symb = index.bwt.symbol(cur.lb);
+                auto symb = cur.symbolLeft();
                 auto cur_  = cur.extendLeft(symb);
                 return {symb, cur_};
             }

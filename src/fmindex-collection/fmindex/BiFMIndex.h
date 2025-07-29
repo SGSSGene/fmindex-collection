@@ -14,16 +14,21 @@
 
 namespace fmc {
 
-template <size_t TSigma, template <size_t> typename String = string::FlattenedBitvectors_512_64k, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<uint32_t, uint32_t>>>
+template <size_t TSigma, template <size_t> typename String = string::FlattenedBitvectors_512_64k, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<uint32_t, uint32_t>>, bool TDelim=true, bool TReuseRev=false>
     requires String_c<String<TSigma>>
 struct BiFMIndex {
     using ADEntry = SparseArray::value_t;
 
-    static size_t constexpr Sigma     = TSigma;
-    static size_t constexpr FirstSymb = 1;
+    using NoDelim = BiFMIndex<TSigma, String, SparseArray, false, TReuseRev>;
+    using ReuseRev = BiFMIndex<TSigma, String, SparseArray, TDelim, true>;
 
+    static size_t constexpr Sigma     = TSigma;
+    static size_t constexpr FirstSymb = TDelim?1:0;
+
+    // Set RevBwtType to std::nullptr_t to indicate that it should not be used
+    using RevBwtType = std::conditional_t<TReuseRev, std::nullptr_t, String<Sigma>>;
     String<Sigma> bwt;
-    String<Sigma> bwtRev;
+    RevBwtType bwtRev;
     std::array<size_t, Sigma+1> C{};
     SparseArray annotatedArray;
 
@@ -31,6 +36,7 @@ struct BiFMIndex {
     BiFMIndex(BiFMIndex&&) noexcept = default;
 
     BiFMIndex(std::span<uint8_t const> _bwt, std::span<uint8_t const> _bwtRev, SparseArray _annotatedArray)
+        requires(!TReuseRev)
         : bwt{_bwt}
         , bwtRev{_bwtRev}
         , C{computeC(bwt)}
@@ -42,32 +48,47 @@ struct BiFMIndex {
         }
     }
 
-    BiFMIndex(Sequence auto const& _sequence, SparseArray const& _annotatedSequence, size_t _threadNbr, bool omegaSorting = false) {
+    BiFMIndex(std::span<uint8_t const> _bwt, SparseArray _annotatedArray)
+        requires(TReuseRev)
+        : bwt{_bwt}
+        , C{computeC(bwt)}
+        , annotatedArray{std::move(_annotatedArray)}
+    {}
+
+
+    BiFMIndex(Sequence auto const& _sequence, SparseArray const& _annotatedSequence, size_t _threadNbr, bool omegaSorting = false, bool mirrorInput = false) {
         if (_sequence.size() >= std::numeric_limits<size_t>::max()/2) {
             throw std::runtime_error{"sequence is longer than what this system is capable of handling"};
         }
+        if (!omegaSorting && !TDelim) {
+            throw std::runtime_error{"omega sorting must be activated for 'no delimiter' usage"};
+        }
 
         // copy text into custom buffer
-        auto inputText = createInputText(_sequence, omegaSorting);
+        auto inputText = createInputText(_sequence, omegaSorting, mirrorInput);
 
         // create bwt, bwtRev and annotatedArray
         auto [_bwt, _annotatedArray] = createBWTAndAnnotatedArray(inputText, _annotatedSequence, _threadNbr, omegaSorting);
-        #if defined(__GNUC__) && !defined(__clang__)
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wstringop-overflow"
-        std::ranges::reverse(inputText);
-        #pragma GCC diagnostic pop
 
-        #else
-        std::ranges::reverse(inputText);
 
-        #endif
-        auto _bwtRev = createBWT(inputText, _threadNbr, omegaSorting);
-        decltype(inputText){}.swap(inputText); // inputText memory can be deleted
+        if constexpr (!TReuseRev) {
+            #if defined(__GNUC__) && !defined(__clang__)
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wstringop-overflow"
+            std::ranges::reverse(inputText);
+            #pragma GCC diagnostic pop
+
+            #else
+            std::ranges::reverse(inputText);
+
+            #endif
+            auto _bwtRev = createBWT(inputText, _threadNbr, omegaSorting);
+            decltype(inputText){}.swap(inputText); // inputText memory can be deleted
+            bwtRev = {_bwtRev};
+        }
 
         // initialize this BiFMIndex properly
         bwt = {_bwt};
-        bwtRev = {_bwtRev};
         C = computeC(bwt);
         annotatedArray = std::move(_annotatedArray);
     }
@@ -121,7 +142,7 @@ struct BiFMIndex {
     }
 
     auto operator=(BiFMIndex const&) -> BiFMIndex& = delete;
-    auto operator=(BiFMIndex&&) noexcept -> BiFMIndex& = default;
+    auto operator=(BiFMIndex&& _other) noexcept -> BiFMIndex& = default;
 
     size_t size() const {
         return bwt.size();

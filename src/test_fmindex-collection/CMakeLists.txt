@@ -71,6 +71,7 @@ target_link_libraries(${PROJECT_NAME}
     reflect::reflect
     fmt::fmt
 )
+target_compile_definitions(${PROJECT_NAME} PRIVATE CATCH_CONFIG_ENABLE_ALL_STRINGMAKERS)
 
 if (FMC_USE_AWFMINDEX)
     target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_AWFMINDEX)

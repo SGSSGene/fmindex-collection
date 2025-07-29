@@ -19,6 +19,12 @@ namespace fmc::search_ng24 {
 template <bool Edit, typename index_t, typename query_t, typename search_t, typename delegate_t>
 struct Search {
     constexpr static size_t Sigma = index_t::Sigma;
+    constexpr static size_t FirstSymb = []() -> size_t {
+        if constexpr (requires() { { index_t::FirstSymb }; }) {
+            return index_t::FirstSymb;
+        }
+        return 1;
+    }();
 
     using cursor_t = select_cursor_t<index_t>;
 
@@ -134,7 +140,7 @@ struct Search {
             }
 
             auto se = Restore{e, e+1};
-            for (uint64_t i{1}; i < Sigma; ++i) {
+            for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
                 auto const& newCur = cursors[i];
 
                 auto s1 = Restore{side[Right].lastRank, i};
@@ -191,11 +197,11 @@ struct Search {
 
         auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
             if constexpr (Right) {
-                auto symb = index.bwtRev.symbol(cur.lbRev);
+                auto symb = cur.symbolRight();
                 auto cur_  = cur.extendRight(symb);
                 return {symb, cur_};
             } else {
-                auto symb = index.bwt.symbol(cur.lb);
+                auto symb = cur.symbolLeft();
                 auto cur_  = cur.extendLeft(symb);
                 return {symb, cur_};
             }
@@ -219,14 +225,10 @@ struct Search {
             }
         }
 
-
-
-
         // only insertions are possible
-        if (curISymb == 0) {
+        if (curISymb < FirstSymb) {
             return false;
         }
-
 
         bool matchAllowed    = search.l[part] <= e and e <= search.u[part]
                                and (TInfo != 'I' or curQSymb != side[Right].lastQRank)

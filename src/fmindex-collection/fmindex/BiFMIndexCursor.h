@@ -58,7 +58,14 @@ struct BiFMIndexCursor {
     }
 
     auto extendRight() const -> std::array<BiFMIndexCursor, Sigma> {
-        auto const& bwt = index->bwtRev;
+        // Reuse bwt if bwtrev is not available
+        auto const& bwt = [&]() -> auto const& {
+            if constexpr (std::same_as<typename Index::RevBwtType, std::nullptr_t>) {
+                return index->bwt;
+            } else {
+                return index->bwtRev;
+            }
+        }();
         auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lbRev);
         auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lbRev+len);
 
@@ -87,12 +94,35 @@ struct BiFMIndexCursor {
         return newCursor;
     }
     auto extendRight(size_t symb) const -> BiFMIndexCursor {
-        auto& bwt = index->bwtRev;
+        // Reuse bwt if bwtrev is not available
+        auto const& bwt = [&]() -> auto const& {
+            if constexpr (std::same_as<typename Index::RevBwtType, std::nullptr_t>) {
+                return index->bwt;
+            } else {
+                return index->bwtRev;
+            }
+        }();
         size_t newLb    = lb + bwt.prefix_rank(lbRev+len, symb) - bwt.prefix_rank(lbRev, symb);
         size_t newLbRev = bwt.rank(lbRev, symb);
         size_t newLen   = bwt.rank(lbRev+len, symb) - newLbRev;
         auto newCursor = BiFMIndexCursor{*index, newLb, newLbRev + index->C[symb], newLen};
         return newCursor;
+    }
+
+    auto symbolLeft() const -> size_t {
+        return index->bwt.symbol(lb);
+    }
+    auto symbolRight() const -> size_t {
+        // Reuse bwt if bwtrev is not available
+        auto const& bwt = [&]() -> auto const& {
+            if constexpr (std::same_as<typename Index::RevBwtType, std::nullptr_t>) {
+                return index->bwt;
+            } else {
+                return index->bwtRev;
+            }
+        }();
+
+        return bwt.symbol(lbRev);
     }
 };
 
