@@ -15,8 +15,11 @@
 
 namespace fmc::string {
 
+template <size_t Sigma, Bitvector_c Bitvector = fmc::bitvector::L0L1_512_64kBitvector>
+struct WrappedBitvector;
+
 template <Bitvector_c Bitvector>
-struct WrappedBitvector {
+struct WrappedBitvector<2, Bitvector> {
     static constexpr size_t Sigma = 2;
 
     Bitvector bitvector;
@@ -105,6 +108,6 @@ struct WrappedBitvector {
     }
 };
 
-static_assert(String_c<WrappedBitvector<bitvector::L0L1_512_64kBitvector>>);
+static_assert(String_c<WrappedBitvector<2, bitvector::L0L1_512_64kBitvector>>);
 
 }
