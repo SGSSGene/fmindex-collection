@@ -14,16 +14,21 @@
 
 namespace fmc {
 
-template <size_t TSigma, template <size_t> typename String = string::FlattenedBitvectors_512_64k, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<uint32_t, uint32_t>>>
+template <size_t TSigma, template <size_t> typename String = string::FlattenedBitvectors_512_64k, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<uint32_t, uint32_t>>, bool TDelim=true, bool TReuseRev=false>
     requires String_c<String<TSigma>>
 struct BiFMIndex {
     using ADEntry = SparseArray::value_t;
 
-    static size_t constexpr Sigma     = TSigma;
-    static size_t constexpr FirstSymb = 1;
+    using NoDelim = BiFMIndex<TSigma, String, SparseArray, false, TReuseRev>;
+    using ReuseRev = BiFMIndex<TSigma, String, SparseArray, TDelim, true>;
 
+    static size_t constexpr Sigma     = TSigma;
+    static size_t constexpr FirstSymb = TDelim?1:0;
+
+    // Set RevBwtType to std::nullptr_t to indicate that it should not be used
+    using RevBwtType = std::conditional_t<TReuseRev, std::nullptr_t, String<Sigma>>;
     String<Sigma> bwt;
-    String<Sigma> bwtRev;
+    RevBwtType bwtRev;
     std::array<size_t, Sigma+1> C{};
     SparseArray annotatedArray;
 
@@ -31,6 +36,7 @@ struct BiFMIndex {
     BiFMIndex(BiFMIndex&&) noexcept = default;
 
     BiFMIndex(std::span<uint8_t const> _bwt, std::span<uint8_t const> _bwtRev, SparseArray _annotatedArray)
+        requires(!TReuseRev)
         : bwt{_bwt}
         , bwtRev{_bwtRev}
         , C{computeC(bwt)}
@@ -42,32 +48,46 @@ struct BiFMIndex {
         }
     }
 
-    BiFMIndex(Sequence auto const& _sequence, SparseArray const& _annotatedSequence, size_t _threadNbr, bool omegaSorting = false) {
+    BiFMIndex(std::span<uint8_t const> _bwt, SparseArray _annotatedArray)
+        requires(TReuseRev)
+        : bwt{_bwt}
+        , C{computeC(bwt)}
+        , annotatedArray{std::move(_annotatedArray)}
+    {}
+
+
+    BiFMIndex(Sequence auto const& _sequence, SparseArray const& _annotatedSequence, size_t _threadNbr, bool mirrorInput = false) {
         if (_sequence.size() >= std::numeric_limits<size_t>::max()/2) {
             throw std::runtime_error{"sequence is longer than what this system is capable of handling"};
         }
 
+        bool omegaSorting = !TDelim; // Use omega sorting if no delimiter is being used
+
         // copy text into custom buffer
-        auto inputText = createInputText(_sequence, omegaSorting);
+        auto inputText = createInputText(_sequence, omegaSorting, mirrorInput);
 
         // create bwt, bwtRev and annotatedArray
         auto [_bwt, _annotatedArray] = createBWTAndAnnotatedArray(inputText, _annotatedSequence, _threadNbr, omegaSorting);
-        #if defined(__GNUC__) && !defined(__clang__)
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wstringop-overflow"
-        std::ranges::reverse(inputText);
-        #pragma GCC diagnostic pop
 
-        #else
-        std::ranges::reverse(inputText);
 
-        #endif
-        auto _bwtRev = createBWT(inputText, _threadNbr, omegaSorting);
-        decltype(inputText){}.swap(inputText); // inputText memory can be deleted
+        if constexpr (!TReuseRev) {
+            #if defined(__GNUC__) && !defined(__clang__)
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wstringop-overflow"
+            std::ranges::reverse(inputText);
+            #pragma GCC diagnostic pop
+
+            #else
+            std::ranges::reverse(inputText);
+
+            #endif
+            auto _bwtRev = createBWT(inputText, _threadNbr, omegaSorting);
+            decltype(inputText){}.swap(inputText); // inputText memory can be deleted
+            bwtRev = {_bwtRev};
+        }
 
         // initialize this BiFMIndex properly
         bwt = {_bwt};
-        bwtRev = {_bwtRev};
         C = computeC(bwt);
         annotatedArray = std::move(_annotatedArray);
     }
@@ -78,10 +98,9 @@ struct BiFMIndex {
      * \param _input a list of sequences
      * \param samplingRate rate of the sampling
      */
-    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, bool useDelimiters = true, size_t seqOffset = 0) {
-
+    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, size_t seqOffset = 0, bool mirrorInput = false) {
         auto [totalSize, inputText, inputSizes] = [&]() {
-            if (useDelimiters) {
+            if (TDelim) {
                 return createSequences(_input);
             } else {
                 return createSequencesWithoutDelimiter(_input);
@@ -97,31 +116,58 @@ struct BiFMIndex {
             assert(inputSizes.size() < refId);
         }
 
+        auto size = totalSize;
+        if (mirrorInput) size = size*2;
+
+
         auto annotatedSequence = SparseArray {
-            std::views::iota(size_t{0}, totalSize) | std::views::transform([&](size_t) -> std::optional<ADEntry> {
-                assert(refId < inputSizes.size());
-                assert(pos < inputSizes[refId]);
+            std::views::iota(size_t{0}, size) | std::views::transform([&](size_t phase) -> std::optional<ADEntry> {
+                if (phase < totalSize) { // going forward
+                    assert(refId < inputSizes.size());
+                    assert(pos < inputSizes[refId]);
 
-                auto ret = std::optional<ADEntry>{std::nullopt};
+                    auto ret = std::optional<ADEntry>{std::nullopt};
 
-                if (pos % samplingRate == 0) {
-                    ret = std::make_tuple(refId+seqOffset, pos);
+                    if (pos % samplingRate == 0) {
+                        ret = std::make_tuple(refId+seqOffset, pos);
+                    }
+
+                    ++pos;
+                    if (inputSizes[refId] == pos) {
+                        refId += 1;
+                        pos = 0;
+                    }
+                    return ret;
+                } else { // going backwards
+                    if (phase == totalSize) { // reset values
+                        pos = 0;
+                        refId = 0;
+                    }
+
+                    assert(refId < inputSizes.size());
+                    assert(pos < inputSizes[inputSizes.size() - refId - 1]);
+
+                    auto ret = std::optional<ADEntry>{std::nullopt};
+
+                    if (pos % samplingRate == 0) {
+                        ret = std::make_tuple(inputSizes.size()*2 - refId+seqOffset-1, inputSizes[refId] - pos-1);
+                    }
+
+                    ++pos;
+                    if (inputSizes[inputSizes.size() - refId - 1] == pos) {
+                        refId += 1;
+                        pos = 0;
+                    }
+                    return ret;
                 }
-
-                ++pos;
-                if (inputSizes[refId] == pos) {
-                    refId += 1;
-                    pos = 0;
-                }
-                return ret;
             })
         };
 
-        *this = BiFMIndex{inputText, annotatedSequence, threadNbr, !useDelimiters};
+        *this = BiFMIndex{inputText, annotatedSequence, threadNbr, mirrorInput};
     }
 
     auto operator=(BiFMIndex const&) -> BiFMIndex& = delete;
-    auto operator=(BiFMIndex&&) noexcept -> BiFMIndex& = default;
+    auto operator=(BiFMIndex&& _other) noexcept -> BiFMIndex& = default;
 
     size_t size() const {
         return bwt.size();

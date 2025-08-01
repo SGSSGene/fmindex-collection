@@ -58,20 +58,38 @@ struct BiFMIndexCursor {
     }
 
     auto extendRight() const -> std::array<BiFMIndexCursor, Sigma> {
-        auto const& bwt = index->bwtRev;
-        auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lbRev);
-        auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lbRev+len);
+        // Reuse bwt if bwtrev is not available
+        if constexpr (std::same_as<typename Index::RevBwtType, std::nullptr_t>) {
+            auto const& bwt = index->bwt;
+            auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lbRev);
+            auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lbRev+len);
 
-        for (size_t i{0}; i < rs1.size(); ++i) {
-            rs1[i] += index->C[i];
-            rs2[i] += index->C[i];
-        }
+            for (size_t i{0}; i < rs1.size(); ++i) {
+                rs1[i] += index->C[i];
+                rs2[i] += index->C[i];
+            }
 
-        auto cursors = std::array<BiFMIndexCursor, Sigma>{};
-        for (size_t i{0}; i < Sigma; ++i) {
-            cursors[i] = BiFMIndexCursor{*index, lb + prs2[i] - prs1[i], rs1[i], rs2[i] - rs1[i]};
+            auto cursors = std::array<BiFMIndexCursor, Sigma>{};
+            for (size_t i{0}; i < Sigma; ++i) {
+                cursors[i] = BiFMIndexCursor{*index, lb + prs2[i] - prs1[i], rs1[i], rs2[i] - rs1[i]};
+            }
+            return cursors;
+        } else {
+            auto const& bwt = index->bwtRev;
+            auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lbRev);
+            auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lbRev+len);
+
+            for (size_t i{0}; i < rs1.size(); ++i) {
+                rs1[i] += index->C[i];
+                rs2[i] += index->C[i];
+            }
+
+            auto cursors = std::array<BiFMIndexCursor, Sigma>{};
+            for (size_t i{0}; i < Sigma; ++i) {
+                cursors[i] = BiFMIndexCursor{*index, lb + prs2[i] - prs1[i], rs1[i], rs2[i] - rs1[i]};
+            }
+            return cursors;
         }
-        return cursors;
     }
     void prefetchLeft() const {
     }
@@ -87,12 +105,33 @@ struct BiFMIndexCursor {
         return newCursor;
     }
     auto extendRight(size_t symb) const -> BiFMIndexCursor {
-        auto& bwt = index->bwtRev;
-        size_t newLb    = lb + bwt.prefix_rank(lbRev+len, symb) - bwt.prefix_rank(lbRev, symb);
-        size_t newLbRev = bwt.rank(lbRev, symb);
-        size_t newLen   = bwt.rank(lbRev+len, symb) - newLbRev;
-        auto newCursor = BiFMIndexCursor{*index, newLb, newLbRev + index->C[symb], newLen};
-        return newCursor;
+        if constexpr (std::same_as<typename Index::RevBwtType, std::nullptr_t>) {
+            auto const& bwt = index->bwt;
+            size_t newLb    = lb + bwt.prefix_rank(lbRev+len, symb) - bwt.prefix_rank(lbRev, symb);
+            size_t newLbRev = bwt.rank(lbRev, symb);
+            size_t newLen   = bwt.rank(lbRev+len, symb) - newLbRev;
+            auto newCursor = BiFMIndexCursor{*index, newLb, newLbRev + index->C[symb], newLen};
+            return newCursor;
+        } else {
+            auto const& bwt = index->bwtRev;
+            size_t newLb    = lb + bwt.prefix_rank(lbRev+len, symb) - bwt.prefix_rank(lbRev, symb);
+            size_t newLbRev = bwt.rank(lbRev, symb);
+            size_t newLen   = bwt.rank(lbRev+len, symb) - newLbRev;
+            auto newCursor = BiFMIndexCursor{*index, newLb, newLbRev + index->C[symb], newLen};
+            return newCursor;
+        }
+    }
+
+    auto symbolLeft() const -> size_t {
+        return index->bwt.symbol(lb);
+    }
+    auto symbolRight() const -> size_t {
+        // Reuse bwt if bwtrev is not available
+        if constexpr (std::same_as<typename Index::RevBwtType, std::nullptr_t>) {
+            return index->bwt.symbol(lbRev);
+        } else {
+            return index->bwtRev.symbol(lbRev);
+        }
     }
 };
 

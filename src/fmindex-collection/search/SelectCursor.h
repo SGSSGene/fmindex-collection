@@ -6,7 +6,6 @@
 #include "../fmindex/BiFMIndexCursor.h"
 #include "../fmindex/FMIndexCursor.h"
 #include "../fmindex/KMerFMIndexCursor.h"
-#include "../fmindex/MirroredBiFMIndexCursor.h"
 #include "../fmindex/ReverseFMIndexCursor.h"
 
 
@@ -28,11 +27,6 @@ struct SelectIndexCursor<FMIndex<TSigma, String, SparseArray>> {
 template <typename String, size_t KMer, typename TCSA>
 struct SelectIndexCursor<KMerFMIndex<String, KMer, TCSA>> {
     using cursor_t = KMerFMIndexCursor<KMerFMIndex<String, KMer, TCSA>>;
-};
-
-template <typename String, typename TCSA>
-struct SelectIndexCursor<MirroredBiFMIndex<String, TCSA>> {
-    using cursor_t = MirroredBiFMIndexCursor<MirroredBiFMIndex<String, TCSA>>;
 };
 
 template <typename String, typename TCSA>
@@ -58,12 +52,6 @@ template <typename String, size_t KMer, typename TCSA>
 struct SelectLeftIndexCursor<KMerFMIndex<String, KMer, TCSA>> {
     using cursor_t = KMerFMIndexCursor<KMerFMIndex<String, KMer, TCSA>>;
 };
-
-template <typename String, typename TCSA>
-struct SelectLeftIndexCursor<MirroredBiFMIndex<String, TCSA>> {
-    using cursor_t = LeftMirroredBiFMIndexCursor<MirroredBiFMIndex<String, TCSA>>;
-};
-
 
 template <typename Index>
 using select_cursor_t      = typename SelectIndexCursor<Index>::cursor_t;

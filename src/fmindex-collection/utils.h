@@ -237,13 +237,27 @@ inline auto createBWT(std::span<uint8_t const> inputText, size_t _threadNbr, boo
     }
 }
 
-inline auto createInputText(std::span<uint8_t const> _input, size_t _omegaSorting) -> std::vector<uint8_t> {
+inline auto createInputText(std::span<uint8_t const> _input, bool _omegaSorting, bool _mirrorInput=false) -> std::vector<uint8_t> {
     auto output = std::vector<uint8_t>{};
-    if (_omegaSorting) {
+    if (_omegaSorting && _mirrorInput) {
+        output.resize(_input.size()*4);
+        for (size_t i{0}; i < _input.size(); ++i) {
+            output[_input.size()*0+i]   = _input[i];
+            output[_input.size()*2-i-1] = _input[i];
+            output[_input.size()*2+i]   = _input[i];
+            output[_input.size()*4-i-1] = _input[i];
+        }
+    } else if (_mirrorInput) {
         output.resize(_input.size()*2);
         for (size_t i{0}; i < _input.size(); ++i) {
-            output[i] = _input[i];
-            output[i+_input.size()] = _input[i];
+            output[_input.size()*0+i]   = _input[i];
+            output[_input.size()*2-i-1] = _input[i];
+        }
+    } else if (_omegaSorting) {
+        output.resize(_input.size()*2);
+        for (size_t i{0}; i < _input.size(); ++i) {
+            output[_input.size()*0+i]   = _input[i];
+            output[_input.size()*1+i]   = _input[i];
         }
     } else {
         output.resize(_input.size());

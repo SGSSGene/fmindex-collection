@@ -238,11 +238,11 @@ struct Search {
 
         auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
             if constexpr (Right) {
-                auto symb = index.bwtRev.symbol(cur.lbRev);
+                auto symb = cur.symbolRight();
                 auto cur_  = cur.extendRight(symb);
                 return {symb, cur_};
             } else {
-                auto symb = index.bwt.symbol(cur.lb);
+                auto symb = cur.symbolLeft();
                 auto cur_  = cur.extendLeft(symb);
                 return {symb, cur_};
             }
@@ -250,11 +250,11 @@ struct Search {
 
         auto [curQSymb, qcursorNext] = [&]() -> std::tuple<size_t, qcursor_t> {
             if constexpr (Right) {
-                auto curQSymb = queries.bwtRev.symbol(qcur.lbRev);
+                auto curQSymb = qcur.symbolRight();
                 auto qcursorNext = qcur.extendRight(curQSymb);
                 return {curQSymb, qcursorNext};
             } else {
-                auto curQSymb = queries.bwt.symbol(qcur.lb);
+                auto curQSymb = qcur.symbolLeft();
                 auto qcursorNext = qcur.extendLeft(curQSymb);
                 return {curQSymb, qcursorNext};
             }
@@ -330,11 +330,11 @@ struct Search {
 
         auto [curQSymb, qcursorNext] = [&]() -> std::tuple<size_t, qcursor_t> {
             if constexpr (Right) {
-                auto curQSymb = queries.bwtRev.symbol(qcur.lbRev);
+                auto curQSymb = qcur.symbolRight();
                 auto qcursorNext = qcur.extendRight(curQSymb);
                 return {curQSymb, qcursorNext};
             } else {
-                auto curQSymb = queries.bwt.symbol(qcur.lb);
+                auto curQSymb = qcur.symbolLeft();;
                 auto qcursorNext = qcur.extendLeft(curQSymb);
                 return {curQSymb, qcursorNext};
             }
@@ -436,11 +436,11 @@ struct Search {
 
         auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
             if constexpr (Right) {
-                auto symb = index.bwtRev.symbol(cur.lbRev);
+                auto symb = cur.symbolRight();
                 auto cur_  = cur.extendRight(symb);
                 return {symb, cur_};
             } else {
-                auto symb = index.bwt.symbol(cur.lb);
+                auto symb = cur.symbolLeft();
                 auto cur_  = cur.extendLeft(symb);
                 return {symb, cur_};
             }

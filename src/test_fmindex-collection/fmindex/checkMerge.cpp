@@ -92,8 +92,8 @@ TEST_CASE("checking merging of fmindices", "[BiFMIndex][merge]") {
     using Index = fmc::BiFMIndex<3>;
 
     auto index1 = Index{data1, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1};
-    auto index2 = Index{data2, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1, /*.useDelimiters =*/true, /*.seqOffset =*/data1.size()};
-    auto index3 = Index{data3, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1, /*.useDelimiters =*/true, /*.seqOffset =*/data1.size() + data2.size()};
+    auto index2 = Index{data2, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1, /*.seqOffset =*/data1.size()};
+    auto index3 = Index{data3, /*.samplingRate =*/ 2, /*.threadNbr =*/ 1, /*.seqOffset =*/data1.size() + data2.size()};
 
     SECTION("merging index1 and index2 into index12") {
         auto index12 = fmc::fmindex::merge(index1, index2);

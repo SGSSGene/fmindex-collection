@@ -5,17 +5,17 @@
 #include "../string/allStrings.h"
 
 #include <catch2/catch_all.hpp>
-#include <fmindex-collection/fmindex/MirroredBiFMIndex.h>
-#include <fmindex-collection/fmindex/MirroredBiFMIndexCursor.h>
+#include <fmindex-collection/fmindex/BiFMIndex.h>
+#include <fmindex-collection/fmindex/BiFMIndexCursor.h>
 
 TEST_CASE("checking biidirectional fm index left cursor", "[leftmirroredbifmindexcursor]") {
 
     auto data = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 2, 2}};
-    using String = fmc::string::InterleavedBitvector16<256>;
-    using Index = fmc::MirroredBiFMIndex<String>;
-    auto index = Index{data, 1, 1};
 
-    auto cursor = fmc::LeftMirroredBiFMIndexCursor{index};
+    using Index = fmc::BiFMIndex<256>;
+    auto index = Index{data, /*.sampleRate=*/1, /*.threadNbr=*/1, /*.seqOffset=*/0, /*.mirrorInput=*/true};
+
+    auto cursor = fmc::LeftBiFMIndexCursor{index};
     REQUIRE(cursor.count() == index.size());
     REQUIRE(!cursor.empty());
     REQUIRE(cursor.lb == 0);
