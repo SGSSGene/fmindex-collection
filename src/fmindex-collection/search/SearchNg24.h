@@ -125,7 +125,7 @@ struct Search {
         bool matchAllowed    = search.l[part] <= e and e <= search.u[part]
                                and (TInfo != 'I' or nextSymb != side[Right].lastQRank)
                                and (TInfo != 'D' or nextSymb != side[Right].lastRank);
-        bool mismatchAllowed = search.l[part] <= e+1 and e+1 <= search.u[part];
+        bool mismatchAllowed = (Edit || search.l[part] <= e+1) and e+1 <= search.u[part];
 
         if (mismatchAllowed) {
             auto cursors = extend<Right>(cur);
