@@ -4,6 +4,7 @@
 #pragma once
 
 #include <fmindex-collection/bitvector/all.h>
+#include <fmindex-collection/bitvector/RBBitvector.h>
 
 #define ALLBITVECTORS \
     fmc::bitvector::L0_64Bitvector, \
@@ -32,9 +33,9 @@
     fmc::bitvector::PairedL0L1_2048_64kBitvector
 
 #define ALLSPARSEBITVECTORS \
-    fmc::bitvector::PairedL0L1_512_64kBitvector, \
-    fmc::bitvector::SparseBLEBitvector<1, fmc::bitvector::PairedL0L1_512_64kBitvector, fmc::bitvector::PairedL0L1_512_64kBitvector>, \
-    fmc::bitvector::SparseBLEBitvector<2, fmc::bitvector::PairedL0L1_512_64kBitvector, fmc::bitvector::PairedL0L1_512_64kBitvector>, \
-    fmc::bitvector::SparseBLEBitvector<3, fmc::bitvector::PairedL0L1_512_64kBitvector, fmc::bitvector::PairedL0L1_512_64kBitvector>, \
-    fmc::bitvector::SparseBLEBitvector<4, fmc::bitvector::PairedL0L1_512_64kBitvector, fmc::bitvector::PairedL0L1_512_64kBitvector>, \
-    fmc::bitvector::SparseBLEBitvector<5, fmc::bitvector::PairedL0L1_512_64kBitvector, fmc::bitvector::PairedL0L1_512_64kBitvector>
+    fmc::bitvector::L0_64Bitvector, \
+    fmc::bitvector::L0L1_512_64kBitvector, \
+    fmc::bitvector::RBBitvector<2, fmc::bitvector::L0L1_512_64kBitvector, fmc::bitvector::L0L1_512_64kBitvector>, \
+    fmc::bitvector::RBBitvector<2, fmc::bitvector::L0L1_512_64kBitvector, fmc::bitvector::L0_64Bitvector>, \
+    fmc::bitvector::SparseBLEBitvector<2, fmc::bitvector::L0_64Bitvector, fmc::bitvector::L0_64Bitvector>, \
+    fmc::bitvector::SparseBLEBitvector<2, fmc::bitvector::L0_64Bitvector, fmc::bitvector::L0L1_512_64kBitvector>
