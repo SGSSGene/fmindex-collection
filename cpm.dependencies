@@ -39,9 +39,9 @@
     {
       "if": "PROJECT_IS_TOP_LEVEL",
       "name": "fmt",
-      "version": "11.2.0",
+      "version": "11.2.0-git",
       "github_repository": "fmtlib/fmt",
-      "git_tag": "{VERSION}"
+      "git_tag": "36390db094afc48c47809ad9a6c9ced89b38551d"
     },
     {
       "if": "PROJECT_IS_TOP_LEVEL",
@@ -72,8 +72,8 @@
       "if": "FMC_USE_PASTA",
       "name": "bit_vector",
       "version": "1.0.1-git",
-      "github_repository": "SGSSGene/bit_vector",
-      "git_tag": "ed5bf2ad072944d63ddd4628332529dc0c52c135"
+      "github_repository": "pasta-toolbox/bit_vector",
+      "git_tag": "3ffb6e5a2e58c76425de8197bfe554eb1bf9fd94"
     },
     {
       "if": "FMC_USE_SUX",
