@@ -44,7 +44,7 @@ jobs:
           - {os: windows-2022, compiler: msvc-cpp20-release,       cmake_flags: "-DFMC_USE_SDSL=NO"}
           # not running any tests, since it takes to long
           - {os: windows-2022, compiler: msvc-cpp20-debug, cmake_flags: "-DFMC_USE_SDSL=NO"}
-          # - {os: ubuntu-22.04, compiler: emscripten-cpp20-release, cmake_flags: "-DCMAKE_EXE_LINKER_FLAGS='-sALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=1000000'", cmake_cxx_flags: "-Wno-c++11-narrowing"}
+          - {os: ubuntu-22.04, compiler: emscripten-cpp20-release, cmake_flags: "-DCMAKE_EXE_LINKER_FLAGS='-sALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=1000000'", cmake_cxx_flags: "-Wno-c++11-narrowing"}
     steps:
       - name: Standard IV-project testing
         uses: iv-project/IVaction@v10.15
