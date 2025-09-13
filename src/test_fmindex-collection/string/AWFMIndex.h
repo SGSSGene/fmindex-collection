@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include <fmindex-collection/string/L0L1_NEPRV9.h>
+#include <fmindex-collection/string/FlattenedBitvectors_L0L1.h>
 
 extern "C" {
 #include "AwFmIndex.h"
@@ -97,10 +97,10 @@ inline void awFmIndexCreateStringWithRankSupport(struct AwFmIndex* _RESTRICT_ co
     }
 }
 
-// If AWFMIndex doesn't implement the correct version, fall back to L0L1NEPRV9 version, which has similar memory usage
+// If AWFMIndex doesn't implement the correct version, fall back to FlattenedBitvectors_L0L1 version, which has similar memory usage
 template <size_t TSigma>
-struct AWFMIndex : fmc::string::L0L1_NEPRV9<TSigma, 64, 65536> {
-    using fmc::string::L0L1_NEPRV9<TSigma, 64, 65536>::L0L1_NEPRV9;
+struct AWFMIndex : fmc::string::FlattenedBitvectors_L0L1<TSigma, 64, 65536> {
+    using fmc::string::FlattenedBitvectors_L0L1<TSigma, 64, 65536>::FlattenedBitvectors_L0L1;
 };
 /**
  * This is a quick and dirty implementation
@@ -115,7 +115,9 @@ struct AWFMIndex<5> {
 
     AWFMIndex() = default;
     ~AWFMIndex() {
-        if (index == nullptr) {
+        if (index != nullptr) {
+            //!WORKAROUND !HACK awFmDeallocIndex closes a file handle, even if it didn't open one
+            index->fileHandle = fopen("/dev/zero", "r");
             awFmDeallocIndex(index);
         }
     }
@@ -225,7 +227,9 @@ struct AWFMIndex<21> {
 
     AWFMIndex() = default;
     ~AWFMIndex() {
-        if (index == nullptr) {
+        if (index != nullptr) {
+            //!WORKAROUND !HACK awFmDeallocIndex closes a file handle, even if it didn't open one
+            index->fileHandle = fopen("/dev/zero", "r");
             awFmDeallocIndex(index);
         }
     }

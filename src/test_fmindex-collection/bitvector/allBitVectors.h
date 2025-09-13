@@ -6,6 +6,7 @@
 #include <fmindex-collection/bitvector/all.h>
 #include <fmindex-collection/bitvector/RBBitvector.h>
 
+#ifndef __EMSCRIPTEN__
 #define ALLBITVECTORS \
     fmc::bitvector::L0_64Bitvector, \
     fmc::bitvector::L0_128Bitvector, \
@@ -31,6 +32,17 @@
     fmc::bitvector::PairedL0L1_512_64kBitvector, \
     fmc::bitvector::PairedL0L1_1024_64kBitvector, \
     fmc::bitvector::PairedL0L1_2048_64kBitvector
+#else
+#define ALLBITVECTORS \
+    fmc::bitvector::L0_64Bitvector, \
+    fmc::bitvector::L0_512Bitvector, \
+    fmc::bitvector::PairedL0_64Bitvector, \
+    fmc::bitvector::PairedL0_512Bitvector, \
+    fmc::bitvector::L0L1_64_64kBitvector, \
+    fmc::bitvector::L0L1_512_64kBitvector, \
+    fmc::bitvector::PairedL0L1_64_64kBitvector, \
+    fmc::bitvector::PairedL0L1_512_64kBitvector
+#endif
 
 #define ALLSPARSEBITVECTORS \
     fmc::bitvector::L0_64Bitvector, \

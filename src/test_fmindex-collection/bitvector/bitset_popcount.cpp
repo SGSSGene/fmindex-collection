@@ -113,8 +113,10 @@ TEST_CASE("benchmark skip_first_or_last_n_bits", "[misc][!benchmark]") {
         test.template operator()<128>();
         test.template operator()<256>();
         test.template operator()<512>();
+#ifndef __EMSCRIPTEN__
         test.template operator()<1024>();
         test.template operator()<2048>();
+#endif
     }
 
  /*   SECTION("and and and") {
