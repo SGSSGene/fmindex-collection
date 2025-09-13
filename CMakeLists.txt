@@ -18,9 +18,11 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     if (PROJECT_IS_TOP_LEVEL)
         add_compile_options("/EHsc")
     endif()
-
-elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+elseif (EMSCRIPTEN)
     set(FMC_USE_SDSL OFF)
+    set(FMC_USE_PASTA OFF)
+    set(FMC_USE_SUX OFF)
+    set(FMC_USE_AWFMINDEX OFF)
 endif()
 
 find_package(OpenMP QUIET)

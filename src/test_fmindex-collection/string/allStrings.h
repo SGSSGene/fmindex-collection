@@ -6,6 +6,7 @@
 #include <fmindex-collection/bitvector/all.h>
 #include <fmindex-collection/string/all.h>
 
+#ifndef __EMSCRIPTEN__
 #define ALLSTRINGSWITHRANK_IMPL \
     fmc::string::InterleavedBitvector16, \
     fmc::string::FlattenedBitvectors_64_64k, \
@@ -27,7 +28,21 @@
     fmc::string::MultiaryWavelet_512_64k, \
     fmc::string::MultiaryWavelet_s16, \
     fmc::string::MultiaryWavelet_s256
-
+#else
+#define ALLSTRINGSWITHRANK_IMPL \
+    fmc::string::InterleavedBitvector16, \
+    fmc::string::FlattenedBitvectors_64_64k, \
+    fmc::string::FlattenedBitvectors_512_64k, \
+    fmc::string::PairedFlattenedBitvectors_64_64k, \
+    fmc::string::PairedFlattenedBitvectors_512_64k, \
+    fmc::string::MultiBitvector_Bitvector, \
+    fmc::string::InterleavedEPR16, \
+    fmc::string::InterleavedEPRV2_16, \
+    fmc::string::MultiaryWavelet_64_64k, \
+    fmc::string::MultiaryWavelet_512_64k, \
+    fmc::string::MultiaryWavelet_s16, \
+    fmc::string::MultiaryWavelet_s256
+#endif
 
 #if FMC_USE_SDSL
 #define ALLSTRINGSWITHRANK \
