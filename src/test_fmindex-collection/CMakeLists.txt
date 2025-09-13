@@ -73,24 +73,20 @@ target_link_libraries(${PROJECT_NAME}
 )
 target_compile_definitions(${PROJECT_NAME} PRIVATE CATCH_CONFIG_ENABLE_ALL_STRINGMAKERS)
 
-if (FMC_USE_AWFMINDEX)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_AWFMINDEX)
-    target_include_directories(${PROJECT_NAME} PRIVATE "${FMC_AWFMINDEX_PATH}/include")
-    target_link_directories(${PROJECT_NAME} PRIVATE "${FMC_AWFMINDEX_PATH}/lib")
-    target_link_libraries(${PROJECT_NAME} awfmindex_static divsufsort64 fastavector_static)
-endif()
-
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_link_options(${PROJECT_NAME} PUBLIC /STACK:16777216)
 endif()
-if (FMC_USE_SUX AND FMC_USE_PASTA AND FMC_USE_SDSL)
-    # bitvector/benchmark requires sux and paste to compile successful
+if (FMC_USE_SUX)
     target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_SUX)
+    target_link_libraries(${PROJECT_NAME} sux::sux)
+endif ()
+if (FMC_USE_PASTA)
     target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_PASTA)
-    target_link_libraries(${PROJECT_NAME}
-        pasta_bit_vector
-        sux::sux
-    )
-endif()
+    target_link_libraries(${PROJECT_NAME} pasta_bit_vector)
+endif ()
+if (FMC_USE_AWFMINDEX)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_AWFMINDEX)
+    target_link_libraries(${PROJECT_NAME} AwFmIndex::AwFmIndex)
+endif ()
 
 add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})
