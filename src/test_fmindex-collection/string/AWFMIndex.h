@@ -115,7 +115,9 @@ struct AWFMIndex<5> {
 
     AWFMIndex() = default;
     ~AWFMIndex() {
-        if (index == nullptr) {
+        if (index != nullptr) {
+            //!WORKAROUND !HACK awFmDeallocIndex closes a file handle, even if it didn't open one
+            index->fileHandle = fopen("/dev/zero", "r");
             awFmDeallocIndex(index);
         }
     }
@@ -225,7 +227,9 @@ struct AWFMIndex<21> {
 
     AWFMIndex() = default;
     ~AWFMIndex() {
-        if (index == nullptr) {
+        if (index != nullptr) {
+            //!WORKAROUND !HACK awFmDeallocIndex closes a file handle, even if it didn't open one
+            index->fileHandle = fopen("/dev/zero", "r");
             awFmDeallocIndex(index);
         }
     }
