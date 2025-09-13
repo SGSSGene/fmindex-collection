@@ -6,11 +6,10 @@ cmake_minimum_required (VERSION 3.25)
 project(fmindex-collection LANGUAGES CXX C
                             DESCRIPTION "fmindex-collection -- Datastructures and Algorithms for (Bi-)FMIndices and Approximate Pattern Matching")
 
-option(FMC_USE_SDSL  "Activate occ tables that use SDSL as a backend" ${PROJECT_IS_TOP_LEVEL})
+option(FMC_USE_SDSL  "Include SDSL based strings with rank support" ${PROJECT_IS_TOP_LEVEL})
 option(FMC_USE_PASTA "Include PASTA (required for bitvector benchmarks)" ${PROJECT_IS_TOP_LEVEL})
 option(FMC_USE_SUX   "Include SUX (required for bitvector benchmarks)" ${PROJECT_IS_TOP_LEVEL})
-option(FMC_USE_AWFMINDEX  "Include AWFMIndex (only used in string benchmark)" OFF)
-set(FMC_AWFMINDEX_PATH "" CACHE STRING "A path where <PATH>/include and <PATH>/lib have the installed stuff of AWFMIndex")
+option(FMC_USE_AWFMINDEX  "Include AWFMIndex (only used in string benchmark)" ${PROJECT_IS_TOP_LEVEL})
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(FMC_USE_SDSL OFF)

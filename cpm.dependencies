@@ -89,6 +89,33 @@
         "target_include_directories(sux SYSTEM PUBLIC ${CPM_CURRENT_SOURCE_DIR})",
         "add_library(sux::sux ALIAS sux)"
      ]
-    }
+    },
+    {
+      "if": "FMC_USE_AWFMINDEX",
+      "name": "awfmindex",
+      "version": "0.0.0",
+      "github_repository": "TravisWheelerLab/AvxWindowFmIndex",
+      "git_tag": "92b849fddaea62a3b6bf47c7ff6db3ac3d896a10",
+      "download_only": true,
+      "cmake_commands": [
+        "add_library(AwFmIndex ${CPM_CURRENT_SOURCE_DIR}/src/AwFmFile.c
+                               ${CPM_CURRENT_SOURCE_DIR}/src/AwFmIndexStruct.c
+                               ${CPM_CURRENT_SOURCE_DIR}/src/AwFmKmerTable.c
+                               ${CPM_CURRENT_SOURCE_DIR}/src/AwFmLetter.c
+                               ${CPM_CURRENT_SOURCE_DIR}/src/AwFmOccurrence.c
+                               ${CPM_CURRENT_SOURCE_DIR}/src/AwFmSimdConfig.c
+                               ${CPM_CURRENT_SOURCE_DIR}/lib/FastaVector/src/FastaVector.c
+                               ${CPM_CURRENT_SOURCE_DIR}/lib/FastaVector/src/FastaVectorMetadataVector.c
+                               ${CPM_CURRENT_SOURCE_DIR}/lib/FastaVector/src/FastaVectorString.c
+        )",
+        "target_include_directories(AwFmIndex SYSTEM PUBLIC
+            ${CPM_CURRENT_SOURCE_DIR}/src
+            ${CPM_CURRENT_SOURCE_DIR}/lib/FastaVector/src/
+            ${CPM_CURRENT_SOURCE_DIR}/lib/libdivsufsort/include/
+        )",
+        "set_target_properties(AwFmIndex PROPERTIES COMPILE_FLAGS -mavx2)",
+        "add_library(AwFmIndex::AwFmIndex ALIAS AwFmIndex)"
+      ]
+    },
   ]
 }
