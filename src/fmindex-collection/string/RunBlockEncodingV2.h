@@ -23,7 +23,7 @@
 namespace fmc::string {
 
 template <size_t TSigma, size_t encodingBlockSize, size_t DifferentBlocks = 16, template <size_t, typename...> typename String = Wavelet, template <size_t, typename...> typename MixedString = String>
-struct RBBwtV2 {
+struct RunBlockEncodingV2 {
     static constexpr size_t Sigma = TSigma;
 
     String<DifferentBlocks> topLevelVector{};
@@ -35,8 +35,8 @@ struct RBBwtV2 {
 
     size_t totalSize{};
 
-    RBBwtV2() = default;
-    RBBwtV2(std::span<uint8_t const> _symbols) {
+    RunBlockEncodingV2() = default;
+    RunBlockEncodingV2(std::span<uint8_t const> _symbols) {
         auto blockName = [&](size_t offset) {
             size_t a{};
             for (size_t i{0}; i < encodingBlockSize; ++i) {
@@ -247,7 +247,7 @@ struct RBBwtV2 {
 
 };
 
-template <size_t TSigma> using RBBwtV2Instance = RBBwtV2<TSigma, 4>;
-static_assert(checkString_c<RBBwtV2Instance>);
+template <size_t TSigma> using RunBlockEncodingV2Instance = RunBlockEncodingV2<TSigma, 4>;
+static_assert(checkString_c<RunBlockEncodingV2Instance>);
 
 }
