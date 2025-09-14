@@ -33,34 +33,34 @@
     fmc::bitvector::Bitvector1L_512, \
     fmc::bitvector::Bitvector1L_1024, \
     fmc::bitvector::Bitvector1L_2048, \
-    fmc::bitvector::PairedL0_64Bitvector, \
-    fmc::bitvector::PairedL0_128Bitvector, \
-    fmc::bitvector::PairedL0_256Bitvector, \
-    fmc::bitvector::PairedL0_512Bitvector, \
-    fmc::bitvector::PairedL0_1024Bitvector, \
-    fmc::bitvector::PairedL0_2048Bitvector, \
+    fmc::bitvector::PairedBitvector1L_64, \
+    fmc::bitvector::PairedBitvector1L_128, \
+    fmc::bitvector::PairedBitvector1L_256, \
+    fmc::bitvector::PairedBitvector1L_512, \
+    fmc::bitvector::PairedBitvector1L_1024, \
+    fmc::bitvector::PairedBitvector1L_2048, \
     fmc::bitvector::Bitvector2L_64_64k, \
     fmc::bitvector::Bitvector2L_128_64k, \
     fmc::bitvector::Bitvector2L_256_64k, \
     fmc::bitvector::Bitvector2L_512_64k, \
     fmc::bitvector::Bitvector2L_1024_64k, \
     fmc::bitvector::Bitvector2L_2048_64k, \
-    fmc::bitvector::PairedL0L1_64_64kBitvector, \
-    fmc::bitvector::PairedL0L1_128_64kBitvector, \
-    fmc::bitvector::PairedL0L1_256_64kBitvector, \
-    fmc::bitvector::PairedL0L1_512_64kBitvector, \
-    fmc::bitvector::PairedL0L1_1024_64kBitvector, \
-    fmc::bitvector::PairedL0L1_2048_64kBitvector
+    fmc::bitvector::PairedBitvector2L_64_64k, \
+    fmc::bitvector::PairedBitvector2L_128_64k, \
+    fmc::bitvector::PairedBitvector2L_256_64k, \
+    fmc::bitvector::PairedBitvector2L_512_64k, \
+    fmc::bitvector::PairedBitvector2L_1024_64k, \
+    fmc::bitvector::PairedBitvector2L_2048_64k
 #else
 #define ALLBITVECTORS \
     fmc::bitvector::Bitvector1L_64, \
     fmc::bitvector::Bitvector1L_512, \
-    fmc::bitvector::PairedL0_64Bitvector, \
-    fmc::bitvector::PairedL0_512Bitvector, \
+    fmc::bitvector::PairedBitvector1L_64, \
+    fmc::bitvector::PairedBitvector1L_512, \
     fmc::bitvector::Bitvector2L_64_64k, \
     fmc::bitvector::Bitvector2L_512_64k, \
-    fmc::bitvector::PairedL0L1_64_64kBitvector, \
-    fmc::bitvector::PairedL0L1_512_64kBitvector
+    fmc::bitvector::PairedBitvector2L_64_64k, \
+    fmc::bitvector::PairedBitvector2L_512_64k
 #endif
 
 #define ALLSPARSEBITVECTORS \

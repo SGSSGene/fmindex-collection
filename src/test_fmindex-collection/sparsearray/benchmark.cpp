@@ -40,7 +40,7 @@ TEST_CASE("benchmark sparse array", "[sparsearray][!benchmark][time]") {
     using Load = uint64_t;
 
     auto rng = ankerl::nanobench::Rng{};
-    static auto indicatorBV = fmc::bitvector::PairedL0L1_512_64kBitvector{std::views::iota(size_t{}, size) | std::views::transform([&](size_t) -> bool {
+    static auto indicatorBV = fmc::bitvector::PairedBitvector2L<512, 65536>{std::views::iota(size_t{}, size) | std::views::transform([&](size_t) -> bool {
         return rng.bounded(rate) == 0;
     })};
 
@@ -227,7 +227,7 @@ TEST_CASE("benchmark sparse array - size", "[sparsearray][!benchmark][size]") {
     using Load = uint64_t;
 
     auto rng = ankerl::nanobench::Rng{};
-    static auto indicatorBV = fmc::bitvector::PairedL0L1_512_64kBitvector{std::views::iota(size_t{}, size) | std::views::transform([&](size_t) -> bool {
+    static auto indicatorBV = fmc::bitvector::PairedBitvector2L<512, 65536>{std::views::iota(size_t{}, size) | std::views::transform([&](size_t) -> bool {
         return rng.bounded(rate) == 0;
     })};
 
