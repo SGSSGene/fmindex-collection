@@ -63,15 +63,15 @@ static void analyse_bitvectors() {
         analyse_bitvector<Bitvector>("Bitvector", text);
         analyse_bitvector<CompactBitvector>("CompactBitvector", text);
         analyse_bitvector<CompactBitvector4Blocks>("CompactBitvector4Blocks", text);
-        analyse_bitvector<SparseBLEBitvector<1>>("SparseBLEBitvector  2", text);
-        analyse_bitvector<SparseBLEBitvector<2>>("SparseBLEBitvector  4", text);
-        analyse_bitvector<SparseBLEBitvector<3>>("SparseBLEBitvector  8", text);
-        analyse_bitvector<SparseBLEBitvector<4>>("SparseBLEBitvector 16", text);
-        analyse_bitvector<SparseBLEBitvector<5>>("SparseBLEBitvector 32", text);
-        analyse_bitvector<SparseBLEBitvector<6>>("SparseBLEBitvector 64", text);
-        analyse_bitvector<SparseBLEBitvector<2, Bitvector, SparseBLEBitvector<1>>>("SparseBLEBitvector  4/2", text);
-        analyse_bitvector<SparseBLEBitvector<3, Bitvector, SparseBLEBitvector<1>>>("SparseBLEBitvector  8/2", text);
-        analyse_bitvector<SparseBLEBitvector<3, Bitvector, SparseBLEBitvector<2>>>("SparseBLEBitvector  8/4", text);
+        analyse_bitvector<SparseRBBitvector<1>>("SparseRBBitvector  2", text);
+        analyse_bitvector<SparseRBBitvector<2>>("SparseRBBitvector  4", text);
+        analyse_bitvector<SparseRBBitvector<3>>("SparseRBBitvector  8", text);
+        analyse_bitvector<SparseRBBitvector<4>>("SparseRBBitvector 16", text);
+        analyse_bitvector<SparseRBBitvector<5>>("SparseRBBitvector 32", text);
+        analyse_bitvector<SparseRBBitvector<6>>("SparseRBBitvector 64", text);
+        analyse_bitvector<SparseRBBitvector<2, Bitvector, SparseRBBitvector<1>>>("SparseRBBitvector  4/2", text);
+        analyse_bitvector<SparseRBBitvector<3, Bitvector, SparseRBBitvector<1>>>("SparseRBBitvector  8/2", text);
+        analyse_bitvector<SparseRBBitvector<3, Bitvector, SparseRBBitvector<2>>>("SparseRBBitvector  8/4", text);
 
     };
 
@@ -124,7 +124,7 @@ void analyse_string(std::string label, std::vector<uint8_t> const& text) {
 }
 
 template <int64_t BL, typename Bitvector = fmc::bitvector::Bitvector, typename Bitvector2 = fmc::bitvector::Bitvector>
-using SparseBitvector = fmc::bitvector::SparseBLEBitvector<BL, Bitvector, Bitvector2>;
+using SparseBitvector = fmc::bitvector::SparseRBBitvector<BL, Bitvector, Bitvector2>;
 
 static void analyse_strings() {
     using namespace fmc::string;

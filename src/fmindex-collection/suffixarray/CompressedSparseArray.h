@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../bitvector/Bitvector2L.h"
-#include "../bitvector/SparseBLEBitvector.h"
+#include "../bitvector/SparseRBBitvector.h"
 #include "../string/FlattenedBitvectors_L0L1.h"
 #include "concepts.h"
 
@@ -152,7 +152,7 @@ struct CompressedSparseArrayV2 {
  * Space efficient array over sparse data
  */
 struct CompressedSparseArrayV3 {
-    using Bitvector = bitvector::SparseBLEBitvector<2, bitvector::Bitvector2L<512, 65536>, bitvector::Bitvector2L<512, 65536>>;
+    using Bitvector = bitvector::SparseRBBitvector<2, bitvector::Bitvector2L<512, 65536>, bitvector::Bitvector2L<512, 65536>>;
     using String = string::FlattenedBitvectors_512_64k<4>; // 1, 2, 4, or 8 bytes
     std::vector<uint16_t> documentContent1B; // 1 byte
     std::vector<uint16_t> documentContent2B; // 2 byte
@@ -283,7 +283,7 @@ struct CompressedSparseArrayV4 {
  * Space efficient array over sparse data
  */
 struct CompressedSparseArrayV5 {
-    using Bitvector = bitvector::SparseBLEBitvector<2, bitvector::Bitvector2L<512, 65536>, bitvector::Bitvector2L<512, 65536>>;
+    using Bitvector = bitvector::SparseRBBitvector<2, bitvector::Bitvector2L<512, 65536>, bitvector::Bitvector2L<512, 65536>>;
     using String = string::FlattenedBitvectors_512_64k<2>; // 4, or 8 bytes
     std::vector<uint32_t> documentContent4B; // 4 byte
     std::vector<uint64_t> documentContent8B; // 8 byte

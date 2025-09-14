@@ -6,7 +6,7 @@
 #include "../ternarylogic.h"
 #include "concepts.h"
 #include "Bitvector.h"
-#include "SparseBLEBitvector.h"
+#include "SparseRBBitvector.h"
 #include "Bitvector2L.h"
 
 #include <array>
@@ -26,28 +26,28 @@
 
 namespace fmc::bitvector {
 /**
- * SparseDynRBBitvector sparse block length encoded bitvector.
+ * OptSparseRBBitvector sparse block length encoded bitvector.
  *
  * Uses Block length encoding and simplification on the
  * assumption the bit vector is sparse
  */
 template <Bitvector_c BV1 = Bitvector, Bitvector_c BV2 = Bitvector>
-struct SparseDynRBBitvector {
+struct OptSparseRBBitvector {
 
     using Variant = std::variant<
         Bitvector2L<512ul, 65536ul>,
-        SparseBLEBitvector<1, BV1, BV2>,
-        SparseBLEBitvector<2, BV1, BV2>,
-        SparseBLEBitvector<3, BV1, BV2>,
-        SparseBLEBitvector<4, BV1, BV2>,
-        SparseBLEBitvector<5, BV1, BV2>,
-        SparseBLEBitvector<6, BV1, BV2>,
-        SparseBLEBitvector<7, BV1, BV2>,
-        SparseBLEBitvector<8, BV1, BV2>,
-        SparseBLEBitvector<9, BV1, BV2>,
-        SparseBLEBitvector<10, BV1, BV2>,
-        SparseBLEBitvector<11, BV1, BV2>,
-        SparseBLEBitvector<12, BV1, BV2>
+        SparseRBBitvector<1, BV1, BV2>,
+        SparseRBBitvector<2, BV1, BV2>,
+        SparseRBBitvector<3, BV1, BV2>,
+        SparseRBBitvector<4, BV1, BV2>,
+        SparseRBBitvector<5, BV1, BV2>,
+        SparseRBBitvector<6, BV1, BV2>,
+        SparseRBBitvector<7, BV1, BV2>,
+        SparseRBBitvector<8, BV1, BV2>,
+        SparseRBBitvector<9, BV1, BV2>,
+        SparseRBBitvector<10, BV1, BV2>,
+        SparseRBBitvector<11, BV1, BV2>,
+        SparseRBBitvector<12, BV1, BV2>
     >;
     Variant bitvector;
     size_t totalLength{};
@@ -55,7 +55,7 @@ struct SparseDynRBBitvector {
 
     template <std::ranges::sized_range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
-    SparseDynRBBitvector(range_t&& _range)
+    OptSparseRBBitvector(range_t&& _range)
         : totalLength{_range.size()} {
 
         static constexpr size_t Level = std::variant_size_v<Variant>;
@@ -98,12 +98,12 @@ struct SparseDynRBBitvector {
         });
     }
 
-    SparseDynRBBitvector() = default;
-    SparseDynRBBitvector(SparseDynRBBitvector const&) = default;
-    SparseDynRBBitvector(SparseDynRBBitvector&&) noexcept = default;
+    OptSparseRBBitvector() = default;
+    OptSparseRBBitvector(OptSparseRBBitvector const&) = default;
+    OptSparseRBBitvector(OptSparseRBBitvector&&) noexcept = default;
 
-    auto operator=(SparseDynRBBitvector const&) -> SparseDynRBBitvector& = default;
-    auto operator=(SparseDynRBBitvector&&) noexcept -> SparseDynRBBitvector& = default;
+    auto operator=(OptSparseRBBitvector const&) -> OptSparseRBBitvector& = default;
+    auto operator=(OptSparseRBBitvector&&) noexcept -> OptSparseRBBitvector& = default;
 
     size_t size() const noexcept {
         return totalLength;
@@ -126,6 +126,6 @@ struct SparseDynRBBitvector {
         ar(bitvector, totalLength);
     }
 };
-static_assert(Bitvector_c<SparseDynRBBitvector<>>);
+static_assert(Bitvector_c<OptSparseRBBitvector<>>);
 
 }
