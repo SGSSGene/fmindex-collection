@@ -11,6 +11,25 @@
 #include "../BenchSize.h"
 #include "allBitVectors.h"
 
+#ifdef FMC_USE_RANKSELECT
+#include "RankSelect_Rank.h"
+
+#define ALLSPARSEBITVECTORS_FINAL \
+    ALLSPARSEBITVECTORS, \
+    RankSelect<0>, \
+    RankSelect<1>, \
+    RankSelect<2>, \
+    RankSelect<3>, \
+    RankSelect<4>, \
+    RankSelect<5>, \
+    RankSelect<6>, \
+    RankSelect<7>
+#else
+
+#define ALLSPARSEBITVECTORS_FINAL ALLSPARSEBITVECTORS
+#endif
+
+
 namespace {
 auto generateText(int32_t rate) -> std::vector<bool> {
     auto rng = ankerl::nanobench::Rng{};
@@ -74,7 +93,7 @@ TEST_CASE("benchmark bit vectors ctor run times", "[sparse-bitvector][!benchmark
     auto text = generateText(2);
 
     SECTION("benchmarking") {
-        call_with_templates<ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+        call_with_templates<ALLSPARSEBITVECTORS_FINAL>([&]<typename Vector>() {
 
             auto vector_name = getName<Vector>();
             INFO(vector_name);
@@ -98,7 +117,7 @@ TEST_CASE("benchmark bit vectors rank and symbol run times", "[sparse-bitvector]
 
         bench_symbol.epochs(10);
         bench_symbol.minEpochTime(std::chrono::milliseconds{10});
-        call_with_templates<ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+        call_with_templates<ALLSPARSEBITVECTORS_FINAL>([&]<typename Vector>() {
 
             auto vector_name = getName<Vector>();
             INFO(vector_name);
@@ -131,7 +150,7 @@ TEST_CASE("benchmark bit vectors rank and symbol run times", "[sparse-bitvector]
             bench_rank.minEpochTime(std::chrono::milliseconds{1});
             bench_rank.minEpochIterations(1'000'000);
 
-            call_with_templates<ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+            call_with_templates<ALLSPARSEBITVECTORS_FINAL>([&]<typename Vector>() {
 
                 auto vector_name = getName<Vector>();
                 INFO(vector_name);
@@ -158,7 +177,7 @@ TEST_CASE("benchmark bit vectors memory consumption", "[sparse-bitvector][!bench
             auto text = generateText(1<<sparseness);
 
 
-            call_with_templates<ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+            call_with_templates<ALLSPARSEBITVECTORS_FINAL>([&]<typename Vector>() {
 
                 auto vector_name = getName<Vector>() + " rate " + std::to_string(1<<sparseness);
                 INFO(vector_name);
@@ -202,7 +221,7 @@ TEST_CASE("benchmark bit vectors memory consumption - with blocks", "[sparse-bit
                 auto text = generateText(1<<sparseness, blockSize);
 
 
-                call_with_templates<ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+                call_with_templates<ALLSPARSEBITVECTORS_FINAL>([&]<typename Vector>() {
 
                     auto vector_name = getName<Vector>() + " sparseness " + std::to_string(1<<sparseness) + ", blocksize " + std::to_string(blockSize);
                     INFO(vector_name);

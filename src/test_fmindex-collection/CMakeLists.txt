@@ -75,7 +75,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE CATCH_CONFIG_ENABLE_ALL_STRIN
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_link_options(${PROJECT_NAME} PUBLIC /STACK:16777216)
-endif()
+endif ()
 if (FMC_USE_SUX)
     target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_SUX)
     target_link_libraries(${PROJECT_NAME} sux::sux)
@@ -88,5 +88,10 @@ if (FMC_USE_AWFMINDEX)
     target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_AWFMINDEX)
     target_link_libraries(${PROJECT_NAME} AwFmIndex::AwFmIndex)
 endif ()
+if (FMC_USE_RANKSELECT)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE -DFMC_USE_RANKSELECT)
+    target_link_libraries(${PROJECT_NAME} rank-select::rank-select)
+endif ()
+
 
 add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})

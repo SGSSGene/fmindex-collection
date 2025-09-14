@@ -25,6 +25,10 @@
 #include "sux_Rank9.h"
 #endif
 
+#ifdef FMC_USE_RANKSELECT
+#include "RankSelect_Rank.h"
+#endif
+
 namespace {
 auto generateText() -> std::vector<bool> const& {
     static auto text = []() -> std::vector<bool> {
@@ -51,18 +55,20 @@ auto generateText() -> std::vector<bool> const& {
     return text;
 }
 }
-
-#if defined(FMC_USE_PASTA) && defined(FMC_USE_SDSL) && defined(FMC_USE_SUX)
+#if defined(FMC_USE_PASTA) && defined(FMC_USE_SDSL) && defined(FMC_USE_SUX) && defined(FMC_USE_RANKSELECT)
     #define ALLTYPES \
              ALLBITVECTORS, \
              FlatRank, \
              WideRank, \
              SDSL_V, \
              SDSL_V5, \
-             Rank9
+             Rank9, \
+             RankSelect<0>
+
 #else
     #define ALLTYPES ALLBITVECTORS
 #endif
+
 
 TEST_CASE("benchmark bit vectors ctor run times", "[bitvector][!benchmark][time][ctor]") {
     auto bench_ctor = ankerl::nanobench::Bench{};

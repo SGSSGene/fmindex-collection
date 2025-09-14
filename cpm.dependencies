@@ -91,6 +91,21 @@
      ]
     },
     {
+      "if": "FMC_USE_RANKSELECT",
+      "name": "rank-select",
+      "version": "master",
+      "github_repository": "mranisz/rank-select",
+      "git_tag": "99411d9cc8dba7fbb741cb6b1b3704556cc1059c",
+      "download_only": true,
+      "cmake_commands": [
+        "add_library(rank-select INTERFACE)",
+        "target_include_directories(rank-select SYSTEM INTERFACE
+            ${CPM_CURRENT_SOURCE_DIR}
+        )",
+        "add_library(rank-select::rank-select ALIAS rank-select)"
+      ]
+    },
+    {
       "if": "FMC_USE_AWFMINDEX",
       "name": "awfmindex",
       "version": "0.0.0",

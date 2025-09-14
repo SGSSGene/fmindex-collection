@@ -15,3 +15,4 @@
 #include "CompactPairedL1L2_NBitvector.h"
 #include "InterleavedPairedL0L1_NBitvector.h"
 #include "SparseBLEBitvector.h"
+#include "SparseDynRBBitvector.h"
