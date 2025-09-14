@@ -9,7 +9,6 @@
 #include "PrunedBitvector.h"
 #include "CompactBitvector.h"
 #include "CompactBitvector4Blocks.h"
-#include "L1Bitvector.h"
 #include "PairedL0_NBitvector.h"
 #include "PairedL0L1_NBitvector.h"
 #include "CompactPairedL1L2_NBitvector.h"
