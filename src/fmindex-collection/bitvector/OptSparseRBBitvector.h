@@ -6,6 +6,7 @@
 #include "../ternarylogic.h"
 #include "concepts.h"
 #include "Bitvector.h"
+#include "InvertedBitvector.h"
 #include "SparseRBBitvector.h"
 #include "Bitvector2L.h"
 
@@ -47,7 +48,19 @@ struct OptSparseRBBitvector {
         SparseRBBitvector<9, BV1, BV2>,
         SparseRBBitvector<10, BV1, BV2>,
         SparseRBBitvector<11, BV1, BV2>,
-        SparseRBBitvector<12, BV1, BV2>
+        SparseRBBitvector<12, BV1, BV2>,
+        InvertedBitvector<SparseRBBitvector<1, BV1, BV2>>,
+        InvertedBitvector<SparseRBBitvector<2, BV1, BV2>>,
+        InvertedBitvector<SparseRBBitvector<3, BV1, BV2>>,
+        InvertedBitvector<SparseRBBitvector<4, BV1, BV2>>,
+        InvertedBitvector<SparseRBBitvector<5, BV1, BV2>>,
+        InvertedBitvector<SparseRBBitvector<6, BV1, BV2>>,
+        InvertedBitvector<SparseRBBitvector<7, BV1, BV2>>,
+        InvertedBitvector<SparseRBBitvector<8, BV1, BV2>>,
+        InvertedBitvector<SparseRBBitvector<9, BV1, BV2>>,
+        InvertedBitvector<SparseRBBitvector<10, BV1, BV2>>,
+        InvertedBitvector<SparseRBBitvector<11, BV1, BV2>>,
+        InvertedBitvector<SparseRBBitvector<12, BV1, BV2>>
     >;
     Variant bitvector;
     size_t totalLength{};
@@ -59,36 +72,39 @@ struct OptSparseRBBitvector {
         : totalLength{_range.size()} {
 
         static constexpr size_t Level = std::variant_size_v<Variant>;
-        auto countRuns = std::array<size_t, Level>{};
+        auto countRuns = std::array<std::tuple<size_t, size_t>, Level>{};
 
-        uint64_t runCt{};
+        uint64_t runCtZero{};
+        uint64_t runCtOne{};
         for (size_t i{0}; i < _range.size(); ++i) {
             auto value = _range[i];
-            runCt = (runCt+1) * (1-value);
-            for (size_t j{1}; j < Level; ++j) {
-                auto blockSize = (uint64_t{1} << j);
-                if ((i % blockSize) == 0) {
-                    if (runCt > blockSize) {
-                        countRuns[j] += 1;
-                    }
+            runCtZero = (runCtZero+1) * (1-value);
+            runCtOne = (runCtOne+1) * value;
+
+            for_constexpr<1, Level>([&]<size_t L>() {
+                using V = std::variant_alternative_t<L, Variant>;
+                if ((i % V::BlockLength) != 0) return;
+                if (runCtZero > V::BlockLength) {
+                    std::get<0>(countRuns[L]) += 1;
                 }
-            }
+                if (runCtOne > V::BlockLength) {
+                    std::get<1>(countRuns[L]) += 1;
+                }
+            });
         }
 
         // initialized with the zeroth entry, which is a normal two layer 512bit bit vector
         size_t minElement = _range.size();
         size_t index{0};
         // Compute size of each:
-        for (size_t j{1}; j < Level; ++j) {
-            auto blockSize = (uint64_t{1} << j);
-            auto indicatorEntries = _range.size() / blockSize;
-            auto mixedBlockEntries = (indicatorEntries - countRuns[j]) * blockSize;
-            auto totalSize = (indicatorEntries + mixedBlockEntries);
+        for_constexpr<1, Level>([&]<size_t L>() {
+            using V = std::variant_alternative_t<L, Variant>;
+            auto totalSize = V::estimateSize(_range.size() / V::BlockLength, std::get<0>(countRuns[L]), std::get<1>(countRuns[L]));
             if (totalSize < minElement) {
                 minElement = totalSize;
-                index = j;
+                index = L;
             }
-        }
+        });
 
         for_constexpr<0, Level>([&]<size_t L>() {
             if (L == index) {

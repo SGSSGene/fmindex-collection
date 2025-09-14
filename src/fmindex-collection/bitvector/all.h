@@ -6,6 +6,7 @@
 #include "Bitvector.h"
 #include "Bitvector1L.h"
 #include "Bitvector2L.h"
+#include "InvertedBitvector.h"
 #include "PrunedBitvector.h"
 #include "CompactBitvector.h"
 #include "CompactBitvector4Blocks.h"

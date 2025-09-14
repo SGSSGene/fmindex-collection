@@ -118,6 +118,12 @@ struct SparseRBBitvector {
     void serialize(Archive& ar) {
         ar(indicatorBitvector, uncompressedBitvector, totalLength);
     }
+
+    static size_t estimateSize(size_t blockCt, size_t zeroBlocks, size_t oneBlocks) {
+        (void)oneBlocks; // unused, not required for estimation
+        auto nonZeroBlocks = blockCt - zeroBlocks;
+        return blockCt + nonZeroBlocks*BlockLength;
+    }
 };
 static_assert(Bitvector_c<SparseRBBitvector<>>);
 

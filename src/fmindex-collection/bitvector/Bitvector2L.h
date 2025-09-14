@@ -162,6 +162,7 @@ struct Bitvector2L {
         ar(l0, l1, totalLength, bits);
     }
 };
+
 using Bitvector2L_64_4k   = Bitvector2L<64, 4096>;
 using Bitvector2L_128_4k  = Bitvector2L<128, 4096>;
 using Bitvector2L_256_4k  = Bitvector2L<256, 4096>;
