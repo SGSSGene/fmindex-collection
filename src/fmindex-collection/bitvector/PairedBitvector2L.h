@@ -20,11 +20,11 @@
 namespace fmc::bitvector {
 
 /**
- * PairedL0L1_NBitvector a bit vector with only bits and blocks
+ * PairedBitvector2L a bit vector with only bits and blocks
  *
  */
 template <size_t l1_bits_ct, size_t l0_bits_ct, bool Align=true, bool ShiftAndCount=false>
-struct PairedL0L1_NBitvector {
+struct PairedBitvector2L {
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static_assert(l0_bits_ct-l1_bits_ct <= std::numeric_limits<uint16_t>::max(), "l0_bits_ct can only hold up to uint16_t bits");
     std::vector<uint64_t> l0{0};
@@ -32,13 +32,13 @@ struct PairedL0L1_NBitvector {
     std::vector<AlignedBitset<l1_bits_ct, Align>> bits{{}};
     size_t totalLength{};
 
-    PairedL0L1_NBitvector() = default;
-    PairedL0L1_NBitvector(PairedL0L1_NBitvector const&) = default;
-    PairedL0L1_NBitvector(PairedL0L1_NBitvector&&) noexcept = default;
+    PairedBitvector2L() = default;
+    PairedBitvector2L(PairedBitvector2L const&) = default;
+    PairedBitvector2L(PairedBitvector2L&&) noexcept = default;
 
     // constructor accepting view to bools or already compact uint64_t
     template <std::ranges::sized_range range_t>
-    PairedL0L1_NBitvector(range_t&& _range) {
+    PairedBitvector2L(range_t&& _range) {
         auto _size = _range.size();
         if constexpr (std::same_as<std::ranges::range_value_t<range_t>, uint64_t>) {
             *this = {std::forward<range_t>(_range) | view_as_bitset<l1_bits_ct>};
@@ -59,7 +59,7 @@ struct PairedL0L1_NBitvector {
     // the actual constructor, already receiving premade std::bitsets<N>
     template <std::ranges::sized_range range_t>
         requires std::same_as<std::ranges::range_value_t<range_t>, std::bitset<l1_bits_ct>>
-    PairedL0L1_NBitvector(range_t&& _range) {
+    PairedBitvector2L(range_t&& _range) {
         auto _length = _range.size()*l1_bits_ct;
 
         l0.resize((_length+l0_bits_ct)/(l0_bits_ct*2) + 1);
@@ -109,8 +109,8 @@ struct PairedL0L1_NBitvector {
         }
     }
 
-    auto operator=(PairedL0L1_NBitvector const&) -> PairedL0L1_NBitvector& = default;
-    auto operator=(PairedL0L1_NBitvector&&) noexcept -> PairedL0L1_NBitvector& = default;
+    auto operator=(PairedBitvector2L const&) -> PairedBitvector2L& = default;
+    auto operator=(PairedBitvector2L&&) noexcept -> PairedBitvector2L& = default;
 
     void reserve(size_t _length) {
         l0.reserve(_length/(l0_bits_ct*2) + 2);
@@ -215,62 +215,62 @@ struct PairedL0L1_NBitvector {
         ar(l0, l1, totalLength, bits);
     }
 };
-using PairedL0L1_64_4kBitvector   = PairedL0L1_NBitvector<64, 4096>;
-using PairedL0L1_128_4kBitvector  = PairedL0L1_NBitvector<128, 4096>;
-using PairedL0L1_256_4kBitvector  = PairedL0L1_NBitvector<256, 4096>;
-using PairedL0L1_512_4kBitvector  = PairedL0L1_NBitvector<512, 4096>;
-using PairedL0L1_1024_4kBitvector = PairedL0L1_NBitvector<1024, 4096>;
-using PairedL0L1_2048_4kBitvector = PairedL0L1_NBitvector<2048, 4096>;
+using PairedBitvector2L_64_4k   = PairedBitvector2L<64, 4096>;
+using PairedBitvector2L_128_4k  = PairedBitvector2L<128, 4096>;
+using PairedBitvector2L_256_4k  = PairedBitvector2L<256, 4096>;
+using PairedBitvector2L_512_4k  = PairedBitvector2L<512, 4096>;
+using PairedBitvector2L_1024_4k = PairedBitvector2L<1024, 4096>;
+using PairedBitvector2L_2048_4k = PairedBitvector2L<2048, 4096>;
 
-static_assert(Bitvector_c<PairedL0L1_64_4kBitvector>);
-static_assert(Bitvector_c<PairedL0L1_128_4kBitvector>);
-static_assert(Bitvector_c<PairedL0L1_256_4kBitvector>);
-static_assert(Bitvector_c<PairedL0L1_512_4kBitvector>);
-static_assert(Bitvector_c<PairedL0L1_1024_4kBitvector>);
-static_assert(Bitvector_c<PairedL0L1_2048_4kBitvector>);
+static_assert(Bitvector_c<PairedBitvector2L_64_4k>);
+static_assert(Bitvector_c<PairedBitvector2L_128_4k>);
+static_assert(Bitvector_c<PairedBitvector2L_256_4k>);
+static_assert(Bitvector_c<PairedBitvector2L_512_4k>);
+static_assert(Bitvector_c<PairedBitvector2L_1024_4k>);
+static_assert(Bitvector_c<PairedBitvector2L_2048_4k>);
 
-using PairedL0L1_64_64kBitvector   = PairedL0L1_NBitvector<64, 65536>;
-using PairedL0L1_128_64kBitvector  = PairedL0L1_NBitvector<128, 65536>;
-using PairedL0L1_256_64kBitvector  = PairedL0L1_NBitvector<256, 65536>;
-using PairedL0L1_512_64kBitvector  = PairedL0L1_NBitvector<512, 65536>;
-using PairedL0L1_1024_64kBitvector = PairedL0L1_NBitvector<1024, 65536>;
-using PairedL0L1_2048_64kBitvector = PairedL0L1_NBitvector<2048, 65536>;
+using PairedBitvector2L_64_64k   = PairedBitvector2L<64, 65536>;
+using PairedBitvector2L_128_64k  = PairedBitvector2L<128, 65536>;
+using PairedBitvector2L_256_64k  = PairedBitvector2L<256, 65536>;
+using PairedBitvector2L_512_64k  = PairedBitvector2L<512, 65536>;
+using PairedBitvector2L_1024_64k = PairedBitvector2L<1024, 65536>;
+using PairedBitvector2L_2048_64k = PairedBitvector2L<2048, 65536>;
 
-static_assert(Bitvector_c<PairedL0L1_64_64kBitvector>);
-static_assert(Bitvector_c<PairedL0L1_128_64kBitvector>);
-static_assert(Bitvector_c<PairedL0L1_256_64kBitvector>);
-static_assert(Bitvector_c<PairedL0L1_512_64kBitvector>);
-static_assert(Bitvector_c<PairedL0L1_1024_64kBitvector>);
-static_assert(Bitvector_c<PairedL0L1_2048_64kBitvector>);
+static_assert(Bitvector_c<PairedBitvector2L_64_64k>);
+static_assert(Bitvector_c<PairedBitvector2L_128_64k>);
+static_assert(Bitvector_c<PairedBitvector2L_256_64k>);
+static_assert(Bitvector_c<PairedBitvector2L_512_64k>);
+static_assert(Bitvector_c<PairedBitvector2L_1024_64k>);
+static_assert(Bitvector_c<PairedBitvector2L_2048_64k>);
 
-using PairedL0L1_64_64kBitvector_ShiftAndCount   = PairedL0L1_NBitvector<64, 65536, false, true>;
-using PairedL0L1_128_64kBitvector_ShiftAndCount  = PairedL0L1_NBitvector<128, 65536, false, true>;
-using PairedL0L1_256_64kBitvector_ShiftAndCount  = PairedL0L1_NBitvector<256, 65536, false, true>;
-using PairedL0L1_512_64kBitvector_ShiftAndCount  = PairedL0L1_NBitvector<512, 65536, false, true>;
-using PairedL0L1_1024_64kBitvector_ShiftAndCount = PairedL0L1_NBitvector<1024, 65536, false, true>;
-using PairedL0L1_2048_64kBitvector_ShiftAndCount = PairedL0L1_NBitvector<2048, 65536, false, true>;
+using PairedBitvector2L_64_64k_ShiftAndCount   = PairedBitvector2L<64, 65536, false, true>;
+using PairedBitvector2L_128_64k_ShiftAndCount  = PairedBitvector2L<128, 65536, false, true>;
+using PairedBitvector2L_256_64k_ShiftAndCount  = PairedBitvector2L<256, 65536, false, true>;
+using PairedBitvector2L_512_64k_ShiftAndCount  = PairedBitvector2L<512, 65536, false, true>;
+using PairedBitvector2L_1024_64k_ShiftAndCount = PairedBitvector2L<1024, 65536, false, true>;
+using PairedBitvector2L_2048_64k_ShiftAndCount = PairedBitvector2L<2048, 65536, false, true>;
 
-static_assert(Bitvector_c<PairedL0L1_64_64kBitvector_ShiftAndCount>);
-static_assert(Bitvector_c<PairedL0L1_128_64kBitvector_ShiftAndCount>);
-static_assert(Bitvector_c<PairedL0L1_256_64kBitvector_ShiftAndCount>);
-static_assert(Bitvector_c<PairedL0L1_512_64kBitvector_ShiftAndCount>);
-static_assert(Bitvector_c<PairedL0L1_1024_64kBitvector_ShiftAndCount>);
-static_assert(Bitvector_c<PairedL0L1_2048_64kBitvector_ShiftAndCount>);
+static_assert(Bitvector_c<PairedBitvector2L_64_64k_ShiftAndCount>);
+static_assert(Bitvector_c<PairedBitvector2L_128_64k_ShiftAndCount>);
+static_assert(Bitvector_c<PairedBitvector2L_256_64k_ShiftAndCount>);
+static_assert(Bitvector_c<PairedBitvector2L_512_64k_ShiftAndCount>);
+static_assert(Bitvector_c<PairedBitvector2L_1024_64k_ShiftAndCount>);
+static_assert(Bitvector_c<PairedBitvector2L_2048_64k_ShiftAndCount>);
 
 
-using PairedL0L1_64_64kBitvectorUA   = PairedL0L1_NBitvector<64, 65536, false>;
-using PairedL0L1_128_64kBitvectorUA  = PairedL0L1_NBitvector<128, 65536, false>;
-using PairedL0L1_256_64kBitvectorUA  = PairedL0L1_NBitvector<256, 65536, false>;
-using PairedL0L1_512_64kBitvectorUA  = PairedL0L1_NBitvector<512, 65536, false>;
-using PairedL0L1_1024_64kBitvectorUA = PairedL0L1_NBitvector<1024, 65536, false>;
-using PairedL0L1_2048_64kBitvectorUA = PairedL0L1_NBitvector<2048, 65536, false>;
+using PairedBitvector2L_64_64kUA   = PairedBitvector2L<64, 65536, false>;
+using PairedBitvector2L_128_64kUA  = PairedBitvector2L<128, 65536, false>;
+using PairedBitvector2L_256_64kUA  = PairedBitvector2L<256, 65536, false>;
+using PairedBitvector2L_512_64kUA  = PairedBitvector2L<512, 65536, false>;
+using PairedBitvector2L_1024_64kUA = PairedBitvector2L<1024, 65536, false>;
+using PairedBitvector2L_2048_64kUA = PairedBitvector2L<2048, 65536, false>;
 
-static_assert(Bitvector_c<PairedL0L1_64_64kBitvectorUA>);
-static_assert(Bitvector_c<PairedL0L1_128_64kBitvectorUA>);
-static_assert(Bitvector_c<PairedL0L1_256_64kBitvectorUA>);
-static_assert(Bitvector_c<PairedL0L1_512_64kBitvectorUA>);
-static_assert(Bitvector_c<PairedL0L1_1024_64kBitvectorUA>);
-static_assert(Bitvector_c<PairedL0L1_2048_64kBitvectorUA>);
+static_assert(Bitvector_c<PairedBitvector2L_64_64kUA>);
+static_assert(Bitvector_c<PairedBitvector2L_128_64kUA>);
+static_assert(Bitvector_c<PairedBitvector2L_256_64kUA>);
+static_assert(Bitvector_c<PairedBitvector2L_512_64kUA>);
+static_assert(Bitvector_c<PairedBitvector2L_1024_64kUA>);
+static_assert(Bitvector_c<PairedBitvector2L_2048_64kUA>);
 
 
 }

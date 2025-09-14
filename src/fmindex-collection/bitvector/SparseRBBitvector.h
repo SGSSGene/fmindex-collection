@@ -19,13 +19,13 @@
 
 namespace fmc::bitvector {
 /**
- * SparseBLEBitvector sparse block length encoded bitvector.
+ * SparseRBBitvector sparse block length encoded bitvector.
  *
  * Uses Block length encoding and simplification on the
  * assumption the bit vector is sparse
  */
 template <int64_t BlockLengthE = 2, Bitvector_c BV1 = Bitvector, Bitvector_c BV2 = Bitvector>
-struct SparseBLEBitvector {
+struct SparseRBBitvector {
 
     static constexpr size_t BlockLength = (size_t{1} << BlockLengthE);
     BV1 indicatorBitvector;
@@ -34,7 +34,7 @@ struct SparseBLEBitvector {
 
     template <std::ranges::sized_range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
-    SparseBLEBitvector(range_t&& _range) {
+    SparseRBBitvector(range_t&& _range) {
         size_t completeBlocks = _range.size() / BlockLength;
 
         // Save data in temporary structure
@@ -71,12 +71,12 @@ struct SparseBLEBitvector {
         totalLength = _range.size();
     }
 
-    SparseBLEBitvector() = default;
-    SparseBLEBitvector(SparseBLEBitvector const&) = default;
-    SparseBLEBitvector(SparseBLEBitvector&&) noexcept = default;
+    SparseRBBitvector() = default;
+    SparseRBBitvector(SparseRBBitvector const&) = default;
+    SparseRBBitvector(SparseRBBitvector&&) noexcept = default;
 
-    auto operator=(SparseBLEBitvector const&) -> SparseBLEBitvector& = default;
-    auto operator=(SparseBLEBitvector&&) noexcept -> SparseBLEBitvector& = default;
+    auto operator=(SparseRBBitvector const&) -> SparseRBBitvector& = default;
+    auto operator=(SparseRBBitvector&&) noexcept -> SparseRBBitvector& = default;
 
     size_t size() const noexcept {
         return totalLength;
@@ -119,6 +119,6 @@ struct SparseBLEBitvector {
         ar(indicatorBitvector, uncompressedBitvector, totalLength);
     }
 };
-static_assert(Bitvector_c<SparseBLEBitvector<>>);
+static_assert(Bitvector_c<SparseRBBitvector<>>);
 
 }

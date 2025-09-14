@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2016-2025, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
 
+#include "../string/allStrings.h"
 #include "../string/utils.h"
 
 #include <catch2/catch_all.hpp>

@@ -5,7 +5,7 @@
 
 #include "../builtins.h"
 #include "../bitvector/Bitvector.h"
-#include "../string/PairedFlattenedBitvectors_L0L1.h"
+#include "../string/PairedFlattenedBitvectors2L.h"
 #include "concepts.h"
 
 #include <algorithm>

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../bitvector/L0L1_NBitvector.h"
-#include "../bitvector/PairedL0L1_NBitvector.h"
+#include "../bitvector/Bitvector2L.h"
+#include "../bitvector/PairedBitvector2L.h"
 #include "concepts.h"
 
 #include <algorithm>
@@ -29,7 +29,7 @@ namespace fmc::suffixarray {
 template <typename T>
 struct SparseArray {
     using value_t = T;
-    using Bitvector = bitvector::L0L1_512_64kBitvector;
+    using Bitvector = bitvector::Bitvector2L<512, 65536>;
     std::vector<T> documentContent;
     Bitvector      bv;
 

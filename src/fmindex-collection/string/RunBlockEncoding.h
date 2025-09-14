@@ -23,7 +23,7 @@
 namespace fmc::string {
 
 template <size_t TSigma, size_t encodingBlockSize, String_c String = Wavelet<TSigma>, String_c RecString = Wavelet<TSigma>>
-struct RBBwt {
+struct RunBlockEncoding {
     static_assert(String::Sigma == RecString::Sigma);
 
     using BitVector = bitvector::CompactBitvector;
@@ -34,8 +34,8 @@ struct RBBwt {
     RecString  bitvector2{};
     BitVector  partition{};
 
-    RBBwt() = default;
-    RBBwt(std::span<uint8_t const> _symbols/*, size_t _encodingBlockSize*/)
+    RunBlockEncoding() = default;
+    RunBlockEncoding(std::span<uint8_t const> _symbols/*, size_t _encodingBlockSize*/)
 //        : encodingBlockSize{_encodingBlockSize}
     {
         assert(encodingBlockSize > 1);
@@ -176,18 +176,18 @@ struct RBBwt {
 
 };
 
-template <size_t TSigma> using RBBwtInstance = RBBwt<TSigma, 4>;
-static_assert(checkString_c<RBBwtInstance>);
+template <size_t TSigma> using RunBlockEncodingInstance = RunBlockEncoding<TSigma, 4>;
+static_assert(checkString_c<RunBlockEncodingInstance>);
 
 template <uint64_t TSigma, size_t encodingBlockSize, String_c String = Wavelet<TSigma>, size_t depth = 0>
-struct rRBBwt : RBBwt<TSigma, encodingBlockSize, String, rRBBwt<TSigma, encodingBlockSize, String, depth-1>>
+struct rRunBlockEncoding : RunBlockEncoding<TSigma, encodingBlockSize, String, rRunBlockEncoding<TSigma, encodingBlockSize, String, depth-1>>
 {};
 
 template <uint64_t TSigma, size_t encodingBlockSize, String_c String>
-struct rRBBwt<TSigma, encodingBlockSize, String, 0> : RBBwt<TSigma, encodingBlockSize, String, String>
+struct rRunBlockEncoding<TSigma, encodingBlockSize, String, 0> : RunBlockEncoding<TSigma, encodingBlockSize, String, String>
 {};
 
-template <size_t TSigma> using rRBBwtInstance = rRBBwt<TSigma, 2, Wavelet<TSigma>, 2>;
-static_assert(checkString_c<rRBBwtInstance>);
+template <size_t TSigma> using rRunBlockEncodingInstance = rRunBlockEncoding<TSigma, 2, Wavelet<TSigma>, 2>;
+static_assert(checkString_c<rRunBlockEncodingInstance>);
 
 }

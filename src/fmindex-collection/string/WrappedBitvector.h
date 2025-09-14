@@ -6,7 +6,7 @@
 #include "concepts.h"
 
 #include "../bitvector/concepts.h"
-#include "../bitvector/L0L1_NBitvector.h"
+#include "../bitvector/Bitvector2L.h"
 
 #include <bitset>
 #include <cassert>
@@ -15,7 +15,7 @@
 
 namespace fmc::string {
 
-template <size_t Sigma, Bitvector_c Bitvector = fmc::bitvector::L0L1_512_64kBitvector>
+template <size_t Sigma, Bitvector_c Bitvector = fmc::bitvector::Bitvector2L<512, 65536>>
 struct WrappedBitvectorImpl;
 
 template <Bitvector_c Bitvector>
@@ -109,8 +109,8 @@ struct WrappedBitvectorImpl<2, Bitvector> {
 };
 
 template <size_t>
-using WrappedBitvector = WrappedBitvectorImpl<2, fmc::bitvector::L0L1_512_64kBitvector>;
+using WrappedBitvector = WrappedBitvectorImpl<2, fmc::bitvector::Bitvector2L<512, 65536>>;
 
-static_assert(String_c<WrappedBitvectorImpl<2, bitvector::L0L1_512_64kBitvector>>);
+static_assert(String_c<WrappedBitvectorImpl<2, bitvector::Bitvector2L<512, 65536>>>);
 
 }

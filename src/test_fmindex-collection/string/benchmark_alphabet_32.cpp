@@ -1,13 +1,12 @@
 // SPDX-FileCopyrightText: 2006-2025, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2025, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
-
+#include "allStrings.h"
 #include "utils.h"
 
 namespace {
     constexpr static size_t Sigma = 32;
     #define SIGMA_STR "32"
-    #define ALLSTRINGS ALLSTRINGSWITHRANK
 }
 
 TEST_CASE("benchmark strings c'tor operation - " SIGMA_STR " alphabet", "[string][!benchmark][" SIGMA_STR "][time][ctor]") {
@@ -19,7 +18,7 @@ TEST_CASE("benchmark strings c'tor operation - " SIGMA_STR " alphabet", "[string
              .relative(true)
              .batch(text.size());
 
-        call_with_templates<ALLSTRINGS>([&]<template <size_t> class _String>() {
+        call_with_templates<AllStrings>([&]<template <size_t> class _String>() {
             using String = _String<Sigma>;
             auto name = getName<String>();
             INFO(name);
@@ -42,7 +41,7 @@ TEST_CASE("benchmark vectors symbol() operations - " SIGMA_STR " alphabet", "[st
              .relative(true)
              .batch(text.size());
 
-        call_with_templates<ALLSTRINGS>([&]<template <size_t> class _String>() {
+        call_with_templates<AllStrings>([&]<template <size_t> class _String>() {
             using String = _String<Sigma>;
             auto name = getName<String>();
             INFO(name);
@@ -66,7 +65,7 @@ TEST_CASE("benchmark vectors rank() operations - " SIGMA_STR " alphabet", "[stri
         bench.title("rank()")
              .relative(true);
 
-        call_with_templates<ALLSTRINGS>([&]<template <size_t> class _String>() {
+        call_with_templates<AllStrings>([&]<template <size_t> class _String>() {
             using String = _String<Sigma>;
             auto name = getName<String>();
             INFO(name);
@@ -90,7 +89,7 @@ TEST_CASE("benchmark vectors prefix_rank() operations - " SIGMA_STR " alphabet",
         bench.title("prefix_rank()")
              .relative(true);
 
-        call_with_templates<ALLSTRINGS>([&]<template <size_t> class _String>() {
+        call_with_templates<AllStrings>([&]<template <size_t> class _String>() {
             using String = _String<Sigma>;
             auto name = getName<String>();
             INFO(name);
@@ -113,7 +112,7 @@ TEST_CASE("benchmark vectors all_ranks() operations - " SIGMA_STR " alphabet", "
         bench.title("all_ranks()")
              .relative(true);
 
-        call_with_templates<ALLSTRINGS>([&]<template <size_t> class _String>() {
+        call_with_templates<AllStrings>([&]<template <size_t> class _String>() {
             using String = _String<Sigma>;
             auto name = getName<String>();
             INFO(name);
@@ -139,7 +138,7 @@ TEST_CASE("benchmark vectors all_ranks_and_prefix_ranks() operations - Sigma alp
         bench.title("all_ranks_and_prefix_ranks()")
              .relative(true);
 
-        call_with_templates<ALLSTRINGS>([&]<template <size_t> class _String>() {
+        call_with_templates<AllStrings>([&]<template <size_t> class _String>() {
             using String = _String<Sigma>;
             auto name = getName<String>();
             INFO(name);
@@ -164,7 +163,7 @@ TEST_CASE("benchmark vectors in size - alphabet " SIGMA_STR, "[string][!benchmar
         benchSize.entries[0][2] = "bits/char";
         benchSize.entries[0][4] = "alphabet " SIGMA_STR;
 
-        call_with_templates<ALLSTRINGS>([&]<template <size_t> class _String>() {
+        call_with_templates<AllStrings>([&]<template <size_t> class _String>() {
             using String = _String<Sigma>;
             auto name = getName<String>();
             INFO(name);
