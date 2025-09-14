@@ -13,14 +13,29 @@
 
 using AllTypes = std::variant<
     fmc::bitvector::Bitvector2L_512_64k,
-    fmc::bitvector::OptSparseRBBitvector<fmc::bitvector::Bitvector2L_64_64k, fmc::bitvector::Bitvector1L_64>,
-    fmc::bitvector::OptSparseRBBitvector<fmc::bitvector::Bitvector2L_512_64k, fmc::bitvector::Bitvector1L_64>,
+    fmc::bitvector::OptRBBitvector<fmc::bitvector::Bitvector2L_512_64k, fmc::bitvector::Bitvector2L_512_64k>,
     fmc::bitvector::OptSparseRBBitvector<fmc::bitvector::Bitvector2L_512_64k, fmc::bitvector::Bitvector2L_512_64k>,
+    fmc::bitvector::OptRBBitvector<fmc::bitvector::Bitvector2L_64_64k, fmc::bitvector::Bitvector2L_64_64k>,
+    fmc::bitvector::OptSparseRBBitvector<fmc::bitvector::Bitvector2L_64_64k, fmc::bitvector::Bitvector2L_64_64k>,
 #if defined(FMC_USE_RANKSELECT)
     RankSelect<5>,
 #endif
     std::monostate
 >;
+
+namespace {
+constexpr auto nodeTag = std::array<std::string_view, std::variant_size_v<AllTypes>> {
+    "mark=triangle*,mark options={fill=red}",
+    "mark=otimes*,mark options={fill=cyan}",
+    "mark=otimes*,mark options={fill=olive}",
+    "mark=*,mark options={fill=cyan}",
+    "mark=*,mark options={fill=olive}",
+#if defined(FMC_USE_RANKSELECT)
+    "mark=triangle*,mark options={fill=violet}",
+#endif
+    ""
+};
+}
 
 namespace {
 
@@ -111,7 +126,8 @@ TEST_CASE("benchmark bitdensity against space", "[sparse-bitvector][!benchmark][
         call_with_templates<AllTypes>([&]<typename Vector>() {
             auto vector_name = getName<Vector>();
             auto const& t = results[vector_name];
-            fmt::print("\\addplot coordinates {{\n");
+            auto index = AllTypes{Vector{}}.index();
+            fmt::print("\\addplot [{}] coordinates {{\n", nodeTag[index]);
             for (size_t i{0}; i < t.size(); ++i) {
                 auto x = densitySteps[i];
                 auto y = t[i];

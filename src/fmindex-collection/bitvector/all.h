@@ -15,5 +15,6 @@
 #include "PairedBitvector1L.h"
 #include "PairedBitvector2L.h"
 #include "RBBitvector.h"
+#include "OptRBBitvector.h"
 #include "SparseRBBitvector.h"
 #include "OptSparseRBBitvector.h"

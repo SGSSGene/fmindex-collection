@@ -131,6 +131,12 @@ struct RBBitvector {
     void serialize(Archive& ar) {
         ar(indicatorBitvector, uncompressedBitvector, zerosOrOnesBitvector, totalLength);
     }
+
+    static size_t estimateSize(size_t blockCt, size_t zeroBlocks, size_t oneBlocks) {
+        auto mixedBlocks = blockCt - zeroBlocks - oneBlocks;
+        return BV1::estimateSize(blockCt) + BV2::estimateSize(zeroBlocks + oneBlocks) + BV2::estimateSize(mixedBlocks*BlockLength);
+    }
+
 };
 static_assert(Bitvector_c<RBBitvector<>>);
 
