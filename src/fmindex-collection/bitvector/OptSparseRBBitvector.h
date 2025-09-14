@@ -37,7 +37,6 @@ struct OptSparseRBBitvector {
 
     using Variant = std::variant<
         Bitvector2L<512ul, 65536ul>,
-        SparseRBBitvector<1, BV1, BV2>,
         SparseRBBitvector<2, BV1, BV2>,
         SparseRBBitvector<3, BV1, BV2>,
         SparseRBBitvector<4, BV1, BV2>,
@@ -49,7 +48,6 @@ struct OptSparseRBBitvector {
         SparseRBBitvector<10, BV1, BV2>,
         SparseRBBitvector<11, BV1, BV2>,
         SparseRBBitvector<12, BV1, BV2>,
-        InvertedBitvector<SparseRBBitvector<1, BV1, BV2>>,
         InvertedBitvector<SparseRBBitvector<2, BV1, BV2>>,
         InvertedBitvector<SparseRBBitvector<3, BV1, BV2>>,
         InvertedBitvector<SparseRBBitvector<4, BV1, BV2>>,
@@ -81,20 +79,38 @@ struct OptSparseRBBitvector {
             runCtZero = (runCtZero+1) * (1-value);
             runCtOne = (runCtOne+1) * value;
 
-            for_constexpr<1, Level>([&]<size_t L>() {
+
+            for_constexpr_ea<1, Level/2+1>([&]<size_t L>() {
                 using V = std::variant_alternative_t<L, Variant>;
-                if ((i % V::BlockLength) != 0) return;
-                if (runCtZero > V::BlockLength) {
+                if ((i % V::BlockLength) != 0) return false;
+                if (runCtZero < V::BlockLength && runCtOne < V::BlockLength) return false;
+                if (runCtZero >= V::BlockLength) {
                     std::get<0>(countRuns[L]) += 1;
                 }
-                if (runCtOne > V::BlockLength) {
+                if (runCtOne >= V::BlockLength) {
                     std::get<1>(countRuns[L]) += 1;
                 }
+                return true;
             });
+            for_constexpr_ea<Level/2+1, Level>([&]<size_t L>() {
+                using V = std::variant_alternative_t<L, Variant>;
+                if ((i % V::BlockLength) != 0) return false;
+                if (runCtZero < V::BlockLength && runCtOne < V::BlockLength) return false;
+                if (runCtZero >= V::BlockLength) {
+                    std::get<0>(countRuns[L]) += 1;
+                }
+                if (runCtOne >= V::BlockLength) {
+                    std::get<1>(countRuns[L]) += 1;
+                }
+                return true;
+            });
+
+
         }
 
         // initialized with the zeroth entry, which is a normal two layer 512bit bit vector
         size_t minElement = std::variant_alternative_t<0, Variant>::estimateSize(_range.size());
+//        size_t minElement = std::numeric_limits<size_t>::max();
         size_t index{0};
         // Compute size of each:
         for_constexpr<1, Level>([&]<size_t L>() {

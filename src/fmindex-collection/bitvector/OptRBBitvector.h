@@ -36,7 +36,6 @@ struct OptRBBitvector {
 
     using Variant = std::variant<
         Bitvector2L<512ul, 65536ul>,
-        RBBitvector<1, BV1, BV2>,
         RBBitvector<2, BV1, BV2>,
         RBBitvector<3, BV1, BV2>,
         RBBitvector<4, BV1, BV2>,
@@ -69,15 +68,17 @@ struct OptRBBitvector {
             runCtZero = (runCtZero+1) * (1-value);
             runCtOne = (runCtOne+1) * value;
 
-            for_constexpr<1, Level>([&]<size_t L>() {
+            for_constexpr_ea<1, Level>([&]<size_t L>() {
                 using V = std::variant_alternative_t<L, Variant>;
-                if ((i % V::BlockLength) != 0) return;
-                if (runCtZero > V::BlockLength) {
+                if ((i % V::BlockLength) != 0) return false;
+                if (runCtZero < V::BlockLength && runCtOne < V::BlockLength) return false;
+                if (runCtZero >= V::BlockLength) {
                     std::get<0>(countRuns[L]) += 1;
                 }
-                if (runCtOne > V::BlockLength) {
+                if (runCtOne >= V::BlockLength) {
                     std::get<1>(countRuns[L]) += 1;
                 }
+                return true;
             });
         }
 
