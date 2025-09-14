@@ -63,11 +63,7 @@ struct OptRBBitvector {
 
         uint64_t runCtZero{};
         uint64_t runCtOne{};
-        for (size_t i{0}; i < _range.size(); ++i) {
-            auto value = _range[i];
-            runCtZero = (runCtZero+1) * (1-value);
-            runCtOne = (runCtOne+1) * value;
-
+        for (size_t i{0}; i <= _range.size(); ++i) {
             for_constexpr_ea<1, Level>([&]<size_t L>() {
                 using V = std::variant_alternative_t<L, Variant>;
                 if ((i % V::BlockLength) != 0) return false;
@@ -80,6 +76,11 @@ struct OptRBBitvector {
                 }
                 return true;
             });
+
+            if (_range.size() == i) break;
+            auto value = _range[i];
+            runCtZero = (runCtZero+1) * (1-value);
+            runCtOne = (runCtOne+1) * value;
         }
 
         // initialized with the zeroth entry, which is a normal two layer 512bit bit vector
@@ -89,7 +90,7 @@ struct OptRBBitvector {
         // Compute size of each:
         for_constexpr<1, Level>([&]<size_t L>() {
             using V = std::variant_alternative_t<L, Variant>;
-            auto totalSize = V::estimateSize(_range.size() / V::BlockLength, std::get<0>(countRuns[L]), std::get<1>(countRuns[L]));
+            auto totalSize = V::estimateSize(_range.size(), std::get<0>(countRuns[L]), std::get<1>(countRuns[L]));
             if (totalSize < minElement) {
                 minElement = totalSize;
                 index = L;

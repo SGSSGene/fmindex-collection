@@ -163,9 +163,10 @@ struct Bitvector2L {
     }
 
     static size_t estimateSize(size_t totalSize) {
-        auto bits_for_l0_blocks = (totalSize/l0_bits_ct) * 64;
-        auto bits_for_l1_blocks = (totalSize/l1_bits_ct) * 16;
-        return totalSize + bits_for_l0_blocks + bits_for_l1_blocks;
+        auto bits_for_l0_blocks = (totalSize/l0_bits_ct + 1) * 64;
+        auto bits_for_l1_blocks = (totalSize/l1_bits_ct + 1) * 16;
+        auto bits = (totalSize/l1_bits_ct+1) * l1_bits_ct;
+        return bits + bits_for_l0_blocks + bits_for_l1_blocks;
     }
 };
 
