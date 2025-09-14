@@ -4,7 +4,7 @@
 #pragma once
 
 #include "concepts.h"
-#include "Bitvector.h"
+#include "SparseRBBitvector.h"
 
 #include <array>
 #include <bitset>
@@ -22,7 +22,7 @@ namespace fmc::bitvector {
  * InvertedBitvector stores the inverted values inside a different bitvector.
  * This is usefull if the other bitvector is a compressed bitvector but only optimized for on-bits or off-bits
  */
-template <Bitvector_c BV = Bitvector>
+template <Bitvector_c BV = SparseRBBitvector<>>
 struct InvertedBitvector {
     BV bitvector;
 
