@@ -7,7 +7,7 @@
 #include "concepts.h"
 #include "Bitvector.h"
 #include "SparseBLEBitvector.h"
-#include "L0L1_NBitvector.h"
+#include "Bitvector2L.h"
 
 #include <array>
 #include <bitset>
@@ -35,7 +35,7 @@ template <Bitvector_c BV1 = Bitvector, Bitvector_c BV2 = Bitvector>
 struct SparseDynRBBitvector {
 
     using Variant = std::variant<
-        L0L1_NBitvector<512ul, 65536ul>,
+        Bitvector2L<512ul, 65536ul>,
         SparseBLEBitvector<1, BV1, BV2>,
         SparseBLEBitvector<2, BV1, BV2>,
         SparseBLEBitvector<3, BV1, BV2>,

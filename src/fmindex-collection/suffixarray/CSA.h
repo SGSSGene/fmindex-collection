@@ -4,7 +4,7 @@
 #pragma once
 
 
-#include "../bitvector/L0L1_NBitvector.h"
+#include "../bitvector/Bitvector2L.h"
 #include "concepts.h"
 
 #include <algorithm>
@@ -20,8 +20,8 @@ namespace suffixarray {
 template <typename T, typename SAEntry, Bitvector_c Bitvector>
 auto createSampling(std::vector<SAEntry> const& sa,
                     Bitvector const& textAnnotationValid,
-                    std::vector<T> const& textAnnotation) -> std::pair<bitvector::L0L1_512_64kBitvector, std::vector<T>> {
-    auto bv  = bitvector::L0L1_512_64kBitvector{};
+                    std::vector<T> const& textAnnotation) -> std::pair<bitvector::Bitvector2L<512, 65536>, std::vector<T>> {
+    auto bv  = bitvector::Bitvector2L<512, 65536>{};
     auto ssa = std::vector<T>{};
     for (size_t i{0}; i < sa.size(); ++i) {
         auto textPos = sa[i];
@@ -37,7 +37,7 @@ auto createSampling(std::vector<SAEntry> const& sa,
 }
 
 struct CSA {
-    using Bitvector = bitvector::L0L1_512_64kBitvector;
+    using Bitvector = bitvector::Bitvector2L<512, 65536>;
     std::vector<uint64_t> ssa;
     Bitvector             bv;
     size_t                bitsForPosition{};   // bits reserved for position

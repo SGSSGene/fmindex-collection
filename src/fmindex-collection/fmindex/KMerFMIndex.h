@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../bitvector/L0L1_NBitvector.h"
+#include "../bitvector/Bitvector2L.h"
 #include "../string/concepts.h"
 #include "../string/utils.h"
 #include "../suffixarray/CSA.h"
@@ -19,7 +19,7 @@ struct KMerFMIndex {
     String                      bwt;
     std::array<size_t, Sigma+1> C{0};
     TCSA                        csa;
-    bitvector::L0L1_512_64kBitvector kmerStarts;
+    bitvector::Bitvector2L<512, 65536> kmerStarts;
 
 
     KMerFMIndex() = default;

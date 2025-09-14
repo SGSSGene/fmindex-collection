@@ -27,24 +27,24 @@
 
 #ifndef __EMSCRIPTEN__
 #define ALLBITVECTORS \
-    fmc::bitvector::L0_64Bitvector, \
-    fmc::bitvector::L0_128Bitvector, \
-    fmc::bitvector::L0_256Bitvector, \
-    fmc::bitvector::L0_512Bitvector, \
-    fmc::bitvector::L0_1024Bitvector, \
-    fmc::bitvector::L0_2048Bitvector, \
+    fmc::bitvector::Bitvector1L_64, \
+    fmc::bitvector::Bitvector1L_128, \
+    fmc::bitvector::Bitvector1L_256, \
+    fmc::bitvector::Bitvector1L_512, \
+    fmc::bitvector::Bitvector1L_1024, \
+    fmc::bitvector::Bitvector1L_2048, \
     fmc::bitvector::PairedL0_64Bitvector, \
     fmc::bitvector::PairedL0_128Bitvector, \
     fmc::bitvector::PairedL0_256Bitvector, \
     fmc::bitvector::PairedL0_512Bitvector, \
     fmc::bitvector::PairedL0_1024Bitvector, \
     fmc::bitvector::PairedL0_2048Bitvector, \
-    fmc::bitvector::L0L1_64_64kBitvector, \
-    fmc::bitvector::L0L1_128_64kBitvector, \
-    fmc::bitvector::L0L1_256_64kBitvector, \
-    fmc::bitvector::L0L1_512_64kBitvector, \
-    fmc::bitvector::L0L1_1024_64kBitvector, \
-    fmc::bitvector::L0L1_2048_64kBitvector, \
+    fmc::bitvector::Bitvector2L_64_64k, \
+    fmc::bitvector::Bitvector2L_128_64k, \
+    fmc::bitvector::Bitvector2L_256_64k, \
+    fmc::bitvector::Bitvector2L_512_64k, \
+    fmc::bitvector::Bitvector2L_1024_64k, \
+    fmc::bitvector::Bitvector2L_2048_64k, \
     fmc::bitvector::PairedL0L1_64_64kBitvector, \
     fmc::bitvector::PairedL0L1_128_64kBitvector, \
     fmc::bitvector::PairedL0L1_256_64kBitvector, \
@@ -53,26 +53,26 @@
     fmc::bitvector::PairedL0L1_2048_64kBitvector
 #else
 #define ALLBITVECTORS \
-    fmc::bitvector::L0_64Bitvector, \
-    fmc::bitvector::L0_512Bitvector, \
+    fmc::bitvector::Bitvector1L_64, \
+    fmc::bitvector::Bitvector1L_512, \
     fmc::bitvector::PairedL0_64Bitvector, \
     fmc::bitvector::PairedL0_512Bitvector, \
-    fmc::bitvector::L0L1_64_64kBitvector, \
-    fmc::bitvector::L0L1_512_64kBitvector, \
+    fmc::bitvector::Bitvector2L_64_64k, \
+    fmc::bitvector::Bitvector2L_512_64k, \
     fmc::bitvector::PairedL0L1_64_64kBitvector, \
     fmc::bitvector::PairedL0L1_512_64kBitvector
 #endif
 
 #define ALLSPARSEBITVECTORS \
-    fmc::bitvector::L0_64Bitvector, \
-    fmc::bitvector::L0L1_512_64kBitvector, \
-    fmc::bitvector::RBBitvector<2, fmc::bitvector::L0L1_64_64kBitvector, fmc::bitvector::L0_64Bitvector>, \
-    fmc::bitvector::RBBitvector<2, fmc::bitvector::L0L1_512_64kBitvector, fmc::bitvector::L0_64Bitvector>, \
-    fmc::bitvector::RBBitvector<2, fmc::bitvector::L0L1_512_64kBitvector, fmc::bitvector::L0L1_512_64kBitvector>, \
-    fmc::bitvector::SparseBLEBitvector<2, fmc::bitvector::L0_64Bitvector, fmc::bitvector::L0_64Bitvector>, \
-    fmc::bitvector::SparseBLEBitvector<2, fmc::bitvector::L0_64Bitvector, fmc::bitvector::L0L1_512_64kBitvector>, \
-    fmc::bitvector::SparseBLEBitvector<4, fmc::bitvector::L0_64Bitvector, fmc::bitvector::L0_64Bitvector>, \
-    fmc::bitvector::SparseBLEBitvector<4, fmc::bitvector::L0_64Bitvector, fmc::bitvector::L0L1_512_64kBitvector>, \
-    fmc::bitvector::SparseDynRBBitvector<fmc::bitvector::L0L1_64_64kBitvector, fmc::bitvector::L0_64Bitvector>, \
-    fmc::bitvector::SparseDynRBBitvector<fmc::bitvector::L0L1_512_64kBitvector, fmc::bitvector::L0_64Bitvector>, \
-    fmc::bitvector::SparseDynRBBitvector<fmc::bitvector::L0L1_512_64kBitvector, fmc::bitvector::L0L1_512_64kBitvector>
+    fmc::bitvector::Bitvector1L_64, \
+    fmc::bitvector::Bitvector2L_512_64k, \
+    fmc::bitvector::RBBitvector<2, fmc::bitvector::Bitvector2L_64_64k, fmc::bitvector::Bitvector1L_64>, \
+    fmc::bitvector::RBBitvector<2, fmc::bitvector::Bitvector2L_512_64k, fmc::bitvector::Bitvector1L_64>, \
+    fmc::bitvector::RBBitvector<2, fmc::bitvector::Bitvector2L_512_64k, fmc::bitvector::Bitvector2L_512_64k>, \
+    fmc::bitvector::SparseBLEBitvector<2, fmc::bitvector::Bitvector1L_64, fmc::bitvector::Bitvector1L_64>, \
+    fmc::bitvector::SparseBLEBitvector<2, fmc::bitvector::Bitvector1L_64, fmc::bitvector::Bitvector2L_512_64k>, \
+    fmc::bitvector::SparseBLEBitvector<4, fmc::bitvector::Bitvector1L_64, fmc::bitvector::Bitvector1L_64>, \
+    fmc::bitvector::SparseBLEBitvector<4, fmc::bitvector::Bitvector1L_64, fmc::bitvector::Bitvector2L_512_64k>, \
+    fmc::bitvector::SparseDynRBBitvector<fmc::bitvector::Bitvector2L_64_64k, fmc::bitvector::Bitvector1L_64>, \
+    fmc::bitvector::SparseDynRBBitvector<fmc::bitvector::Bitvector2L_512_64k, fmc::bitvector::Bitvector1L_64>, \
+    fmc::bitvector::SparseDynRBBitvector<fmc::bitvector::Bitvector2L_512_64k, fmc::bitvector::Bitvector2L_512_64k>

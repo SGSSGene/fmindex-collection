@@ -4,13 +4,13 @@
 #pragma once
 
 #include "Bitvector.h"
+#include "Bitvector1L.h"
+#include "Bitvector2L.h"
 #include "PrunedBitvector.h"
 #include "CompactBitvector.h"
 #include "CompactBitvector4Blocks.h"
 #include "L1Bitvector.h"
-#include "L0_NBitvector.h"
 #include "PairedL0_NBitvector.h"
-#include "L0L1_NBitvector.h"
 #include "PairedL0L1_NBitvector.h"
 #include "CompactPairedL1L2_NBitvector.h"
 #include "InterleavedPairedL0L1_NBitvector.h"
