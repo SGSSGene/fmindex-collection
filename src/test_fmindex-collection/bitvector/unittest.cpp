@@ -9,12 +9,13 @@
 #include "../string/utils.h"
 #include "allBitVectors.h"
 
+#define ALLTYPES std::variant<ALLBITVECTORS, std::monostate>
+
 TEST_CASE("check bit vectors are working", "[bitvector]") {
     SECTION("short text") {
         auto text = std::vector<uint8_t>{0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1};
 
-        call_with_templates<
-            ALLBITVECTORS, ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+        call_with_templates<ALLTYPES>([&]<typename Vector>() {
             auto vector_name = getName<Vector>();
             INFO(vector_name);
 
@@ -97,8 +98,7 @@ TEST_CASE("check bit vectors are working", "[bitvector]") {
 
                                         };
 
-        call_with_templates<
-            ALLBITVECTORS, ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+        call_with_templates<ALLTYPES>([&]<typename Vector>() {
             auto vector_name = getName<Vector>();
             INFO(vector_name);
 
@@ -170,8 +170,7 @@ TEST_CASE("check bit vectors are working", "[bitvector]") {
     }
 
     SECTION("very longer text") {
-        call_with_templates<
-            ALLBITVECTORS, ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+        call_with_templates<ALLTYPES>([&]<typename Vector>() {
             auto vector_name = getName<Vector>();
             INFO(vector_name);
 
@@ -201,8 +200,7 @@ TEST_CASE("check bit vectors are working", "[bitvector]") {
     }
 
     SECTION("very longer text - only zeros") {
-        call_with_templates<
-            ALLBITVECTORS, ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+        call_with_templates<ALLTYPES>([&]<typename Vector>() {
             auto vector_name = getName<Vector>();
             INFO(vector_name);
 
@@ -232,8 +230,7 @@ TEST_CASE("check bit vectors are working", "[bitvector]") {
     }
 
     SECTION("very longer text - only ones") {
-        call_with_templates<
-            ALLBITVECTORS, ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+        call_with_templates<ALLTYPES>([&]<typename Vector>() {
             auto vector_name = getName<Vector>();
             INFO(vector_name);
 
@@ -264,8 +261,7 @@ TEST_CASE("check bit vectors are working", "[bitvector]") {
 
 
     SECTION("short text, push() back must have same result as c'tor") {
-        call_with_templates<
-            ALLBITVECTORS, ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+        call_with_templates<ALLTYPES>([&]<typename Vector>() {
             auto vector_name = getName<Vector>();
             INFO(vector_name);
 
@@ -300,8 +296,7 @@ TEST_CASE("check bit vectors are working", "[bitvector]") {
     }
 
     SECTION("short text, some inserted at creation, rest via push()") {
-        call_with_templates<
-            ALLBITVECTORS, ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+        call_with_templates<ALLTYPES>([&]<typename Vector>() {
             auto vector_name = getName<Vector>();
             INFO(vector_name);
             // check only if push_back is available
@@ -346,8 +341,7 @@ TEST_CASE("check bit vectors are working", "[bitvector]") {
     }
 
     SECTION("long text, some inserted at creation, rest via push()") {
-        call_with_templates<
-            ALLBITVECTORS, ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+        call_with_templates<ALLTYPES>([&]<typename Vector>() {
             auto vector_name = getName<Vector>();
             INFO(vector_name);
 
@@ -394,8 +388,7 @@ TEST_CASE("check bit vectors are working", "[bitvector]") {
 
 
     SECTION("serialization/deserialization") {
-        call_with_templates<
-            ALLBITVECTORS, ALLSPARSEBITVECTORS>([&]<typename Vector>() {
+        call_with_templates<ALLTYPES>([&]<typename Vector>() {
             auto vector_name = getName<Vector>();
             INFO(vector_name);
 

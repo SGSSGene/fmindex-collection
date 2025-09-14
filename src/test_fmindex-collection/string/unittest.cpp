@@ -1,13 +1,13 @@
 // SPDX-FileCopyrightText: 2006-2025, Knut Reinert & Freie Universität Berlin
 // SPDX-FileCopyrightText: 2016-2025, Knut Reinert & MPI für molekulare Genetik
 // SPDX-License-Identifier: CC0-1.0
+#include "allStrings.h"
 #include "utils.h"
 
 TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string][all_sizes]") {
     auto testSigma = []<size_t Sigma>() {
         INFO("Sigma " << Sigma);
-        call_with_templates<
-            STRINGSWITHRANK>([&]<template <size_t> typename _String>() {
+        call_with_templates<AllStrings>([&]<template <size_t> typename _String>() {
             using String = _String<Sigma>;
             auto vector_name = getName<String>();
             INFO(vector_name);
@@ -54,8 +54,7 @@ TEST_CASE("hand counted, test with 255 alphabet", "[string][255][small]") {
     auto text = std::vector<uint8_t>{'H', 'a', 'l', 'l', 'o', ' ', 'W', 'e', 'l', 't'};
 
     SECTION("checks") {
-        call_with_templates<
-            ALLSTRINGSWITHRANK>([&]<template <size_t> typename _String>() {
+        call_with_templates<AllStrings>([&]<template <size_t> typename _String>() {
             using String = _String<255>;
             auto vector_name = getName<String>();
             INFO(vector_name);
@@ -347,8 +346,7 @@ TEST_CASE("check symbol vectors construction on text longer than 255 characters"
                                     };
 
     SECTION("checks") {
-        call_with_templates<
-            ALLSTRINGSWITHRANK>([&]<template <size_t> typename _String>() {
+        call_with_templates<AllStrings>([&]<template <size_t> typename _String>() {
             using String = _String<255>;
 
             auto vector = String{text};

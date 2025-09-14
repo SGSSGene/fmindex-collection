@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#include "../ternarylogic.h"
 #include "concepts.h"
 #include "Bitvector.h"
 #include "SparseBLEBitvector.h"
-#include "../ternarylogic.h"
+#include "L0L1_NBitvector.h"
 
 #include <array>
 #include <bitset>

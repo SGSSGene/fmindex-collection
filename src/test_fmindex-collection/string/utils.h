@@ -9,7 +9,6 @@
 #include <nanobench.h>
 
 #include "../BenchSize.h"
-#include "allStrings.h"
 
 #if __has_include(<cxxabi.h>)
 #include <cxxabi.h>
@@ -35,15 +34,56 @@ auto getName() {
 
 namespace {
 
-template <typename ...T>
-void call_with_templates(auto f) {
-    (f.template operator()<T>(), ...);
+template <typename... T>
+void call_with_templates(auto f, std::variant<T...> const&) {
+    auto g = [&]<typename T2>() {
+        if constexpr (!std::same_as<T2, std::monostate>) {
+            f.template operator()<T2>();
+        }
+    };
+    (g.template operator()<T>(), ...);
 }
 
-template <template <size_t> class ...T>
+template <typename T>
 void call_with_templates(auto f) {
-    (f.template operator()<T>(), ...);
+    call_with_templates(f, T{});
 }
+
+template <template <size_t> class... T>
+struct Variant {};
+
+template <size_t>
+struct Delimiter {};
+
+template <template <size_t> class... T>
+void call_with_templates(auto f, Variant<T...> const&) {
+    auto g = [&]<template <size_t> typename T2>() {
+        if constexpr (!std::same_as<T2<4>, Delimiter<4>>) {
+            f.template operator()<T2>();
+        }
+    };
+    (g.template operator()<T>(), ...);
+}
+
+template <typename ...Ts>
+struct AppendImpl;
+
+template <typename... T1, typename... Ts>
+struct AppendImpl<std::variant<T1...>, Ts...> {
+    using type = std::variant<T1..., Ts...>;
+};
+
+
+template <typename T1, typename ...Ts>
+using Append = AppendImpl<T1, Ts...>::type;
+
+template <template <size_t, size_t, size_t> class String, size_t l1, size_t l0>
+struct Instance {
+    template <size_t TSigma>
+    using Type = String<TSigma, l1, l0>;
+};
+
+
 
 template <size_t min, size_t range>
 auto generateText(size_t length) -> std::vector<uint8_t> {

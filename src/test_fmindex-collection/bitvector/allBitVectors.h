@@ -4,7 +4,26 @@
 #pragma once
 
 #include <fmindex-collection/bitvector/all.h>
-#include <fmindex-collection/bitvector/RBBitvector.h>
+
+#ifdef FMC_USE_PASTA
+#include "Pasta_FlatRank.h"
+#include "Pasta_WideRank.h"
+#endif
+
+#ifdef FMC_USE_SDSL
+#include "sdsl_v.h"
+#include "sdsl_v5.h"
+#endif
+
+#ifdef FMC_USE_SUX
+#include "sux_Rank9.h"
+#endif
+
+#ifdef FMC_USE_RANKSELECT
+#include "RankSelect_Rank.h"
+#endif
+
+
 
 #ifndef __EMSCRIPTEN__
 #define ALLBITVECTORS \
