@@ -122,7 +122,7 @@ struct SparseRBBitvector {
     static size_t estimateSize(size_t blockCt, size_t zeroBlocks, size_t oneBlocks) {
         (void)oneBlocks; // unused, not required for estimation
         auto nonZeroBlocks = blockCt - zeroBlocks;
-        return blockCt + nonZeroBlocks*BlockLength;
+        return BV1::estimateSize(blockCt) + BV2::estimateSize(nonZeroBlocks*BlockLength);
     }
 };
 static_assert(Bitvector_c<SparseRBBitvector<>>);

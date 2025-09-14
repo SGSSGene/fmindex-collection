@@ -94,7 +94,7 @@ struct OptSparseRBBitvector {
         }
 
         // initialized with the zeroth entry, which is a normal two layer 512bit bit vector
-        size_t minElement = _range.size();
+        size_t minElement = std::variant_alternative_t<0, Variant>::estimateSize(_range.size());
         size_t index{0};
         // Compute size of each:
         for_constexpr<1, Level>([&]<size_t L>() {
