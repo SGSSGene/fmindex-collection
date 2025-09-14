@@ -4,7 +4,7 @@
 
 #include "../bitvector/Bitvector2L.h"
 #include "../bitvector/SparseRBBitvector.h"
-#include "../string/FlattenedBitvectors_L0L1.h"
+#include "../string/FlattenedBitvectors2L.h"
 #include "concepts.h"
 
 #include <algorithm>

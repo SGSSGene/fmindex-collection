@@ -24,7 +24,7 @@ namespace fmc::string {
 
 
 template <size_t TSigma, size_t l1_bits_ct, size_t l0_bits_ct, bool Align=true>
-struct PairedFlattenedBitvectors_L0L1 {
+struct PairedFlattenedBitvectors2L {
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static_assert(l0_bits_ct-l1_bits_ct <= std::numeric_limits<uint16_t>::max(), "l0_bits_ct can only hold up to uint16_t bits");
 
@@ -106,22 +106,22 @@ struct PairedFlattenedBitvectors_L0L1 {
     std::vector<BlockL0> l0{{}};
     size_t totalLength{};
 
-    PairedFlattenedBitvectors_L0L1()
-        : PairedFlattenedBitvectors_L0L1{internal_tag{}, std::span<uint8_t const>{}}
+    PairedFlattenedBitvectors2L()
+        : PairedFlattenedBitvectors2L{internal_tag{}, std::span<uint8_t const>{}}
     {}
 
-    PairedFlattenedBitvectors_L0L1(std::span<uint8_t const> _symbols)
-        : PairedFlattenedBitvectors_L0L1{internal_tag{}, _symbols}
+    PairedFlattenedBitvectors2L(std::span<uint8_t const> _symbols)
+        : PairedFlattenedBitvectors2L{internal_tag{}, _symbols}
     {}
 
-    PairedFlattenedBitvectors_L0L1(std::span<uint64_t const> _symbols)
-        : PairedFlattenedBitvectors_L0L1{internal_tag{}, _symbols}
+    PairedFlattenedBitvectors2L(std::span<uint64_t const> _symbols)
+        : PairedFlattenedBitvectors2L{internal_tag{}, _symbols}
     {}
 
     template <std::ranges::range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint64_t>
-    PairedFlattenedBitvectors_L0L1(range_t&& _symbols)
-        : PairedFlattenedBitvectors_L0L1{internal_tag{}, _symbols}
+    PairedFlattenedBitvectors2L(range_t&& _symbols)
+        : PairedFlattenedBitvectors2L{internal_tag{}, _symbols}
     {}
 
 
@@ -130,7 +130,7 @@ private:
 
     template <std::ranges::range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint64_t>
-    PairedFlattenedBitvectors_L0L1(internal_tag, range_t&& _symbols) {
+    PairedFlattenedBitvectors2L(internal_tag, range_t&& _symbols) {
 
         if constexpr (requires() { _symbols.size(); }) {
             auto const _length = _symbols.size();
@@ -307,12 +307,12 @@ public:
     }
 };
 
-template <size_t Sigma> using PairedFlattenedBitvectors_64_4k   = PairedFlattenedBitvectors_L0L1<Sigma, 64, 4096>;
-template <size_t Sigma> using PairedFlattenedBitvectors_128_4k  = PairedFlattenedBitvectors_L0L1<Sigma, 128, 4096>;
-template <size_t Sigma> using PairedFlattenedBitvectors_256_4k  = PairedFlattenedBitvectors_L0L1<Sigma, 256, 4096>;
-template <size_t Sigma> using PairedFlattenedBitvectors_512_4k  = PairedFlattenedBitvectors_L0L1<Sigma, 512, 4096>;
-template <size_t Sigma> using PairedFlattenedBitvectors_1024_4k = PairedFlattenedBitvectors_L0L1<Sigma, 1024, 4096>;
-template <size_t Sigma> using PairedFlattenedBitvectors_2048_4k = PairedFlattenedBitvectors_L0L1<Sigma, 2048, 4096>;
+template <size_t Sigma> using PairedFlattenedBitvectors_64_4k   = PairedFlattenedBitvectors2L<Sigma, 64, 4096>;
+template <size_t Sigma> using PairedFlattenedBitvectors_128_4k  = PairedFlattenedBitvectors2L<Sigma, 128, 4096>;
+template <size_t Sigma> using PairedFlattenedBitvectors_256_4k  = PairedFlattenedBitvectors2L<Sigma, 256, 4096>;
+template <size_t Sigma> using PairedFlattenedBitvectors_512_4k  = PairedFlattenedBitvectors2L<Sigma, 512, 4096>;
+template <size_t Sigma> using PairedFlattenedBitvectors_1024_4k = PairedFlattenedBitvectors2L<Sigma, 1024, 4096>;
+template <size_t Sigma> using PairedFlattenedBitvectors_2048_4k = PairedFlattenedBitvectors2L<Sigma, 2048, 4096>;
 
 static_assert(checkString_c<PairedFlattenedBitvectors_64_4k>);
 static_assert(checkString_c<PairedFlattenedBitvectors_128_4k>);
@@ -321,13 +321,13 @@ static_assert(checkString_c<PairedFlattenedBitvectors_512_4k>);
 static_assert(checkString_c<PairedFlattenedBitvectors_1024_4k>);
 static_assert(checkString_c<PairedFlattenedBitvectors_2048_4k>);
 
-template <size_t Sigma> using PairedFlattenedBitvectors_64_64k   = PairedFlattenedBitvectors_L0L1<Sigma, 64, 65536>;
-template <size_t Sigma> using PairedFlattenedBitvectors_128_64k  = PairedFlattenedBitvectors_L0L1<Sigma, 128, 65536>;
-template <size_t Sigma> using PairedFlattenedBitvectors_256_64k  = PairedFlattenedBitvectors_L0L1<Sigma, 256, 65536>;
-template <size_t Sigma> using PairedFlattenedBitvectors_512_64k  = PairedFlattenedBitvectors_L0L1<Sigma, 512, 65536>;
-template <size_t Sigma> using PairedFlattenedBitvectors_1024_64k = PairedFlattenedBitvectors_L0L1<Sigma, 1024, 65536>;
-template <size_t Sigma> using PairedFlattenedBitvectors_2048_64k = PairedFlattenedBitvectors_L0L1<Sigma, 2048, 65536>;
-template <size_t Sigma> using PairedFlattenedBitvectors_4096_64k = PairedFlattenedBitvectors_L0L1<Sigma, 4096, 65536>;
+template <size_t Sigma> using PairedFlattenedBitvectors_64_64k   = PairedFlattenedBitvectors2L<Sigma, 64, 65536>;
+template <size_t Sigma> using PairedFlattenedBitvectors_128_64k  = PairedFlattenedBitvectors2L<Sigma, 128, 65536>;
+template <size_t Sigma> using PairedFlattenedBitvectors_256_64k  = PairedFlattenedBitvectors2L<Sigma, 256, 65536>;
+template <size_t Sigma> using PairedFlattenedBitvectors_512_64k  = PairedFlattenedBitvectors2L<Sigma, 512, 65536>;
+template <size_t Sigma> using PairedFlattenedBitvectors_1024_64k = PairedFlattenedBitvectors2L<Sigma, 1024, 65536>;
+template <size_t Sigma> using PairedFlattenedBitvectors_2048_64k = PairedFlattenedBitvectors2L<Sigma, 2048, 65536>;
+template <size_t Sigma> using PairedFlattenedBitvectors_4096_64k = PairedFlattenedBitvectors2L<Sigma, 4096, 65536>;
 
 static_assert(checkString_c<PairedFlattenedBitvectors_64_64k>);
 static_assert(checkString_c<PairedFlattenedBitvectors_128_64k>);
@@ -337,13 +337,13 @@ static_assert(checkString_c<PairedFlattenedBitvectors_1024_64k>);
 static_assert(checkString_c<PairedFlattenedBitvectors_2048_64k>);
 static_assert(checkString_c<PairedFlattenedBitvectors_4096_64k>);
 
-template <size_t Sigma> using PairedFlattenedBitvectors_64_64kUA   = PairedFlattenedBitvectors_L0L1<Sigma, 64, 65536, false>;
-template <size_t Sigma> using PairedFlattenedBitvectors_128_64kUA  = PairedFlattenedBitvectors_L0L1<Sigma, 128, 65536, false>;
-template <size_t Sigma> using PairedFlattenedBitvectors_256_64kUA  = PairedFlattenedBitvectors_L0L1<Sigma, 256, 65536, false>;
-template <size_t Sigma> using PairedFlattenedBitvectors_512_64kUA  = PairedFlattenedBitvectors_L0L1<Sigma, 512, 65536, false>;
-template <size_t Sigma> using PairedFlattenedBitvectors_1024_64kUA = PairedFlattenedBitvectors_L0L1<Sigma, 1024, 65536, false>;
-template <size_t Sigma> using PairedFlattenedBitvectors_2048_64kUA = PairedFlattenedBitvectors_L0L1<Sigma, 2048, 65536, false>;
-template <size_t Sigma> using PairedFlattenedBitvectors_4096_64kUA = PairedFlattenedBitvectors_L0L1<Sigma, 4096, 65536, false>;
+template <size_t Sigma> using PairedFlattenedBitvectors_64_64kUA   = PairedFlattenedBitvectors2L<Sigma, 64, 65536, false>;
+template <size_t Sigma> using PairedFlattenedBitvectors_128_64kUA  = PairedFlattenedBitvectors2L<Sigma, 128, 65536, false>;
+template <size_t Sigma> using PairedFlattenedBitvectors_256_64kUA  = PairedFlattenedBitvectors2L<Sigma, 256, 65536, false>;
+template <size_t Sigma> using PairedFlattenedBitvectors_512_64kUA  = PairedFlattenedBitvectors2L<Sigma, 512, 65536, false>;
+template <size_t Sigma> using PairedFlattenedBitvectors_1024_64kUA = PairedFlattenedBitvectors2L<Sigma, 1024, 65536, false>;
+template <size_t Sigma> using PairedFlattenedBitvectors_2048_64kUA = PairedFlattenedBitvectors2L<Sigma, 2048, 65536, false>;
+template <size_t Sigma> using PairedFlattenedBitvectors_4096_64kUA = PairedFlattenedBitvectors2L<Sigma, 4096, 65536, false>;
 
 static_assert(checkString_c<PairedFlattenedBitvectors_64_64kUA>);
 static_assert(checkString_c<PairedFlattenedBitvectors_128_64kUA>);

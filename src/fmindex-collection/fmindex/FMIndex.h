@@ -5,7 +5,7 @@
 
 #include "../string/concepts.h"
 #include "../string/utils.h"
-#include "../string/FlattenedBitvectors_L0L1.h"
+#include "../string/FlattenedBitvectors2L.h"
 #include "../suffixarray/SparseArray.h"
 #include "../utils.h"
 

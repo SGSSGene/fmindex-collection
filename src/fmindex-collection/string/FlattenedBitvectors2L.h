@@ -22,7 +22,7 @@ namespace fmc::string {
 
 
 template <size_t TSigma, size_t l1_bits_ct, size_t l0_bits_ct, bool Align=true>
-struct FlattenedBitvectors_L0L1 {
+struct FlattenedBitvectors2L {
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static_assert(l0_bits_ct-l1_bits_ct <= std::numeric_limits<uint16_t>::max(), "l0_bits_ct can only hold up to uint16_t bits");
 
@@ -104,20 +104,20 @@ struct FlattenedBitvectors_L0L1 {
     std::vector<BlockL0> l0{{}};
     size_t totalLength{};
 
-    FlattenedBitvectors_L0L1() = default;
+    FlattenedBitvectors2L() = default;
 
-    FlattenedBitvectors_L0L1(std::span<uint8_t const> _symbols)
-        : FlattenedBitvectors_L0L1{internal_tag{}, _symbols}
+    FlattenedBitvectors2L(std::span<uint8_t const> _symbols)
+        : FlattenedBitvectors2L{internal_tag{}, _symbols}
     {}
 
-    FlattenedBitvectors_L0L1(std::span<uint64_t const> _symbols)
-        : FlattenedBitvectors_L0L1{internal_tag{}, _symbols}
+    FlattenedBitvectors2L(std::span<uint64_t const> _symbols)
+        : FlattenedBitvectors2L{internal_tag{}, _symbols}
     {}
 
     template <std::ranges::range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint64_t>
-    FlattenedBitvectors_L0L1(range_t&& _symbols)
-        : FlattenedBitvectors_L0L1{internal_tag{}, _symbols}
+    FlattenedBitvectors2L(range_t&& _symbols)
+        : FlattenedBitvectors2L{internal_tag{}, _symbols}
     {}
 
 private:
@@ -125,7 +125,7 @@ private:
 
     template <std::ranges::range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint64_t>
-    FlattenedBitvectors_L0L1(internal_tag, range_t&& _symbols) {
+    FlattenedBitvectors2L(internal_tag, range_t&& _symbols) {
 
         if constexpr (requires() { _symbols.size(); }) {
             auto const _length = _symbols.size();
@@ -260,12 +260,12 @@ public:
     }
 };
 
-template <size_t Sigma> using FlattenedBitvectors_64_4k   = FlattenedBitvectors_L0L1<Sigma, 64, 4096>;
-template <size_t Sigma> using FlattenedBitvectors_128_4k  = FlattenedBitvectors_L0L1<Sigma, 128, 4096>;
-template <size_t Sigma> using FlattenedBitvectors_256_4k  = FlattenedBitvectors_L0L1<Sigma, 256, 4096>;
-template <size_t Sigma> using FlattenedBitvectors_512_4k  = FlattenedBitvectors_L0L1<Sigma, 512, 4096>;
-template <size_t Sigma> using FlattenedBitvectors_1024_4k = FlattenedBitvectors_L0L1<Sigma, 1024, 4096>;
-template <size_t Sigma> using FlattenedBitvectors_2048_4k = FlattenedBitvectors_L0L1<Sigma, 2048, 4096>;
+template <size_t Sigma> using FlattenedBitvectors_64_4k   = FlattenedBitvectors2L<Sigma, 64, 4096>;
+template <size_t Sigma> using FlattenedBitvectors_128_4k  = FlattenedBitvectors2L<Sigma, 128, 4096>;
+template <size_t Sigma> using FlattenedBitvectors_256_4k  = FlattenedBitvectors2L<Sigma, 256, 4096>;
+template <size_t Sigma> using FlattenedBitvectors_512_4k  = FlattenedBitvectors2L<Sigma, 512, 4096>;
+template <size_t Sigma> using FlattenedBitvectors_1024_4k = FlattenedBitvectors2L<Sigma, 1024, 4096>;
+template <size_t Sigma> using FlattenedBitvectors_2048_4k = FlattenedBitvectors2L<Sigma, 2048, 4096>;
 
 static_assert(checkString_c<FlattenedBitvectors_64_4k>);
 static_assert(checkString_c<FlattenedBitvectors_128_4k>);
@@ -274,13 +274,13 @@ static_assert(checkString_c<FlattenedBitvectors_512_4k>);
 static_assert(checkString_c<FlattenedBitvectors_1024_4k>);
 static_assert(checkString_c<FlattenedBitvectors_2048_4k>);
 
-template <size_t Sigma> using FlattenedBitvectors_64_64k   = FlattenedBitvectors_L0L1<Sigma, 64, 65536>;
-template <size_t Sigma> using FlattenedBitvectors_128_64k  = FlattenedBitvectors_L0L1<Sigma, 128, 65536>;
-template <size_t Sigma> using FlattenedBitvectors_256_64k  = FlattenedBitvectors_L0L1<Sigma, 256, 65536>;
-template <size_t Sigma> using FlattenedBitvectors_512_64k  = FlattenedBitvectors_L0L1<Sigma, 512, 65536>;
-template <size_t Sigma> using FlattenedBitvectors_1024_64k = FlattenedBitvectors_L0L1<Sigma, 1024, 65536>;
-template <size_t Sigma> using FlattenedBitvectors_2048_64k = FlattenedBitvectors_L0L1<Sigma, 2048, 65536>;
-template <size_t Sigma> using FlattenedBitvectors_4096_64k = FlattenedBitvectors_L0L1<Sigma, 4096, 65536>;
+template <size_t Sigma> using FlattenedBitvectors_64_64k   = FlattenedBitvectors2L<Sigma, 64, 65536>;
+template <size_t Sigma> using FlattenedBitvectors_128_64k  = FlattenedBitvectors2L<Sigma, 128, 65536>;
+template <size_t Sigma> using FlattenedBitvectors_256_64k  = FlattenedBitvectors2L<Sigma, 256, 65536>;
+template <size_t Sigma> using FlattenedBitvectors_512_64k  = FlattenedBitvectors2L<Sigma, 512, 65536>;
+template <size_t Sigma> using FlattenedBitvectors_1024_64k = FlattenedBitvectors2L<Sigma, 1024, 65536>;
+template <size_t Sigma> using FlattenedBitvectors_2048_64k = FlattenedBitvectors2L<Sigma, 2048, 65536>;
+template <size_t Sigma> using FlattenedBitvectors_4096_64k = FlattenedBitvectors2L<Sigma, 4096, 65536>;
 
 static_assert(checkString_c<FlattenedBitvectors_64_64k>);
 static_assert(checkString_c<FlattenedBitvectors_128_64k>);
@@ -290,13 +290,13 @@ static_assert(checkString_c<FlattenedBitvectors_1024_64k>);
 static_assert(checkString_c<FlattenedBitvectors_2048_64k>);
 static_assert(checkString_c<FlattenedBitvectors_4096_64k>);
 
-template <size_t Sigma> using FlattenedBitvectors_64_64kUA   = FlattenedBitvectors_L0L1<Sigma, 64, 65536, false>;
-template <size_t Sigma> using FlattenedBitvectors_128_64kUA  = FlattenedBitvectors_L0L1<Sigma, 128, 65536, false>;
-template <size_t Sigma> using FlattenedBitvectors_256_64kUA  = FlattenedBitvectors_L0L1<Sigma, 256, 65536, false>;
-template <size_t Sigma> using FlattenedBitvectors_512_64kUA  = FlattenedBitvectors_L0L1<Sigma, 512, 65536, false>;
-template <size_t Sigma> using FlattenedBitvectors_1024_64kUA = FlattenedBitvectors_L0L1<Sigma, 1024, 65536, false>;
-template <size_t Sigma> using FlattenedBitvectors_2048_64kUA = FlattenedBitvectors_L0L1<Sigma, 2048, 65536, false>;
-template <size_t Sigma> using FlattenedBitvectors_4096_64kUA = FlattenedBitvectors_L0L1<Sigma, 4096, 65536, false>;
+template <size_t Sigma> using FlattenedBitvectors_64_64kUA   = FlattenedBitvectors2L<Sigma, 64, 65536, false>;
+template <size_t Sigma> using FlattenedBitvectors_128_64kUA  = FlattenedBitvectors2L<Sigma, 128, 65536, false>;
+template <size_t Sigma> using FlattenedBitvectors_256_64kUA  = FlattenedBitvectors2L<Sigma, 256, 65536, false>;
+template <size_t Sigma> using FlattenedBitvectors_512_64kUA  = FlattenedBitvectors2L<Sigma, 512, 65536, false>;
+template <size_t Sigma> using FlattenedBitvectors_1024_64kUA = FlattenedBitvectors2L<Sigma, 1024, 65536, false>;
+template <size_t Sigma> using FlattenedBitvectors_2048_64kUA = FlattenedBitvectors2L<Sigma, 2048, 65536, false>;
+template <size_t Sigma> using FlattenedBitvectors_4096_64kUA = FlattenedBitvectors2L<Sigma, 4096, 65536, false>;
 
 static_assert(checkString_c<FlattenedBitvectors_64_64kUA>);
 static_assert(checkString_c<FlattenedBitvectors_128_64kUA>);

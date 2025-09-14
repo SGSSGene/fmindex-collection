@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include <fmindex-collection/string/FlattenedBitvectors_L0L1.h>
+#include <fmindex-collection/string/FlattenedBitvectors2L.h>
 
 extern "C" {
 #include "AwFmIndex.h"
@@ -97,10 +97,10 @@ inline void awFmIndexCreateStringWithRankSupport(struct AwFmIndex* _RESTRICT_ co
     }
 }
 
-// If AWFMIndex doesn't implement the correct version, fall back to FlattenedBitvectors_L0L1 version, which has similar memory usage
+// If AWFMIndex doesn't implement the correct version, fall back to FlattenedBitvectors2L version, which has similar memory usage
 template <size_t TSigma>
-struct AWFMIndex : fmc::string::FlattenedBitvectors_L0L1<TSigma, 64, 65536> {
-    using fmc::string::FlattenedBitvectors_L0L1<TSigma, 64, 65536>::FlattenedBitvectors_L0L1;
+struct AWFMIndex : fmc::string::FlattenedBitvectors2L<TSigma, 64, 65536> {
+    using fmc::string::FlattenedBitvectors2L<TSigma, 64, 65536>::FlattenedBitvectors2L;
 };
 /**
  * This is a quick and dirty implementation

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../string/FlattenedBitvectors_L0L1.h"
+#include "../string/FlattenedBitvectors2L.h"
 #include "../string/concepts.h"
 #include "../suffixarray/SparseArray.h"
 #include "../suffixarray/utils.h"
