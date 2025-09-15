@@ -8,6 +8,7 @@ project(test_fmindex-collection)
 add_executable(${PROJECT_NAME}
     bitvector/bitset_popcount.cpp
     bitvector/benchmark.cpp
+    bitvector/benchmark_block_selection.cpp
     bitvector/benchmark_sparse_bitdensity_vs_time.cpp
     bitvector/benchmark_sparse_bitdensity_vs_space.cpp
     bitvector/sparse_benchmark.cpp
