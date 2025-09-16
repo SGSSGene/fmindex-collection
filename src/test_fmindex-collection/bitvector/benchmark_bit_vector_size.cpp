@@ -115,7 +115,7 @@ TEST_CASE("benchmark bit vectors run time dependent on size", "[bitvector][!benc
             auto vector_name = getName<Vector>();
             size_t const numberOfIterations = getEnvOr("ITERATIONS", 1'000);
             for (size_t i{0}; i<numberOfIterations; ++i) {
-                auto v = vec.rank(rng.bounded(text.size()));
+                auto v = vec.rank(rng() % text.size());
                 ankerl::nanobench::doNotOptimizeAway(v);
             };
             auto v = timer.elapsed();
