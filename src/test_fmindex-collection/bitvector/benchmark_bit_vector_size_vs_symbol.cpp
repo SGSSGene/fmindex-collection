@@ -56,7 +56,7 @@ struct Timer {
 }
 
 
-TEST_CASE("benchmark bit vectors run time (rank) dependent on size", "[bitvector][!benchmark][time][length_vs_time][rank]") {
+TEST_CASE("benchmark bit vectors run time (symbol) dependent on size", "[bitvector][!benchmark][time][length_vs_time][symbol]") {
     auto results = std::map<std::string, std::vector<double>>{};
     auto density = 0.10;
     auto blockSize = getEnvOr("BLOCKSIZE", 1);
@@ -64,14 +64,14 @@ TEST_CASE("benchmark bit vectors run time (rank) dependent on size", "[bitvector
 
 
     auto sizeSteps = std::vector<size_t>{
-        size_t{1}<<20, // 1MB
-        size_t{1}<<22, // 4MB
+//        size_t{1}<<20, // 1MB
+//        size_t{1}<<22, // 4MB
         size_t{1}<<24, // 16MB
-        size_t{1}<<26, // 64MB
-        size_t{1}<<28, // 256MB
-        size_t{1}<<30, // 1GB
+//        size_t{1}<<26, // 64MB
+//        size_t{1}<<28, // 256MB
+//        size_t{1}<<30, // 1GB
         size_t{1}<<32, // 4GB
-        size_t{1}<<34, // 8GB
+//        size_t{1}<<34, // 8GB*/
     };
 
     using AllTypes = std::variant<
@@ -117,7 +117,7 @@ TEST_CASE("benchmark bit vectors run time (rank) dependent on size", "[bitvector
             auto vector_name = getName<Vector>();
             size_t const numberOfIterations = getEnvOr("ITERATIONS", 1'000);
             for (size_t i{0}; i<numberOfIterations; ++i) {
-                auto v = vec.rank(rng() % text.size());
+                auto v = vec.symbol(rng() % text.size());
                 ankerl::nanobench::doNotOptimizeAway(v);
             };
             auto v = timer.elapsed();
