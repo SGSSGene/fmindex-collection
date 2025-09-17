@@ -122,7 +122,7 @@ TEST_CASE("benchmark bit vectors run time (ctor) dependent on size", "[bitvector
             auto v = timer.elapsed();
             auto index = AllTypes{Vector{}}.index();
             auto name = names[index];
-            results[name].push_back(v / (numberOfIterations / 1'000'000'000.));
+            results[name].push_back(v / (numberOfIterations / 1'000'000'000.) / text.size());
         });
     }
 
