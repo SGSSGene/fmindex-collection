@@ -169,6 +169,13 @@ struct Bitvector {
     void serialize(Archive& ar) {
         ar(superblocks, blocks, bits, totalLength);
     }
+
+    static size_t estimateSize(size_t totalSize) {
+        auto bits_for_l0_blocks = (totalSize/256) * 64;
+        auto bits_for_l1_blocks = (totalSize/8) * 8;
+        return totalSize + bits_for_l0_blocks + bits_for_l1_blocks;
+    }
+
 };
 
 static_assert(Bitvector_c<Bitvector>);
