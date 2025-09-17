@@ -64,6 +64,8 @@ TEST_CASE("benchmark bit vectors run time dependent on size", "[bitvector][!benc
 
 
     auto sizeSteps = std::vector<size_t>{
+        size_t{1}<<20, // 1MB
+        size_t{1}<<22, // 4MB
         size_t{1}<<24, // 16MB
         size_t{1}<<26, // 64MB
         size_t{1}<<28, // 256MB
