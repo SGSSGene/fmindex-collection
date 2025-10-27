@@ -326,27 +326,27 @@ void search(index_t const& index, queries_t&& queries, size_t maxErrors, delegat
 }
 
 
-template <bool Edit=true, typename index_t, Sequence query_t, typename delegate_t>
-void search_n(index_t const& index, query_t&& query, search_scheme::Scheme const& search_scheme, size_t n, delegate_t&& delegate) {
-    if (search_scheme.empty()) return;
-
-    size_t ct{};
-    search<Edit>(index, query, search_scheme, [&] (auto cur, size_t e) {
-        if (cur.count() + ct > n) {
-            cur.len = n-ct;
-        }
-        ct += cur.count();
-        delegate(cur, e);
-        return ct == n;
-    });
-}
-
-template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
-void search_n(index_t const& index, queries_t&& queries, search_scheme::Scheme const& search_scheme, size_t n, delegate_t&& delegate) {
-    if (search_scheme.empty()) return;
-
+/* search until exactly n results are being found
+ *
+ * \tparam Edit: should Edit distance (or hamming distance be applied while searching)
+ * \param index: An Index, can be FmIndex or a BiFMIndex
+ * \param queries: a range of queries, do not have to be of same length
+ * \param maxErrors: number of errors allowed (important to edit distance or hamming distance)
+ * \param n: number of results that should be found
+ * \param delegate_t: callback function to report the results, Must accept there parameters: size_t qidx, auto cur, size_t e
+ *          qidx: the position of the query inside the queries range
+ *          cur:  cursor of the FMIndex marking the result positions
+ *          e:    number of errors that these matches have
+ * \param searchSelectSearchScheme_t: callback that helps selecting a proper search scheme, Must accept one parameters: size_t length
+ *          lenngth: length of query
+ */
+template <bool Edit, typename index_t, Sequences queries_t, typename selectSearchScheme_t, typename delegate_t>
+void search_n_impl(index_t const& index, queries_t&& queries, selectSearchScheme_t&& selectSearchScheme, size_t n, delegate_t&& delegate) {
+    if (queries.empty()) return;
+    if (n == 0) return;
     for (size_t qidx{}; qidx < queries.size(); ++qidx) {
         size_t ct{};
+        auto const& search_scheme = selectSearchScheme_t(queries[qidx].size());
         search<Edit>(index, queries[qidx], search_scheme, [&] (auto cur, size_t e) {
             if (cur.count() + ct > n) {
                 cur.len = n-ct;
@@ -358,26 +358,40 @@ void search_n(index_t const& index, queries_t&& queries, search_scheme::Scheme c
     }
 }
 
+// convenience function, with passed search scheme and multiple queries
+template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
+void search_n(index_t const& index, queries_t&& queries, search_scheme::Scheme const& search_scheme, size_t n, delegate_t&& delegate) {
+    // function that selects a search scheme
+    auto selectSearchScheme = [&]([[maybe_unused]] size_t length) -> auto& {
+        assert(length == search_scheme.pi.size());
+        return search_scheme;
+    };
+    search_n_impl(index, queries, selectSearchScheme, n, delegate);
+}
+
+// convenience function, with passed search scheme and a single query
+template <bool Edit=true, typename index_t, Sequence query_t, typename delegate_t>
+void search_n(index_t const& index, query_t&& query, search_scheme::Scheme const& search_scheme, size_t n, delegate_t&& delegate) {
+    // redirect to search with multiple queries
+    search_n<Edit>(index, std::array<query_t&&, 1>{query}, search_scheme, n, [&](size_t /*qidx*/, auto cur, size_t e) {
+        delegate(cur, e);
+    });
+}
+
+// convenience function, with auto selected search scheme and multiple queries
+template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
+void search_n(index_t const& index, queries_t&& queries, size_t maxErrors, size_t n, delegate_t&& delegate) {
+    auto selectSearchScheme = [&]([[maybe_unused]] size_t length) -> auto& {
+        return getCachedSearchScheme<Edit>(length, 0, maxErrors);
+    };
+    search_n_impl(index, queries, selectSearchScheme, n, delegate);
+}
+
+// convenience function, with auto selected search scheme and single query
 template <bool Edit=true, typename index_t, Sequence query_t, typename delegate_t>
 void search_n(index_t const& index, query_t const& query, size_t maxErrors, size_t n, delegate_t&& delegate) {
     auto const& search_scheme = getCachedSearchScheme<Edit>(query.size(), 0, maxErrors);
     search_n<Edit>(index, query, search_scheme, n, delegate);
 }
 
-
-template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
-void search_n(index_t const& index, queries_t&& queries, size_t maxErrors, size_t n, delegate_t&& delegate) {
-    for (size_t qidx{}; qidx < queries.size(); ++qidx) {
-        size_t ct{};
-        auto const& search_scheme = getCachedSearchScheme<Edit>(queries[qidx].size(), 0, maxErrors);
-        search<Edit>(index, queries[qidx], search_scheme, [&] (auto cur, size_t e) {
-            if (cur.count() + ct > n) {
-                cur.len = n-ct;
-            }
-            ct += cur.count();
-            delegate(qidx, cur, e);
-            return ct == n;
-        });
-    }
-}
 }
