@@ -97,6 +97,8 @@ inline void awFmIndexCreateStringWithRankSupport(struct AwFmIndex* _RESTRICT_ co
     }
 }
 
+namespace fmc::string {
+
 // If AWFMIndex doesn't implement the correct version, fall back to FlattenedBitvectors2L version, which has similar memory usage
 template <size_t TSigma>
 struct AWFMIndex : fmc::string::FlattenedBitvectors2L<TSigma, 64, 65536> {
@@ -335,5 +337,6 @@ AWFMINDEX_TEMPLATE(21, 17);
 AWFMINDEX_TEMPLATE(21, 18);
 AWFMINDEX_TEMPLATE(21, 19);
 AWFMINDEX_TEMPLATE(21, 20);
+}
 
 //static_assert(checkString_c<AWFMIndex>);

@@ -12,19 +12,17 @@
 #include "allBitVectors.h"
 
 using AllTypes = std::variant<
-    ALLSPARSEBITVECTORS,
+    fmc::bitvector::Bitvector2L_512_64k,
+    fmc::bitvector::OptRBBitvector<fmc::bitvector::Bitvector2L_512_64k, fmc::bitvector::Bitvector2L_512_64k>,
+    fmc::bitvector::OptSparseRBBitvector<fmc::bitvector::Bitvector2L_512_64k, fmc::bitvector::Bitvector2L_512_64k>,
+    fmc::bitvector::OptRBBitvector<fmc::bitvector::Bitvector2L_64_64k, fmc::bitvector::Bitvector2L_64_64k>,
+    fmc::bitvector::OptSparseRBBitvector<fmc::bitvector::Bitvector2L_64_64k, fmc::bitvector::Bitvector2L_64_64k>,
 #if defined(FMC_USE_RANKSELECT)
-    RankSelect<0>,
-    RankSelect<1>,
-    RankSelect<2>,
-    RankSelect<3>,
-    RankSelect<4>,
     RankSelect<5>,
-    RankSelect<6>,
-    RankSelect<7>,
 #endif
     std::monostate
 >;
+
 
 namespace {
 auto generateText(double density) -> std::vector<bool> {
