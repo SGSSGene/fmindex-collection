@@ -375,7 +375,7 @@ void search_impl(index_t const& index, query_t const& query, search_scheme::Sche
  *          cur:  cursor of the FMIndex marking the result positions
  *          e:    number of errors that these matches have
  * \param searchSelectSearchScheme_t: callback that helps selecting a proper search scheme, Must accept one parameters: size_t length
- *          lenngth: length of query
+ *          length: length of query
  */
 template <bool Edit, typename index_t, Sequences queries_t, typename selectSearchScheme_t, typename delegate_t>
 void search_n_impl(index_t const& index, queries_t&& queries, selectSearchScheme_t&& selectSearchScheme, std::vector<size_t> const& partition, delegate_t&& delegate, size_t n) {
@@ -401,7 +401,6 @@ template <bool Edit=true, typename index_t, Sequences queries_t, typename delega
 void search(index_t const& index, queries_t&& queries, search_scheme::Scheme const& search_scheme, std::vector<size_t> const& partition, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
     // function that selects a search scheme
     auto selectSearchScheme = [&]([[maybe_unused]] size_t length) -> auto& {
-        assert(length == search_scheme.pi.size());
         return search_scheme;
     };
     search_n_impl<Edit>(index, queries, selectSearchScheme, partition, delegate, n);
