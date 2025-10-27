@@ -955,14 +955,14 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto search_scheme = fmc::search_scheme::expand(fmc::search_scheme::generator::pigeon_opt(0, 1), queries[0].size());
 
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
-        fmc::search_ng24::search_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
+        fmc::search_ng24::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
             for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
                 auto [sid, spos] = entry;
 
                 results.emplace_back(qidx, sid, spos+offset);
             }
-        });
+        }, 3);
 
         std::ranges::sort(results);
 
@@ -1033,14 +1033,14 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
 
     SECTION("search ng24, all search_n, no search scheme") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
-        fmc::search_ng24::search_n(index, queries, /*.maxErrors=*/1, /*.n=*/3, [&](auto qidx, auto cursor, auto errors) {
+        fmc::search_ng24::search(index, queries, /*.maxErrors=*/1, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
             for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
                 auto [sid, spos] = entry;
 
                 results.emplace_back(qidx, sid, spos+offset);
             }
-        });
+        }, /*.n=*/3);
 
         std::ranges::sort(results);
 

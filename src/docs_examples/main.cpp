@@ -17,7 +17,7 @@ int main() {
     // The stuff you are searching for
     auto query = std::vector<uint8_t>{2, 3};
 
-    fmc::search</*EditDistance=*/true>(index, query, /*.errors=*/0, [&](auto cursor, size_t errors) {
+    fmc::search</*.EditDistance=*/true>(index, std::span{&query, 1}, /*.errors=*/0, [&](size_t /*qidx*/, auto cursor, size_t errors) {
         fmt::print("found {} results with {} errors\n", cursor.count(), errors);
         for (auto i : cursor) {
             // index.locate(i) can only find positions hit by the sampling rate. How many position this is off, is indicated by the offset value

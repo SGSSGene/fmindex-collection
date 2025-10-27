@@ -34,12 +34,12 @@ void search(index_t const& _index, queries_t const& _queries, size_t _errors, de
 
 template <bool EditDistance, typename index_t, Sequence query_t, typename delegate_t>
 void search_n(index_t const& _index, query_t const& _query, size_t _errors, size_t _n, delegate_t&& _delegate) {
-    search_ng24::search_n<EditDistance>(_index, _query, _errors, _n, std::forward<delegate_t>(_delegate));
+    search_ng24::search<EditDistance>(_index, _query, _errors, std::forward<delegate_t>(_delegate), _n);
 }
 
 template <bool EditDistance, typename index_t, Sequences queries_t, typename delegate_t>
 void search_n(index_t const& _index, queries_t const& _queries, size_t _errors, size_t _n, delegate_t&& _delegate) {
-    search_ng24::search_n<EditDistance>(_index, _queries, _errors, _n, std::forward<delegate_t>(_delegate));
+    search_ng24::search<EditDistance>(_index, _queries, _errors, std::forward<delegate_t>(_delegate), _n);
 }
 
 template <typename index_t, Sequences queries_t, typename delegate_t>
