@@ -420,12 +420,12 @@ void search_impl(index_t const& index, query_t const& query, search_scheme::Sche
  *          length: length of query
  */
 template <bool Edit, typename index_t, Sequences queries_t, typename selectSearchScheme_t, typename delegate_t>
-void search_n_impl(index_t const& index, queries_t&& queries, selectSearchScheme_t&& selectSearchScheme, std::vector<size_t> const& partition, delegate_t&& delegate, size_t n) {
+void search_n_impl(index_t const& index, queries_t&& queries, selectSearchScheme_t&& selectSearchScheme, delegate_t&& delegate, size_t n) {
     if (queries.empty()) return;
     if (n == 0) return;
     for (size_t qidx{}; qidx < queries.size(); ++qidx) {
         size_t ct{};
-        auto const& search_scheme = selectSearchScheme(queries[qidx].size());
+        auto const& [search_scheme, partition] = selectSearchScheme(queries[qidx].size());
         search_impl<Edit>(index, queries[qidx], search_scheme, partition, [&] (auto cur, size_t e) {
             if (cur.count() + ct > n) {
                 cur.len = n-ct;
@@ -442,10 +442,56 @@ void search_n_impl(index_t const& index, queries_t&& queries, selectSearchScheme
 template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
 void search(index_t const& index, queries_t&& queries, search_scheme::Scheme const& search_scheme, std::vector<size_t> const& partition, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
     // function that selects a search scheme
-    auto selectSearchScheme = [&]([[maybe_unused]] size_t length) -> auto& {
-        return search_scheme;
+    auto selectSearchScheme = [&]([[maybe_unused]] size_t length) -> auto {
+        return std::tie(search_scheme, partition);
     };
-    search_n_impl<Edit>(index, queries, selectSearchScheme, partition, delegate, n);
+    search_n_impl<Edit>(index, queries, selectSearchScheme, delegate, n);
 }
+
+// convenience function, with auto selected search scheme and multiple queries
+template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
+void search(index_t const& index, queries_t&& queries, size_t maxErrors, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
+    auto selectSearchScheme = [&]([[maybe_unused]] size_t length) -> auto {
+        auto const& search_scheme = getCachedSearchScheme<Edit>(0, maxErrors);
+        auto const& partition     = getCachedPartition(search_scheme[0].pi.size(), length);
+        return std::tie(search_scheme, partition);
+    };
+    search_n_impl<Edit>(index, queries, selectSearchScheme, delegate, n);
+}
+
+
+// convenience function, with passed search scheme and multiple queries
+template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
+void search_best(index_t const& index, queries_t&& queries, std::vector<std::tuple<search_scheme::Scheme, std::vector<size_t>>> const& search_schemes, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
+    for (size_t i{}; i < search_schemes.size(); ++i) {
+        bool found = false;
+        auto report = [&](size_t qidx, auto cur, size_t e) {
+            found = true;
+            delegate(qidx, cur, e);
+        };
+        auto const& [search_scheme, partition] = search_schemes[i];
+        search(index, queries, search_scheme, partition, report, n);
+        if (found) {
+            break;
+        }
+    }
+}
+
+// convenience function, with auto selected search scheme and multiple queries
+template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
+void search_best(index_t const& index, queries_t&& queries, size_t maxErrors, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
+    for (size_t i{}; i < maxErrors; ++i) {
+        bool found = false;
+        auto report = [&](size_t qidx, auto cur, size_t e) {
+            found = true;
+            delegate(qidx, cur, e);
+        };
+        search(index, queries, i, report, n);
+        if (found) {
+            break;
+        }
+    }
+}
+
 
 }
