@@ -81,12 +81,20 @@ TEST_CASE("benchmark bit vectors run time (ctor) dependent on size", "[bitvector
         fmc::bitvector::PairedBitvector2L_512_64k,
         fmc::bitvector::OptSparseRBBitvector<fmc::bitvector::Bitvector2L_64_64k, fmc::bitvector::Bitvector2L_64_64k>,
         fmc::bitvector::OptSparseRBBitvector<fmc::bitvector::Bitvector2L_512_64k, fmc::bitvector::Bitvector2L_512_64k>,
+    #ifdef FMC_USE_PASTA
         FlatRank,
         WideRank,
+    #endif
+    #ifdef FMC_USE_SDSL
         SDSL_V,
         SDSL_V5,
+    #endif
+    #ifdef FMC_USE_SUX
         Rank9,
+    #endif
+    #ifdef FMC_USE_RANKSELECT
         RankSelect<5>,
+    #endif
         std::monostate
     >;
 

@@ -129,11 +129,20 @@ TEST_CASE("benchmark bit vectors for block size selection", "[bitvector][!benchm
         >;
 
         using TypeOthers = std::variant<
+        #ifdef FMC_USE_PASTA
             FlatRank,
             WideRank,
+        #endif
+        #ifdef FMC_USE_SDSL
             SDSL_V,
             SDSL_V5,
+        #endif
+        #ifdef FMC_USE_SUX
             Rank9,
+        #endif
+        #ifdef FMC_USE_RANKSELECT
+            RankSelect<5>,
+        #endif
             std::monostate
         >;
 
