@@ -224,7 +224,7 @@ struct Search {
         for (size_t i{0}; i < loops; ++i) {
             nextSymb = query[Right?(queryPosR+i):(queryPosL-i)];
             cur = extend<Right>(cur, nextSymb);
-            if (cur.count() == 0) return false; //!TODO reset values
+            if (cur.count() == 0) return false;
         }
 
         auto s1 = Restore{side[Right].lastRank, nextSymb};
