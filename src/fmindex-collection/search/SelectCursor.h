@@ -14,9 +14,9 @@ namespace fmc {
 template <typename Index>
 struct SelectIndexCursor;
 
-template <size_t TSigma, template <size_t> typename String, typename SparseArray>
-struct SelectIndexCursor<BiFMIndex<TSigma, String, SparseArray>> {
-    using cursor_t = BiFMIndexCursor<BiFMIndex<TSigma, String, SparseArray>>;
+template <size_t TSigma, template <size_t> typename String, typename SparseArray, bool TDelim, bool TReuseRev>
+struct SelectIndexCursor<BiFMIndex<TSigma, String, SparseArray, TDelim, TReuseRev>> {
+    using cursor_t = BiFMIndexCursor<BiFMIndex<TSigma, String, SparseArray, TDelim, TReuseRev>>;
 };
 
 template <size_t TSigma, template <size_t> typename String, typename SparseArray>
@@ -38,9 +38,9 @@ struct SelectIndexCursor<ReverseFMIndex<String, TCSA>> {
 template <typename Index>
 struct SelectLeftIndexCursor;
 
-template <size_t TSigma, template <size_t> typename String, typename SuffixArray>
-struct SelectLeftIndexCursor<BiFMIndex<TSigma, String, SuffixArray>> {
-    using cursor_t = LeftBiFMIndexCursor<BiFMIndex<TSigma, String, SuffixArray>>;
+template <size_t TSigma, template <size_t> typename String, typename SuffixArray, bool TDelim, bool TReuseRev>
+struct SelectLeftIndexCursor<BiFMIndex<TSigma, String, SuffixArray, TDelim, TReuseRev>> {
+    using cursor_t = LeftBiFMIndexCursor<BiFMIndex<TSigma, String, SuffixArray, TDelim, TReuseRev>>;
 };
 
 template <size_t TSigma, template <size_t> typename String, typename SparseArray>

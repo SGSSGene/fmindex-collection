@@ -3,7 +3,7 @@
   "packages": [
     {
       "name": "libsais",
-      "version": "2.10.2",
+      "version": "2.10.4",
       "github_repository": "IlyaGrebnov/libsais",
       "options": [
         "LIBSAIS_USE_OPENMP ${OpenMP_C_FOUND}",
@@ -39,14 +39,14 @@
     {
       "if": "PROJECT_IS_TOP_LEVEL",
       "name": "fmt",
-      "version": "11.2.0-git",
+      "version": "12.1.0",
       "github_repository": "fmtlib/fmt",
-      "git_tag": "36390db094afc48c47809ad9a6c9ced89b38551d"
+      "git_tag": "{VERSION}",
     },
     {
       "if": "PROJECT_IS_TOP_LEVEL",
       "name": "Catch2",
-      "version": "3.8.0",
+      "version": "3.11.0",
       "github_repository": "catchorg/Catch2"
     },
     {

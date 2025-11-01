@@ -318,4 +318,28 @@ inline auto limitToHamming(Scheme ss) -> Scheme {
     return ss;
 }
 
+/** creates a partition with `parts` that have a total sum of `totalSum`.
+ * Additionally each part will have the value 1 or higher.
+ */
+inline auto createUniformPartition(size_t parts, size_t totalSum) -> std::vector<size_t> {
+    assert(parts > 0);
+    assert(totalSum > 0);
+    assert(totalSum >= parts);
+
+    auto const block_size = totalSum / parts;
+    auto const rest       = totalSum % parts;
+    auto counts = std::vector<size_t>(parts, block_size);
+    for (size_t i{0}; i < rest; ++i) {
+        counts[i] += 1;
+    }
+    return counts;
+}
+
+/** Same as previous, but takes a search scheme as ipnut
+ */
+inline auto createUniformPartition(Scheme const& ss, size_t totalSum) -> std::vector<size_t> {
+    assert(ss.size() > 0);
+    return createUniformPartition(ss[0].pi.size(), totalSum);
+}
+
 }

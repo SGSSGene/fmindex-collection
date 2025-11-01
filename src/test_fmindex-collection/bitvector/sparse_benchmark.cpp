@@ -12,22 +12,20 @@
 #include "allBitVectors.h"
 
 using AllTypes = std::variant<
-    ALLSPARSEBITVECTORS,
+    fmc::bitvector::Bitvector2L_512_64k,
+    fmc::bitvector::OptRBBitvector<fmc::bitvector::Bitvector2L_512_64k, fmc::bitvector::Bitvector2L_512_64k>,
+    fmc::bitvector::OptSparseRBBitvector<fmc::bitvector::Bitvector2L_512_64k, fmc::bitvector::Bitvector2L_512_64k>,
+    fmc::bitvector::OptRBBitvector<fmc::bitvector::Bitvector2L_64_64k, fmc::bitvector::Bitvector2L_64_64k>,
+    fmc::bitvector::OptSparseRBBitvector<fmc::bitvector::Bitvector2L_64_64k, fmc::bitvector::Bitvector2L_64_64k>,
 #if defined(FMC_USE_RANKSELECT)
-    RankSelect<0>,
-    RankSelect<1>,
-    RankSelect<2>,
-    RankSelect<3>,
-    RankSelect<4>,
     RankSelect<5>,
-    RankSelect<6>,
-    RankSelect<7>,
 #endif
     std::monostate
 >;
 
+
 namespace {
-auto generateText(int32_t rate) -> std::vector<bool> {
+auto generateText(double density) -> std::vector<bool> {
     auto rng = ankerl::nanobench::Rng{};
 
     auto size = []() -> size_t {
@@ -44,12 +42,12 @@ auto generateText(int32_t rate) -> std::vector<bool> {
 
     auto text = std::vector<bool>{};
     for (size_t i{0}; i<size; ++i) {
-        text.push_back(rng.bounded(rate) == 0);
+        text.push_back(rng.bounded(100'000) < density*100'000.);
     }
     return text;
 }
 
-auto generateText(int32_t rate, size_t blockSize) -> std::vector<bool> {
+auto generateText(double density, size_t blockSize) -> std::vector<bool> {
     auto rng = ankerl::nanobench::Rng{};
 
     auto size = []() -> size_t {
@@ -66,14 +64,14 @@ auto generateText(int32_t rate, size_t blockSize) -> std::vector<bool> {
 
     auto text = std::vector<bool>{};
     for (size_t i{0}; i+blockSize-1 < size; i += blockSize) {
-        auto v = (rng.bounded(rate) == 0);
+        auto v = (rng.bounded(100'000) < density*100'000);
 
         for (size_t j{0}; j < blockSize; ++j) {
             text.push_back(v);
         }
     }
     while (text.size() < size) {
-        text.push_back(rng.bounded(rate) == 0);
+        text.push_back(rng.bounded(100'000) < density*100'000);
     }
     return text;
 }
@@ -86,7 +84,7 @@ TEST_CASE("benchmark bit vectors ctor run times", "[sparse-bitvector][!benchmark
     bench_ctor.title("c'tor()")
               .relative(true);
 
-    auto text = generateText(2);
+    auto text = generateText(0.5);
 
     SECTION("benchmarking") {
         call_with_templates<AllTypes>([&]<typename Vector>() {
@@ -104,7 +102,7 @@ TEST_CASE("benchmark bit vectors ctor run times", "[sparse-bitvector][!benchmark
 
 TEST_CASE("benchmark bit vectors rank and symbol run times", "[sparse-bitvector][!benchmark][time][symbol]") {
 
-    auto text = generateText(2);
+    auto text = generateText(0.5);
 
     SECTION("benchmarking - symbol") {
         auto bench_symbol = ankerl::nanobench::Bench{};
@@ -133,13 +131,11 @@ TEST_CASE("benchmark bit vectors rank and symbol run times", "[sparse-bitvector]
 TEST_CASE("benchmark bit vectors rank and symbol run times", "[sparse-bitvector][!benchmark][time][rank]") {
 
     SECTION("benchmarking - rank") {
-        for (size_t sparseness{1}; sparseness < 10; ++sparseness) {
-
-            auto rate = 1<<sparseness;
-            auto text = generateText(rate);
+        for (auto density : {0.05, 0.10, 0.15, 0.20, 0.25, 0.3, 0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95}) {
+            auto text = generateText(density);
 
             auto bench_rank = ankerl::nanobench::Bench{};
-            bench_rank.title("rank() " + std::to_string(rate))
+            bench_rank.title("rank() density:" + std::to_string(density))
                       .relative(true);
 
             bench_rank.epochs(20);
@@ -166,16 +162,16 @@ TEST_CASE("benchmark bit vectors rank and symbol run times", "[sparse-bitvector]
 
 TEST_CASE("benchmark bit vectors memory consumption", "[sparse-bitvector][!benchmark][size][density]") {
     SECTION("benchmarking") {
-        for (size_t sparseness{1}; sparseness < 10; ++sparseness) {
+        for (auto density : {0.05, 0.10, 0.15, 0.20, 0.25, 0.3, 0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95}) {
             BenchSize benchSize;
             benchSize.baseSize = 1.;
 
-            auto text = generateText(1<<sparseness);
+            auto text = generateText(density);
 
 
             call_with_templates<AllTypes>([&]<typename Vector>() {
 
-                auto vector_name = getName<Vector>() + " rate " + std::to_string(1<<sparseness);
+                auto vector_name = getName<Vector>() + " density " + std::to_string(density);
                 INFO(vector_name);
 
                 auto vec = Vector{text};
@@ -206,7 +202,7 @@ TEST_CASE("benchmark bit vectors memory consumption", "[sparse-bitvector][!bench
 
 TEST_CASE("benchmark bit vectors memory consumption - with blocks", "[sparse-bitvector][!benchmark][size][block]") {
     SECTION("benchmarking") {
-        for (size_t sparseness{1}; sparseness < 10; ++sparseness) {
+        for (auto density : {0.05, 0.10, 0.15, 0.20, 0.25, 0.3, 0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95}) {
             for (size_t blockiness{2}; blockiness < 3; ++blockiness) {
 //            for (size_t blockiness{0}; blockiness < 6; ++blockiness) {
                 BenchSize benchSize;
@@ -214,12 +210,11 @@ TEST_CASE("benchmark bit vectors memory consumption - with blocks", "[sparse-bit
 
                 auto blockSize = 1<<blockiness;
 
-                auto text = generateText(1<<sparseness, blockSize);
-
+                auto text = generateText(density, blockSize);
 
                 call_with_templates<AllTypes>([&]<typename Vector>() {
 
-                    auto vector_name = getName<Vector>() + " sparseness " + std::to_string(1<<sparseness) + ", blocksize " + std::to_string(blockSize);
+                    auto vector_name = getName<Vector>() + " density " + std::to_string(density) + ", blocksize " + std::to_string(blockSize);
                     INFO(vector_name);
 
                     auto vec = Vector{text};

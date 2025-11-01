@@ -545,6 +545,16 @@ void for_constexpr(CB cb) {
     }
 }
 
+template <size_t Begin, size_t End, typename CB>
+void for_constexpr_ea(CB cb) {
+    if constexpr (Begin != End) {
+        if (cb.template operator()<Begin>()) {
+            for_constexpr_ea<Begin+1, End>(cb);
+        }
+    }
+}
+
+
 template <size_t N, typename T=std::bitset<N>>
 static std::array<std::function<T(T const&, T const&, T const&)>, 256> lut_ternarylogic = []() {
     auto r = std::array<std::function<T(T const&, T const&, T const&)>, 256>{};

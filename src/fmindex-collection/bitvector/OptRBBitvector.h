@@ -6,8 +6,7 @@
 #include "../ternarylogic.h"
 #include "concepts.h"
 #include "Bitvector.h"
-#include "InvertedBitvector.h"
-#include "SparseRBBitvector.h"
+#include "RBBitvector.h"
 #include "Bitvector2L.h"
 
 #include <array>
@@ -27,46 +26,36 @@
 
 namespace fmc::bitvector {
 /**
- * OptSparseRBBitvector sparse block length encoded bitvector.
+ * OptRBBitvector sparse block length encoded bitvector.
  *
  * Uses Block length encoding and simplification on the
  * assumption the bit vector is sparse
  */
 template <Bitvector_c BV1 = Bitvector, Bitvector_c BV2 = Bitvector>
-struct OptSparseRBBitvector {
+struct OptRBBitvector {
 
     using Variant = std::variant<
         Bitvector2L<512ul, 65536ul>,
-        SparseRBBitvector<2, BV1, BV2>,
-        SparseRBBitvector<3, BV1, BV2>,
-        SparseRBBitvector<4, BV1, BV2>,
-        SparseRBBitvector<5, BV1, BV2>,
-        SparseRBBitvector<6, BV1, BV2>,
-        SparseRBBitvector<7, BV1, BV2>,
-        SparseRBBitvector<8, BV1, BV2>,
-        SparseRBBitvector<9, BV1, BV2>,
-        SparseRBBitvector<10, BV1, BV2>,
-        SparseRBBitvector<11, BV1, BV2>,
-        SparseRBBitvector<12, BV1, BV2>,
-        InvertedBitvector<SparseRBBitvector<2, BV1, BV2>>,
-        InvertedBitvector<SparseRBBitvector<3, BV1, BV2>>,
-        InvertedBitvector<SparseRBBitvector<4, BV1, BV2>>,
-        InvertedBitvector<SparseRBBitvector<5, BV1, BV2>>,
-        InvertedBitvector<SparseRBBitvector<6, BV1, BV2>>,
-        InvertedBitvector<SparseRBBitvector<7, BV1, BV2>>,
-        InvertedBitvector<SparseRBBitvector<8, BV1, BV2>>,
-        InvertedBitvector<SparseRBBitvector<9, BV1, BV2>>,
-        InvertedBitvector<SparseRBBitvector<10, BV1, BV2>>,
-        InvertedBitvector<SparseRBBitvector<11, BV1, BV2>>,
-        InvertedBitvector<SparseRBBitvector<12, BV1, BV2>>
+        RBBitvector<2, BV1, BV2>,
+        RBBitvector<3, BV1, BV2>,
+        RBBitvector<4, BV1, BV2>,
+        RBBitvector<5, BV1, BV2>,
+        RBBitvector<6, BV1, BV2>,
+        RBBitvector<7, BV1, BV2>,
+        RBBitvector<8, BV1, BV2>,
+        RBBitvector<9, BV1, BV2>,
+        RBBitvector<10, BV1, BV2>,
+        RBBitvector<11, BV1, BV2>,
+        RBBitvector<12, BV1, BV2>
     >;
+
     Variant bitvector;
     size_t totalLength{};
 
 
     template <std::ranges::sized_range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint8_t>
-    OptSparseRBBitvector(range_t&& _range)
+    OptRBBitvector(range_t&& _range)
         : totalLength{_range.size()} {
 
         static constexpr size_t Level = std::variant_size_v<Variant>;
@@ -75,7 +64,7 @@ struct OptSparseRBBitvector {
         uint64_t runCtZero{};
         uint64_t runCtOne{};
         for (size_t i{0}; i <= _range.size(); ++i) {
-            for_constexpr_ea<1, Level/2+1>([&]<size_t L>() {
+            for_constexpr_ea<1, Level>([&]<size_t L>() {
                 using V = std::variant_alternative_t<L, Variant>;
                 if ((i % V::BlockLength) != 0) return false;
                 if (runCtZero < V::BlockLength && runCtOne < V::BlockLength) return false;
@@ -87,20 +76,8 @@ struct OptSparseRBBitvector {
                 }
                 return true;
             });
-            for_constexpr_ea<Level/2+1, Level>([&]<size_t L>() {
-                using V = std::variant_alternative_t<L, Variant>;
-                if ((i % V::BlockLength) != 0) return false;
-                if (runCtZero < V::BlockLength && runCtOne < V::BlockLength) return false;
-                if (runCtZero >= V::BlockLength) {
-                    std::get<0>(countRuns[L]) += 1;
-                }
-                if (runCtOne >= V::BlockLength) {
-                    std::get<1>(countRuns[L]) += 1;
-                }
-                return true;
-            });
-            if (i == _range.size()) break;
 
+            if (_range.size() == i) break;
             auto value = _range[i];
             runCtZero = (runCtZero+1) * (1-value);
             runCtOne = (runCtOne+1) * value;
@@ -110,7 +87,6 @@ struct OptSparseRBBitvector {
         size_t minElement = std::variant_alternative_t<0, Variant>::estimateSize(_range.size());
 //        size_t minElement = std::numeric_limits<size_t>::max();
         size_t index{0};
-
         // Compute size of each:
         for_constexpr<1, Level>([&]<size_t L>() {
             using V = std::variant_alternative_t<L, Variant>;
@@ -129,12 +105,12 @@ struct OptSparseRBBitvector {
         });
     }
 
-    OptSparseRBBitvector() = default;
-    OptSparseRBBitvector(OptSparseRBBitvector const&) = default;
-    OptSparseRBBitvector(OptSparseRBBitvector&&) noexcept = default;
+    OptRBBitvector() = default;
+    OptRBBitvector(OptRBBitvector const&) = default;
+    OptRBBitvector(OptRBBitvector&&) noexcept = default;
 
-    auto operator=(OptSparseRBBitvector const&) -> OptSparseRBBitvector& = default;
-    auto operator=(OptSparseRBBitvector&&) noexcept -> OptSparseRBBitvector& = default;
+    auto operator=(OptRBBitvector const&) -> OptRBBitvector& = default;
+    auto operator=(OptRBBitvector&&) noexcept -> OptRBBitvector& = default;
 
     size_t size() const noexcept {
         return totalLength;
@@ -157,6 +133,6 @@ struct OptSparseRBBitvector {
         ar(bitvector, totalLength);
     }
 };
-static_assert(Bitvector_c<OptSparseRBBitvector<>>);
+static_assert(Bitvector_c<OptRBBitvector<>>);
 
 }

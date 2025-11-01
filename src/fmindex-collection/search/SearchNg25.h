@@ -10,11 +10,10 @@
 #include <cstddef>
 
 /**
- * like search_ng21 but:
- *  - correct handling of left/right avoidance of ID and other combinations
- *  - handling of matches followed by insertions or deletions
+ * like search_ng24 but:
+ *  - uses a partitioning system instead of a change of search scheme themself
  */
-namespace fmc::search_ng24 {
+namespace fmc::search_ng25 {
 
 template <bool Edit, typename index_t, typename query_t, typename search_t, typename delegate_t>
 struct Search {
@@ -31,6 +30,7 @@ struct Search {
     index_t const& index;
     query_t const& query;
     search_t const& search;
+    mutable std::vector<size_t> partition;
     delegate_t const& delegate;
 
     struct Side {
@@ -40,13 +40,24 @@ struct Search {
     mutable std::array<Side, 2> side;
     mutable size_t e{};
     mutable size_t part{};
+    mutable size_t queryPosL{}, queryPosR{};
 
-    Search(index_t const& _index, query_t const& _query, search_t const& _search, delegate_t const& _delegate)
+    Search(index_t const& _index, query_t const& _query, search_t const& _search, std::vector<size_t> const& _partition, delegate_t const& _delegate)
         : index     {_index}
         , query     {_query}
         , search    {_search}
+        , partition {_partition}
         , delegate  {_delegate}
     {
+        // check how many characters are before the first query char
+        for (size_t i{0}; i < search.pi[0]; ++i) {
+            queryPosL += partition[i];
+            queryPosR += partition[i];
+        }
+        // Notice: queryPosL might 'underflow' (also at other spots)
+        // but that is fine, after an underflow this variable is not
+        // being accessed before overflowing again.
+        queryPosL -= 1;
     }
 
     bool run() {
@@ -78,10 +89,9 @@ struct Search {
         if (cur.count() == 0) {
             return false;
         }
-
-        if (part == search.pi.size()) {
+        if (part == partition.size()) {
             if constexpr (!Edit || ((LInfo == 'M' or LInfo == 'I') and (RInfo == 'M' or RInfo == 'I'))) {
-                if (search.l[part-1] <= e and e <= search.u[part-1]) {
+                if (search.l.back() <= e and e <= search.u.back()) {
                     return delegate(cur, e);
                 }
             }
@@ -104,6 +114,40 @@ struct Search {
         }
     }
 
+    template <char LInfo, char RInfo, bool Right, bool NextPos>
+    bool search_next_pos(cursor_t const& cur) const {
+        if (cur.count() == 0) return false;
+        if constexpr (NextPos) {
+            if constexpr (Right) queryPosR += 1;
+            else queryPosL -= 1;
+            partition[search.pi[part]] -= 1;
+
+            if (partition[search.pi[part]] == 0) {
+                part += 1;
+                bool res = search_next<LInfo, RInfo>(cur);
+                part -= 1;
+                partition[search.pi[part]] += 1;
+                if constexpr (Right) queryPosR -= 1;
+                else queryPosL += 1;
+                return res;
+            }
+        }
+
+        bool r = [&]() {
+            if (cur.count() > 1) {
+                return search_next_dir<LInfo, RInfo, Right>(cur);
+            } else {
+                return search_next_dir_single<LInfo, RInfo, Right>(cur);
+            }
+        }();
+        if constexpr (NextPos) {
+            if constexpr (Right) queryPosR -= 1;
+            else queryPosL += 1;
+            partition[search.pi[part]] += 1;
+        }
+        return r;
+    }
+
     template <char LInfo, char RInfo, bool Right>
     bool search_next_dir(cursor_t const& cur) const {
         static constexpr char TInfo = Right ? RInfo : LInfo;
@@ -120,12 +164,14 @@ struct Search {
         constexpr char OnInsertionL  = Right ? LInfo : 'I';
         constexpr char OnInsertionR  = Right ? 'I'   : RInfo;
 
-        auto nextSymb = query[search.pi[part]];
+        auto nextSymb = query[Right?queryPosR:queryPosL];
 
-        bool matchAllowed    = search.l[part] <= e and e <= search.u[part]
+        bool matchAllowed    = (partition[search.pi[part]] > 1 or search.l[part] <= e)
+                               and e <= search.u[part]
                                and (TInfo != 'I' or nextSymb != side[Right].lastQRank)
                                and (TInfo != 'D' or nextSymb != side[Right].lastRank);
-        bool insertionAllowed    = search.l[part] <= e+1 and e+1 <= search.u[part];
+        bool insertionAllowed    = (partition[search.pi[part]] > 1 or search.l[part] <= e+1)
+                                   and e+1 <= search.u[part];
         bool substitutionAllowed = insertionAllowed;
         bool mismatchAllowed     = e+1 <= search.u[part];
 
@@ -136,8 +182,7 @@ struct Search {
                 auto const& newCur = cursors[nextSymb];
                 auto s1 = Restore{side[Right].lastRank, nextSymb};
                 auto s2 = Restore{side[Right].lastQRank, nextSymb};
-                auto sp = Restore{part, part+1};
-                bool f = search_next<OnMatchL, OnMatchR>(newCur);
+                auto f = search_next_pos<OnMatchL, OnMatchR, Right, /*.nextPos=*/true>(newCur);
                 if (f) return true;
             }
 
@@ -147,35 +192,53 @@ struct Search {
 
                 auto s1 = Restore{side[Right].lastRank, i};
                 if constexpr (Deletion) {
-                    bool f = search_next<OnDeletionL, OnDeletionR>(newCur); // deletion occurred in query
+                    auto f = search_next_pos<OnDeletionL, OnDeletionR, Right, /*.nextPos=*/false>(newCur); // deletion occurred in query
                     if (f) return true;
                 }
                 if (!substitutionAllowed) continue;
                 if (i == nextSymb) continue;
 
                 auto s2 = Restore{side[Right].lastQRank, nextSymb};
-                auto sp = Restore{part, part+1};
-                bool f = search_next<OnSubstituteL, OnSubstituteR>(newCur); // as substitution
+                auto f = search_next_pos<OnSubstituteL, OnSubstituteR, Right, /*.nextPos=*/true>(newCur);
                 if (f) return true;
             }
 
             if constexpr (Insertion) {
                 if (insertionAllowed) {
                     auto s2 = Restore{side[Right].lastQRank, nextSymb};
-                    auto sp = Restore{part, part+1};
-                    bool f = search_next<OnInsertionL, OnInsertionR>(cur); // insertion occurred in query
+                    auto f = search_next_pos<OnInsertionL, OnInsertionR, Right, /*.nextPos=*/true>(cur); // insertion occurred in query
                     if (f) return true;
                 }
             }
         } else if (matchAllowed) {
-            auto s1 = Restore{side[Right].lastRank, nextSymb};
-            auto s2 = Restore{side[Right].lastQRank, nextSymb};
-            auto newCur = extend<Right>(cur, nextSymb);
-            auto sp = Restore{part, part+1};
-            bool f = search_next<OnMatchL, OnMatchR>(newCur);
+            auto f = search_next_dir_no_errors<OnMatchL, OnMatchR, Right>(cur);
             if (f) return true;
         }
         return false;
+    }
+
+    template <char LInfo, char RInfo, bool Right>
+    bool search_next_dir_no_errors(cursor_t cur) const {
+        auto loops = partition[search.pi[part]];
+        auto nextSymb = decltype(query[0]){};
+        for (size_t i{0}; i < loops; ++i) {
+            nextSymb = query[Right?(queryPosR+i):(queryPosL-i)];
+            cur = extend<Right>(cur, nextSymb);
+            if (cur.count() == 0) return false;
+        }
+
+        auto s1 = Restore{side[Right].lastRank, nextSymb};
+        auto s2 = Restore{side[Right].lastQRank, nextSymb};
+        partition[search.pi[part]] = 0;
+        part += 1;
+        if constexpr (Right) queryPosR += loops;
+        else queryPosL -= loops;
+        bool res = search_next<LInfo, RInfo>(cur);
+        part -= 1;
+        partition[search.pi[part]] = loops;
+        if constexpr (Right) queryPosR -= loops;
+        else queryPosL += loops;
+        return res;
     }
 
     template <char LInfo, char RInfo, bool Right>
@@ -207,9 +270,9 @@ struct Search {
             }
         }();
 
-        auto curQSymb = query[search.pi[part]];
+        auto curQSymb = query[Right?queryPosR:queryPosL];
 
-        bool insertionAllowed    = search.l[part] <= e+1 and e+1 <= search.u[part];
+        bool insertionAllowed    = search.l[part] <= e+partition[search.pi[part]] and e+1 <= search.u[part];
         bool substitutionAllowed = insertionAllowed;
         bool mismatchAllowed     = e+1 <= search.u[part];
 
@@ -217,9 +280,8 @@ struct Search {
             if (insertionAllowed) {
                 auto se = Restore{e, e+1};
                 auto s2 = Restore{side[Right].lastQRank, curQSymb};
-                auto sp = Restore{part, part+1};
 
-                bool f = search_next<OnInsertionL, OnInsertionR>(cur);
+                bool f = search_next_pos<OnInsertionL, OnInsertionR, Right, /*.nextPos=*/true>(cur);
                 if (f) return true;
             }
         }
@@ -229,23 +291,28 @@ struct Search {
             return false;
         }
 
-        bool matchAllowed    = search.l[part] <= e and e <= search.u[part]
+        bool matchAllowed    = (partition[search.pi[part]] > 1 or search.l[part] <= e)
+                               and e <= search.u[part]
                                and (TInfo != 'I' or curQSymb != side[Right].lastQRank)
                                and (TInfo != 'D' or curQSymb != side[Right].lastRank);
 
         if (curISymb == curQSymb) {
             if (matchAllowed) {
+                if (!mismatchAllowed) {
+                    auto f = search_next_dir_no_errors<OnMatchL, OnMatchR, Right>(cur);
+                    if (f) return true;
+                    return false;
+                }
                 auto s1 = Restore{side[Right].lastRank, curQSymb};
                 auto s2 = Restore{side[Right].lastQRank, curQSymb};
-                auto sp = Restore{part, part+1};
-                bool f = search_next<OnMatchL, OnMatchR>(icursorNext);
+                bool f = search_next_pos<OnMatchL, OnMatchR, Right, /*.nextPos=*/true>(icursorNext);
                 if (f) return true;
             }
             if constexpr (Deletion) {
                 if (mismatchAllowed) {
                     auto se = Restore{e, e+1};
                     auto s1 = Restore{side[Right].lastRank, curISymb};
-                    bool f = search_next<OnDeletionL, OnDeletionR>(icursorNext);
+                    bool f = search_next_pos<OnDeletionL, OnDeletionR, Right, /*.nextPos=*/false>(icursorNext);
                     if (f) return true;
                 }
             }
@@ -256,15 +323,14 @@ struct Search {
             if (substitutionAllowed) {
                 auto s1 = Restore{side[Right].lastRank, curISymb};
                 auto s2 = Restore{side[Right].lastQRank, curQSymb};
-                auto sp = Restore{part, part+1};
 
-                bool f = search_next<OnSubstituteL, OnSubstituteR>(icursorNext);
+                bool f = search_next_pos<OnSubstituteL, OnSubstituteR, Right, /*.nextPos=*/true>(icursorNext);
                 if (f) return true;
             }
 
             if constexpr (Deletion) {
                 auto s1 = Restore{side[Right].lastRank, curISymb};
-                bool f = search_next<OnDeletionL, OnDeletionR>(icursorNext);
+                bool f = search_next_pos<OnDeletionL, OnDeletionR, Right, /*.nextPos=*/false>(icursorNext);
                 if (f) return true;
             }
         }
@@ -274,7 +340,7 @@ struct Search {
 
 
 template <bool Edit, typename index_t, Sequence query_t, typename delegate_t>
-void search_impl(index_t const& index, query_t const& query, search_scheme::Scheme const& search_scheme, delegate_t&& delegate) {
+void search_impl(index_t const& index, query_t const& query, search_scheme::Scheme const& search_scheme, std::vector<size_t> const& partition, delegate_t&& delegate) {
     using cursor_t = select_cursor_t<index_t>;
     using R = std::decay_t<decltype(delegate(std::declval<cursor_t>(), 0))>;
 
@@ -290,7 +356,7 @@ void search_impl(index_t const& index, query_t const& query, search_scheme::Sche
     }();
 
     for (auto const& search : search_scheme) {
-        bool f = Search<Edit, index_t, query_t, decltype(search), decltype(internal_delegate)>{index, query, search, internal_delegate}.run();
+        bool f = Search<Edit, index_t, query_t, decltype(search), decltype(internal_delegate)>{index, query, search, partition, internal_delegate}.run();
         if (f) {
             return;
         }
@@ -312,13 +378,13 @@ void search_impl(index_t const& index, query_t const& query, search_scheme::Sche
  *          length: length of query
  */
 template <bool Edit, typename index_t, Sequences queries_t, typename selectSearchScheme_t, typename delegate_t>
-void search_n_impl(index_t const& index, queries_t&& queries, selectSearchScheme_t&& selectSearchScheme, delegate_t&& delegate, size_t n) {
+void search_n_impl(index_t const& index, queries_t&& queries, selectSearchScheme_t&& selectSearchScheme, std::vector<size_t> const& partition, delegate_t&& delegate, size_t n) {
     if (queries.empty()) return;
     if (n == 0) return;
     for (size_t qidx{}; qidx < queries.size(); ++qidx) {
         size_t ct{};
         auto const& search_scheme = selectSearchScheme(queries[qidx].size());
-        search_impl<Edit>(index, queries[qidx], search_scheme, [&] (auto cur, size_t e) {
+        search_impl<Edit>(index, queries[qidx], search_scheme, partition, [&] (auto cur, size_t e) {
             if (cur.count() + ct > n) {
                 cur.len = n-ct;
             }
@@ -332,54 +398,12 @@ void search_n_impl(index_t const& index, queries_t&& queries, selectSearchScheme
 
 // convenience function, with passed search scheme and multiple queries
 template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
-void search(index_t const& index, queries_t&& queries, search_scheme::Scheme const& search_scheme, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
+void search(index_t const& index, queries_t&& queries, search_scheme::Scheme const& search_scheme, std::vector<size_t> const& partition, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
     // function that selects a search scheme
     auto selectSearchScheme = [&]([[maybe_unused]] size_t length) -> auto& {
-        assert(length == search_scheme[0].pi.size());
         return search_scheme;
     };
-    search_n_impl<Edit>(index, queries, selectSearchScheme, delegate, n);
-}
-
-// convenience function, with auto selected search scheme and multiple queries
-template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
-void search(index_t const& index, queries_t&& queries, size_t maxErrors, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
-    auto selectSearchScheme = [&]([[maybe_unused]] size_t length) -> auto& {
-        return getCachedSearchScheme<Edit>(length, 0, maxErrors);
-    };
-    search_n_impl<Edit>(index, queries, selectSearchScheme, delegate, n);
-}
-
-// convenience function, with passed search scheme and multiple queries
-template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
-void search_best(index_t const& index, queries_t&& queries, std::vector<search_scheme::Scheme> const& search_schemes, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
-    for (size_t i{}; i < search_schemes.size(); ++i) {
-        bool found = false;
-        auto report = [&](size_t qidx, auto cur, size_t e) {
-            found = true;
-            delegate(qidx, cur, e);
-        };
-        search(index, queries, search_schemes[i], report, n);
-        if (found) {
-            break;
-        }
-    }
-}
-
-// convenience function, with auto selected search scheme and multiple queries
-template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
-void search_best(index_t const& index, queries_t&& queries, size_t maxErrors, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
-    for (size_t i{}; i < maxErrors; ++i) {
-        bool found = false;
-        auto report = [&](size_t qidx, auto cur, size_t e) {
-            found = true;
-            delegate(qidx, cur, e);
-        };
-        search(index, queries, i, report, n);
-        if (found) {
-            break;
-        }
-    }
+    search_n_impl<Edit>(index, queries, selectSearchScheme, partition, delegate, n);
 }
 
 }

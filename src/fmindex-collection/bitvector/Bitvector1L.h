@@ -116,6 +116,13 @@ struct Bitvector1L {
     void serialize(Archive& ar) {
         ar(bits, l0, totalLength);
     }
+
+    static size_t estimateSize(size_t totalSize) {
+        auto bits_for_l0_blocks = (totalSize/bits_ct + 1) * 64;
+        auto bits = (totalSize/bits_ct+1) * bits_ct;
+
+        return bits + bits_for_l0_blocks;
+    }
 };
 
 using Bitvector1L_64  = Bitvector1L<64>;
