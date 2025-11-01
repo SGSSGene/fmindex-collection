@@ -124,7 +124,10 @@ struct AWFMIndex<5> {
         }
     }
     AWFMIndex(AWFMIndex const&) = delete;
-    AWFMIndex(AWFMIndex&&) = delete;
+    AWFMIndex(AWFMIndex&& _other)
+        : index{std::exchange(_other.index, nullptr)}
+        , totalLength{_other.totalLength}
+    {}
 
     AWFMIndex(std::span<uint8_t const> _symbols) {
         auto config = AwFmIndexConfiguration{};
@@ -136,7 +139,16 @@ struct AWFMIndex<5> {
     }
 
     auto operator=(AWFMIndex const&) -> AWFMIndex& = delete;
-    auto operator=(AWFMIndex&&) -> AWFMIndex& = delete;
+    auto operator=(AWFMIndex&& _other) -> AWFMIndex& {
+        if (index != nullptr) {
+            //!WORKAROUND !HACK awFmDeallocIndex closes a file handle, even if it didn't open one
+            index->fileHandle = fopen("/dev/zero", "r");
+            awFmDeallocIndex(index);
+        }
+        index = std::exchange(_other.index, nullptr);
+        totalLength = _other.totalLength;
+        return *this;
+    }
 
     size_t size() const noexcept {
         return totalLength;
@@ -213,6 +225,21 @@ struct AWFMIndex<5> {
     template <> struct AWFMIndex<SIGMA> : AWFMIndex<BASESIGMA> { \
         static constexpr size_t Sigma = SIGMA; \
         using AWFMIndex<BASESIGMA>::AWFMIndex; \
+        auto all_ranks(size_t idx) const -> std::array<uint64_t, Sigma> {\
+            auto r = std::array<uint64_t, Sigma>{}; \
+            for (size_t i{0}; i < Sigma; ++i) { \
+                r[i] = rank(idx, i); \
+            } \
+            return r; \
+        } \
+        auto all_ranks_and_prefix_ranks(size_t idx) const -> std::tuple<std::array<uint64_t, Sigma>, std::array<uint64_t, Sigma>> { \
+            auto rs  = all_ranks(idx); \
+            auto prs = rs; \
+            for (size_t i{1}; i < prs.size(); ++i) { \
+                prs[i] = prs[i] + prs[i-1]; \
+            } \
+            return {rs, prs}; \
+        } \
     };
 
 
@@ -337,6 +364,6 @@ AWFMINDEX_TEMPLATE(21, 17);
 AWFMINDEX_TEMPLATE(21, 18);
 AWFMINDEX_TEMPLATE(21, 19);
 AWFMINDEX_TEMPLATE(21, 20);
-}
 
-//static_assert(checkString_c<AWFMIndex>);
+static_assert(checkString_c<AWFMIndex>);
+}
