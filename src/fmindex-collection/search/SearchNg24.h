@@ -359,7 +359,7 @@ void search_best(index_t const& index, queries_t&& queries, std::vector<search_s
             found = true;
             delegate(qidx, cur, e);
         };
-        search(index, queries, search_schemes[i], report);
+        search(index, queries, search_schemes[i], report, n);
         if (found) {
             break;
         }
@@ -375,7 +375,7 @@ void search_best(index_t const& index, queries_t&& queries, size_t maxErrors, de
             found = true;
             delegate(qidx, cur, e);
         };
-        search(index, queries, i, report);
+        search(index, queries, i, report, n);
         if (found) {
             break;
         }
