@@ -19,15 +19,17 @@ struct BiFMIndexCursor {
     size_t lb;
     size_t lbRev;
     size_t len{};
+    size_t steps{}; // number of extension steps taken
     BiFMIndexCursor() noexcept = default;
     BiFMIndexCursor(Index const& index) noexcept
-        : BiFMIndexCursor{index, 0, 0, index.size()}
+        : BiFMIndexCursor{index, 0, 0, index.size(), 0}
     {}
-    BiFMIndexCursor(Index const& index, size_t lb, size_t lbRev, size_t len) noexcept
+    BiFMIndexCursor(Index const& index, size_t lb, size_t lbRev, size_t len, size_t steps) noexcept
         : index{&index}
         , lb{lb}
         , lbRev{lbRev}
         , len{len}
+        , steps{steps}
     {}
 
     bool operator==(BiFMIndexCursor const& _other) const noexcept {
@@ -52,7 +54,7 @@ struct BiFMIndexCursor {
 
         auto cursors = std::array<BiFMIndexCursor, Sigma>{};
         for (size_t i{0}; i < Sigma; ++i) {
-            cursors[i] = BiFMIndexCursor{*index, rs1[i], lbRev + prs2[i] - prs1[i], rs2[i] - rs1[i]};
+            cursors[i] = BiFMIndexCursor{*index, rs1[i], lbRev + prs2[i] - prs1[i], rs2[i] - rs1[i], steps+1};
         }
         return cursors;
     }
@@ -71,7 +73,7 @@ struct BiFMIndexCursor {
 
             auto cursors = std::array<BiFMIndexCursor, Sigma>{};
             for (size_t i{0}; i < Sigma; ++i) {
-                cursors[i] = BiFMIndexCursor{*index, lb + prs2[i] - prs1[i], rs1[i], rs2[i] - rs1[i]};
+                cursors[i] = BiFMIndexCursor{*index, lb + prs2[i] - prs1[i], rs1[i], rs2[i] - rs1[i], steps+1};
             }
             return cursors;
         } else {
@@ -86,7 +88,7 @@ struct BiFMIndexCursor {
 
             auto cursors = std::array<BiFMIndexCursor, Sigma>{};
             for (size_t i{0}; i < Sigma; ++i) {
-                cursors[i] = BiFMIndexCursor{*index, lb + prs2[i] - prs1[i], rs1[i], rs2[i] - rs1[i]};
+                cursors[i] = BiFMIndexCursor{*index, lb + prs2[i] - prs1[i], rs1[i], rs2[i] - rs1[i], steps+1};
             }
             return cursors;
         }
@@ -101,7 +103,7 @@ struct BiFMIndexCursor {
         size_t newLb    = bwt.rank(lb, symb);
         size_t newLbRev = lbRev + bwt.prefix_rank(lb+len, symb) - bwt.prefix_rank(lb, symb);
         size_t newLen   = bwt.rank(lb+len, symb) - newLb;
-        auto newCursor = BiFMIndexCursor{*index, newLb + index->C[symb], newLbRev, newLen};
+        auto newCursor = BiFMIndexCursor{*index, newLb + index->C[symb], newLbRev, newLen, steps+1};
         return newCursor;
     }
     auto extendRight(size_t symb) const -> BiFMIndexCursor {
@@ -110,14 +112,14 @@ struct BiFMIndexCursor {
             size_t newLb    = lb + bwt.prefix_rank(lbRev+len, symb) - bwt.prefix_rank(lbRev, symb);
             size_t newLbRev = bwt.rank(lbRev, symb);
             size_t newLen   = bwt.rank(lbRev+len, symb) - newLbRev;
-            auto newCursor = BiFMIndexCursor{*index, newLb, newLbRev + index->C[symb], newLen};
+            auto newCursor = BiFMIndexCursor{*index, newLb, newLbRev + index->C[symb], newLen, steps+1};
             return newCursor;
         } else {
             auto const& bwt = index->bwtRev;
             size_t newLb    = lb + bwt.prefix_rank(lbRev+len, symb) - bwt.prefix_rank(lbRev, symb);
             size_t newLbRev = bwt.rank(lbRev, symb);
             size_t newLen   = bwt.rank(lbRev+len, symb) - newLbRev;
-            auto newCursor = BiFMIndexCursor{*index, newLb, newLbRev + index->C[symb], newLen};
+            auto newCursor = BiFMIndexCursor{*index, newLb, newLbRev + index->C[symb], newLen, steps+1};
             return newCursor;
         }
     }
@@ -152,21 +154,24 @@ struct LeftBiFMIndexCursor {
     Index const* index;
     size_t lb;
     size_t len;
+    size_t steps;
     LeftBiFMIndexCursor(BiFMIndexCursor<Index> const& _other)
         : index{_other.index}
         , lb{_other.lb}
         , len{_other.len}
+        , steps{_other.steps}
     {}
     LeftBiFMIndexCursor()
         : index{nullptr}
     {}
     LeftBiFMIndexCursor(Index const& index)
-        : LeftBiFMIndexCursor{index, 0, index.size()}
+        : LeftBiFMIndexCursor{index, 0, index.size(), 0}
     {}
-    LeftBiFMIndexCursor(Index const& index, size_t lb, size_t len)
+    LeftBiFMIndexCursor(Index const& index, size_t lb, size_t len, size_t steps)
         : index{&index}
         , lb{lb}
         , len{len}
+        , steps{steps}
     {}
     bool empty() const {
         return len == 0;
@@ -185,9 +190,9 @@ struct LeftBiFMIndexCursor {
         }
 
         auto cursors = std::array<LeftBiFMIndexCursor, Sigma>{};
-        cursors[0] = LeftBiFMIndexCursor{*index, rs1[0], rs2[0] - rs1[0]};
+        cursors[0] = LeftBiFMIndexCursor{*index, rs1[0], rs2[0] - rs1[0], steps+1};
         for (size_t i{1}; i < Sigma; ++i) {
-            cursors[i] = LeftBiFMIndexCursor{*index, rs1[i], rs2[i] - rs1[i]};
+            cursors[i] = LeftBiFMIndexCursor{*index, rs1[i], rs2[i] - rs1[i], steps+1};
         }
         return cursors;
     }
@@ -197,7 +202,7 @@ struct LeftBiFMIndexCursor {
 
         size_t newLb    = bwt.rank(lb, symb);
         size_t newLen   = bwt.rank(lb+len, symb) - newLb;
-        auto newCursor = LeftBiFMIndexCursor{*index, newLb + index->C[symb], newLen};
+        auto newCursor = LeftBiFMIndexCursor{*index, newLb + index->C[symb], newLen, steps+1};
         return newCursor;
     }
 };
