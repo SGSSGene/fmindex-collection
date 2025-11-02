@@ -26,6 +26,8 @@
 #include "SearchNg24.h"
 #include "SearchNg24Sm.h"
 #include "SearchNg25.h"
+#include "SearchNg25.h"
+#include "SearchNg26.h"
 #include "SearchPseudo.h"
 #include "SearchNoErrors.h"
 #include "SearchOneError.h"

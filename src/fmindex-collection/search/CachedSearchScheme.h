@@ -51,4 +51,15 @@ auto getCachedSearchScheme(size_t _length, size_t _minError, size_t _maxError) -
     return search_scheme;
 }
 
+inline auto getCachedPartition(size_t _parts, size_t _length) -> auto const & {
+    static thread_local auto cache = std::tuple<size_t, size_t, std::vector<size_t>>{0, 0, {}};
+    auto& [length, parts, partition] = cache;
+    if (length != _length || parts != _parts) {
+        partition = fmc::search_scheme::createUniformPartition(_parts, _length);
+        parts = _parts;
+        length = _length;
+    }
+    return partition;
+}
+
 }

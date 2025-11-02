@@ -75,7 +75,6 @@ struct Search {
         state.LInfo = 'M';
         state.RInfo = 'M';
 
-        auto cur       = cursor_t{index};
         return search_next(state);
     }
 
