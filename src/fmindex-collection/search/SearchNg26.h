@@ -37,10 +37,6 @@ struct Search {
         uint8_t lastRank{};
         uint8_t lastQRank{};
     };
-/*    mutable std::array<Side, 2> side;
-    mutable size_t e{};
-    mutable size_t part{};
-    mutable size_t queryPosL{}, queryPosR{};*/
 
     struct State {
         cursor_t cur;
@@ -54,7 +50,6 @@ struct Search {
         bool Right{};
         bool NextPos{};
     };
-//    State state;
 
     Search(index_t const& _index, query_t const& _query, search_t const& _search, std::vector<size_t> const& _partition, delegate_t const& _delegate)
         : index     {_index}
@@ -317,14 +312,6 @@ struct Search {
             if (matchAllowed) {
                 if (!mismatchAllowed) {
                     auto f = search_next_dir_no_errors(state);
-/*                    auto newState = state;
-                    newState.cur = extend(state, curISymb);
-                    newState.side[state.Right].lastRank = curISymb;
-                    newState.side[state.Right].lastQRank = curISymb;
-                    newState.LInfo = OnMatchL;
-                    newState.RInfo = OnMatchR;
-                    newState.NextPos = true;
-                    auto f = search_next_pos(newState);*/
                     if (f) return true;
                     return false;
                 }
@@ -492,6 +479,5 @@ void search_best(index_t const& index, queries_t&& queries, size_t maxErrors, de
         }
     }
 }
-
 
 }
