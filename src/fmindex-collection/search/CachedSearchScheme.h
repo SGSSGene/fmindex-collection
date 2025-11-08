@@ -8,16 +8,23 @@
 namespace fmc {
 
 /** cache a search scheme (without expansion to length)
+ *
+ * @param _shortLen: indicates that the search scheme should work for short queries (length of 2)
  */
 template <bool Edit>
-auto getCachedSearchScheme(size_t _minError, size_t _maxError) -> auto const& {
-    static thread_local auto cache = std::tuple<size_t, size_t, fmc::search_scheme::Scheme>{std::numeric_limits<size_t>::max(), 0, {}};
-    // check if last scheme has correct errors and length, other wise generate it
-    auto& [minError, maxError, search_scheme] = cache;
-    if (_minError != minError || _maxError != maxError) { // regenerate everything
+auto getCachedSearchScheme(size_t _minError, size_t _maxError, bool _shortLen=false) -> auto const& {
+    static thread_local auto cache = std::tuple<size_t, size_t, bool, fmc::search_scheme::Scheme>{std::numeric_limits<size_t>::max(), 0, false, {}};
+    // check if last scheme has correct errors and length, otherwise generate it
+    auto& [minError, maxError, shortLen, search_scheme] = cache;
+    if (_minError != minError
+        || _maxError != maxError
+        || shortLen != _shortLen
+    ) { // regenerate everything
         minError      = _minError;
         maxError      = _maxError;
-        search_scheme = fmc::search_scheme::generator::h2(maxError+2, minError, maxError);
+        shortLen      = _shortLen;
+        search_scheme = fmc::search_scheme::generator::h2(maxError+(shortLen?1:2), minError, maxError);
+
         if constexpr (!Edit) {
             search_scheme = limitToHamming(search_scheme);
         }

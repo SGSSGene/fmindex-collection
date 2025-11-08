@@ -4,6 +4,7 @@
 
 #include "../locate.h"
 #include "SearchNg24.h"
+#include "SearchNg25.h"
 #include "SearchNg26.h"
 #include "SearchNoErrors.h"
 #include "CachedSearchScheme.h"
@@ -18,7 +19,7 @@ void search(index_t const& _index, query_t const& _query, size_t _errors, delega
             _delegate(cursor, size_t{0});
         }
     } else {
-        search_ng24::search<EditDistance>(_index, _query, _errors, std::forward<delegate_t>(_delegate));
+        search_ng26::search<EditDistance>(_index, _query, _errors, std::forward<delegate_t>(_delegate));
     }
 }
 

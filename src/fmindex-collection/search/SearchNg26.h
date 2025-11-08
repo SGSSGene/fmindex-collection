@@ -96,9 +96,8 @@ struct Search {
 
 
     bool search_next(State const& state) const {
-        if (state.cur.count() == 0) {
-            return false;
-        }
+        if (state.cur.count() == 0) return false;
+
         if (state.part == partition.size()) {
             if (!Edit || ((state.LInfo == 'M' or state.LInfo == 'I') and (state.RInfo == 'M' or state.RInfo == 'I'))) {
                 if (search.l.back() <= state.e and state.e <= search.u.back()) {
@@ -438,7 +437,7 @@ void search(index_t const& index, queries_t&& queries, search_scheme::Scheme con
 template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
 void search(index_t const& index, queries_t&& queries, size_t maxErrors, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
     auto selectSearchScheme = [&]([[maybe_unused]] size_t length) -> auto {
-        auto const& search_scheme = getCachedSearchScheme<Edit>(0, maxErrors);
+        auto const& search_scheme = getCachedSearchScheme<Edit>(0, maxErrors, /*.shortLen=*/(length==2));
         auto const& partition     = getCachedPartition(search_scheme[0].pi.size(), length);
         return std::tie(search_scheme, partition);
     };
