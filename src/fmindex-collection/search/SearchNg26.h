@@ -37,10 +37,6 @@ struct Search {
         uint8_t lastRank{};
         uint8_t lastQRank{};
     };
-/*    mutable std::array<Side, 2> side;
-    mutable size_t e{};
-    mutable size_t part{};
-    mutable size_t queryPosL{}, queryPosR{};*/
 
     struct State {
         cursor_t cur;
@@ -54,7 +50,6 @@ struct Search {
         bool Right{};
         bool NextPos{};
     };
-//    State state;
 
     Search(index_t const& _index, query_t const& _query, search_t const& _search, std::vector<size_t> const& _partition, delegate_t const& _delegate)
         : index     {_index}
@@ -80,7 +75,6 @@ struct Search {
         state.LInfo = 'M';
         state.RInfo = 'M';
 
-        auto cur       = cursor_t{index};
         return search_next(state);
     }
 
@@ -102,9 +96,8 @@ struct Search {
 
 
     bool search_next(State const& state) const {
-        if (state.cur.count() == 0) {
-            return false;
-        }
+        if (state.cur.count() == 0) return false;
+
         if (state.part == partition.size()) {
             if (!Edit || ((state.LInfo == 'M' or state.LInfo == 'I') and (state.RInfo == 'M' or state.RInfo == 'I'))) {
                 if (search.l.back() <= state.e and state.e <= search.u.back()) {
@@ -317,14 +310,6 @@ struct Search {
             if (matchAllowed) {
                 if (!mismatchAllowed) {
                     auto f = search_next_dir_no_errors(state);
-/*                    auto newState = state;
-                    newState.cur = extend(state, curISymb);
-                    newState.side[state.Right].lastRank = curISymb;
-                    newState.side[state.Right].lastQRank = curISymb;
-                    newState.LInfo = OnMatchL;
-                    newState.RInfo = OnMatchR;
-                    newState.NextPos = true;
-                    auto f = search_next_pos(newState);*/
                     if (f) return true;
                     return false;
                 }
@@ -452,7 +437,7 @@ void search(index_t const& index, queries_t&& queries, search_scheme::Scheme con
 template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
 void search(index_t const& index, queries_t&& queries, size_t maxErrors, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
     auto selectSearchScheme = [&]([[maybe_unused]] size_t length) -> auto {
-        auto const& search_scheme = getCachedSearchScheme<Edit>(0, maxErrors);
+        auto const& search_scheme = getCachedSearchScheme<Edit>(0, maxErrors, /*.shortLen=*/(length==2));
         auto const& partition     = getCachedPartition(search_scheme[0].pi.size(), length);
         return std::tie(search_scheme, partition);
     };
@@ -492,6 +477,5 @@ void search_best(index_t const& index, queries_t&& queries, size_t maxErrors, de
         }
     }
 }
-
 
 }

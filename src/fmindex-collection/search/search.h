@@ -4,6 +4,8 @@
 
 #include "../locate.h"
 #include "SearchNg24.h"
+#include "SearchNg25.h"
+#include "SearchNg26.h"
 #include "SearchNoErrors.h"
 #include "CachedSearchScheme.h"
 
@@ -17,7 +19,7 @@ void search(index_t const& _index, query_t const& _query, size_t _errors, delega
             _delegate(cursor, size_t{0});
         }
     } else {
-        search_ng24::search<EditDistance>(_index, _query, _errors, std::forward<delegate_t>(_delegate));
+        search_ng26::search<EditDistance>(_index, _query, _errors, std::forward<delegate_t>(_delegate));
     }
 }
 
@@ -28,18 +30,18 @@ void search(index_t const& _index, queries_t const& _queries, size_t _errors, de
             _delegate(qidx, cursor, size_t{0});
         });
     } else {
-        search_ng24::search<EditDistance>(_index, _queries, _errors, std::forward<delegate_t>(_delegate));
+        search_ng26::search<EditDistance>(_index, _queries, _errors, std::forward<delegate_t>(_delegate));
     }
 }
 
 template <bool EditDistance, typename index_t, Sequence query_t, typename delegate_t>
 void search_n(index_t const& _index, query_t const& _query, size_t _errors, size_t _n, delegate_t&& _delegate) {
-    search_ng24::search<EditDistance>(_index, _query, _errors, std::forward<delegate_t>(_delegate), _n);
+    search_ng26::search<EditDistance>(_index, _query, _errors, std::forward<delegate_t>(_delegate), _n);
 }
 
 template <bool EditDistance, typename index_t, Sequences queries_t, typename delegate_t>
 void search_n(index_t const& _index, queries_t const& _queries, size_t _errors, size_t _n, delegate_t&& _delegate) {
-    search_ng24::search<EditDistance>(_index, _queries, _errors, std::forward<delegate_t>(_delegate), _n);
+    search_ng26::search<EditDistance>(_index, _queries, _errors, std::forward<delegate_t>(_delegate), _n);
 }
 
 template <typename index_t, Sequences queries_t, typename delegate_t>
