@@ -22,8 +22,10 @@ struct BiFMIndex {
     using NoDelim = BiFMIndex<TSigma, String, SparseArray, false, TReuseRev>;
     using ReuseRev = BiFMIndex<TSigma, String, SparseArray, TDelim, true>;
 
-    static size_t constexpr Sigma     = TSigma;
-    static size_t constexpr FirstSymb = TDelim?1:0;
+    static size_t constexpr Sigma      = TSigma;
+    static size_t constexpr FirstSymb  = TDelim?1:0;
+    static size_t constexpr Delim_v    = TDelim;
+    static size_t constexpr ReuseRev_v = TReuseRev;
 
     // Set RevBwtType to std::nullptr_t to indicate that it should not be used
     using RevBwtType = std::conditional_t<TReuseRev, std::nullptr_t, String<Sigma>>;
