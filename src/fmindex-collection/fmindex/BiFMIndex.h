@@ -58,7 +58,10 @@ struct BiFMIndex {
     {}
 
 
-    BiFMIndex(Sequence auto const& _sequence, SparseArray const& _annotatedSequence, size_t _threadNbr, bool mirrorInput = false) {
+    /*
+     * \param includeReversedInput assumes that the input data also has the reversed input data
+     */
+    BiFMIndex(Sequence auto const& _sequence, SparseArray const& _annotatedSequence, size_t _threadNbr, bool includeReversedInput = false) {
         if (_sequence.size() >= std::numeric_limits<size_t>::max()/2) {
             throw std::runtime_error{"sequence is longer than what this system is capable of handling"};
         }
@@ -66,7 +69,7 @@ struct BiFMIndex {
         bool omegaSorting = !TDelim; // Use omega sorting if no delimiter is being used
 
         // copy text into custom buffer
-        auto inputText = createInputText(_sequence, omegaSorting, mirrorInput);
+        auto inputText = createInputText(_sequence, omegaSorting, includeReversedInput);
 
         // create bwt, bwtRev and annotatedArray
         auto [_bwt, _annotatedArray] = createBWTAndAnnotatedArray(inputText, _annotatedSequence, _threadNbr, omegaSorting);
@@ -99,15 +102,10 @@ struct BiFMIndex {
      *
      * \param _input a list of sequences
      * \param samplingRate rate of the sampling
+     * \param includeReversedInput also adds all input and their reversed text
      */
-    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, size_t seqOffset = 0, bool mirrorInput = false) {
-        auto [totalSize, inputText, inputSizes] = [&]() {
-            if (TDelim) {
-                return createSequences(_input);
-            } else {
-                return createSequencesWithoutDelimiter(_input);
-            }
-        }();
+    BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, size_t seqOffset = 0, bool includeReversedInput = false) {
+        auto [totalSize, inputText, inputSizes] = createSequences(_input, /*._addReversed=*/includeReversedInput, /*._useDelimiters=*/TDelim);
 
         size_t refId{0};
         size_t pos{0};
@@ -118,13 +116,10 @@ struct BiFMIndex {
             assert(inputSizes.size() < refId);
         }
 
-        auto size = totalSize;
-        if (mirrorInput) size = size*2;
-
 
         auto annotatedSequence = SparseArray {
-            std::views::iota(size_t{0}, size) | std::views::transform([&](size_t phase) -> std::optional<ADEntry> {
-                if (phase < totalSize) { // going forward
+            std::views::iota(size_t{0}, totalSize) | std::views::transform([&](size_t phase) -> std::optional<ADEntry> {
+                if (!includeReversedInput || phase*2 < totalSize) { // going forward
                     assert(refId < inputSizes.size());
                     assert(pos < inputSizes[refId]);
 
@@ -141,22 +136,20 @@ struct BiFMIndex {
                     }
                     return ret;
                 } else { // going backwards
-                    if (phase == totalSize) { // reset values
-                        pos = 0;
-                        refId = 0;
-                    }
-
                     assert(refId < inputSizes.size());
-                    assert(pos < inputSizes[inputSizes.size() - refId - 1]);
+                    assert(pos < inputSizes[refId]);
 
                     auto ret = std::optional<ADEntry>{std::nullopt};
 
                     if (pos % samplingRate == 0) {
-                        ret = std::make_tuple(inputSizes.size()*2 - refId+seqOffset-1, inputSizes[refId] - pos-1);
+                        auto _refId = _input.size() + inputSizes.size() - refId-1+seqOffset;
+                        size_t extra = TDelim?1:0;
+                        auto _pos   = (inputSizes[refId] - pos + inputSizes[refId] - 1 - extra) % inputSizes[refId];
+                        ret = std::make_tuple(_refId, _pos);
                     }
 
                     ++pos;
-                    if (inputSizes[inputSizes.size() - refId - 1] == pos) {
+                    if (inputSizes[refId] == pos) {
                         refId += 1;
                         pos = 0;
                     }
@@ -165,7 +158,7 @@ struct BiFMIndex {
             })
         };
 
-        *this = BiFMIndex{inputText, annotatedSequence, threadNbr, mirrorInput};
+        *this = BiFMIndex{inputText, annotatedSequence, threadNbr, /*includeReversedInput=*/false};
     }
 
     auto operator=(BiFMIndex const&) -> BiFMIndex& = delete;
