@@ -643,7 +643,7 @@ auto mark_exact_v3(size_t value, std::bitset<N> const& _a, std::bitset<N> const&
  */
 template <size_t N>
 auto mark_exact_v3(size_t value, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
-    assert(value < 8);
+    assert(value < 4);
 
     switch(value) {
         case 0: return ~_b & ~_c;
