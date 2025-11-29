@@ -638,6 +638,25 @@ auto mark_exact_v3(size_t value, std::bitset<N> const& _a, std::bitset<N> const&
     return {};
 };
 
+/** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
+ *  has the same bit value as Value
+ */
+template <size_t N>
+auto mark_exact_v3(size_t value, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::bitset<N> {
+    assert(value < 4);
+
+    switch(value) {
+        case 0: return ~_b & ~_c;
+        case 1: return ~_b &  _c;
+        case 2: return  _b & ~_c;
+        case 3: return  _b &  _c;
+    };
+//    unreachable();
+//    __builtin_unreachable();
+    return {};
+};
+
+
 template <size_t N>
 auto mark_exact_all(std::bitset<N> const& _a, std::bitset<N> const& _b, std::bitset<N> const& _c) -> std::array<std::bitset<N>, 8> {
     auto r = std::array<std::bitset<N>, 8>{};
@@ -709,7 +728,9 @@ static std::array<std::bitset<N>, 2> mask_positive_or_negative = []() {
  */
 template <size_t N1, size_t N2>
 auto mark_exact_large(size_t value, std::array<std::bitset<N1>, N2> const& _arr) -> std::bitset<N1> {
-    if constexpr (N2 == 3) {
+    if constexpr (N2 == 2) {
+        return mark_exact_v3(value, _arr[1], _arr[0]);
+    } else if constexpr (N2 == 3) {
         return mark_exact_v3(value, _arr[2], _arr[1], _arr[0]);
     } else {
         auto const& mask = mask_positive_or_negative<N1>;

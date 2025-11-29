@@ -237,9 +237,12 @@ inline auto createBWT(std::span<uint8_t const> inputText, size_t _threadNbr, boo
     }
 }
 
-inline auto createInputText(std::span<uint8_t const> _input, bool _omegaSorting, bool _mirrorInput=false) -> std::vector<uint8_t> {
+inline auto createInputText(std::span<uint8_t const> _input, bool _omegaSorting, bool _includeReversedInput=false) -> std::vector<uint8_t> {
     auto output = std::vector<uint8_t>{};
-    if (_omegaSorting && _mirrorInput) {
+
+    if (_omegaSorting && _includeReversedInput) {
+        // ABC -> ABC CBA ABC CBA
+        // AB$ -> AB$ $BA AB$ BA$
         output.resize(_input.size()*4);
         for (size_t i{0}; i < _input.size(); ++i) {
             output[_input.size()*0+i]   = _input[i];
@@ -247,19 +250,25 @@ inline auto createInputText(std::span<uint8_t const> _input, bool _omegaSorting,
             output[_input.size()*2+i]   = _input[i];
             output[_input.size()*4-i-1] = _input[i];
         }
-    } else if (_mirrorInput) {
+    } else if (_includeReversedInput) {
+        // ABC -> ABC CBA
+        // AB$ -> AB$ $BA
         output.resize(_input.size()*2);
         for (size_t i{0}; i < _input.size(); ++i) {
             output[_input.size()*0+i]   = _input[i];
             output[_input.size()*2-i-1] = _input[i];
         }
     } else if (_omegaSorting) {
+        // ABC -> ABC ABC
+        // AB$ -> AB$ AB$
         output.resize(_input.size()*2);
         for (size_t i{0}; i < _input.size(); ++i) {
             output[_input.size()*0+i]   = _input[i];
             output[_input.size()*1+i]   = _input[i];
         }
     } else {
+        // ABC -> ABC
+        // AB$ -> AB$
         output.resize(_input.size());
         for (size_t i{0}; i < _input.size(); ++i) {
             output[i] = _input[i];
@@ -300,13 +309,19 @@ auto createSequences(Sequences auto const& _input, bool reverse=false) -> std::t
     return {totalSize, inputText, inputSizes};
 }
 
-auto createSequencesAndReverse(Sequences auto const& _input) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<size_t>> {
+auto createSequences(Sequences auto const& _input, bool _addReversed, bool _useDelimiters) -> std::tuple<size_t, std::vector<uint8_t>, std::vector<size_t>> {
     // compute total numbers of bytes of the text including delimiters "$"
     size_t totalSize{};
     for (auto const& l : _input) {
-        totalSize += l.size()+1;
+        totalSize += l.size();
+        if (_useDelimiters) {
+            totalSize += 1;
+        }
     }
-    totalSize = totalSize*2; // including reverse text
+
+    if (_addReversed) {
+        totalSize = totalSize*2; // including reverse text
+    }
 
     // our concatenated sequences with delimiters
     auto inputText = std::vector<uint8_t>{};
@@ -320,21 +335,28 @@ auto createSequencesAndReverse(Sequences auto const& _input) -> std::tuple<size_
     for (auto const& l : _input) {
         inputText.insert(inputText.end(), begin(l), end(l));
 
-        // fill with delimiters/zeros
-        inputText.resize(inputText.size() + 1);
+        // insert size of input text
+        inputSizes.emplace_back(l.size());
 
-        inputSizes.emplace_back(l.size()+1);
+        if (_useDelimiters) {
+            inputText.resize(inputText.size()+ 1);
+            inputSizes.back() += 1;
+        }
     }
 
-    // add reversed text
-    for (auto const& l : std::views::reverse(_input)) {
-        auto l2 = std::views::reverse(l);
-        inputText.insert(inputText.end(), begin(l2), end(l2));
+    if (_addReversed) {
+        // add reversed text
+        for (auto const& l : std::views::reverse(_input)) {
+            auto l2 = std::views::reverse(l);
+            inputText.insert(inputText.end(), begin(l2), end(l2));
 
-        // fill with delimiters/zeros
-        inputText.resize(inputText.size() + 1);
+            inputSizes.emplace_back(l.size());
 
-        inputSizes.emplace_back(l.size()+1);
+            if (_useDelimiters) {
+                inputText.resize(inputText.size()+ 1);
+                inputSizes.back() += 1;
+            }
+        }
     }
 
     return {totalSize, inputText, inputSizes};
