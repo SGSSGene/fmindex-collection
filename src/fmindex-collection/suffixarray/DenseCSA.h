@@ -40,7 +40,7 @@ struct DenseCSA {
         requires requires(Range r) {
             {*(r.begin())} -> std::same_as<std::optional<std::tuple<size_t, size_t>>>;
         }
-    DenseCSA(Range _ssa, size_t sequencesCount, size_t longestSequence, size_t commonDivisor = 1)
+    DenseCSA(Range _ssa, size_t sequencesCount, size_t longestSequence)
         : ssaPos(std::ceil(std::log2(longestSequence)))
         , ssaSeq(std::ceil(std::log2(sequencesCount)))
         , seqCount{sequencesCount}
