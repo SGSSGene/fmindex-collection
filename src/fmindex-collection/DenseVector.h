@@ -62,7 +62,7 @@ struct DenseVector {
         : commonDivisor{0}
     {
         for (auto v : args) {
-            largestValue = std::max(largestValue, v);
+            largestValue = std::max<size_t>(largestValue, static_cast<size_t>(v));
             commonDivisor = std::gcd(commonDivisor, v);
         }
         if (commonDivisor == 0) {
@@ -82,7 +82,7 @@ struct DenseVector {
         : commonDivisor{0}
     {
         for (auto v : args) {
-            largestValue = std::max(largestValue, v);
+            largestValue = std::max<size_t>(largestValue, static_cast<size_t>(v));
             commonDivisor = std::gcd(commonDivisor, v);
         }
         if (commonDivisor == 0) {
