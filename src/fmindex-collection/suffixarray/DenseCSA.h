@@ -19,7 +19,7 @@ struct DenseCSA {
     DenseVector ssaPos;             // sampled suffix array - position inside the sequence
     DenseVector ssaSeq;             // sampled suffix array  - sequence id
     bitvector::CompactBitvector bv; // indicates if and which entry the sa → ssa
-    size_t seqCount;
+    size_t seqCount;                // number of sequences
 
     static auto createJoinedCSA(DenseCSA const& lhs, DenseCSA const& rhs) -> DenseCSA {
         (void)lhs;
@@ -40,7 +40,7 @@ struct DenseCSA {
         requires requires(Range r) {
             {*(r.begin())} -> std::same_as<std::optional<std::tuple<size_t, size_t>>>;
         }
-    DenseCSA(Range _ssa, size_t sequencesCount, size_t longestSequence)
+    DenseCSA(Range _ssa, size_t sequencesCount, size_t longestSequence, size_t commonDivisor = 1)
         : ssaPos(std::ceil(std::log2(longestSequence)))
         , ssaSeq(std::ceil(std::log2(sequencesCount)))
         , seqCount{sequencesCount}
@@ -81,8 +81,7 @@ struct DenseCSA {
 
     template <typename T>
     DenseCSA(std::vector<T> const& sa, size_t samplingRate, std::span<size_t const> _inputSizes, bool reverse=false, size_t seqOffset=0) {
-        size_t bitsForSeqId = std::max(size_t{1}, size_t(std::ceil(std::log2(_inputSizes.size()+seqOffset))));
-        assert(bitsForSeqId < 64);
+        auto largestSeqId = _inputSizes.size() + seqOffset;
 
         size_t largestText{};
         // Generate accumulated input
@@ -104,10 +103,9 @@ struct DenseCSA {
         }
 
         // Construct sampled suffix array
-        size_t bitsForPos   = std::max(size_t{1}, size_t(std::ceil(std::log2(largestText))));
         seqCount = _inputSizes.size();
-        ssaPos = DenseVector(bitsForPos);
-        ssaSeq = DenseVector(bitsForSeqId);
+        ssaPos = DenseVector(largestText);
+        ssaSeq = DenseVector(largestSeqId);
         ssaPos.reserve(sa.size() / samplingRate);
         ssaSeq.reserve(sa.size() / samplingRate);
         for (size_t i{0}; i < sa.size(); ++i) {

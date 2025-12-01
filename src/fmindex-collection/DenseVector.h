@@ -7,6 +7,8 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <numeric>
+#include <span>
 #include <vector>
 
 namespace fmc {
@@ -21,34 +23,77 @@ namespace fmc {
  */
 struct DenseVector {
     std::vector<uint64_t> data; // buffer where the data is being stored
-    size_t bitCount{};          // numbers of used bits
-    size_t bits{};              // number of bits per entry
+    size_t  bitCount{};          // numbers of used bits
+    uint8_t bits{};              // number of bits per entry
+    size_t  largestValue{};      // largestValue that has to be stored
+    size_t  commonDivisor{1};    // factor each value is multiplied with
 
     DenseVector() = default;
+
+
+    static auto concat(DenseVector const& lhs, DenseVector const& rhs) {
+        auto v = DenseVector{};
+        v.largestValue  = std::max(lhs.largestValue, rhs.largestValue);
+        v.commonDivisor = std::gcd(lhs.commonDivisor, rhs.commonDivisor);
+        v.bits          = std::bit_width(v.largestValue / v.commonDivisor);
+        for (size_t i{0}; i < lhs.size(); ++i) {
+            v.push_back(lhs[i]);
+        }
+        for (size_t i{0}; i < rhs.size(); ++i) {
+            v.push_back(rhs[i]);
+        }
+        return v;
+    }
 
     /**
      * \param _bits number of bits used for each integer entry
      */
-    DenseVector(size_t _bits)
-        : bits{_bits}
+    DenseVector(size_t _largestValue, size_t _commonDivisor = 1)
+        : bits{uint8_t(std::bit_width(_largestValue / _commonDivisor))}
+        , largestValue{_largestValue}
+        , commonDivisor{_commonDivisor}
     {}
 
     /**
      * Create a DenseVector and auto determine the number of bits required
      */
-    DenseVector(std::initializer_list<uint64_t> args) {
+    DenseVector(std::initializer_list<uint64_t const> args)
+        : commonDivisor{0}
+    {
         for (auto v : args) {
-            size_t ct = 0;
-            while (v > 0) {
-                v = v >> 1;
-                ct += 1;
-            }
-            bits = std::max(bits, ct);
+            largestValue = std::max(largestValue, v);
+            commonDivisor = std::gcd(commonDivisor, v);
         }
+        if (commonDivisor == 0) {
+            commonDivisor = 1;
+        }
+
+        bits = std::bit_width(largestValue / commonDivisor);
         for (auto v : args) {
             push_back(v);
         }
     }
+
+    /**
+     * Create a DenseVector and auto determine the number of bits required
+     */
+    DenseVector(std::span<uint64_t const> args)
+        : commonDivisor{0}
+    {
+        for (auto v : args) {
+            largestValue = std::max(largestValue, v);
+            commonDivisor = std::gcd(commonDivisor, v);
+        }
+        if (commonDivisor == 0) {
+            commonDivisor = 1;
+        }
+
+        bits = std::bit_width(largestValue / commonDivisor);
+        for (auto v : args) {
+            push_back(v);
+        }
+    }
+
 
     DenseVector(DenseVector const&) = default;
     DenseVector(DenseVector&&) noexcept = default;
@@ -72,7 +117,10 @@ struct DenseVector {
      * being stored.
      */
     void push_back(uint64_t value) {
-        assert(std::log2(value) < bits);
+        assert(value % commonDivisor == 0);
+        assert(value <= largestValue);
+        value = value / commonDivisor;
+        assert(std::bit_width(value) <= bits);
         auto empty = data.size()*64-bitCount;
         if (empty == 0) {
             data.push_back(value);
@@ -92,7 +140,7 @@ struct DenseVector {
 
     /** Read integer at a certain position
      */
-    auto operator[](size_t i) const {
+    auto operator[](size_t i) const -> uint64_t {
         return access(i);
     }
 
@@ -111,13 +159,21 @@ struct DenseVector {
         auto startOffset = begin % 64;
 
         auto mask = (uint64_t{1}<<(end-begin+size_t{1}))-1;
-        if (startI == endI) {
-            return (data[startI] >> startOffset) & mask;
-        }
 
-        auto p1 = data[startI] >> startOffset;
-        auto p2 = data[endI] << (64-startOffset);
-        return (p1 | p2) & mask;
+        auto value = [&]() -> uint64_t {
+            // bits are all located inside a single uint64_t entry
+            if (startI == endI) {
+                return (data[startI] >> startOffset) & mask;
+            }
+
+            // bits are located in two adjecent uint64_t entries
+            auto p1 = data[startI] >> startOffset;
+            auto p2 = data[endI] << (64-startOffset);
+            return (p1 | p2) & mask;
+
+        }();
+
+        return value * commonDivisor;
     }
 
     size_t size() const {

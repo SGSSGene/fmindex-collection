@@ -37,7 +37,7 @@ TEST_CASE("checking dense reverse fm index", "[densereversefmindex]") {
 
     SECTION("sa with only every second value given - sa sampled") {
         auto bitStack = std::vector<bool>{};
-        auto sa2 = DenseVector(sa.entry_size());
+        auto sa2 = DenseVector(sa.largestValue);
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 0} || (sa[i] == sa.size()-1);
             bitStack.push_back(add);
@@ -70,7 +70,7 @@ TEST_CASE("checking dense reverse fm index", "[densereversefmindex]") {
 
     SECTION("sa with only every second value given - sa sampled - uneven") {
         auto bitStack = std::vector<bool>{};
-        auto sa2 = DenseVector(sa.entry_size());
+        auto sa2 = DenseVector(sa.largestValue);
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 1} || (sa[i] == sa.size()-1);
             bitStack.push_back(add);
@@ -95,7 +95,7 @@ TEST_CASE("checking dense reverse fm index", "[densereversefmindex]") {
 
     SECTION("sa with only every second value given - text sampled") {
         auto bitStack = std::vector<bool>{};
-        auto sa2 = DenseVector(sa.entry_size());
+        auto sa2 = DenseVector(sa.largestValue);
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{sa[i] % 2 == 0} || (sa[i] == 11);
             bitStack.push_back(add);
