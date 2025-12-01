@@ -66,7 +66,7 @@ struct SparseArray<std::tuple<Ts...>> {
                 // using template magic to spread a single entry into multiple vectors
                 map<sizeof...(Ts)>([&]<size_t I>() {
                     auto const v = static_cast<size_t>(std::get<I>(*t));
-                    largestValue[I]  = std::max(largestValue[I], v);
+                    largestValue[I]  = std::max<size_t>(largestValue[I], v);
                     commonDivisor[I] = std::gcd(commonDivisor[I], v);
                 });
                 ct += 1;
