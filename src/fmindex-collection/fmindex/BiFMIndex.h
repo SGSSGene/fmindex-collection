@@ -115,10 +115,15 @@ struct BiFMIndex {
             refId += 1;
             assert(inputSizes.size() < refId);
         }
+        auto const startRefId = refId;
 
 
         auto annotatedSequence = SparseArray {
             std::views::iota(size_t{0}, totalSize) | std::views::transform([&](size_t phase) -> std::optional<ADEntry> {
+                if (phase == 0) { // restarting
+                    refId = startRefId;
+                    pos = 0;
+                }
                 if (!includeReversedInput || phase*2 < totalSize) { // going forward
                     assert(refId < inputSizes.size());
                     assert(pos < inputSizes[refId]);

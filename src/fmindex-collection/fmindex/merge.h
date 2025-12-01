@@ -106,7 +106,13 @@ auto mergeSparseArrays(std::vector<bool> const& R, suffixarray::SparseArray<T> c
     auto counter = std::array<size_t, 2>{0, 0};
 
     return suffixarray::SparseArray<T>{
-        R | std::views::transform([&](size_t b) {
+        std::views::iota(size_t{}, R.size()) |  std::views::transform([&](size_t phase) {
+            if (phase == 0) { // reset counters
+                counter[0] = 0;
+                counter[1] = 0;
+            }
+            bool b = R[phase];
+
             counter[b] += 1;
             if (!b) {
                 return lhs.value(counter[0]-1);

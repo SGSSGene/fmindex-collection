@@ -74,11 +74,17 @@ struct FMIndex {
             assert(inputSizes.size() < refId);
         }
 
+        auto const startRefId = refId;
+
         auto annotatedSequence = SparseArray {
-            std::views::iota(size_t{0}, totalSize) | std::views::transform([&](size_t) -> std::optional<ADEntry> {
+            std::views::iota(size_t{0}, totalSize) | std::views::transform([&](size_t phase) -> std::optional<ADEntry> {
+                if (phase == 0) { // restarting
+                    refId = startRefId;
+                    pos = 0;
+                }
+
                 assert(refId < inputSizes.size());
                 assert(pos < inputSizes[refId]);
-
                 auto ret = std::optional<ADEntry>{std::nullopt};
 
                 if (pos % samplingRate == 0) {
