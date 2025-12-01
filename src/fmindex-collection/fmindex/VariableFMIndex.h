@@ -83,7 +83,7 @@ struct VariableFMIndex {
             query[i] = charToRankMapping[_query[i]];
         }
 
-        auto result = std::vector<std::tuple<ADEntry, size_t>>{};
+        auto result = std::vector<std::tuple<size_t, size_t>>{};
 
         // check for invalid mapping characters
         {
@@ -110,7 +110,8 @@ struct VariableFMIndex {
                 } else {
                     auto cursor = search_no_errors::search(index, query);
                     for (auto [entry, offset] : LocateLinear{index, cursor}) {
-                        result.emplace_back(entry, offset);
+                        auto [docId, pos] = entry;
+                        result.emplace_back(docId, pos + offset);
                     }
                 }
             }, index);
@@ -122,7 +123,8 @@ struct VariableFMIndex {
                     search_backtracking::search(index, query, k, [&](auto cursor, auto errors) {
                         (void)errors;
                         for (auto [entry, offset] : LocateLinear{index, cursor}) {
-                            result.emplace_back(entry, offset);
+                            auto [docId, pos] = entry;
+                            result.emplace_back(docId, pos + offset);
                         }
                     });
                 }

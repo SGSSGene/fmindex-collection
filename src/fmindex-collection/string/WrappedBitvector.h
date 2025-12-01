@@ -22,6 +22,9 @@ template <Bitvector_c Bitvector>
 struct WrappedBitvectorImpl<2, Bitvector> {
     static constexpr size_t Sigma = 2;
 
+    template <size_t Sigma2>
+    using RmSigma = WrappedBitvectorImpl<Sigma2, Bitvector>;
+
     Bitvector bitvector;
 
     WrappedBitvectorImpl(std::span<uint8_t const> _symbols)
