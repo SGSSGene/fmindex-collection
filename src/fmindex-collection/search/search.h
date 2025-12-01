@@ -54,8 +54,7 @@ struct Search {
     delegate_t const&     reportFunc;
     void operator()() {
         auto report = [&](size_t qidx, auto const& cursor, size_t errors) {
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 reportFunc(qidx, sid, spos+offset, errors);
             }
         };

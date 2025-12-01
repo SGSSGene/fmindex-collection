@@ -4,6 +4,7 @@
 
 #include "../bitvector/Bitvector2L.h"
 #include "../bitvector/PairedBitvector2L.h"
+#include "../bitvector/OptSparseRBBitvector.h"
 #include "concepts.h"
 #include "../DenseVector.h"
 
@@ -23,7 +24,7 @@
 
 namespace fmc::suffixarray {
 
-template <typename T>
+template <typename T, typename TBitvector = bitvector::Bitvector2L<512, 65536>>
 struct SparseArray;
 
 
@@ -31,13 +32,13 @@ struct SparseArray;
  *
  * Space efficient array over sparse data
  */
-template <typename... Ts>
+template <typename... Ts, typename TBitvector>
     requires (std::convertible_to<Ts, size_t> && ...)
         && (std::convertible_to<size_t, Ts> && ...)
-struct SparseArray<std::tuple<Ts...>> {
+struct SparseArray<std::tuple<Ts...>, TBitvector> {
     using Entry     = std::tuple<Ts...>;
     using value_t   = Entry;
-    using Bitvector = bitvector::Bitvector2L<512, 65536>;
+    using Bitvector = TBitvector;
     using Documents = std::array<DenseVector, sizeof...(Ts)>;
     Documents documents;
     Bitvector bv;

@@ -57,7 +57,8 @@ struct ReverseFMIndex {
         return bwt.size();
     }
 
-    auto locate(size_t idx) const -> std::tuple<ADEntry, size_t> {
+    using LEntry = decltype(std::tuple_cat(ADEntry{}, std::tuple<size_t>{}));
+    auto locate(size_t idx) const -> LEntry {
         if constexpr (requires(String t) {{ t.hasValue(size_t{}) }; }) {
             bool v = bwt.hasValue(idx);
             uint64_t steps{};
@@ -67,7 +68,7 @@ struct ReverseFMIndex {
                 v = bwt.hasValue(idx);
             }
             //!TODO steps is from the end???
-            return {csa.value(idx), steps};
+            return std::tuple_cat(csa.value(idx), std::tuple<size_t>{steps});
 
         } else {
             auto opt = csa.value(idx);
@@ -83,7 +84,7 @@ struct ReverseFMIndex {
                 opt = csa.value(idx);
             }
             //!TODO steps is from the end???
-            return {*opt, steps};
+            return std::tuple_cat(*opt, std::tuple<size_t>{steps});
         }
     }
 

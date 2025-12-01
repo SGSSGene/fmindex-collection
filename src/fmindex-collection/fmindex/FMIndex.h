@@ -110,7 +110,8 @@ struct FMIndex {
         return bwt.size();
     }
 
-    auto locate(size_t idx) const -> std::tuple<ADEntry, size_t> {
+    using LEntry = decltype(std::tuple_cat(ADEntry{}, std::tuple<size_t>{}));
+    auto locate(size_t idx) const -> LEntry {
         auto opt = annotatedArray.value(idx);
         size_t steps{};
         while(!opt) {
@@ -119,7 +120,7 @@ struct FMIndex {
             steps += 1;
             opt = annotatedArray.value(idx);
         }
-        return {*opt, steps};
+        return std::tuple_cat(*opt, std::tuple<size_t>{steps});
     }
 
     auto single_locate_step(size_t idx) const -> std::optional<ADEntry> {
