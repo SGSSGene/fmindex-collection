@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <mmser/mmser.h>
 #include <numeric>
 #include <span>
 #include <vector>
@@ -23,7 +24,10 @@ namespace fmc {
  *
  */
 struct DenseVector {
-    std::vector<uint64_t> data; // buffer where the data is being stored
+    // Buffer which stores the underlying data.
+    // A mmser::vector is being used, because it enables mmap when being loaded from disk
+    mmser::vector<uint64_t> data;
+
     size_t  bitCount{};          // numbers of used bits
     uint8_t bits{};              // number of bits per entry
     size_t  largestValue{};      // largestValue that has to be stored

@@ -99,9 +99,10 @@ struct FlattenedBitvectors2L {
     using BlockL1 = std::array<uint16_t, TSigma+1>;
     using BlockL0 = std::array<uint64_t, TSigma+1>;
 
-    std::vector<InBits> bits{{}};
-    std::vector<BlockL1> l1{{}};
-    std::vector<BlockL0> l0{{}};
+    mmser::vector<InBits> bits{{}};
+    mmser::vector<BlockL1> l1{{}};
+    mmser::vector<BlockL0> l0{{}};
+
     size_t totalLength{};
 
     FlattenedBitvectors2L() = default;

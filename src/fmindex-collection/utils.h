@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <libsais.h>
 #include <libsais64.h>
+#include <mmser/mmser.h>
 #include <numeric>
 #include <optional>
 #include <span>
@@ -24,6 +25,7 @@
 #if __has_include(<cereal/types/bitset.hpp>)
 #include <cereal/types/bitset.hpp>
 #endif
+
 
 
 #if LIBSAIS_OPENMP
@@ -68,7 +70,6 @@ struct alignas(std::max(alignof(std::bitset<N>), Align?alignAsValue(N):size_t{1}
     void load(Archive& ar) {
         loadBV(bits, ar);
     }
-
 };
 
 constexpr inline auto view_bool_as_uint64 = seqan::stl::views::chunk(64) | std::views::transform([](auto r) -> uint64_t {
@@ -617,5 +618,11 @@ inline auto createInputData(std::vector<std::string> args) -> std::vector<std::v
     return ret;
 }
 }
+
+}
+
+namespace mmser {
+template <size_t N, bool Align>
+struct is_trivially_copyable_t<fmc::AlignedBitset<N, Align>> : std::true_type {};
 
 }

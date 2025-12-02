@@ -27,9 +27,9 @@ template <size_t l1_bits_ct, size_t l0_bits_ct, bool shift_and_count=false, bool
 struct Bitvector2L {
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static_assert(l0_bits_ct-l1_bits_ct <= std::numeric_limits<uint16_t>::max(), "l0_bits_ct can only hold up to uint16_t bits");
-    std::vector<uint64_t> l0{0};
-    std::vector<uint16_t> l1{0};
-    std::vector<AlignedBitset<l1_bits_ct, Align>> bits{{}};
+    mmser::vector<uint64_t> l0{0};
+    mmser::vector<uint16_t> l1{0};
+    mmser::vector<AlignedBitset<l1_bits_ct, Align>> bits{{}};
     size_t totalLength{};
 
     Bitvector2L() = default;
@@ -62,7 +62,7 @@ struct Bitvector2L {
     template <std::ranges::sized_range range_t>
         requires std::same_as<std::ranges::range_value_t<range_t>, std::bitset<l1_bits_ct>>
     Bitvector2L(range_t&& _range) {
-        auto _length = _range.size()*l1_bits_ct;
+        auto _length = static_cast<size_t>(_range.size()*l1_bits_ct);
         l0.resize(_length/l0_bits_ct + 1);
         l1.resize(_length/l1_bits_ct + 1);
         bits.resize(_length/l1_bits_ct + 1);

@@ -20,6 +20,7 @@ target_link_libraries(${PROJECT_NAME}
     INTERFACE
     libsais
     cereal::cereal
+    mmser::mmser
 )
 
 if (FMC_USE_SDSL)
