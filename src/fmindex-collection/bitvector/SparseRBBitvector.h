@@ -118,8 +118,8 @@ struct SparseRBBitvector {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(indicatorBitvector, uncompressedBitvector, totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.indicatorBitvector, self.uncompressedBitvector, self.totalLength);
     }
 
     static size_t estimateSize(size_t totalSize, size_t zeroBlocks, size_t oneBlocks) {

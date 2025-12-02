@@ -102,8 +102,8 @@ struct Sdsl_wt_epr {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(index, totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.index, self.totalLength);
     }
 };
 //(Sdsl wt epr seems broken?, since it doesn't work for Sigma <= 2 and Sigma == 256

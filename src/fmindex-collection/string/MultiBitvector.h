@@ -91,8 +91,8 @@ struct MultiBitvector {
 
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(bitvectors);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.bitvectors);
     }
 };
 

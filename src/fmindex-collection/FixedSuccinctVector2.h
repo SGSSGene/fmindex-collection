@@ -130,8 +130,8 @@ struct FixedSuccinctVector2 {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(data, entryCount);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.data, self.entryCount);
     }
 };
 

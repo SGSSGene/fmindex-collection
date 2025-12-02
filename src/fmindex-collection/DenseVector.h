@@ -194,8 +194,8 @@ struct DenseVector {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(data, bitCount, bits);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.data, self.bitCount, self.bits);
     }
 
 };

@@ -130,8 +130,8 @@ struct PairedBitvector1L {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(l0, totalLength, bits);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.l0, self.totalLength, self.bits);
     }
 };
 

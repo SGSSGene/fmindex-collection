@@ -128,8 +128,8 @@ struct FMIndex {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(bwt, C, annotatedArray);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.bwt, self.C, self.annotatedArray);
     }
 };
 

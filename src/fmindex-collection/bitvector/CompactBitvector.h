@@ -82,8 +82,8 @@ struct CompactBitvector {
         }
 
         template <typename Archive>
-        void serialize(Archive& ar) {
-            ar(superBlockEntry, blockEntries, bits);
+        void serialize(this auto&& self, Archive& ar) {
+            ar(self.superBlockEntry, self.blockEntries, self.bits);
         }
     };
 
@@ -220,8 +220,8 @@ struct CompactBitvector {
 
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(totalLength, superblocks);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.totalLength, self.superblocks);
     }
 };
 static_assert(Bitvector_c<CompactBitvector>);

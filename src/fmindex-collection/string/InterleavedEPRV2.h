@@ -126,8 +126,8 @@ struct InterleavedEPRV2 {
         }
 
         template <typename Archive>
-        void serialize(Archive& ar) {
-            ar(blocks, bits);
+        void serialize(this auto&& self, Archive& ar) {
+            ar(self.blocks, self.bits);
         }
     };
 
@@ -249,7 +249,7 @@ struct InterleavedEPRV2 {
     }*/
 
     template <typename Archive>
-    void serialize(Archive& ar) {
+    void serialize(this auto&& self, Archive& ar) {
         // 0 version: slow path
         // 1 version: binary path (fast)
         auto version = []() {
@@ -264,17 +264,17 @@ struct InterleavedEPRV2 {
         ar(version);
 
         if (version == 0) {
-            ar(blocks, superBlocks, totalLength);
+            ar(self.blocks, self.superBlocks, self.totalLength);
         } else if (version == 1) {
 #if __has_include(<cereal/archives/binary.hpp>)
             if constexpr (std::same_as<Archive, cereal::BinaryOutputArchive>
                             || std::same_as<Archive, cereal::BinaryInputArchive>) {
-                auto l = blocks.size();
+                auto l = self.blocks.size();
                 ar(l);
-                blocks.resize(l);
-                ar(cereal::binary_data(blocks.data(), l * sizeof(Block)),
-                   superBlocks,
-                   totalLength);
+                self.blocks.resize(l);
+                ar(cereal::binary_data(self.blocks.data(), l * sizeof(Block)),
+                   self.superBlocks,
+                   self.totalLength);
             } else
 #endif
             throw std::runtime_error("fmindex-collection - InterleavedEPRV2 was created with binary data, but this is not available in this app");

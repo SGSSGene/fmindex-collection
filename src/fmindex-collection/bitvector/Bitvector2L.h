@@ -158,8 +158,8 @@ struct Bitvector2L {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(l0, l1, totalLength, bits);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.l0, self.l1, self.totalLength, self.bits);
     }
 
     static size_t estimateSize(size_t totalSize) {

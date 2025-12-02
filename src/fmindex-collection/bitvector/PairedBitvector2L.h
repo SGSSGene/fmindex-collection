@@ -211,8 +211,8 @@ struct PairedBitvector2L {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(l0, l1, totalLength, bits);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.l0, self.l1, self.totalLength, self.bits);
     }
 };
 using PairedBitvector2L_64_4k   = PairedBitvector2L<64, 4096>;

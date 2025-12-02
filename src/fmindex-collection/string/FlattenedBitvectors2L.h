@@ -255,8 +255,8 @@ public:
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(l0, l1, bits, totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.l0, self.l1, self.bits, self.totalLength);
     }
 };
 

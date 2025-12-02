@@ -34,8 +34,8 @@ struct EPRV3 {
         }
 
         template <typename Archive>
-        void serialize(Archive& ar) {
-            ar(blocks);
+        void serialize(this auto&& self, Archive& ar) {
+            ar(self.blocks);
         }
     };
 
@@ -118,8 +118,8 @@ struct EPRV3 {
         }
 
         template <typename Archive>
-        void serialize(Archive& ar) {
-            ar(bits);
+        void serialize(this auto&& self, Archive& ar) {
+            ar(self.bits);
         }
     };
 
@@ -255,8 +255,8 @@ struct EPRV3 {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(blocks_, bits, superBlocks, totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.blocks_, self.bits, self.superBlocks, self.totalLength);
     }
 
 };

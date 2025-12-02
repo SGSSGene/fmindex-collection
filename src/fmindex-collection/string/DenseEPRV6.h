@@ -100,8 +100,8 @@ struct DenseEPRV6 {
         }
 
         template <typename Archive>
-        void serialize(Archive& ar) {
-            ar(bits);
+        void serialize(this auto&& self, Archive& ar) {
+            ar(self.bits);
         }
     };
 
@@ -282,8 +282,8 @@ struct DenseEPRV6 {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(bits, level0, level1, superBlocks, totalSize);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.bits, self.level0, self.level1, self.superBlocks, self.totalSize);
     }
 };
 

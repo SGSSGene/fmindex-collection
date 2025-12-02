@@ -32,7 +32,7 @@ struct SDSL_V {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(bitvector, bv);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.bitvector, self.bv);
     }
 };

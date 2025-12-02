@@ -104,8 +104,8 @@ struct KMerFMIndex {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(bwt, C, csa);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.bwt, self.C, self.csa);
     }
 };
 

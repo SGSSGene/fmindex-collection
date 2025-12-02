@@ -207,11 +207,10 @@ struct BiFMIndex {
 
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        if constexpr (std::same_as<RevBwtType, std::nullptr_t>) {
-            ar(bwt, C, annotatedArray);
-        } else {
-            ar(bwt, bwtRev, C, annotatedArray);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.bwt, self.C, self.annotatedArray);
+        if constexpr (!std::same_as<RevBwtType, std::nullptr_t>) {
+            ar(self.bwtRev);
         }
     }
 };

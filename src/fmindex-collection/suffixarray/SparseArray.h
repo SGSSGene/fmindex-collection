@@ -118,8 +118,8 @@ struct SparseArray<std::tuple<Ts...>, TBitvector> {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(documents, bv);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.documents, self.bv);
     }
 };
 

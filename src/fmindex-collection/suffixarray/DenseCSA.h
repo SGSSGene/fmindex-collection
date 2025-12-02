@@ -161,8 +161,8 @@ struct DenseCSA {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(ssaPos, ssaSeq, bv, seqCount);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.ssaPos, self.ssaSeq, self.bv, self.seqCount);
     }
 };
 static_assert(SuffixArray_c<DenseCSA>);
