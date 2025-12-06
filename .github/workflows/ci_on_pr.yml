@@ -27,25 +27,24 @@ jobs:
       matrix:
         include:
           - {os: ubuntu-22.04, compiler: spdx_license_lint}
-          - {os: ubuntu-22.04, compiler: gcc-third-latest-cpp20-release}
-          - {os: ubuntu-22.04, compiler: gcc-second-latest-cpp20-release}
-          - {os: ubuntu-22.04, compiler: gcc-latest-cpp20-release}
+          - {os: ubuntu-22.04, compiler: gcc-third-latest-cpp23-release}
+          - {os: ubuntu-22.04, compiler: gcc-second-latest-cpp23-release}
           - {os: ubuntu-22.04, compiler: gcc-latest-cpp23-release}
           - {os: ubuntu-22.04, compiler: gcc-latest-cpp26-release}
-          - {os: ubuntu-22.04, compiler: gcc-latest-cpp20-debug-sanitize_address}
-          - {os: ubuntu-22.04, compiler: gcc-latest-cpp20-debug-sanitize_undefined}
-          - {os: ubuntu-22.04, compiler: gcc-latest-cpp20-debug-sanitize_thread}
-          - {os: ubuntu-22.04, compiler: clang-third-latest-cpp20-release}
-          - {os: ubuntu-22.04, compiler: clang-second-latest-cpp20-release, cmake_flags: "-DLIBSAIS_USE_OPENMP=NO"}
-          - {os: ubuntu-22.04, compiler: clang-latest-cpp20-release,        cmake_flags: "-DLIBSAIS_USE_OPENMP=NO"}
-          - {os: macos-15-intel, compiler: gcc-latest-cpp20-release,        cmake_flags: "-DFMC_USE_SDSL=NO"}
-          - {os: macos-15-intel, compiler: clang-latest-cpp20-release,      cmake_flags: "-DFMC_USE_SDSL=NO"}
-          - {os: macos-14,       compiler: gcc-latest-cpp20-release,        cmake_flags: "-DFMC_USE_SDSL=NO"}
-          - {os: macos-14,       compiler: clang-latest-cpp20-release,      cmake_flags: "-DFMC_USE_SDSL=NO"}
-          - {os: windows-2022,   compiler: msvc-cpp20-release,              cmake_flags: "-DFMC_USE_SDSL=NO"}
+          - {os: ubuntu-22.04, compiler: gcc-latest-cpp23-debug-sanitize_address}
+          - {os: ubuntu-22.04, compiler: gcc-latest-cpp23-debug-sanitize_undefined}
+          - {os: ubuntu-22.04, compiler: gcc-latest-cpp23-debug-sanitize_thread}
+          - {os: ubuntu-22.04, compiler: clang-third-latest-cpp23-release}
+          - {os: ubuntu-22.04, compiler: clang-second-latest-cpp23-release, cmake_flags: "-DLIBSAIS_USE_OPENMP=NO"}
+          - {os: ubuntu-22.04, compiler: clang-latest-cpp23-release,        cmake_flags: "-DLIBSAIS_USE_OPENMP=NO"}
+          - {os: macos-15-intel, compiler: gcc-latest-cpp23-release,        cmake_flags: "-DFMC_USE_SDSL=NO"}
+          - {os: macos-15-intel, compiler: clang-latest-cpp23-release,      cmake_flags: "-DFMC_USE_SDSL=NO"}
+          - {os: macos-14,       compiler: gcc-latest-cpp23-release,        cmake_flags: "-DFMC_USE_SDSL=NO"}
+          - {os: macos-14,       compiler: clang-latest-cpp23-release,      cmake_flags: "-DFMC_USE_SDSL=NO"}
+          - {os: windows-2022,   compiler: msvc-cpp23-release,              cmake_flags: "-DFMC_USE_SDSL=NO"}
           # not running any tests, since it takes to long
-          - {os: windows-2022,   compiler: msvc-cpp20-debug, cmake_flags: "-DFMC_USE_SDSL=NO"}
-          - {os: ubuntu-22.04,   compiler: emscripten-cpp20-release, cmake_flags: "-DCMAKE_EXE_LINKER_FLAGS='-sALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=16000000 -sMEMORY64'", cmake_cxx_flags: "-Wno-c++11-narrowing -sMEMORY64", cmake_c_flags: "-sMEMORY64"}
+          - {os: windows-2022,   compiler: msvc-cpp23-debug, cmake_flags: "-DFMC_USE_SDSL=NO"}
+          - {os: ubuntu-22.04,   compiler: emscripten-cpp23-release, cmake_flags: "-DCMAKE_EXE_LINKER_FLAGS='-sALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=16000000 -sMEMORY64'", cmake_cxx_flags: "-Wno-c++11-narrowing -sMEMORY64", cmake_c_flags: "-sMEMORY64"}
     steps:
       - name: Standard IV-project testing
         uses: iv-project/IVaction@v11.1
