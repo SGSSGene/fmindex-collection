@@ -211,8 +211,8 @@ struct AWFMIndex<5> {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.totalLength);
         //ar(occ, totalLength)
     }
 
@@ -340,8 +340,8 @@ struct AWFMIndex<21> {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.totalLength);
         //ar(occ, totalLength)
     }
 

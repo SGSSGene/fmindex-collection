@@ -29,25 +29,23 @@ TEST_CASE("checking mirrored bidirectional fm index without delimiters", "[mirro
         CHECK(index.bwt.symbol(3) == 1);
         CHECK(index.bwt.symbol(4) == 1);
         CHECK(index.bwt.symbol(5) == 0);
-        CHECK(std::get<1>(std::get<0>(index.locate(0))) == 2);
-        CHECK(std::get<1>(std::get<0>(index.locate(1))) == 2);
-        CHECK(std::get<1>(std::get<0>(index.locate(2))) == 0);
-        CHECK(std::get<1>(std::get<0>(index.locate(3))) == 0);
-        CHECK(std::get<1>(std::get<0>(index.locate(4))) == 1);
-        CHECK(std::get<1>(std::get<0>(index.locate(5))) == 1);
+        CHECK(std::get<1>(index.locate(0)) == 2);
+        CHECK(std::get<1>(index.locate(1)) == 2);
+        CHECK(std::get<1>(index.locate(2)) == 0);
+        CHECK(std::get<1>(index.locate(3)) == 0);
+        CHECK(std::get<1>(index.locate(4)) == 1);
+        CHECK(std::get<1>(index.locate(5)) == 1);
 
         SECTION("case 1 - left") {
             auto c2 = cursor.extendLeft(1);
             REQUIRE(c2.len == 2);
             {
-                auto [entry, offset] = index.locate(c2.lb);
-                auto [seq, pos] = entry;
+                auto [seq, pos, offset] = index.locate(c2.lb);
                 CHECK(seq == 1);
                 CHECK(pos+offset == 0);
             }
             {
-                auto [entry, offset] = index.locate(c2.lb+1);
-                auto [seq, pos] = entry;
+                auto [seq, pos, offset] = index.locate(c2.lb+1);
                 CHECK(seq == 0);
                 CHECK(pos+offset == 0);
             }
@@ -56,14 +54,12 @@ TEST_CASE("checking mirrored bidirectional fm index without delimiters", "[mirro
             auto c2 = cursor.extendLeft(2);
             REQUIRE(c2.len == 2);
             {
-                auto [entry, offset] = index.locate(c2.lb);
-                auto [seq, pos] = entry;
+                auto [seq, pos, offset] = index.locate(c2.lb);
                 CHECK(seq == 0);
                 CHECK(pos+offset == 1);
             }
             {
-                auto [entry, offset] = index.locate(c2.lb+1);
-                auto [seq, pos] = entry;
+                auto [seq, pos, offset] = index.locate(c2.lb+1);
                 CHECK(seq == 1);
                 CHECK(pos+offset == 1);
             }
@@ -72,14 +68,12 @@ TEST_CASE("checking mirrored bidirectional fm index without delimiters", "[mirro
             auto c2 = cursor.extendLeft(0);
             REQUIRE(c2.len == 2);
             {
-                auto [entry, offset] = index.locate(c2.lb);
-                auto [seq, pos] = entry;
+                auto [seq, pos, offset] = index.locate(c2.lb);
                 CHECK(seq == 0);
                 CHECK(pos+offset == 2);
             }
             {
-                auto [entry, offset] = index.locate(c2.lb+1);
-                auto [seq, pos] = entry;
+                auto [seq, pos, offset] = index.locate(c2.lb+1);
                 CHECK(seq == 1);
                 CHECK(pos+offset == 2);
             }
@@ -89,14 +83,12 @@ TEST_CASE("checking mirrored bidirectional fm index without delimiters", "[mirro
             auto c2 = cursor.extendRight(1);
             REQUIRE(c2.len == 2);
             {
-                auto [entry, offset] = index.locate(c2.lb);
-                auto [seq, pos] = entry;
+                auto [seq, pos, offset] = index.locate(c2.lb);
                 CHECK(seq == 1);
                 CHECK(pos+offset == 0);
             }
             {
-                auto [entry, offset] = index.locate(c2.lb+1);
-                auto [seq, pos] = entry;
+                auto [seq, pos, offset] = index.locate(c2.lb+1);
                 CHECK(seq == 0);
                 CHECK(pos+offset == 0);
             }
@@ -105,14 +97,12 @@ TEST_CASE("checking mirrored bidirectional fm index without delimiters", "[mirro
             auto c2 = cursor.extendRight(2);
             REQUIRE(c2.len == 2);
             {
-                auto [entry, offset] = index.locate(c2.lb);
-                auto [seq, pos] = entry;
+                auto [seq, pos, offset] = index.locate(c2.lb);
                 CHECK(seq == 0);
                 CHECK(pos+offset == 1);
             }
             {
-                auto [entry, offset] = index.locate(c2.lb+1);
-                auto [seq, pos] = entry;
+                auto [seq, pos, offset] = index.locate(c2.lb+1);
                 CHECK(seq == 1);
                 CHECK(pos+offset == 1);
             }
@@ -121,14 +111,12 @@ TEST_CASE("checking mirrored bidirectional fm index without delimiters", "[mirro
             auto c2 = cursor.extendRight(0);
             REQUIRE(c2.len == 2);
             {
-                auto [entry, offset] = index.locate(c2.lb);
-                auto [seq, pos] = entry;
+                auto [seq, pos, offset] = index.locate(c2.lb);
                 CHECK(seq == 0);
                 CHECK(pos+offset == 2);
             }
             {
-                auto [entry, offset] = index.locate(c2.lb+1);
-                auto [seq, pos] = entry;
+                auto [seq, pos, offset] = index.locate(c2.lb+1);
                 CHECK(seq == 1);
                 CHECK(pos+offset == 2);
             }

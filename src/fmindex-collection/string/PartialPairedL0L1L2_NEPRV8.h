@@ -299,9 +299,9 @@ struct PartialPairedL0L1L2_NEPRV8 {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
+    void serialize(this auto&& self, Archive& ar) {
 //        ar(bits, level0, level1, superBlocks, totalLength);
-        ar(bits, level0, level1, superBlocks, level0_prefix, level1_prefix, superBlocks_prefix, totalLength);
+        ar(self.bits, self.level0, self.level1, self.superBlocks, self.level0_prefix, self.level1_prefix, self.superBlocks_prefix, self.totalLength);
 
 //        std::cout << "bits: " << bits.size() << " " << sizeof(bits[0]) << " -> " << bits.size() * sizeof(bits[0]) << "\n";
 //        std::cout << "level0: " << level0.size() << " " << sizeof(level0[0]) << " -> " << level0.size() * sizeof(level0[0]) << "\n";

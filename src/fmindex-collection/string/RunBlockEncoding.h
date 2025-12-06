@@ -170,8 +170,8 @@ struct RunBlockEncoding {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(encodingBlockSize, bitvector1, bitvector2, partition);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.encodingBlockSize, self.bitvector1, self.bitvector2, self.partition);
     }
 
 };

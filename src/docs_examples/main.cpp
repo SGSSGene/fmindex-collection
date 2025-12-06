@@ -21,8 +21,7 @@ int main() {
         fmt::print("found {} results with {} errors\n", cursor.count(), errors);
         for (auto i : cursor) {
             // index.locate(i) can only find positions hit by the sampling rate. How many position this is off, is indicated by the offset value
-            auto [entry, offset] = index.locate(i);
-            auto [seqId, pos] = entry; // tuple of the sequence id and the position inside the sequence
+            auto [seqId, pos, offset] = index.locate(i);
             fmt::print("seqId/pos: {}/{}\n", seqId, pos+offset);
         }
     });

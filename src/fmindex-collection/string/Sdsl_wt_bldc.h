@@ -98,8 +98,8 @@ struct Sdsl_wt_bldc {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(index, totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.index, self.totalLength);
     }
 };
 static_assert(checkString_c<Sdsl_wt_bldc>);

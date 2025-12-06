@@ -17,7 +17,7 @@ struct LocateLinear {
         index_t const& index;
         size_t pos;
 
-        auto operator*() const -> std::tuple<typename index_t::ADEntry, size_t> {
+        auto operator*() const -> typename index_t::LEntry {
             return index.locate(pos);
         }
         auto operator++() -> iter& {
@@ -32,7 +32,7 @@ struct LocateLinear {
     struct rev_iter : iter {
         size_t depth;
 
-        auto operator*() const -> std::tuple<typename index_t::ADEntry, size_t> {
+        auto operator*() const -> typename index_t::LEntry {
             auto [entry, offset] = iter::index.locate(iter::pos);
             assert(offset >= depth);
             return {entry, offset - depth};
@@ -64,7 +64,7 @@ struct LocateLinear {
 
 template <typename index_t, typename cursor_t>
 struct LocateFMTree {
-    std::vector<std::tuple<typename index_t::ADEntry, size_t>> positions;
+    std::vector<typename index_t::LEntry> positions;
 
     LocateFMTree(index_t const& index, cursor_t cursor, size_t samplingRate, size_t maxDepth) {
         positions.reserve(cursor.count());
@@ -88,7 +88,7 @@ struct LocateFMTree {
                         opt = index.single_locate_step(idx);
                     }
                     if (opt) {
-                        positions.emplace_back(*opt, depth+steps);
+                        positions.emplace_back(std::tuple_cat(*opt, std::tuple<size_t>{depth+steps}));
 
                     }
                 }
@@ -96,7 +96,7 @@ struct LocateFMTree {
                 for (size_t pos{cursor.lb}; pos < cursor.lb + cursor.len; ++pos) {
                     auto v = index.single_locate_step(pos);
                     if (v) {
-                        positions.emplace_back(*v, depth);
+                        positions.emplace_back(std::tuple_cat(*v, std::tuple<size_t>{depth}));
                     }
                 }
 

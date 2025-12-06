@@ -31,8 +31,7 @@ TEST_CASE("searching with collection and backtracking with buffers on a reversed
 
         auto result = std::vector<std::pair<size_t, size_t>>{};
         for (size_t i{0}; i < cursor.count(); ++i) {
-            auto [entry, offset] = index.locate(i + cursor.lb);
-            auto [il, pl] = entry;
+            auto [il, pl, offset] = index.locate(i + cursor.lb);
             pl += offset;
             result.emplace_back(il, pl);
         }

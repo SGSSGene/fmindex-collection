@@ -155,8 +155,8 @@ struct CSA {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(ssa, bv, bitsForPosition, bitPositionMask, seqCount);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.ssa, self.bv, self.bitsForPosition, self.bitPositionMask, self.seqCount);
     }
 };
 static_assert(SuffixArray_c<CSA>);

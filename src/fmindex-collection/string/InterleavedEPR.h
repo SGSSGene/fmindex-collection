@@ -97,8 +97,8 @@ struct InterleavedEPR {
         }
 
         template <typename Archive>
-        void serialize(Archive& ar) {
-            ar(blocks, inBlock);
+        void serialize(this auto&& self, Archive& ar) {
+            ar(self.blocks, self.inBlock);
         }
     };
 
@@ -214,8 +214,8 @@ struct InterleavedEPR {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(blocks, superBlocks, totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.blocks, self.superBlocks, self.totalLength);
     }
 };
 

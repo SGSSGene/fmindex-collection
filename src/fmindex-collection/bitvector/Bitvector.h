@@ -166,8 +166,8 @@ struct Bitvector {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(superblocks, blocks, bits, totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.superblocks, self.blocks, self.bits, self.totalLength);
     }
 
     static size_t estimateSize(size_t totalSize) {

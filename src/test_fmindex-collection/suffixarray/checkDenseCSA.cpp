@@ -1,12 +1,11 @@
-// SPDX-FileCopyrightText: 2006-2023, Knut Reinert & Freie Universität Berlin
-// SPDX-FileCopyrightText: 2016-2023, Knut Reinert & MPI für molekulare Genetik
+// SPDX-FileCopyrightText: 2025 Simon Gene Gottlieb
 // SPDX-License-Identifier: CC0-1.0
 
 #include <catch2/catch_all.hpp>
-#include <fmindex-collection/suffixarray/CSA.h>
+#include <fmindex-collection/suffixarray/DenseCSA.h>
 #include <fmindex-collection/utils.h>
 
-TEST_CASE("check Compressed Suffix Array (CSA)", "[suffixarray][CSA]") {
+TEST_CASE("check Dense Compressed Suffix Array (DenseCSA)", "[suffixarray][DenseCSA]") {
     // SA of 'Hello$World$':
     //               S P  SA
     // $Hello$World  1 5  11
@@ -38,7 +37,7 @@ TEST_CASE("check Compressed Suffix Array (CSA)", "[suffixarray][CSA]") {
     };
 
     SECTION("sampling 3") {
-        auto csa = fmc::CSA {sa, /*.samplingRate =*/ 3, inputSizes};
+        auto csa = fmc::DenseCSA {sa, /*.samplingRate =*/ 3, inputSizes};
 
         auto expected = std::vector<std::optional<std::tuple<uint32_t, uint32_t>>>(12);
         expected[2] = {0, 0};
@@ -49,7 +48,7 @@ TEST_CASE("check Compressed Suffix Array (CSA)", "[suffixarray][CSA]") {
     }
 
     SECTION("sampling 4") {
-        auto csa = fmc::CSA {sa, /*.samplingRate =*/ 4, inputSizes};
+        auto csa = fmc::DenseCSA {sa, /*.samplingRate =*/ 4, inputSizes};
 
         auto expected = std::vector<std::optional<std::tuple<uint32_t, uint32_t>>>(12);
         expected[2] = {0, 0};
@@ -60,7 +59,7 @@ TEST_CASE("check Compressed Suffix Array (CSA)", "[suffixarray][CSA]") {
     }
 
     SECTION("sampling 5") {
-        auto csa = fmc::CSA {sa, /*.samplingRate =*/ 5, inputSizes};
+        auto csa = fmc::DenseCSA {sa, /*.samplingRate =*/ 5, inputSizes};
 
         auto expected = std::vector<std::optional<std::tuple<uint32_t, uint32_t>>>(12);
         expected[0] = {1, 5};
@@ -71,11 +70,12 @@ TEST_CASE("check Compressed Suffix Array (CSA)", "[suffixarray][CSA]") {
     }
 
     SECTION("sampling 8") {
-        auto csa = fmc::CSA {sa, /*.samplingRate =*/ 8, inputSizes};
+        auto csa = fmc::DenseCSA {sa, /*.samplingRate =*/ 8, inputSizes};
 
         auto expected = std::vector<std::optional<std::tuple<uint32_t, uint32_t>>>(12);
         expected[2] = {0, 0};
         expected[3] = {1, 0};
         check(csa, expected);
     }
+
 }

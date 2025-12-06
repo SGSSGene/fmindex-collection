@@ -60,7 +60,7 @@ struct PairedBitvector2L {
     template <std::ranges::sized_range range_t>
         requires std::same_as<std::ranges::range_value_t<range_t>, std::bitset<l1_bits_ct>>
     PairedBitvector2L(range_t&& _range) {
-        auto _length = _range.size()*l1_bits_ct;
+        auto _length = static_cast<size_t>(_range.size()*l1_bits_ct);
 
         l0.resize((_length+l0_bits_ct)/(l0_bits_ct*2) + 1);
         l1.resize((_length+l1_bits_ct)/(l1_bits_ct*2) + 1);
@@ -211,8 +211,8 @@ struct PairedBitvector2L {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(l0, l1, totalLength, bits);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.l0, self.l1, self.totalLength, self.bits);
     }
 };
 using PairedBitvector2L_64_4k   = PairedBitvector2L<64, 4096>;

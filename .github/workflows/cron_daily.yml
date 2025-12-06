@@ -27,7 +27,7 @@ jobs:
           - {os: ubuntu-22.04, compiler: check_tag-open_issue}
     steps:
       - name: Standard IV-project testing
-        uses: iv-project/IVaction@v10.15
+        uses: iv-project/IVaction@v11.1
         with:
           compiler: ${{ matrix.compiler }}
           threads: 2

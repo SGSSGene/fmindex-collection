@@ -92,8 +92,7 @@ TEST_CASE("searching with collection and backtracking", "[collection]") {
 
     for (size_t i{0}; i < expected.size(); ++i) {
         INFO(i);
-        auto [entry, offset] = index.locate(i);
-        auto [il, pl] = entry;
+        auto [il, pl, offset] = index.locate(i);
         pl += offset;
 
         auto [ir, pr] = expected[i];
@@ -185,8 +184,7 @@ TEST_CASE("searching with collection and backtracking with FMIndex", "[collectio
 
     for (size_t i{0}; i < expected.size(); ++i) {
         INFO(i);
-        auto [entry, offset] = index.locate(i);
-        auto [il, pl] = entry;
+        auto [il, pl, offset] = index.locate(i);
         pl += offset;
 
         auto [ir, pr] = expected[i];
@@ -283,8 +281,7 @@ TEST_CASE("searching with collection and backtracking with ReverseFMIndex", "[co
     for (size_t i{0}; i < expected.size(); ++i) {
         INFO(i);
         if (index.bwt.symbol(i) != 0) {
-            auto [entry, offset] = index.locate(i);
-            auto [il, pl] = entry;
+            auto [il, pl, offset] = index.locate(i);
             pl += offset;
 
             auto [ir, pr] = expected[i];
@@ -308,8 +305,7 @@ TEST_CASE("backtracking with errors", "[collection]") {
     auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
     fmc::search_backtracking::search(index, queries, 1, [&](auto qidx, auto cursor, auto errors) {
         (void)errors;
-        for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-            auto [sid, spos] = entry;
+        for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
             results.emplace_back(qidx, sid, spos+offset);
         }
     });

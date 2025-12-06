@@ -239,10 +239,8 @@ struct RunBlockEncodingV2 {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-//        ar(topLevelVector);
-//        ar(mixedLevelVector);
-        ar(topLevelVector, mixedLevelVector, factors, prefix, prefix2, totalSize);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.topLevelVector, self.mixedLevelVector, self.factors, self.prefix, self.prefix2, self.totalSize);
     }
 
 };

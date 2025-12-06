@@ -224,8 +224,8 @@ struct EPRV5 {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(bits, level0, level1, superBlocks, totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.bits, self.level0, self.level1, self.superBlocks, self.totalLength);
     }
 };
 

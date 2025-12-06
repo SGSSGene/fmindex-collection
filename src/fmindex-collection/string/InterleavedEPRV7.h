@@ -105,15 +105,15 @@ struct InterleavedEPRV7 {
         }
 
         template <typename Archive>
-        void serialize(Archive& ar) {
+        void serialize(this auto&& self, Archive& ar) {
             //!TODO this can be done for sure in a smarter way
-            auto bits_unpacked   = bits;
-            auto level0_unpacked = level0;
+            auto bits_unpacked   = self.bits;
+            auto level0_unpacked = self.level0;
 
             ar(bits_unpacked, level0_unpacked);
 
-            bits   = bits_unpacked;
-            level0 = level0_unpacked;
+            self.bits   = bits_unpacked;
+            self.level0 = level0_unpacked;
 
         }
     };
@@ -262,8 +262,8 @@ struct InterleavedEPRV7 {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(bits, level1, superBlocks, totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.bits, self.level1, self.superBlocks, self.totalLength);
     }
 
 };

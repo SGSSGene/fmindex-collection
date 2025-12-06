@@ -26,8 +26,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
             auto const& query = queries[qidx];
             fmc::search_backtracking::search(index, query, 1, [&](auto cursor, auto errors) {
                 (void)errors;
-                for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                    auto [sid, spos] = entry;
+                for (auto [sid,spos, offset] : fmc::LocateLinear{index, cursor}) {
                     results.emplace_back(qidx, sid, spos+offset);
                 }
             });
@@ -52,9 +51,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_backtracking::search(index, queries, 1, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -83,9 +80,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
             auto const& query = queries[qidx];
             fmc::search_backtracking_with_buffers::search(index, query, 1, buffer1, buffer2, [&](auto cursor, auto errors) {
                 (void)errors;
-                for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                    auto [sid, spos] = entry;
-
+                for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                     results.emplace_back(qidx, sid, spos+offset);
                 }
             });
@@ -109,9 +104,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
     SECTION("search no errors, all search") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_no_errors::search(index, queries, [&](auto qidx, auto cursor) {
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -127,9 +120,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_one_error::search(index, queries, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -155,9 +146,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_pseudo::search</*EditDistance=*/true>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -193,8 +182,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
             auto const& query = queries[qidx];
             fmc::search_pseudo::search</*EditDistance=*/true>(index, query, search_scheme, [&](auto cursor, auto errors) {
                 (void)errors;
-                for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                    auto [sid, spos] = entry;
+                for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                     results.emplace_back(qidx, sid, spos+offset);
                 }
             });
@@ -230,9 +218,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_pseudo::search</*EditDistance=*/false>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -259,9 +245,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng12::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -295,9 +279,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng14::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -323,9 +305,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng15::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -351,9 +331,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng16::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -387,9 +365,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng17::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -415,9 +391,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng20::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -452,9 +426,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -480,9 +452,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21::search_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -509,9 +479,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21::search_best(index, queries, search_schemes, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -539,9 +507,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21::search_best_n(index, queries, search_schemes, 3, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -565,9 +531,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21V2::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -593,9 +557,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21V3::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -621,9 +583,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21V4::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -649,9 +609,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21V5::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -677,9 +635,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21V6::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -705,9 +661,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21V6::search_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -734,9 +688,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21V6::search_best(index, queries, search_schemes, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -764,9 +716,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21V6::search_best_n(index, queries, search_schemes, 3, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -790,9 +740,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21V7::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -818,9 +766,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21V7::search_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -844,9 +790,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21V7::search_best(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -872,9 +816,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng21V7::search_best_n(index, queries, search_scheme, 3, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -900,9 +842,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         fmc::search_ng22::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors, auto const& action) {
             (void)errors;
             (void)action;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -934,9 +874,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng24::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -957,9 +895,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng24::search(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         }, 3);
@@ -983,9 +919,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng24::search</*EditDistance=*/false>(index, queries, search_scheme, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1009,9 +943,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng24::search(index, queries, /*.maxErrors=*/1, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1035,9 +967,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng24::search(index, queries, /*.maxErrors=*/1, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         }, /*.n=*/3);
@@ -1059,9 +989,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng24::search</*EditDistance=*/false>(index, queries, /*.maxErrors=*/1, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1095,9 +1023,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng25::search(index, queries, search_scheme, partition, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1119,9 +1045,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng25::search(index, queries, search_scheme, partition, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         }, 3);
@@ -1146,9 +1070,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng25::search</*EditDistance=*/false>(index, queries, search_scheme, partition, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1182,9 +1104,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng26::search(index, queries, search_scheme, partition, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1204,9 +1124,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search</*EditDistance=*/true>(index, queries, /*.maxErrors=*/1, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1234,9 +1152,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng26::search(index, queries, search_scheme, partition, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         }, 3);
@@ -1261,9 +1177,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng25::search</*EditDistance=*/false>(index, queries, search_scheme, partition, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1294,14 +1208,11 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         fmc::search_double_index::search<true>(index, queryIndex, search_scheme, /*.threshold=*/1, /*.optMode=*/7, [&](auto cursor, auto qcursor, auto errors) {
             (void)errors;
             auto qidxs = std::vector<size_t>{};
-            for (auto [entry, offset] : fmc::LocateLinear{queryIndex, qcursor}) {
-                auto [sid, spos] = entry;
+            for (auto [sid, spos, offset] : fmc::LocateLinear{queryIndex, qcursor}) {
                 qidxs.push_back(sid);
             }
 
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 for (auto qidx : qidxs) {
                     results.emplace_back(qidx, sid, spos+offset);
                 }
@@ -1344,9 +1255,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
                     qidxs.push_back(queryIndex.locate(row));
                 }
 
-                for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                    auto [sid, spos] = entry;
-
+                for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                     for (auto qidx : qidxs) {
                         results.emplace_back(qidx, sid, spos+offset);
                     }
@@ -1372,9 +1281,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng24sm::search(index, queries, search_scheme, scoringMatrix, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1397,9 +1304,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng24sm::search</*EditDistance=*/false>(index, queries, search_scheme, scoringMatrix, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1427,9 +1332,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng24sm::search_n(index, queries, search_scheme, /*n=*/3, scoringMatrix, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1451,9 +1354,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng24sm::search(index, queries, /*.maxErrors=*/1, scoringMatrix, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1475,9 +1376,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng24sm::search</*EditDistance=*/false>(index, queries, /*.maxErrors=*/1, scoringMatrix, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1504,9 +1403,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_ng24sm::search_n(index, queries, /*.maxErrors=*/1, /*.n=*/3, scoringMatrix, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1526,9 +1423,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search</*EditDistance=*/true>(index, queries, /*.maxErrors=*/1, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1552,9 +1447,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search_n</*EditDistance=*/true>(index, queries, /*.maxErrors=*/1, /*.n=*/3, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });
@@ -1576,9 +1469,7 @@ TEST_CASE("check searches with errors", "[searches][errors]") {
         auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
         fmc::search</*EditDistance=*/false>(index, queries, /*.maxErrors=*/1, [&](auto qidx, auto cursor, auto errors) {
             (void)errors;
-            for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                auto [sid, spos] = entry;
-
+            for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                 results.emplace_back(qidx, sid, spos+offset);
             }
         });

@@ -49,8 +49,7 @@ int main(int argc, char const* const* argv) {
             (void)errors;
             fmt::print("found something {} {}\n", queryId, cursor.count());
             for (auto i : cursor) {
-                auto [entry, offset] = index.locate(i);
-                auto [chr, pos] = entry;
+                auto [chr, pos, offset] = index.locate(i);
                 fmt::print("chr/pos: {}/{}\n", chr, pos+offset);
             }
         });
@@ -64,8 +63,7 @@ int main(int argc, char const* const* argv) {
             (void)errors;
             fmt::print("found something {} {}\n", queryId, cursor.count());
             for (auto i : cursor) {
-                auto [entry, offset] = index.locate(i);
-                auto [chr, pos] = entry;
+                auto [chr, pos, offset] = index.locate(i);
                 fmt::print("chr/pos: {}/{}\n", chr, pos+offset);
             }
         });
@@ -79,8 +77,7 @@ int main(int argc, char const* const* argv) {
             (void)errors;
             fmt::print("found something {} {}\n", queryId, cursor.count());
             for (auto i : cursor) {
-                auto [entry, offset] = index.locate(i);
-                auto [chr, pos] = entry;
+                auto [chr, pos, offset] = index.locate(i);
                 pos = pos+offset -  queries[queryId].size();
                 fmt::print("chr/pos: {}/{}\n", chr, pos);
             }
@@ -96,7 +93,7 @@ int main(int argc, char const* const* argv) {
         (void)errors;
         fmt::print("found something {} {}\n", queryId, cursor.count());
         for (auto i{begin(cursor)}; i < end(cursor); ++i) {
-            auto [chr, pos] = index.locate(i);
+            auto [chr, pos, offset] = index.locate(i);
             fmt::print("chr/pos: {}/{}\n", chr, pos);
         }
     });*/

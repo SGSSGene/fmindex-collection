@@ -33,8 +33,8 @@ struct InterleavedPairedL0L1_NBitvector {
         std::array<uint16_t, l0_bits_ct / l1_bits_ct> l1;
 
         template <typename Archive>
-        void serialize(Archive& ar) {
-            ar(l0, l1);
+        void serialize(this auto&& self, Archive& ar) {
+            ar(self.l0, self.l1);
         }
     };
     std::vector<Entries> l0l1{Entries{{0}, {0}}};

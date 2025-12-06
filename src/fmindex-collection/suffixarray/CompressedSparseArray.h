@@ -71,8 +71,8 @@ struct CompressedSparseArray {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(documentContent2B, documentContent4B, documentContent8B, indicator);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.documentContent2B, self.documentContent4B, self.documentContent8B, self.indicator);
     }
 };
 
@@ -142,8 +142,8 @@ struct CompressedSparseArrayV2 {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(documentContent1B, documentContent2B, documentContent4B, documentContent8B, indicator, indicatorType);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.documentContent1B, self.documentContent2B, self.documentContent4B, self.documentContent8B, self.indicator, self.indicatorType);
     }
 };
 
@@ -213,8 +213,8 @@ struct CompressedSparseArrayV3 {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(documentContent1B, documentContent2B, documentContent4B, documentContent8B, indicator, indicatorType);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.documentContent1B, self.documentContent2B, self.documentContent4B, self.documentContent8B, self.indicator, self.indicatorType);
     }
 };
 
@@ -272,8 +272,8 @@ struct CompressedSparseArrayV4 {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(documentContent4B, documentContent8B, indicator, indicatorType);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.documentContent4B, self.documentContent8B, self.indicator, self.indicatorType);
     }
 };
 
@@ -332,8 +332,8 @@ struct CompressedSparseArrayV5 {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(documentContent4B, documentContent8B, indicator, indicatorType);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.documentContent4B, self.documentContent8B, self.indicator, self.indicatorType);
     }
 };
 #endif

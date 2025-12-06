@@ -140,8 +140,8 @@ public:
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(l0, l1);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.l0, self.l1);
     }
 };
 

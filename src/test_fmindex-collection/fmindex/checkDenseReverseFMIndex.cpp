@@ -30,14 +30,15 @@ TEST_CASE("checking dense reverse fm index", "[densereversefmindex]") {
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto [entry, offset] = index.locate(i);
-            CHECK(entry == std::make_tuple(0, sa[i]+offset));
+            auto [seqId, pos, offset] = index.locate(i);
+            CHECK(seqId == 0);
+            CHECK(pos-offset == sa[i]);
         }
     }
 
     SECTION("sa with only every second value given - sa sampled") {
         auto bitStack = std::vector<bool>{};
-        auto sa2 = DenseVector(sa.entry_size());
+        auto sa2 = DenseVector(sa.largestValue);
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 0} || (sa[i] == sa.size()-1);
             bitStack.push_back(add);
@@ -52,10 +53,11 @@ TEST_CASE("checking dense reverse fm index", "[densereversefmindex]") {
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
-            INFO(std::get<1>(std::get<0>(index.locate(i))));
+            INFO(std::get<1>(index.locate(i)));
             INFO(sa[i]);
-            auto [entry, offset] = index.locate(i);
-            CHECK(entry == std::make_tuple(0, sa[i]+offset));
+            auto [seqId, pos, offset] = index.locate(i);
+            CHECK(seqId == 0);
+            CHECK(pos-offset == sa[i]);
             auto res = index.single_locate_step(i);
             INFO(i);
             INFO(sa[i]);
@@ -70,7 +72,7 @@ TEST_CASE("checking dense reverse fm index", "[densereversefmindex]") {
 
     SECTION("sa with only every second value given - sa sampled - uneven") {
         auto bitStack = std::vector<bool>{};
-        auto sa2 = DenseVector(sa.entry_size());
+        auto sa2 = DenseVector(sa.largestValue);
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 1} || (sa[i] == sa.size()-1);
             bitStack.push_back(add);
@@ -85,17 +87,18 @@ TEST_CASE("checking dense reverse fm index", "[densereversefmindex]") {
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
-            INFO(std::get<1>(std::get<0>(index.locate(i))));
+            INFO(std::get<1>(index.locate(i)));
             INFO(sa[i]);
-            auto [entry, offset] = index.locate(i);
-            CHECK(entry == std::make_tuple(0, sa[i]+offset));
+            auto [seqId, pos, offset] = index.locate(i);
+            CHECK(seqId == 0);
+            CHECK(pos-offset == sa[i]);
         }
     }
 
 
     SECTION("sa with only every second value given - text sampled") {
         auto bitStack = std::vector<bool>{};
-        auto sa2 = DenseVector(sa.entry_size());
+        auto sa2 = DenseVector(sa.largestValue);
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{sa[i] % 2 == 0} || (sa[i] == 11);
             bitStack.push_back(add);
@@ -110,10 +113,11 @@ TEST_CASE("checking dense reverse fm index", "[densereversefmindex]") {
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
-            INFO(std::get<1>(std::get<0>(index.locate(i))));
+            INFO(std::get<1>(index.locate(i)));
             INFO(sa[i]);
-            auto [entry, offset] = index.locate(i);
-            CHECK(entry == std::make_tuple(0, sa[i]+offset));
+            auto [seqId, pos, offset] = index.locate(i);
+            CHECK(seqId == 0);
+            CHECK(pos-offset == sa[i]);
         }
     }
 
@@ -129,10 +133,11 @@ TEST_CASE("checking dense reverse fm index", "[densereversefmindex]") {
         for (size_t i{0}; i < sa.size(); ++i) {
             INFO(i);
             INFO(sa[i]);
-            INFO(std::get<1>(std::get<0>(index.locate(i))));
+            INFO(std::get<1>(index.locate(i)));
 
-            auto [entry, offset] = index.locate(i);
-            CHECK(entry == std::make_tuple(0, sa[i]+offset));
+            auto [seqId, pos, offset] = index.locate(i);
+            CHECK(seqId == 0);
+            CHECK(pos-offset == sa[i]);
         }
     }
 
@@ -149,9 +154,10 @@ TEST_CASE("checking dense reverse fm index", "[densereversefmindex]") {
         for (size_t i{1}; i < sa.size(); ++i) {
             INFO(i);
             INFO(sa[i]);
-            INFO(std::get<1>(std::get<0>(index.locate(i))));
-            auto [entry, offset] = index.locate(i);
-            CHECK(entry == std::make_tuple(0, sa[i]+offset));
+            INFO(std::get<1>(index.locate(i)));
+            auto [seqId, pos, offset] = index.locate(i);
+            CHECK(seqId == 0);
+            CHECK(pos-offset == sa[i]);
         }
     }
 }

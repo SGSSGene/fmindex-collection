@@ -98,8 +98,7 @@ TEST_CASE("check search with hamming and scoring matrix with errors", "[searches
             auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
             fmc::search_hamming_sm::search(index, queries, search_scheme, sm, [&](auto qidx, auto cursor, auto errors) {
                 (void)errors;
-                for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                    auto [sid, spos] = entry;
+                for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                     results.emplace_back(qidx, sid, spos+offset);
                 }
             });
@@ -124,8 +123,7 @@ TEST_CASE("check search with hamming and scoring matrix with errors", "[searches
             auto results = std::vector<std::tuple<size_t, size_t, size_t>>{};
             fmc::search_pseudo::search</*EditDistance=*/false>(index, queries, expanded_search_scheme, [&](auto qidx, auto cursor, auto errors) {
                 (void)errors;
-                for (auto [entry, offset] : fmc::LocateLinear{index, cursor}) {
-                    auto [sid, spos] = entry;
+                for (auto [sid, spos, offset] : fmc::LocateLinear{index, cursor}) {
                     results.emplace_back(qidx, sid, spos+offset);
                 }
             });

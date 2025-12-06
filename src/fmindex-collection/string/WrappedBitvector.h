@@ -106,8 +106,8 @@ struct WrappedBitvectorImpl<2, Bitvector> {
 
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(bitvector);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.bitvector);
     }
 };
 

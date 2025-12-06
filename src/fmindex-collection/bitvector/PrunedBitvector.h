@@ -161,8 +161,8 @@ struct PrunedBitvector {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(superblocks, blocks, bits, totalLength, allZeros, totalLengthAllZeros);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.superblocks, self.blocks, self.bits, self.totalLength, self.allZeros, self.totalLengthAllZeros);
     }
 };
 

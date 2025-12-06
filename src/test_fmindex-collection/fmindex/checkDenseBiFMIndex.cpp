@@ -25,14 +25,15 @@ TEST_CASE("checking dense bidirectional fm index", "[densebifmindex]") {
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto [entry, offset] = index.locate(i);
-            CHECK(entry == std::make_tuple(0, sa[i]-offset));
+            auto [seqId, pos, offset] = index.locate(i);
+            CHECK(seqId == 0);
+            CHECK(pos+offset == sa[i]);
         }
     }
 
     SECTION("sa with only every second value given - sa sampled") {
         auto bitStack = std::vector<bool>{};
-        auto sa2 = fmc::DenseVector(sa.entry_size());
+        auto sa2 = fmc::DenseVector(sa.largestValue);
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 0} || (sa[i] == 0);
             bitStack.push_back(add);
@@ -46,8 +47,10 @@ TEST_CASE("checking dense bidirectional fm index", "[densebifmindex]") {
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto [entry, offset] = index.locate(i);
-            CHECK(entry == std::make_tuple(0, sa[i]-offset));
+            auto [seqId, pos, offset] = index.locate(i);
+            CHECK(seqId == 0);
+            CHECK(pos+offset == sa[i]);
+
             auto res = index.single_locate_step(i);
             INFO(i);
             INFO(sa[i]);
@@ -62,7 +65,7 @@ TEST_CASE("checking dense bidirectional fm index", "[densebifmindex]") {
 
     SECTION("sa with only every second value given - sa sampled - uneven") {
         auto bitStack = std::vector<bool>{};
-        auto sa2 = fmc::DenseVector(sa.entry_size());
+        auto sa2 = fmc::DenseVector(sa.largestValue);
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 1};
             bitStack.push_back(add);
@@ -76,14 +79,15 @@ TEST_CASE("checking dense bidirectional fm index", "[densebifmindex]") {
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto [entry, offset] = index.locate(i);
-            CHECK(entry == std::make_tuple(0, sa[i]-offset));
+            auto [seqId, pos, offset] = index.locate(i);
+            CHECK(seqId == 0);
+            CHECK(pos+offset == sa[i]);
         }
     }
 
     SECTION("sa with only every second value given - text sampled") {
         auto bitStack = std::vector<bool>{};
-        auto sa2 = fmc::DenseVector(sa.entry_size());
+        auto sa2 = fmc::DenseVector(sa.largestValue);
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{sa[i] % 2 == 0};
             bitStack.push_back(add);
@@ -97,8 +101,9 @@ TEST_CASE("checking dense bidirectional fm index", "[densebifmindex]") {
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto [entry, offset] = index.locate(i);
-            CHECK(entry == std::make_tuple(0, sa[i]-offset));
+            auto [seqId, pos, offset] = index.locate(i);
+            CHECK(seqId == 0);
+            CHECK(pos+offset == sa[i]);
         }
     }
 
@@ -122,8 +127,9 @@ TEST_CASE("checking dense bidirectional fm index", "[densebifmindex]") {
 
             REQUIRE(index.size() == bwt.size());
             for (size_t i{0}; i < sa.size(); ++i) {
-                auto [entry, offset] = index.locate(i);
-                CHECK(entry == std::make_tuple(0, sa[i]-offset));
+                auto [seqId, pos, offset] = index.locate(i);
+                CHECK(seqId == 0);
+                CHECK(pos+offset == sa[i]);
             }
         }
     }
@@ -144,14 +150,15 @@ TEST_CASE("checking dense bidirectional fm index on longer text (more than 256 c
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto [entry, offset] = index.locate(i);
-            CHECK(entry == std::make_tuple(0, sa[i]-offset));
+            auto [seqId, pos, offset] = index.locate(i);
+            CHECK(seqId == 0);
+            CHECK(pos+offset == sa[i]);
         }
     }
 
     SECTION("sa with only every second value given - sa sampled") {
         auto bitStack = std::vector<bool>{};
-        auto sa2 = fmc::DenseVector(sa.entry_size());
+        auto sa2 = fmc::DenseVector(sa.largestValue);
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 0} || (sa[i] == 0);
             bitStack.push_back(add);
@@ -165,14 +172,15 @@ TEST_CASE("checking dense bidirectional fm index on longer text (more than 256 c
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto [entry, offset] = index.locate(i);
-            CHECK(entry == std::make_tuple(0, sa[i]-offset));
+            auto [seqId, pos, offset] = index.locate(i);
+            CHECK(seqId == 0);
+            CHECK(pos+offset == sa[i]);
         }
     }
 
     SECTION("sa with only every second value given - sa sampled - uneven") {
         auto bitStack = std::vector<bool>{};
-        auto sa2 = fmc::DenseVector(sa.entry_size());
+        auto sa2 = fmc::DenseVector(sa.largestValue);
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{i % 2 == 1};
             bitStack.push_back(add);
@@ -186,15 +194,16 @@ TEST_CASE("checking dense bidirectional fm index on longer text (more than 256 c
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto [entry, offset] = index.locate(i);
-            CHECK(entry == std::make_tuple(0, sa[i]-offset));
+            auto [seqId, pos, offset] = index.locate(i);
+            CHECK(seqId == 0);
+            CHECK(pos+offset == sa[i]);
         }
     }
 
 
     SECTION("sa with only every second value given - text sampled") {
         auto bitStack = std::vector<bool>{};
-        auto sa2 = fmc::DenseVector(sa.entry_size());
+        auto sa2 = fmc::DenseVector(sa.largestValue);
         for (size_t i{0}; i < sa.size(); ++i) {
             auto add = bool{sa[i] % 2 == 0};
             bitStack.push_back(add);
@@ -208,8 +217,9 @@ TEST_CASE("checking dense bidirectional fm index on longer text (more than 256 c
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
-            auto [entry, offset] = index.locate(i);
-            CHECK(entry == std::make_tuple(0, sa[i]-offset));
+            auto [seqId, pos, offset] = index.locate(i);
+            CHECK(seqId == 0);
+            CHECK(pos+offset == sa[i]);
         }
     }
 }

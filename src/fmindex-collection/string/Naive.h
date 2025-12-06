@@ -77,8 +77,8 @@ struct Naive {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(occ, totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.occ, self.totalLength);
     }
 };
 static_assert(checkString_c<Naive>);

@@ -54,8 +54,8 @@ struct InvertedBitvector {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(bitvector);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.bitvector);
     }
 
     static size_t estimateSize(size_t blockCt, size_t zeroBlocks, size_t oneBlocks) {

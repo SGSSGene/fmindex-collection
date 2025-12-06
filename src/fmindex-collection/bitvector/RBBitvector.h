@@ -128,8 +128,8 @@ struct RBBitvector {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(indicatorBitvector, uncompressedBitvector, zerosOrOnesBitvector, totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.indicatorBitvector, self.uncompressedBitvector, self.zerosOrOnesBitvector, self.totalLength);
     }
 
     static size_t estimateSize(size_t totalSize, size_t zeroBlocks, size_t oneBlocks) {

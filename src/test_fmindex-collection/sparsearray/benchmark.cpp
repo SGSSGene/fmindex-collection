@@ -110,8 +110,8 @@ TEST_CASE("benchmark sparse array", "[sparsearray][!benchmark][time]") {
 
         if ((mode & 0x08) != 0) {
             auto bv = indicatorBV;
-            auto sparseArray = fmc::suffixarray::SparseArray<Load>{
-                std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<Load> {
+            auto sparseArray = fmc::suffixarray::SparseArray<std::tuple<Load>>{
+                std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<std::tuple<Load>> {
                     if (!indicatorBV.symbol(i)) return std::nullopt;
                     return i;
                 })
@@ -312,8 +312,8 @@ TEST_CASE("benchmark sparse array - size", "[sparsearray][!benchmark][size]") {
         }
 
         if ((mode & 0x08) != 0) {
-            auto sparseArray = fmc::suffixarray::SparseArray<Load>{
-                std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<Load> {
+            auto sparseArray = fmc::suffixarray::SparseArray<std::tuple<Load>>{
+                std::views::iota(size_t{0}, indicatorBV.size()) | std::views::transform([&](size_t i) -> std::optional<std::tuple<Load>> {
                     if (!indicatorBV.symbol(i)) return std::nullopt;
                     return i;
                 })
