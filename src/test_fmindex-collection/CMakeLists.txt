@@ -16,6 +16,7 @@ add_executable(${PROJECT_NAME}
     bitvector/benchmark_sparse_bitdensity_vs_space.cpp
     bitvector/sparse_benchmark.cpp
     bitvector/unittest.cpp
+    checkDenseVector.cpp
     checkTernarylogic.cpp
     fmindex/benchmark_fmindex.cpp
     fmindex/checkBiFMIndex.cpp
@@ -68,6 +69,7 @@ add_executable(${PROJECT_NAME}
     string/unittest.cpp
     sparsearray/benchmark.cpp
     suffixarray/checkCSA.cpp
+    suffixarray/checkDenseCSA.cpp
     utils.cpp
 )
 target_link_libraries(${PROJECT_NAME}

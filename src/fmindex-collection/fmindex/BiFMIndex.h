@@ -22,10 +22,10 @@ struct BiFMIndex {
     using NoDelim = BiFMIndex<TSigma, String, SparseArray, false, TReuseRev>;
     using ReuseRev = BiFMIndex<TSigma, String, SparseArray, TDelim, true>;
 
-    static size_t constexpr Sigma      = TSigma;
-    static size_t constexpr FirstSymb  = TDelim?1:0;
-    static size_t constexpr Delim_v    = TDelim;
-    static size_t constexpr ReuseRev_v = TReuseRev;
+    static size_t constexpr Sigma     = TSigma;
+    static size_t constexpr FirstSymb = TDelim?1:0;
+    static bool constexpr Delim_v     = TDelim;
+    static bool constexpr ReuseRev_v  = TReuseRev;
 
     // Set RevBwtType to std::nullptr_t to indicate that it should not be used
     using RevBwtType = std::conditional_t<TReuseRev, std::nullptr_t, String<Sigma>>;
@@ -66,7 +66,7 @@ struct BiFMIndex {
             throw std::runtime_error{"sequence is longer than what this system is capable of handling"};
         }
 
-        bool omegaSorting = !TDelim; // Use omega sorting if no delimiter is being used
+        bool omegaSorting = !Delim_v; // Use omega sorting if no delimiter is being used
 
         // copy text into custom buffer
         auto inputText = createInputText(_sequence, omegaSorting, includeReversedInput);
@@ -105,7 +105,7 @@ struct BiFMIndex {
      * \param includeReversedInput also adds all input and their reversed text
      */
     BiFMIndex(Sequences auto const& _input, size_t samplingRate, size_t threadNbr, size_t seqOffset = 0, bool includeReversedInput = false) {
-        auto [totalSize, inputText, inputSizes] = createSequences(_input, /*._addReversed=*/includeReversedInput, /*._useDelimiters=*/TDelim);
+        auto [totalSize, inputText, inputSizes] = createSequences(_input, /*._addReversed=*/includeReversedInput, /*._useDelimiters=*/Delim_v);
 
         size_t refId{0};
         size_t pos{0};
@@ -113,12 +113,17 @@ struct BiFMIndex {
         //!TODO what about empty strings?
         while (inputSizes[refId] == pos) {
             refId += 1;
-            assert(inputSizes.size() < refId);
+            assert(refId < inputSizes.size());
         }
+        auto const startRefId = refId;
 
 
         auto annotatedSequence = SparseArray {
             std::views::iota(size_t{0}, totalSize) | std::views::transform([&](size_t phase) -> std::optional<ADEntry> {
+                if (phase == 0) { // restarting
+                    refId = startRefId;
+                    pos = 0;
+                }
                 if (!includeReversedInput || phase*2 < totalSize) { // going forward
                     assert(refId < inputSizes.size());
                     assert(pos < inputSizes[refId]);
@@ -143,7 +148,7 @@ struct BiFMIndex {
 
                     if (pos % samplingRate == 0) {
                         auto _refId = _input.size() + inputSizes.size() - refId-1+seqOffset;
-                        size_t extra = TDelim?1:0;
+                        size_t extra = Delim_v?1:0;
                         auto _pos   = (inputSizes[refId] - pos + inputSizes[refId] - 1 - extra) % inputSizes[refId];
                         ret = std::make_tuple(_refId, _pos);
                     }
@@ -168,7 +173,8 @@ struct BiFMIndex {
         return bwt.size();
     }
 
-    auto locate(size_t idx) const -> std::tuple<ADEntry, size_t> {
+    using LEntry = decltype(std::tuple_cat(ADEntry{}, std::tuple<size_t>{}));
+    auto locate(size_t idx) const -> LEntry {
         if constexpr (requires(String<Sigma> t) {{ t.hasValue(size_t{}) }; }) {
             bool v = bwt.hasValue(idx);
             uint64_t steps{};
@@ -177,8 +183,7 @@ struct BiFMIndex {
                 steps += 1;
                 v = bwt.hasValue(idx);
             }
-            return {*annotatedArray.value(idx), steps};
-
+            return std::tuple_cat(*annotatedArray.value(idx), std::tuple<size_t>{steps});
         } else {
             auto opt = annotatedArray.value(idx);
             uint64_t steps{};
@@ -192,7 +197,7 @@ struct BiFMIndex {
                 steps += 1;
                 opt = annotatedArray.value(idx);
             }
-            return {*opt, steps};
+            return std::tuple_cat(*opt, std::tuple<size_t>{steps});
         }
     }
 
@@ -202,11 +207,10 @@ struct BiFMIndex {
 
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        if constexpr (std::same_as<RevBwtType, std::nullptr_t>) {
-            ar(bwt, C, annotatedArray);
-        } else {
-            ar(bwt, bwtRev, C, annotatedArray);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.bwt, self.C, self.annotatedArray);
+        if constexpr (!std::same_as<RevBwtType, std::nullptr_t>) {
+            ar(self.bwtRev);
         }
     }
 };

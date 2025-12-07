@@ -41,15 +41,18 @@ struct SparseRBBitvector {
         auto tmpIndicatorBV = std::vector<bool>{};
         auto tmpUncompressedBV = std::vector<bool>{};
 
+        auto blockData = std::array<bool, BlockLength>{};
+
         for (size_t block{0}; block < completeBlocks; ++block) {
             bool allZeros = true;
             for (size_t j{0}; j < BlockLength; ++j) {
-                allZeros &= (0 == _range[block*BlockLength + j]);
+                blockData[j] = _range[block*BlockLength + j];
+                allZeros &= (0 == blockData[j]);
             }
             tmpIndicatorBV.push_back(allZeros);
             if (!allZeros) {
                 for (size_t j{0}; j < BlockLength; ++j) {
-                    tmpUncompressedBV.push_back(_range[block*BlockLength+j]);
+                    tmpUncompressedBV.push_back(blockData[j]);
                 }
             }
         }
@@ -115,8 +118,8 @@ struct SparseRBBitvector {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(indicatorBitvector, uncompressedBitvector, totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.indicatorBitvector, self.uncompressedBitvector, self.totalLength);
     }
 
     static size_t estimateSize(size_t totalSize, size_t zeroBlocks, size_t oneBlocks) {

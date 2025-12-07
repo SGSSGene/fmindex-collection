@@ -7,7 +7,7 @@ project(fmindex-collection)
 
 # fmindex_collection library
 add_library(${PROJECT_NAME} INTERFACE)
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_23)
 add_library(fmindex-collection::fmindex-collection ALIAS ${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME}
@@ -20,6 +20,7 @@ target_link_libraries(${PROJECT_NAME}
     INTERFACE
     libsais
     cereal::cereal
+    mmser::mmser
 )
 
 if (FMC_USE_SDSL)

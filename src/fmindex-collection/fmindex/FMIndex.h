@@ -74,11 +74,17 @@ struct FMIndex {
             assert(inputSizes.size() < refId);
         }
 
+        auto const startRefId = refId;
+
         auto annotatedSequence = SparseArray {
-            std::views::iota(size_t{0}, totalSize) | std::views::transform([&](size_t) -> std::optional<ADEntry> {
+            std::views::iota(size_t{0}, totalSize) | std::views::transform([&](size_t phase) -> std::optional<ADEntry> {
+                if (phase == 0) { // restarting
+                    refId = startRefId;
+                    pos = 0;
+                }
+
                 assert(refId < inputSizes.size());
                 assert(pos < inputSizes[refId]);
-
                 auto ret = std::optional<ADEntry>{std::nullopt};
 
                 if (pos % samplingRate == 0) {
@@ -104,7 +110,8 @@ struct FMIndex {
         return bwt.size();
     }
 
-    auto locate(size_t idx) const -> std::tuple<ADEntry, size_t> {
+    using LEntry = decltype(std::tuple_cat(ADEntry{}, std::tuple<size_t>{}));
+    auto locate(size_t idx) const -> LEntry {
         auto opt = annotatedArray.value(idx);
         size_t steps{};
         while(!opt) {
@@ -113,7 +120,7 @@ struct FMIndex {
             steps += 1;
             opt = annotatedArray.value(idx);
         }
-        return {*opt, steps};
+        return std::tuple_cat(*opt, std::tuple<size_t>{steps});
     }
 
     auto single_locate_step(size_t idx) const -> std::optional<ADEntry> {
@@ -121,8 +128,8 @@ struct FMIndex {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(bwt, C, annotatedArray);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.bwt, self.C, self.annotatedArray);
     }
 };
 

@@ -37,7 +37,7 @@ endif()
 
 find_package(OpenMP QUIET)
 include(cmake/CPM.cmake)
-CPMAddPackage("gh:SGSSGene/cpm.dependencies@1.0.1")
+CPMAddPackage("gh:SGSSGene/cpm.dependencies@1.0.2")
 CPMLoadDependenciesFile("${CMAKE_CURRENT_SOURCE_DIR}/cpm.dependencies")
 include(fmindex_collection-config.cmake)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")

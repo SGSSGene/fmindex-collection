@@ -4,7 +4,9 @@
 
 #include "../bitvector/Bitvector2L.h"
 #include "../bitvector/PairedBitvector2L.h"
+#include "../bitvector/OptSparseRBBitvector.h"
 #include "concepts.h"
+#include "../DenseVector.h"
 
 #include <algorithm>
 #include <cmath>
@@ -22,51 +24,102 @@
 
 namespace fmc::suffixarray {
 
-/** A sparse array
+template <typename T, typename TBitvector = bitvector::Bitvector2L<512, 65536>>
+struct SparseArray;
+
+
+/** A sparse array over multiple values
  *
  * Space efficient array over sparse data
  */
-template <typename T>
-struct SparseArray {
-    using value_t = T;
-    using Bitvector = bitvector::Bitvector2L<512, 65536>;
-    std::vector<T> documentContent;
-    Bitvector      bv;
+template <typename... Ts, typename TBitvector>
+    requires (std::convertible_to<Ts, size_t> && ...)
+        && (std::convertible_to<size_t, Ts> && ...)
+struct SparseArray<std::tuple<Ts...>, TBitvector> {
+    using Entry     = std::tuple<Ts...>;
+    using value_t   = Entry;
+    using Bitvector = TBitvector;
+    using Documents = std::array<DenseVector, sizeof...(Ts)>;
+    Documents documents;
+    Bitvector bv;
 
     SparseArray() = default;
     SparseArray(SparseArray const&) = delete;
     SparseArray(SparseArray&&) noexcept = default;
 
+    template <size_t End>
+    static void map(auto const& cb) {
+        if constexpr (End > 0) {
+            cb.template operator()<End-1>();
+            map<End-1>(cb);
+        }
+    }
+
     template <std::ranges::range range_t>
-        requires std::convertible_to<std::ranges::range_value_t<range_t>, std::optional<T>>
-    SparseArray(range_t const& _range)
-        : bv{_range | std::views::transform([&](std::optional<T> const& t) -> bool {
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, std::optional<Entry>>
+    SparseArray(range_t const& _range) {
+        auto largestValue = std::array<size_t, sizeof...(Ts)>{};
+        auto commonDivisor = std::array<size_t, sizeof...(Ts)>{};
+        size_t ct{};
+
+        bv = Bitvector{_range | std::views::transform([&](std::optional<Entry> const& t) -> bool {
             if (t) {
-                documentContent.push_back(*t);
+                // using template magic to spread a single entry into multiple vectors
+                map<sizeof...(Ts)>([&]<size_t I>() {
+                    auto const v = static_cast<size_t>(std::get<I>(*t));
+                    largestValue[I]  = std::max<size_t>(largestValue[I], v);
+                    commonDivisor[I] = std::gcd(commonDivisor[I], v);
+                });
+                ct += 1;
                 return true;
             }
             return false;
-        })}
-        {
+        })};
+        map<sizeof...(Ts)>([&]<size_t I>() {
+            if (commonDivisor[I] == 0) {
+                commonDivisor[I] = 1;
+            }
+            if (largestValue[I] == 0) {
+                largestValue[I] = 1;
+            }
+        });
+
+
+        map<sizeof...(Ts)>([&]<size_t I>() {
+            documents[I] = DenseVector(/*.largestValue = */ largestValue[I], /*.commonDivisor = */commonDivisor[I]);
+            documents[I].reserve(ct);
+        });
+        for (auto t : _range) {
+            if (!t) continue;
+            map<sizeof...(Ts)>([&]<size_t I>() {
+                auto const v = static_cast<size_t>(std::get<I>(*t));
+                documents[I].push_back(v);
+            });
+        }
     }
 
     auto operator=(SparseArray const&) -> SparseArray& = delete;
     auto operator=(SparseArray&&) noexcept -> SparseArray& = default;
 
-    auto value(size_t idx) const -> std::optional<T> {
+    auto value(size_t idx) const -> std::optional<Entry> {
         assert(idx < bv.size());
         if (!bv.symbol(idx)) {
             return std::nullopt;
         }
         auto r = bv.rank(idx);
-        assert(r < documentContent.size());
-        auto v = documentContent[r];
-        return v;
+        auto entry = Entry{};
+        // using template magic to gather multiple vectors into a single entry
+        map<sizeof...(Ts)>([&]<size_t I>() {
+            assert(r < std::get<I>(documents).size());
+            std::get<I>(entry) = std::get<I>(documents)[r];
+        });
+
+        return entry;
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(documentContent, bv);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.documents, self.bv);
     }
 };
 

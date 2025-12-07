@@ -132,5 +132,10 @@
         "add_library(AwFmIndex::AwFmIndex ALIAS AwFmIndex)"
       ]
     },
+    {
+      "name": "mmser",
+      "version": "1.0.0",
+      "github_repository": "SGSSGene/mmser",
+    },
   ]
 }

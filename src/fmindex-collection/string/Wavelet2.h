@@ -333,8 +333,8 @@ struct Wavelet2 {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(bitvector, totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.bitvector, self.totalLength);
     }
 
 };

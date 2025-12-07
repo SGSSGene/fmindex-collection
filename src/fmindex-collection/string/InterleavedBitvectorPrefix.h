@@ -47,8 +47,8 @@ struct InterleavedBitvectorPrefix {
         }
 
         template <typename Archive>
-        void serialize(Archive& ar) {
-            ar(blocks, bits);
+        void serialize(this auto&& self, Archive& ar) {
+            ar(self.blocks, self.bits);
         }
     };
 
@@ -151,8 +151,8 @@ struct InterleavedBitvectorPrefix {
     }
 
     template <typename Archive>
-    void serialize(Archive& ar) {
-        ar(blocks, superBlocks, totalLength);
+    void serialize(this auto&& self, Archive& ar) {
+        ar(self.blocks, self.superBlocks, self.totalLength);
     }
 };
 

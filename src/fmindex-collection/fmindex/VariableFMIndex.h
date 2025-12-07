@@ -109,8 +109,7 @@ struct VariableFMIndex {
                     return;
                 } else {
                     auto cursor = search_no_errors::search(index, query);
-                    for (auto [entry, offset] : LocateLinear{index, cursor}) {
-                        auto [docId, pos] = entry;
+                    for (auto [docId, pos, offset] : LocateLinear{index, cursor}) {
                         result.emplace_back(docId, pos + offset);
                     }
                 }
@@ -122,8 +121,7 @@ struct VariableFMIndex {
                 } else {
                     search_backtracking::search(index, query, k, [&](auto cursor, auto errors) {
                         (void)errors;
-                        for (auto [entry, offset] : LocateLinear{index, cursor}) {
-                            auto [docId, pos] = entry;
+                        for (auto [docId, pos, offset] : LocateLinear{index, cursor}) {
                             result.emplace_back(docId, pos + offset);
                         }
                     });
