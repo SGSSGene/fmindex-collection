@@ -422,7 +422,6 @@ void search_n_impl(index_t const& index, queries_t&& queries, selectSearchScheme
     }
 }
 
-
 // convenience function, with passed search scheme and multiple queries
 template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
 void search(index_t const& index, queries_t&& queries, search_scheme::Scheme const& search_scheme, std::vector<size_t> const& partition, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
@@ -448,16 +447,23 @@ void search(index_t const& index, queries_t&& queries, size_t maxErrors, delegat
 // convenience function, with passed search scheme and multiple queries
 template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
 void search_best(index_t const& index, queries_t&& queries, std::vector<std::tuple<search_scheme::Scheme, std::vector<size_t>>> const& search_schemes, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
-    for (size_t i{}; i < search_schemes.size(); ++i) {
+    for (size_t qidx{}; qidx < queries.size(); ++qidx) {
         bool found = false;
-        auto report = [&](size_t qidx, auto cur, size_t e) {
-            found = true;
-            delegate(qidx, cur, e);
-        };
-        auto const& [search_scheme, partition] = search_schemes[i];
-        search(index, queries, search_scheme, partition, report, n);
-        if (found) {
-            break;
+        for (size_t i{}; i < search_schemes.size(); ++i) {
+            auto const& [search_scheme, partition] = search_schemes[i];
+            size_t ct{};
+            search_impl<Edit>(index, queries[qidx], search_scheme, partition, [&] (auto cur, size_t e) {
+                if (cur.count() + ct > n) {
+                    cur.len = n-ct;
+                }
+                ct += cur.count();
+                found = true;
+                delegate(qidx, cur, e);
+                return ct == n;
+            });
+            if (found) {
+                break;
+            }
         }
     }
 }
@@ -465,12 +471,14 @@ void search_best(index_t const& index, queries_t&& queries, std::vector<std::tup
 // convenience function, with auto selected search scheme and multiple queries
 template <bool Edit=true, typename index_t, Sequences queries_t, typename delegate_t>
 void search_best(index_t const& index, queries_t&& queries, size_t maxErrors, delegate_t&& delegate, size_t n = std::numeric_limits<size_t>::max()) {
+    bool found = false;
+    auto report = [&](size_t qidx, auto cur, size_t e) {
+        if (cur.count() == 0) return;
+        found = true;
+        delegate(qidx, cur, e);
+    };
+
     for (size_t i{}; i < maxErrors; ++i) {
-        bool found = false;
-        auto report = [&](size_t qidx, auto cur, size_t e) {
-            found = true;
-            delegate(qidx, cur, e);
-        };
         search(index, queries, i, report, n);
         if (found) {
             break;
