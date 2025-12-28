@@ -139,17 +139,16 @@ struct BiFMIndexNStepCursor {
      * equal to extendLeft(symbs[0]).extendLeft(symbs[1])...
      */
     auto extendLeftNStep(std::span<size_t, NStep> symbs) const -> BiFMIndexNStepCursor {
-        size_t symb_pr{}, symb_c{};
+        size_t symb_pr{};
         for (size_t i{0}; i < NStep; ++i) {
             symb_pr = symb_pr*Sigma + symbs[i];
-            symb_c = symb_c*Sigma + symbs[NStep-i-1];
         }
 
         auto& bwt = index->bwt_nstep;
         size_t newLb    = bwt.rank(lb, symb_pr);
         size_t newLbRev = lbRev + bwt.prefix_rank(lb+len, symb_pr) - bwt.prefix_rank(lb, symb_pr);
         size_t newLen   = bwt.rank(lb+len, symb_pr) - newLb;
-        auto newCursor = BiFMIndexNStepCursor{*index, newLb + index->C_nstep[symb_c], newLbRev, newLen, steps+NStep};
+        auto newCursor = BiFMIndexNStepCursor{*index, newLb + index->C_nstep[symb_pr], newLbRev, newLen, steps+NStep};
         return newCursor;
     }
 
@@ -157,24 +156,23 @@ struct BiFMIndexNStepCursor {
      * equal to extendRight(symbs[0]).extendRight(symbs[1])...
      */
     auto extendRightNStep(std::span<size_t, NStep> symbs) const -> BiFMIndexNStepCursor {
-        size_t symb_pr{}, symb_c{};
+        size_t symb_pr{};
         for (size_t i{0}; i < NStep; ++i) {
             symb_pr = symb_pr*Sigma + symbs[i];
-            symb_c = symb_c*Sigma + symbs[NStep-i-1];
         }
         if constexpr (std::same_as<typename Index::RevBwtNStepType, std::nullptr_t>) {
             auto const& bwt = index->bwt_nstep;
             size_t newLb    = lb + bwt.prefix_rank(lbRev+len, symb_pr) - bwt.prefix_rank(lbRev, symb_pr);
             size_t newLbRev = bwt.rank(lbRev, symb_pr);
             size_t newLen   = bwt.rank(lbRev+len, symb_pr) - newLbRev;
-            auto newCursor = BiFMIndexNStepCursor{*index, newLb, newLbRev + index->C_nstep[symb_c], newLen, steps+NStep};
+            auto newCursor = BiFMIndexNStepCursor{*index, newLb, newLbRev + index->C_nstep[symb_pr], newLen, steps+NStep};
             return newCursor;
         } else {
             auto const& bwt = index->bwtRev_nstep;
             size_t newLb    = lb + bwt.prefix_rank(lbRev+len, symb_pr) - bwt.prefix_rank(lbRev, symb_pr);
             size_t newLbRev = bwt.rank(lbRev, symb_pr);
             size_t newLen   = bwt.rank(lbRev+len, symb_pr) - newLbRev;
-            auto newCursor = BiFMIndexNStepCursor{*index, newLb, newLbRev + index->CRev_nstep[symb_c], newLen, steps+NStep};
+            auto newCursor = BiFMIndexNStepCursor{*index, newLb, newLbRev + index->CRev_nstep[symb_pr], newLen, steps+NStep};
             return newCursor;
         }
     }

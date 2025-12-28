@@ -68,6 +68,45 @@ struct BiFMIndexNStep {
     BiFMIndexNStep() = default;
     BiFMIndexNStep(BiFMIndexNStep&&) noexcept = default;
 
+
+    static auto helperSwapC(std::array<size_t, SigmaNStep+1> a) {
+        auto values = std::array<size_t, NStep>{};
+        auto increment = std::function<void(size_t pos)>{};
+
+        increment = [&](size_t pos) {
+            if (pos == NStep) return;
+            values[pos] += 1;
+            if (values[pos] == Sigma) {
+                values[pos] = 0;
+                increment(pos+1);
+            }
+        };
+        auto asValueFwd = [](std::array<size_t, NStep> const& v) {
+            size_t value{};
+            for (size_t i{0}; i < NStep; ++i) {
+                value = value * Sigma + v[i];
+            }
+            return value;
+        };
+        auto asValueBwd = [](std::array<size_t, NStep> const& v) {
+            size_t value{};
+            for (size_t i{0}; i < NStep; ++i) {
+                value = value * Sigma + v[NStep -1 -i];
+            }
+            return value;
+        };
+
+        for (size_t i{0}; i < std::pow(Sigma, NStep); ++i) {
+            auto pos1 = asValueFwd(values);
+            auto pos2 = asValueBwd(values);
+            if (pos1 < pos2) {
+                std::swap(a[pos1], a[pos2]);
+            }
+            increment(0);
+        }
+        return a;
+    }
+
     BiFMIndexNStep(
         std::span<uint8_t const> _bwt,
         std::span<uint8_t const> _bwtRev,
@@ -148,8 +187,13 @@ struct BiFMIndexNStep {
         if constexpr (!TReuseRev) {
             C_nstep = computeC(bwtRev_nstep);
             CRev_nstep = computeC(bwt_nstep);
+
+            // reorder CRev entries
+            C_nstep = helperSwapC(C_nstep);
+            CRev_nstep = helperSwapC(CRev_nstep);
         } else {
             C_nstep = computeC(bwt_nstep);
+            C_nstep = helperSwapC(C_nstep);
         }
 
         annotatedArray = std::move(_annotatedArray);
