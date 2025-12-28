@@ -7,6 +7,7 @@
 #include "../fmindex/FMIndexCursor.h"
 #include "../fmindex/KMerFMIndexCursor.h"
 #include "../fmindex/ReverseFMIndexCursor.h"
+#include "../fmindex/BiFMIndexNStepCursor.h"
 
 
 namespace fmc {
@@ -34,6 +35,11 @@ struct SelectIndexCursor<ReverseFMIndex<String, TCSA>> {
     using cursor_t = ReverseFMIndexCursor<ReverseFMIndex<String, TCSA>>;
 };
 
+template <size_t TSigma, template <size_t> typename String, typename SparseArray, bool TDelim, bool TReuseRev, size_t TNStep>
+struct SelectIndexCursor<BiFMIndexNStep<TSigma, String, SparseArray, TDelim, TReuseRev, TNStep>> {
+    using cursor_t = BiFMIndexNStepCursor<BiFMIndexNStep<TSigma, String, SparseArray, TDelim, TReuseRev, TNStep>>;
+};
+
 
 template <typename Index>
 struct SelectLeftIndexCursor;
@@ -52,6 +58,12 @@ template <typename String, size_t KMer, typename TCSA>
 struct SelectLeftIndexCursor<KMerFMIndex<String, KMer, TCSA>> {
     using cursor_t = KMerFMIndexCursor<KMerFMIndex<String, KMer, TCSA>>;
 };
+
+template <size_t TSigma, template <size_t> typename String, typename SuffixArray, bool TDelim, bool TReuseRev, size_t TNStep>
+struct SelectLeftIndexCursor<BiFMIndexNStep<TSigma, String, SuffixArray, TDelim, TReuseRev, TNStep>> {
+    using cursor_t = LeftBiFMIndexNStepCursor<BiFMIndexNStep<TSigma, String, SuffixArray, TDelim, TReuseRev, TNStep>>;
+};
+
 
 template <typename Index>
 using select_cursor_t      = typename SelectIndexCursor<Index>::cursor_t;
