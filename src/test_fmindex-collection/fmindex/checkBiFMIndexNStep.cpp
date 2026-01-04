@@ -48,7 +48,7 @@ TEST_CASE("checking bidirectional fm index with nstep capabilities", "[bifmindex
         for (size_t i{0}; i < sa.size(); ++i) {
             CHECK(index.locate(i) == std::make_tuple(0, sa[i], 0));
         }
-        // Complecated, since they kind of have to be reversed.
+        // Complicated, since they kind of have to be reversed.
         for (size_t i{0}; i < bwt.size(); ++i) {
             INFO(i);
             CHECK(index.bwt.symbol(i) == bwt[i]);

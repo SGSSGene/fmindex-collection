@@ -6,6 +6,7 @@
 #include "../string/concepts.h"
 #include "../suffixarray/SparseArray.h"
 #include "../suffixarray/utils.h"
+#include "../VectorBool.h"
 #include "../utils.h"
 
 #include <algorithm>
@@ -26,16 +27,18 @@ constexpr static size_t my_pow_base(size_t e) {
 }
 
 
-template <size_t TSigma, template <size_t> typename String = string::FlattenedBitvectors_512_64k, SparseArray_c SparseArray = suffixarray::SparseArray<std::tuple<uint32_t, uint32_t>>, bool TDelim=true, bool TReuseRev=false, size_t TNStep=2>
+template <size_t TSigma, template <size_t> typename String = string::FlattenedBitvectors_512_64k, SparseArray_c TSparseArray = suffixarray::SparseArray<std::tuple<uint32_t, uint32_t>>, bool TDelim=true, bool TReuseRev=false, size_t TNStep=2>
     requires String_c<String<TSigma>>
 struct BiFMIndexNStep {
-    using ADEntry = SparseArray::value_t;
+    using DocumentEntries = TSparseArray::value_t;
+    using ADEntry = DocumentEntries;
+    using SparseArray = TSparseArray;
 
-    using NoDelim = BiFMIndexNStep<TSigma, String, SparseArray, false, TReuseRev, TNStep>;
-    using ReuseRev = BiFMIndexNStep<TSigma, String, SparseArray, TDelim, true, TNStep>;
+    using NoDelim = BiFMIndexNStep<TSigma, String, TSparseArray, false, TReuseRev, TNStep>;
+    using ReuseRev = BiFMIndexNStep<TSigma, String, TSparseArray, TDelim, true, TNStep>;
 
     template <size_t TNewNStep>
-    using SetNStep = BiFMIndexNStep<TSigma, String, SparseArray, TDelim, TReuseRev, TNewNStep>;
+    using SetNStep = BiFMIndexNStep<TSigma, String, TSparseArray, TDelim, TReuseRev, TNewNStep>;
 
     static size_t constexpr Sigma     = TSigma;
     static size_t constexpr FirstSymb = TDelim?1:0;
@@ -64,6 +67,7 @@ struct BiFMIndexNStep {
     std::array<size_t, SigmaNStep+1> C_nstep{};
     std::array<size_t, SigmaNStep+1> CRev_nstep{};
     SparseArray annotatedArray;
+    VectorBool annotatedArrayIsNStep;
 
     BiFMIndexNStep() = default;
     BiFMIndexNStep(BiFMIndexNStep&&) noexcept = default;
@@ -112,7 +116,8 @@ struct BiFMIndexNStep {
         std::span<uint8_t const> _bwtRev,
         std::span<uint8_t const> _bwt_nstep,
         std::span<uint8_t const> _bwtRev_nstep,
-        SparseArray _annotatedArray)
+        SparseArray _annotatedArray,
+        VectorBool _annotatedArrayIsNStep)
 
         requires(!TReuseRev)
         : bwt{_bwt}
@@ -123,6 +128,7 @@ struct BiFMIndexNStep {
         , C_nstep{computeC(bwtRev_nstep)}
         , CRev_nstep{computeC(bwt_nstep)}
         , annotatedArray{std::move(_annotatedArray)}
+        , annotatedArrayIsNStep{std::move(_annotatedArrayIsNStep)}
     {
         assert(bwt.size() == bwtRev.size());
         if (
@@ -134,20 +140,22 @@ struct BiFMIndexNStep {
         }
     }
 
-    BiFMIndexNStep(std::span<uint8_t const> _bwt, std::span<uint8_t const> _bwt_nstep, SparseArray _annotatedArray)
+    BiFMIndexNStep(std::span<uint8_t const> _bwt, std::span<uint8_t const> _bwt_nstep, SparseArray _annotatedArray, VectorBool _annotatedArrayIsNStep)
         requires(TReuseRev)
         : bwt{_bwt}
         , bwt_nstep{_bwt_nstep}
         , C{computeC(bwt)}
         , C_nstep{computeC(bwt_nstep)}
         , annotatedArray{std::move(_annotatedArray)}
-    {}
+        , annotatedArrayIsNStep{std::move(_annotatedArrayIsNStep)}
+    {
+    }
 
 
     /*
      * \param includeReversedInput assumes that the input data also has the reversed input data
      */
-    BiFMIndexNStep(Sequence auto const& _sequence, SparseArray const& _annotatedSequence, size_t _threadNbr, bool includeReversedInput = false) {
+    BiFMIndexNStep(Sequence auto const& _sequence, SparseArray const& _annotatedSequence, auto _annotatedSequenceIsNStep, size_t _threadNbr, bool includeReversedInput = false) {
         if (_sequence.size() >= std::numeric_limits<size_t>::max()/2) {
             throw std::runtime_error{"sequence is longer than what this system is capable of handling"};
         }
@@ -159,7 +167,7 @@ struct BiFMIndexNStep {
 
         // create bwt, bwtRev and annotatedArray
 //        auto [_bwt, _annotatedArray] = createBWTAndAnnotatedArray(inputText, _annotatedSequence, _threadNbr, omegaSorting);
-        auto [_bwt, _bwt_nstep, _annotatedArray] = createBWTNStepAndAnnotatedArray<NStep, Sigma>(inputText, _annotatedSequence, _threadNbr, omegaSorting);
+        auto [_bwt, _bwt_nstep, _annotatedArray, _annotatedArrayIsNStep] = createBWTNStepAndAnnotatedArray<NStep, Sigma>(inputText, _annotatedSequence, _annotatedSequenceIsNStep, _threadNbr, omegaSorting);
 
 
         if constexpr (!TReuseRev) {
@@ -196,7 +204,8 @@ struct BiFMIndexNStep {
             C_nstep = helperSwapC(C_nstep);
         }
 
-        annotatedArray = std::move(_annotatedArray);
+        annotatedArray        = std::move(_annotatedArray);
+        annotatedArrayIsNStep = std::move(_annotatedArrayIsNStep);
     }
 
 
@@ -219,7 +228,6 @@ struct BiFMIndexNStep {
         }
         auto const startRefId = refId;
 
-
         auto annotatedSequence = SparseArray {
             std::views::iota(size_t{0}, totalSize) | std::views::transform([&](size_t phase) -> std::optional<ADEntry> {
                 if (phase == 0) { // restarting
@@ -230,7 +238,7 @@ struct BiFMIndexNStep {
                     assert(refId < inputSizes.size());
                     assert(pos < inputSizes[refId]);
 
-                    auto ret = std::optional<ADEntry>{std::nullopt};
+                    auto ret = std::optional<ADEntry>{};
 
                     if (pos % samplingRate == 0) {
                         ret = std::make_tuple(refId+seqOffset, pos);
@@ -246,7 +254,7 @@ struct BiFMIndexNStep {
                     assert(refId < inputSizes.size());
                     assert(pos < inputSizes[refId]);
 
-                    auto ret = std::optional<ADEntry>{std::nullopt};
+                    auto ret = std::optional<ADEntry>{};
 
                     if (pos % samplingRate == 0) {
                         auto _refId = _input.size() + inputSizes.size() - refId-1+seqOffset;
@@ -264,8 +272,44 @@ struct BiFMIndexNStep {
                 }
             })
         };
+        auto annotatedSequenceIsNStep = VectorBool{};
+        annotatedSequenceIsNStep.reserve(totalSize);
+        for (size_t phase{0}; phase < totalSize; ++phase) {
+            if (phase == 0) { // restarting
+                refId = startRefId;
+                pos = 0;
+            }
+            if (!includeReversedInput || phase*2 < totalSize) { // going forward
+                assert(refId < inputSizes.size());
+                assert(pos < inputSizes[refId]);
 
-        *this = BiFMIndexNStep{inputText, annotatedSequence, threadNbr, /*includeReversedInput=*/false};
+                auto lastSampledPosition = (pos / samplingRate) * samplingRate;
+                auto distanceToLastSampledPosition = pos - lastSampledPosition;
+                bool ret = (distanceToLastSampledPosition % NStep == 0);
+
+                ++pos;
+                if (inputSizes[refId] == pos) {
+                    refId += 1;
+                    pos = 0;
+                }
+                annotatedSequenceIsNStep.push_back(ret);
+            } else { // going backwards
+                assert(refId < inputSizes.size());
+                assert(pos < inputSizes[refId]);
+
+                auto lastSampledPosition = (pos / samplingRate) * samplingRate;
+                auto distanceToLastSampledPosition = pos - lastSampledPosition;
+                bool ret = (distanceToLastSampledPosition % NStep == 0);
+
+                ++pos;
+                if (inputSizes[refId] == pos) {
+                    refId += 1;
+                    pos = 0;
+                }
+                annotatedSequenceIsNStep.push_back(ret);
+            }
+        }
+        *this = BiFMIndexNStep{inputText, annotatedSequence, annotatedSequenceIsNStep, threadNbr, /*includeReversedInput=*/false};
     }
 
     auto operator=(BiFMIndexNStep const&) -> BiFMIndexNStep& = delete;
@@ -275,42 +319,28 @@ struct BiFMIndexNStep {
         return bwt.size();
     }
 
-    using LEntry = decltype(std::tuple_cat(ADEntry{}, std::tuple<size_t>{}));
+    using LEntry = decltype(std::tuple_cat(DocumentEntries{}, std::tuple<size_t>{}));
     auto locate(size_t idx) const -> LEntry {
-        if constexpr (requires(String<Sigma> t) {{ t.hasValue(size_t{}) }; }) {
-            bool v = bwt.hasValue(idx);
-            uint64_t steps{};
-            while (!v) {
-                idx = bwt.rank_symbol(idx);
-                steps += 1;
-                v = bwt.hasValue(idx);
-            }
-            return std::tuple_cat(*annotatedArray.value(idx), std::tuple<size_t>{steps});
-        } else {
-            auto opt = annotatedArray.value(idx);
-            uint64_t steps{};
-            while (!opt) {
-                if constexpr (requires(String<Sigma> t) { { t.rank_symbol(size_t{}) }; }) {
-                    idx = bwt.rank_symbol(idx);
-                } else {
-                    auto symb = bwt.symbol(idx);
-                    idx = bwt.rank(idx, symb) + C[symb];
-                }
-                steps += 1;
-                opt = annotatedArray.value(idx);
-            }
-            return std::tuple_cat(*opt, std::tuple<size_t>{steps});
+        uint64_t steps{};
+        while (!annotatedArrayIsNStep[idx]) {
+            auto symb = bwt.symbol(idx);
+            idx = bwt.rank(idx, symb) + C[symb];
+            steps += 1;
         }
-    }
 
-    auto single_locate_step(size_t idx) const -> std::optional<ADEntry> {
-        return annotatedArray.value(idx);
+        auto opt = annotatedArray.value(idx);
+        while (!opt) {
+            auto symb = bwt_nstep.symbol(idx);
+            idx = bwt_nstep.rank(idx, symb) + C_nstep[symb];
+            steps += NStep;
+            opt = annotatedArray.value(idx);
+        }
+        return std::tuple_cat(*opt, std::tuple<size_t>{steps});
     }
-
 
     template <typename Archive>
     void serialize(this auto&& self, Archive& ar) {
-        ar(self.bwt, self.bwt_nstep, self.C, self.C_nstep, self.annotatedArray);
+        ar(self.bwt, self.bwt_nstep, self.C, self.C_nstep, self.annotatedArray, self.annotatedArrayIsNStep);
 
         if constexpr (!std::same_as<RevBwtType, std::nullptr_t>) {
             ar(self.bwtRev);

@@ -6,7 +6,7 @@
 #include "../bitvector/PairedBitvector2L.h"
 #include "../bitvector/OptSparseRBBitvector.h"
 #include "concepts.h"
-#include "../DenseVector.h"
+#include "../DenseMultiVector.h"
 
 #include <algorithm>
 #include <cmath>
@@ -24,22 +24,16 @@
 
 namespace fmc::suffixarray {
 
-template <typename T, typename TBitvector = bitvector::Bitvector2L<512, 65536>>
-struct SparseArray;
-
-
 /** A sparse array over multiple values
  *
  * Space efficient array over sparse data
  */
-template <typename... Ts, typename TBitvector>
-    requires (std::convertible_to<Ts, size_t> && ...)
-        && (std::convertible_to<size_t, Ts> && ...)
-struct SparseArray<std::tuple<Ts...>, TBitvector> {
-    using Entry     = std::tuple<Ts...>;
+template <typename TEntry, typename TBitvector = bitvector::Bitvector2L<512, 65536>>
+struct SparseArray {
+    using Entry     = TEntry;
     using value_t   = Entry;
     using Bitvector = TBitvector;
-    using Documents = std::array<DenseVector, sizeof...(Ts)>;
+    using Documents = DenseMultiVector<Entry>;
     Documents documents;
     Bitvector bv;
 
@@ -47,55 +41,20 @@ struct SparseArray<std::tuple<Ts...>, TBitvector> {
     SparseArray(SparseArray const&) = delete;
     SparseArray(SparseArray&&) noexcept = default;
 
-    template <size_t End>
-    static void map(auto const& cb) {
-        if constexpr (End > 0) {
-            cb.template operator()<End-1>();
-            map<End-1>(cb);
-        }
-    }
-
     template <std::ranges::range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, std::optional<Entry>>
     SparseArray(range_t const& _range) {
-        auto largestValue = std::array<size_t, sizeof...(Ts)>{};
-        auto commonDivisor = std::array<size_t, sizeof...(Ts)>{};
-        size_t ct{};
-
-        bv = Bitvector{_range | std::views::transform([&](std::optional<Entry> const& t) -> bool {
-            if (t) {
-                // using template magic to spread a single entry into multiple vectors
-                map<sizeof...(Ts)>([&]<size_t I>() {
-                    auto const v = static_cast<size_t>(std::get<I>(*t));
-                    largestValue[I]  = std::max<size_t>(largestValue[I], v);
-                    commonDivisor[I] = std::gcd(commonDivisor[I], v);
-                });
-                ct += 1;
-                return true;
-            }
-            return false;
+        bv = Bitvector{_range | std::views::transform([](std::optional<Entry> const& t) -> bool {
+            return t.has_value();
         })};
-        map<sizeof...(Ts)>([&]<size_t I>() {
-            if (commonDivisor[I] == 0) {
-                commonDivisor[I] = 1;
-            }
-            if (largestValue[I] == 0) {
-                largestValue[I] = 1;
-            }
-        });
 
 
-        map<sizeof...(Ts)>([&]<size_t I>() {
-            documents[I] = DenseVector(/*.largestValue = */ largestValue[I], /*.commonDivisor = */commonDivisor[I]);
-            documents[I].reserve(ct);
-        });
-        for (auto t : _range) {
-            if (!t) continue;
-            map<sizeof...(Ts)>([&]<size_t I>() {
-                auto const v = static_cast<size_t>(std::get<I>(*t));
-                documents[I].push_back(v);
-            });
+        auto data = std::vector<Entry>{};
+        for (auto const& v : _range) {
+            if (!v) continue;
+            data.push_back(*v);
         }
+        documents = Documents { data };
     }
 
     auto operator=(SparseArray const&) -> SparseArray& = delete;
@@ -107,14 +66,7 @@ struct SparseArray<std::tuple<Ts...>, TBitvector> {
             return std::nullopt;
         }
         auto r = bv.rank(idx);
-        auto entry = Entry{};
-        // using template magic to gather multiple vectors into a single entry
-        map<sizeof...(Ts)>([&]<size_t I>() {
-            assert(r < std::get<I>(documents).size());
-            std::get<I>(entry) = std::get<I>(documents)[r];
-        });
-
-        return entry;
+        return documents[r];
     }
 
     template <typename Archive>

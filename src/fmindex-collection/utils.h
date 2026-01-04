@@ -7,6 +7,7 @@
 #include "std/chunk_view.hpp"
 #include "concepts.h"
 #include "string/concepts.h"
+#include "VectorBool.h"
 
 #include <algorithm>
 #include <cassert>
@@ -220,8 +221,7 @@ auto createBWTAndAnnotatedArray(std::span<uint8_t const> inputText, SparseArray 
         }
 
         auto bwt = createBWT<word_t>(inputText, sa);
-        using Entry = SparseArray::value_t;
-        auto cb = [&](size_t i) -> std::optional<Entry> {
+        auto cb = [&](size_t i) {
             return _annotatedSequence.value(i);
         };
         auto annotatedArray = SparseArray {sa | std::views::transform(cb)};
@@ -236,7 +236,7 @@ auto createBWTAndAnnotatedArray(std::span<uint8_t const> inputText, SparseArray 
 }
 
 template <size_t NStep, size_t Sigma, typename SparseArray>
-auto createBWTNStepAndAnnotatedArray(std::span<uint8_t const> inputText, SparseArray const& _annotatedSequence, size_t _threadNbr, bool _omegaSorting) {
+auto createBWTNStepAndAnnotatedArray(std::span<uint8_t const> inputText, SparseArray const& _annotatedSequence, fmc::VectorBool const& _annotatedSequenceIsNStep, size_t _threadNbr, bool _omegaSorting) {
     auto f = [&]<typename word_t>() {
         auto sa  = createSA<word_t>(inputText, _threadNbr);
 
@@ -252,12 +252,18 @@ auto createBWTNStepAndAnnotatedArray(std::span<uint8_t const> inputText, SparseA
 
         auto bwt       = createBWT<word_t>(inputText, sa);
         auto bwt_nstep = createBWTNStep<NStep, Sigma, word_t>(inputText, sa);
-        using Entry = SparseArray::value_t;
-        auto cb = [&](size_t i) -> std::optional<Entry> {
+        auto annotatedArray = SparseArray {sa | std::views::transform([&](size_t i) {
             return _annotatedSequence.value(i);
-        };
-        auto annotatedArray = SparseArray {sa | std::views::transform(cb)};
-        return std::make_tuple(std::move(bwt), std::move(bwt_nstep), std::move(annotatedArray));
+        })};
+        auto annotatedArrayIsNStep = fmc::VectorBool{};
+        annotatedArrayIsNStep.resize(_annotatedSequenceIsNStep.size());
+        {
+            for (size_t i{0}; i < sa.size(); ++i) {
+                annotatedArrayIsNStep[i] = _annotatedSequenceIsNStep[sa[i]];
+            }
+        }
+
+        return std::make_tuple(std::move(bwt), std::move(bwt_nstep), std::move(annotatedArray), std::move(annotatedArrayIsNStep));
     };
 
     if (inputText.size() < std::numeric_limits<int32_t>::max()) {

@@ -17,6 +17,7 @@ add_executable(${PROJECT_NAME}
     bitvector/sparse_benchmark.cpp
     bitvector/unittest.cpp
     checkDenseVector.cpp
+    checkDenseMultiVector.cpp
     checkTernarylogic.cpp
     fmindex/benchmark_fmindex.cpp
     fmindex/checkBiFMIndex.cpp
