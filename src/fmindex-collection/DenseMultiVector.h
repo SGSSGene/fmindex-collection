@@ -5,6 +5,7 @@
 #include "DenseVector.h"
 
 #include <array>
+#include <variant>
 
 namespace fmc {
 
