@@ -33,8 +33,19 @@ struct VectorBool {
         used_capacity = i;
     }
 
+    auto unused_capacity() const {
+        return values.size()*8 - used_capacity;
+    }
+    void resize(size_t newSize, bool value) {
+        values.resize((newSize+7)/8, 0);
+        for (size_t i{used_capacity}; i < newSize; ++i) {
+            at(i) = value;
+        }
+        used_capacity = newSize;
+    }
+
     void push_back(bool b) {
-        if (size() % 8 == 0) {
+        if (unused_capacity() == 0) {
             values.emplace_back(0);
         }
         at(size()) = b;
