@@ -7,13 +7,14 @@
 #include "SelectCursor.h"
 
 #include <array>
+#include <cassert>
 #include <cstddef>
 
 /**
- * like search_ng25 but:
- *  - removes all the templates from the functions
+ * like search_ng26 but:
+ *  - uses n_step for acceleration (if available)
  */
-namespace fmc::search_ng26 {
+namespace fmc::search_ng27 {
 
 template <bool Edit, typename index_t, typename query_t, typename search_t, typename delegate_t>
 struct Search {
@@ -24,7 +25,10 @@ struct Search {
         }
         return 1;
     }();
-
+    constexpr bool static HasNStep = requires() {
+        { index_t::NStep };
+    };
+    constexpr size_t static NStep = []() constexpr -> size_t { if constexpr(HasNStep) return index_t::NStep; return 1ul; }();
     using cursor_t = select_cursor_t<index_t>;
 
     index_t const& index;
@@ -86,6 +90,16 @@ struct Search {
             return state.cur.extendLeft(symb);
         }
     }
+
+
+    auto extendNStep(State const& state, std::span<size_t, NStep> symbs) const noexcept requires (HasNStep) {
+        if (state.Right) {
+            return state.cur.extendRightNStep(symbs);
+        } else {
+            return state.cur.extendLeftNStep(symbs);
+        }
+    }
+
     auto extend(State const& state) const noexcept {
         if (state.Right) {
             return state.cur.extendRight();
@@ -225,10 +239,32 @@ struct Search {
     bool search_next_dir_no_errors(State state) const {
         auto loops = state.partitionEntryValue;
         auto nextSymb = decltype(query[0]){};
-        for (size_t i{0}; i < loops; ++i) {
-            nextSymb = query[state.Right?(state.queryPosR+i):(state.queryPosL-i)];
-            state.cur = extend(state, nextSymb);
-            if (state.cur.count() == 0) return false;
+
+
+        if constexpr (HasNStep) {
+            size_t max_loop_nstep = (loops / NStep)*NStep;
+            for (size_t i{0}; i < max_loop_nstep; i += NStep) {
+                auto symbs = std::array<size_t, NStep>{};
+                for (size_t j{0}; j < NStep; ++j) {
+                    auto s = query[state.Right?(state.queryPosR+i+j):(state.queryPosL-i-j)];
+                    symbs[j] = s;
+                }
+
+                nextSymb = query[state.Right?(state.queryPosR+i+(NStep-1)):(state.queryPosL-i-(NStep-1))];
+                state.cur = extendNStep(state, symbs);
+                if (state.cur.count() == 0) return false;
+            }
+            for (size_t i{max_loop_nstep}; i < loops; ++i) {
+                nextSymb = query[state.Right?(state.queryPosR+i):(state.queryPosL-i)];
+                state.cur = extend(state, nextSymb);
+                if (state.cur.count() == 0) return false;
+            }
+        } else {
+            for (size_t i{0}; i < loops; ++i) {
+                nextSymb = query[state.Right?(state.queryPosR+i):(state.queryPosL-i)];
+                state.cur = extend(state, nextSymb);
+                if (state.cur.count() == 0) return false;
+            }
         }
 
         state.side[state.Right].lastRank = nextSymb;

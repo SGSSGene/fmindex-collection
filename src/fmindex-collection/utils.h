@@ -7,6 +7,7 @@
 #include "std/chunk_view.hpp"
 #include "concepts.h"
 #include "string/concepts.h"
+#include "VectorBool.h"
 
 #include <algorithm>
 #include <cassert>
@@ -173,6 +174,28 @@ auto createBWT(std::span<uint8_t const> input, std::span<T const> sa) -> std::ve
     }
 }
 
+template <size_t NStep, size_t Sigma, typename T>
+auto createBWTNStep(std::span<uint8_t const> input, std::span<T const> sa) -> std::vector<uint8_t> {
+    static_assert(
+        std::same_as<T, uint64_t>
+        || std::same_as<T, uint32_t>
+        , "must be of type uint64_t or uint32_t"
+    );
+    assert(input.size() == sa.size());
+    auto bwt = std::vector<uint8_t>{};
+    bwt.resize(input.size());
+    for (size_t i{0}; i < sa.size(); ++i) {
+        auto value = uint8_t{};
+        for (size_t j{0}; j < NStep; ++j) {
+            auto pos = (sa[i] + input.size() - 1 - j) % input.size();
+            auto v = input[pos];
+            value = value*Sigma + v;
+        }
+        bwt[i] = value;
+    }
+    return bwt;
+}
+
 template <String_c String>
 auto computeC(String const& s) -> std::array<size_t, String::Sigma+1> {
     auto res = std::array<size_t, String::Sigma+1>{};
@@ -198,8 +221,7 @@ auto createBWTAndAnnotatedArray(std::span<uint8_t const> inputText, SparseArray 
         }
 
         auto bwt = createBWT<word_t>(inputText, sa);
-        using Entry = SparseArray::value_t;
-        auto cb = [&](size_t i) -> std::optional<Entry> {
+        auto cb = [&](size_t i) {
             return _annotatedSequence.value(i);
         };
         auto annotatedArray = SparseArray {sa | std::views::transform(cb)};
@@ -212,6 +234,45 @@ auto createBWTAndAnnotatedArray(std::span<uint8_t const> inputText, SparseArray 
         return f.template operator()<uint64_t>();
     }
 }
+
+template <size_t NStep, size_t Sigma, typename SparseArray>
+auto createBWTNStepAndAnnotatedArray(std::span<uint8_t const> inputText, SparseArray const& _annotatedSequence, fmc::VectorBool const& _annotatedSequenceIsNStep, size_t _threadNbr, bool _omegaSorting) {
+    auto f = [&]<typename word_t>() {
+        auto sa  = createSA<word_t>(inputText, _threadNbr);
+
+        // if using omega sorting, the input text must be doubled
+        if (_omegaSorting) { // using omega sorting, remove half of the entries
+            auto halfSize = inputText.size() / 2;
+            auto [first, last] = std::ranges::remove_if(sa, [&](auto e) {
+                return e >= halfSize;
+            });
+            sa.erase(first, last);
+            inputText = {inputText.begin(), inputText.begin() + inputText.size()/2};
+        }
+
+        auto bwt       = createBWT<word_t>(inputText, sa);
+        auto bwt_nstep = createBWTNStep<NStep, Sigma, word_t>(inputText, sa);
+        auto annotatedArray = SparseArray {sa | std::views::transform([&](size_t i) {
+            return _annotatedSequence.value(i);
+        })};
+        auto annotatedArrayIsNStep = fmc::VectorBool{};
+        annotatedArrayIsNStep.resize(_annotatedSequenceIsNStep.size());
+        {
+            for (size_t i{0}; i < sa.size(); ++i) {
+                annotatedArrayIsNStep[i] = _annotatedSequenceIsNStep[sa[i]];
+            }
+        }
+
+        return std::make_tuple(std::move(bwt), std::move(bwt_nstep), std::move(annotatedArray), std::move(annotatedArrayIsNStep));
+    };
+
+    if (inputText.size() < std::numeric_limits<int32_t>::max()) {
+        return f.template operator()<uint32_t>();
+    } else {
+        return f.template operator()<uint64_t>();
+    }
+}
+
 
 inline auto createBWT(std::span<uint8_t const> inputText, size_t _threadNbr, bool _omegaSorting) {
     auto f = [&]<typename word_t>() {
@@ -237,6 +298,33 @@ inline auto createBWT(std::span<uint8_t const> inputText, size_t _threadNbr, boo
         return f.template operator()<uint64_t>();
     }
 }
+
+template <size_t NStep, size_t Sigma>
+inline auto createBWTNStep(std::span<uint8_t const> inputText, size_t _threadNbr, bool _omegaSorting) {
+    auto f = [&]<typename word_t>() {
+        auto sa  = createSA<word_t>(inputText, _threadNbr);
+
+        // if using omega sorting, the input text must be doubled
+        if (_omegaSorting) { // using omega sorting, remove half of the entries
+            auto halfSize = inputText.size() / 2;
+            auto [first, last] = std::ranges::remove_if(sa, [&](auto e) {
+                return e >= halfSize;
+            });
+            sa.erase(first, last);
+            inputText = {inputText.begin(), inputText.begin() + inputText.size()/2};
+        }
+        auto bwt       = createBWT<word_t>(inputText, sa);
+        auto bwt_nstep = createBWTNStep<NStep, Sigma, word_t>(inputText, sa);
+        return std::make_tuple(std::move(bwt), std::move(bwt_nstep));
+    };
+
+    if (inputText.size() < std::numeric_limits<int32_t>::max()) {
+        return f.template operator()<uint32_t>();
+    } else {
+        return f.template operator()<uint64_t>();
+    }
+}
+
 
 inline auto createInputText(std::span<uint8_t const> _input, bool _omegaSorting, bool _includeReversedInput=false) -> std::vector<uint8_t> {
     auto output = std::vector<uint8_t>{};

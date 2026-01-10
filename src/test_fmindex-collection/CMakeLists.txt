@@ -17,10 +17,13 @@ add_executable(${PROJECT_NAME}
     bitvector/sparse_benchmark.cpp
     bitvector/unittest.cpp
     checkDenseVector.cpp
+    checkDenseMultiVector.cpp
     checkTernarylogic.cpp
     fmindex/benchmark_fmindex.cpp
     fmindex/checkBiFMIndex.cpp
+    fmindex/checkBiFMIndexNStep.cpp
     fmindex/checkBiFMIndexCursor.cpp
+    fmindex/checkBiFMIndexNStepCursor.cpp
     fmindex/checkBiFMIndexWithoutDelimiter.cpp
     fmindex/checkBinaryMirroredBiFMIndex.cpp
     fmindex/checkDenseBiFMIndex.cpp
