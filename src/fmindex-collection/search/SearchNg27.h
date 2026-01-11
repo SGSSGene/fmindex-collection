@@ -16,6 +16,66 @@
  */
 namespace fmc::search_ng27 {
 
+/*struct ActionSide {
+    std::vector<char> action;
+    std::vector<uint8_t> indexedC;
+    std::vector<uint8_t> queriedC;
+
+    struct OnExit {
+        ActionSide* ptr{};
+        size_t      steps{};
+
+        OnExit(ActionSide* _ptr, size_t _steps=1) : ptr{_ptr}, steps{_steps} {}
+        OnExit(OnExit&& _o) : ptr{std::exchange(_o.ptr, nullptr)}, steps{_o.steps} {}
+        OnExit(OnExit const&) = delete;
+        ~OnExit() {
+            if (ptr) {
+                ptr->multi_pop(steps);
+            }
+        }
+    };
+
+    void pop() {
+        action.pop_back();
+        indexedC.pop_back();
+        queriedC.pop_back();
+    }
+
+    void multi_pop(size_t s) {
+        action.resize(action.size() - s);
+        indexedC.resize(action.size());
+        queriedC.resize(action.size());
+    }
+
+    void unsafe_emplace(char _action, uint8_t _indexedC, uint8_t _queriedC) {
+        action.emplace_back(_action);
+        indexedC.emplace_back(_indexedC);
+        queriedC.emplace_back(_queriedC);
+    }
+
+
+    auto emplace(char _action, uint8_t _indexedC, uint8_t _queriedC) {
+        unsafe_emplace(_action, _indexedC, _queriedC);
+        return OnExit{this};
+    }
+
+    template <typename CB>
+    auto emplace(CB&& cb) {
+        auto opt = cb();
+        size_t steps{};
+        while (opt) {
+            ++steps;
+            auto [a, i, q] = *opt;
+            unsafe_emplace(a, i, q);
+            opt = cb();
+        }
+        return OnExit{this, steps};
+    }
+};
+thread_local inline std::array<ActionSide, 2> actionSide{};*/
+
+
+
 template <bool Edit, typename index_t, typename query_t, typename search_t, typename delegate_t>
 struct Search {
     constexpr static size_t Sigma = index_t::Sigma;
@@ -52,7 +112,7 @@ struct Search {
         size_t queryPosR{};
         char LInfo, RInfo;
         bool Right{};
-        bool NextPos{};
+        size_t NextPos{};
     };
 
     Search(index_t const& _index, query_t const& _query, search_t const& _search, std::vector<size_t> const& _partition, delegate_t const& _delegate)
@@ -108,6 +168,15 @@ struct Search {
         }
     }
 
+    auto extendNStep(State const& state) const noexcept requires (HasNStep) {
+        if (state.Right) {
+            return state.cur.extendRightNStep();
+        } else {
+            return state.cur.extendLeftNStep();
+        }
+    }
+
+
 
     bool search_next(State const& state) const {
         if (state.cur.count() == 0) return false;
@@ -123,7 +192,7 @@ struct Search {
 
         auto newState = state;
         newState.Right = (state.part==0) || (search.pi[state.part-1] < search.pi[state.part]);
-        if (state.cur.count() > 1) {
+        if (state.cur.count() > 1 || true) {
             return search_next_dir(newState);
         } else {
             return search_next_dir_single(newState);
@@ -133,9 +202,10 @@ struct Search {
     bool search_next_pos(State state) const {
         if (state.cur.count() == 0) return false;
         if (state.NextPos) {
-            if (state.Right) state.queryPosR += 1;
-            else state.queryPosL -= 1;
-            state.partitionEntryValue -= 1;
+            auto p = state.NextPos;
+            if (state.Right) state.queryPosR += p;
+            else state.queryPosL -= p;
+            state.partitionEntryValue -= p;
 
             if (state.partitionEntryValue == 0) {
                 state.part += 1;
@@ -147,7 +217,7 @@ struct Search {
             }
         }
 
-        if (state.cur.count() > 1) {
+        if (state.cur.count() > 1 || true) {
             return search_next_dir(state);
         } else {
             return search_next_dir_single(state);
@@ -155,10 +225,17 @@ struct Search {
     }
 
     bool search_next_dir(State const& state) const {
+        if constexpr (HasNStep) {
+            auto loops = state.partitionEntryValue;
+            if (loops >= index_t::NStep) {
+                return search_next_dir_kstep(state);
+            }
+        }
+
         char const TInfo = state.Right ? state.RInfo : state.LInfo;
 
-        bool const Deletion     = (TInfo != 'S' && TInfo != 'I') && Edit;
-        bool const Insertion    = (TInfo != 'S' && TInfo != 'D') && Edit;
+        bool const Deletion     = (TInfo != 'S' && TInfo != 'I') && Edit && false;
+        bool const Insertion    = (TInfo != 'S' && TInfo != 'D') && Edit && false;
 
         char const OnMatchL      = state.Right ? state.LInfo : 'M';
         char const OnMatchR      = state.Right ? 'M'   : state.RInfo;
@@ -190,7 +267,8 @@ struct Search {
                 newState.side[state.Right].lastQRank = nextSymb;
                 newState.LInfo = OnMatchL;
                 newState.RInfo = OnMatchR;
-                newState.NextPos = true;
+                newState.NextPos = 1;
+//                auto g = actionSide[state.Right].emplace('M', nextSymb, nextSymb);
                 auto f = search_next_pos(newState);
                 if (f) return true;
             }
@@ -203,7 +281,8 @@ struct Search {
                 if (Deletion) {
                     newState.LInfo = OnDeletionL;
                     newState.RInfo = OnDeletionR;
-                    newState.NextPos = false;
+                    newState.NextPos = 0;
+//                    auto g = actionSide[state.Right].emplace('D', i, 255);
                     auto f = search_next_pos(newState); // deletion occurred in query
                     if (f) return true;
                 }
@@ -213,7 +292,8 @@ struct Search {
                 newState.side[state.Right].lastQRank = nextSymb;
                 newState.LInfo = OnSubstituteL;
                 newState.RInfo = OnSubstituteR;
-                newState.NextPos = true;
+                newState.NextPos = 1;
+//                auto g = actionSide[state.Right].emplace('S', i, nextSymb);
                 auto f = search_next_pos(newState);
                 if (f) return true;
             }
@@ -225,7 +305,8 @@ struct Search {
                     newState.side[state.Right].lastQRank = nextSymb;
                     newState.LInfo = OnInsertionL;
                     newState.RInfo = OnInsertionR;
-                    newState.NextPos = true;
+                    newState.NextPos = 1;
+//                    auto g = actionSide[state.Right].emplace('I', 255, nextSymb);
                     auto f = search_next_pos(newState); // insertion occurred in query
                     if (f) return true;
                 }
@@ -236,6 +317,132 @@ struct Search {
         }
         return false;
     }
+
+    bool search_next_dir_kstep(State const& state) const
+        requires HasNStep
+    {
+        char const TInfo = state.Right ? state.RInfo : state.LInfo;
+
+        bool const Deletion     = (TInfo != 'S' && TInfo != 'I') && Edit && false;
+        bool const Insertion    = (TInfo != 'S' && TInfo != 'D') && Edit && false;
+
+        char const OnMatchL      = state.Right ? state.LInfo : 'M';
+        char const OnMatchR      = state.Right ? 'M'   : state.RInfo;
+        char const OnSubstituteL = state.Right ? state.LInfo : 'S';
+        char const OnSubstituteR = state.Right ? 'S'   : state.RInfo;
+        char const OnDeletionL   = state.Right ? state.LInfo : 'D';
+        char const OnDeletionR   = state.Right ? 'D'   : state.RInfo;
+        char const OnInsertionL  = state.Right ? state.LInfo : 'I';
+        char const OnInsertionR  = state.Right ? 'I'   : state.RInfo;
+
+        uint8_t constexpr static KStep = index_t::NStep;
+
+        auto nextSymbs = std::array<size_t, KStep>{};
+        if (state.Right) {
+            for (size_t i{0}; i < KStep; ++i) {
+                nextSymbs[i] = query[state.queryPosR+i];
+            }
+        } else {
+            for (size_t i{0}; i < KStep; ++i) {
+                nextSymbs[i] = query[state.queryPosL-i];
+            }
+        }
+        auto nextSymb = nextSymbs.front();
+        auto lastSymb = nextSymbs.back();
+
+        bool matchAllowed    = (state.partitionEntryValue > 1 or search.l[state.part] <= state.e)
+                               and state.e <= search.u[state.part]
+                               and (TInfo != 'I' or nextSymb != state.side[state.Right].lastQRank)
+                               and (TInfo != 'D' or nextSymb != state.side[state.Right].lastRank);
+        bool insertionAllowed    = (state.partitionEntryValue > 1 or search.l[state.part] <= state.e+1)
+                                   and state.e+1 <= search.u[state.part];
+        bool substitutionAllowed = insertionAllowed;
+        bool mismatchAllowed     = state.e+1 <= search.u[state.part];
+
+        if (!mismatchAllowed) {
+            if (matchAllowed) {
+                return search_next_dir_no_errors(state);
+            }
+            return false;
+        }
+
+        if (matchAllowed) {
+            auto newState = state;
+            newState.cur = extendNStep(state, nextSymbs);
+            newState.side[state.Right].lastRank = lastSymb;
+            newState.side[state.Right].lastQRank = lastSymb;
+            newState.LInfo = OnMatchL;
+            newState.RInfo = OnMatchR;
+            newState.NextPos = KStep;
+
+/*            auto g = actionSide[state.Right].emplace([&, i=0]() mutable -> std::optional<std::tuple<char, uint8_t, uint8_t>> {
+                if (i == KStep) return std::nullopt;
+                auto symb = query[state.Right?(state.queryPosR+i):(state.queryPosL-i)];
+                ++i;
+                return std::tuple{'M', symb, symb};
+            });*/
+
+            auto f = search_next_pos(newState);
+            if (f) return true;
+        }
+
+        if (substitutionAllowed) {
+            auto newState = state;
+            newState.LInfo = OnSubstituteL;
+            newState.RInfo = OnSubstituteR;
+
+            auto altSymbs = nextSymbs;
+            size_t maxErrors = search.u[state.part] - state.e;
+            auto permuteUpToEErrors = [&](this auto&& self, size_t start, size_t e, auto&& cb) {
+                if (e == maxErrors) return false;
+                e += 1;
+                for (size_t k{start}; k < KStep; ++k) {
+                    for (size_t s{FirstSymb}; s < Sigma; ++s) {
+                        if (s == nextSymbs[k]) continue;
+                        altSymbs[k] = s;
+                        auto f = cb(e);
+                        if (f) return true;
+                        f = self(k+1, e, std::forward<decltype(cb)>(cb));
+                        if (f) return true;
+                    }
+                    altSymbs[k] = nextSymbs[k]; // restore original symbol
+                }
+                return false;
+            };
+            // iterate through all allowed error
+            auto f = permuteUpToEErrors(0, 0, [&](size_t e) {
+                newState.e += e;
+
+                if (altSymbs.back() == nextSymbs.back()) {
+                    if (state.Right) newState.RInfo = OnMatchR;
+                    else             newState.LInfo = OnMatchL;
+                } else {
+                    if (state.Right) newState.RInfo = OnSubstituteR;
+                    else             newState.LInfo = OnSubstituteL;
+                }
+
+                newState.cur  = extendNStep(state, altSymbs);
+                newState.side[state.Right].lastRank  = altSymbs.back();
+                newState.side[state.Right].lastQRank = nextSymbs.back();
+                newState.NextPos = KStep;
+
+/*                auto g = actionSide[state.Right].emplace([&, i=0]() mutable -> std::optional<std::tuple<char, uint8_t, uint8_t>> {
+                    if (i == KStep) return std::nullopt;
+                    ++i;
+                    char a = (altSymbs[i] == nextSymbs[i])?'M':'S';
+                    return std::tuple{a, altSymbs[i], nextSymbs[i]};
+                });*/
+
+                auto f = search_next_pos(newState);
+                newState.e -= e;
+                return f;
+//                return false;
+            });
+            if (f) return true;
+        }
+        return false;
+    }
+
     bool search_next_dir_no_errors(State state) const {
         auto loops = state.partitionEntryValue;
         auto nextSymb = decltype(query[0]){};
@@ -267,6 +474,13 @@ struct Search {
             }
         }
 
+/*        auto g = actionSide[state.Right].emplace([&, i=0]() mutable -> std::optional<std::tuple<char, uint8_t, uint8_t>> {
+            if (i == loops) return std::nullopt;
+            auto symb = query[state.Right?(state.queryPosR+i):(state.queryPosL-i)];
+            ++i;
+            return std::tuple{'M', symb, symb};
+        });*/
+
         state.side[state.Right].lastRank = nextSymb;
         state.side[state.Right].lastQRank = nextSymb;
         state.part += 1;
@@ -287,8 +501,8 @@ struct Search {
     bool search_next_dir_single(State const& state) const {
         char const TInfo = state.Right ? state.RInfo : state.LInfo;
 
-        bool const Deletion     = (TInfo != 'S' && TInfo != 'I') && Edit;
-        bool const Insertion    = (TInfo != 'S' && TInfo != 'D') && Edit;
+        bool const Deletion     = (TInfo != 'S' && TInfo != 'I') && Edit && false;
+        bool const Insertion    = (TInfo != 'S' && TInfo != 'D') && Edit && false;
 
         char const OnMatchL      = state.Right ? state.LInfo : 'M';
         char const OnMatchR      = state.Right ? 'M'   : state.RInfo;
@@ -326,7 +540,7 @@ struct Search {
                 newState.side[state.Right].lastQRank = curQSymb;
                 newState.LInfo = OnInsertionL;
                 newState.RInfo = OnInsertionR;
-                newState.NextPos = true;
+                newState.NextPos = 1;
                 bool f = search_next_pos(newState);
                 if (f) return true;
             }
@@ -355,7 +569,7 @@ struct Search {
                 newState.cur = icursorNext;
                 newState.LInfo = OnMatchL;
                 newState.RInfo = OnMatchR;
-                newState.NextPos = true;
+                newState.NextPos = 1;
                 bool f = search_next_pos(newState);
                 if (f) return true;
             }
@@ -367,7 +581,7 @@ struct Search {
                     newState.cur = icursorNext;
                     newState.LInfo = OnDeletionL;
                     newState.RInfo = OnDeletionR;
-                    newState.NextPos = false;
+                    newState.NextPos = 1;
                     bool f = search_next_pos(newState);
                     if (f) return true;
                 }
@@ -384,7 +598,7 @@ struct Search {
                 auto s2 = Restore{newState.side[state.Right].lastQRank, curQSymb};
                 newState.LInfo = OnSubstituteL;
                 newState.RInfo = OnSubstituteR;
-                newState.NextPos = true;
+                newState.NextPos = 1;
                 bool f = search_next_pos(newState);
                 if (f) return true;
             }
@@ -392,7 +606,7 @@ struct Search {
             if (Deletion) {
                 newState.LInfo = OnDeletionL;
                 newState.RInfo = OnDeletionR;
-                newState.NextPos = false;
+                newState.NextPos = 0;
                 bool f = search_next_pos(newState);
                 if (f) return true;
             }
