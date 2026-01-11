@@ -199,7 +199,7 @@ struct DenseVector {
 
     template <typename Archive>
     void serialize(this auto&& self, Archive& ar) {
-        ar(self.data, self.bitCount, self.bits);
+        ar(self.data, self.bitCount, self.bits, self.largestValue, self.commonDivisor);
     }
 
 };
