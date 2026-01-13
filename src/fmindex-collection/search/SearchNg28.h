@@ -30,7 +30,7 @@ struct Search {
     index_t const& index;
     query_t const& query;
     search_t const& search;
-    mutable std::vector<size_t> partition;
+    std::vector<size_t> partition;
     delegate_t const& delegate;
 
     enum dir_t : int {
@@ -47,8 +47,10 @@ struct Search {
     mutable std::array<Side, 3> sideImpl;
     mutable Side* side{nullptr};
     mutable size_t e{};
-    mutable size_t part{};
+    mutable size_t part{std::numeric_limits<size_t>::max()}; // first action will be overflow, this is desired effect
     mutable dir_t dir{dir_t::Right};
+    mutable size_t partitionPart{};
+    mutable uint8_t lb, ub;
 
     Search(index_t const& _index, query_t const& _query, search_t const& _search, std::vector<size_t> const& _partition, delegate_t const& _delegate)
         : index     {_index}
@@ -97,6 +99,7 @@ struct Search {
         if (cur.count() == 0) {
             return false;
         }
+        auto r_p = RestoreAdd{part, 1};
         if (part == partition.size()) {
             auto il = sideImpl[0].info;
             auto ir = sideImpl[2].info;
@@ -111,6 +114,10 @@ struct Search {
         bool right = (part==0) || (search.pi[part-1] < search.pi[part]);
         auto r_dir = Restore{dir, right?dir_t::Right:dir_t::Left};
         auto r_side = Restore{side, right?&sideImpl[2]:&sideImpl[0]};
+        auto r_part = Restore{partitionPart, partition[search.pi[part]]};
+        auto r_lb   = Restore{lb, search.l[part]};
+        auto r_ub   = Restore{ub, search.u[part]};
+
         return search_next_symb(cur);
     }
 
@@ -121,10 +128,9 @@ struct Search {
     bool check_and_search_next_symb(cursor_t const& cur) const {
         if (cur.count() == 0) return false;
         auto r_qp = RestoreAdd{side->queryPos, dir};
-        auto r_p  = RestoreSub{partition[search.pi[part]], 1};
+        auto r_p  = RestoreSub{partitionPart, 1};
 
-        if (partition[search.pi[part]] == 0) {
-            auto r_p = RestoreAdd{part, 1};
+        if (partitionPart == 0) {
             return search_next_part(cur);
         }
         return search_next_symb(cur);
@@ -133,16 +139,16 @@ struct Search {
 
     auto computeErrorCases() const {
         auto const tinfo               = side->info;
-        bool const mismatchAllowed     = e+1 <= search.u[part];
-        bool const substitutionAllowed = search.l[part] <= e+partition[search.pi[part]] and e+1 <= search.u[part];
+        bool const mismatchAllowed     = e+1 <= ub;
+        bool const substitutionAllowed = lb <= e+partitionPart and e+1 <= ub;
         bool const insertionAllowed    = Edit && tinfo != 'S' && tinfo != 'D' && substitutionAllowed;
         bool const deletionAllowed     = Edit && tinfo != 'S' && tinfo != 'I' && mismatchAllowed;
         return std::make_tuple(mismatchAllowed, substitutionAllowed, insertionAllowed, deletionAllowed);
     }
     auto computeMatchCase(size_t nextSymb) const {
         auto const tinfo        = side->info;
-        bool const matchAllowed = (partition[search.pi[part]] > 1 or search.l[part] <= e)
-                                 and e <= search.u[part]
+        bool const matchAllowed = (partitionPart > 1 or lb <= e)
+                                 and e <= ub
                                  and (tinfo != 'I' or nextSymb != side->lastQRank)
                                  and (tinfo != 'D' or nextSymb != side->lastRank);
         return matchAllowed;
@@ -168,7 +174,7 @@ struct Search {
             auto r_i   = Restore{side->info};
             auto r_lqr = Restore{side->lastQRank};
             auto r_qp  = Restore{side->queryPos};
-            auto r_p   = Restore{partition[search.pi[part]]};
+            auto r_p   = Restore{partitionPart};
             auto r_e   = Restore{e};
 
             while (true) {
@@ -204,9 +210,8 @@ struct Search {
                 side->lastQRank = nextSymb;
                 side->info = 'I';
                 side->queryPos += dir;
-                partition[search.pi[part]] -= 1;
-                if (partition[search.pi[part]] == 0) {
-                    auto r_p = RestoreAdd{part, 1};
+                partitionPart -= 1;
+                if (partitionPart == 0) {
                     return search_next_part(cur);
                 }
 
@@ -214,13 +219,6 @@ struct Search {
 
                 matchAllowed = computeMatchCase(nextSymb);
                 std::tie(mismatchAllowed, substitutionAllowed, insertionAllowed, deletionAllowed) = computeErrorCases();
-/*                if (insertionAllowed) {
-                    auto r_lqr = Restore{side->lastQRank, nextSymb};
-                    side->info = 'I';
-                    auto f = check_and_search_next_symb(cur); // insertion occurred in query
-                    if (f) return true;
-                }
-                break;*/
             }
         }
         return false;
@@ -231,9 +229,9 @@ struct Search {
      * May only be called if no errors are allowed
      */
     bool search_next_part_no_errors(cursor_t cur) const {
-        assert(e == search.u[part]);
+        assert(e == ub);
 
-        auto loops = partition[search.pi[part]];
+        auto loops = partitionPart;
         auto nextSymb = decltype(query[0]){};
         for (size_t i{0}; i < loops; ++i) {
             auto pos = side->queryPos + i*dir;
@@ -244,8 +242,7 @@ struct Search {
 
         auto r_lr   = Restore{side->lastRank, nextSymb};
         auto r_lqr  = Restore{side->lastQRank, nextSymb};
-        auto r_p    = Restore{partition[search.pi[part]], 0};
-        auto r_part = Restore{part, part+1};
+        auto r_p    = Restore{partitionPart, 0};
         auto r_qp   = RestoreAdd{side->queryPos, loops * dir};
         auto r_i    = Restore{side->info, 'M'};
         return search_next_part(cur);
@@ -256,7 +253,7 @@ struct Search {
         auto r_lqr = Restore{side->lastQRank};
         auto r_i   = Restore{side->info};
         auto r_qp  = Restore{side->queryPos};
-        auto r_p   = Restore{partition[search.pi[part]]};
+        auto r_p   = Restore{partitionPart};
 
         auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
             if (dir == dir_t::Right) {
@@ -313,9 +310,8 @@ struct Search {
             side->info = 'I';
 
             side->queryPos += dir;
-            partition[search.pi[part]] -= 1;
-            if (partition[search.pi[part]] == 0) {
-                auto r_p = RestoreAdd{part, 1};
+            partitionPart -= 1;
+            if (partitionPart == 0) {
                 return search_next_part(cur);
             }
         }
