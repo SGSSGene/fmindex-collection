@@ -28,10 +28,6 @@ template <typename T, typename T2=std::nullptr_t>
 struct RestoreAdd {
     T* value;
     T oldValue;
-    RestoreAdd(T& _value)
-        : value{&_value}
-        , oldValue{*value}
-    {}
     RestoreAdd(T& _value, T2 newValue)
         : value{&_value}
         , oldValue{*value}
@@ -49,10 +45,6 @@ template <typename T, typename T2=std::nullptr_t>
 struct RestoreSub {
     T* value;
     T oldValue;
-    RestoreSub(T& _value)
-        : value{&_value}
-        , oldValue{*value}
-    {}
     RestoreSub(T& _value, T2 newValue)
         : value{&_value}
         , oldValue{*value}
