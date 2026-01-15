@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Simon Gene Gottlieb
+// SPDX-FileCopyrightText: 2026 Simon Gene Gottlieb
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
@@ -11,7 +11,8 @@
 
 /**
  * like search_ng25 but:
- *  - optimized for KStep approach
+ *  - optimized further reduced templates
+ *  - optimized 'Insert' case
  */
 namespace fmc::search_ng28 {
 
@@ -75,22 +76,15 @@ struct Search {
         return search_next_part(cur);
     }
 
-
     auto extend(cursor_t const& cur, uint64_t symb) const noexcept {
-        if (dir == dir_t::Right) {
-            return cur.extendRight(symb);
-        } else {
-            return cur.extendLeft(symb);
-        }
-    }
-    auto extend(cursor_t const& cur) const noexcept {
-        if (dir == dir_t::Right) {
-            return cur.extendRight();
-        } else {
-            return cur.extendLeft();
-        }
+        if (dir == dir_t::Right) return cur.extendRight(symb);
+        return cur.extendLeft(symb);
     }
 
+    auto extend(cursor_t const& cur) const noexcept {
+        if (dir == dir_t::Right) return cur.extendRight();
+        return cur.extendLeft();
+    }
 
     /*
      * Searches for the next part
@@ -122,8 +116,8 @@ struct Search {
     }
 
     /**
-     * check and move search position to next character,
-     * if required start a new part search
+     * move search position to next character, check if partition is ending
+     * if required start a new part/partition search
      */
     bool check_and_search_next_symb(cursor_t const& cur) const {
         if (cur.count() == 0) return false;
@@ -140,6 +134,7 @@ struct Search {
     auto computeErrorCases() const {
         auto const tinfo               = side->info;
         bool const mismatchAllowed     = e+1 <= ub;
+        if (!mismatchAllowed) return std::make_tuple(false, false, false, false);
         bool const substitutionAllowed = lb <= e+partitionPart and e+1 <= ub;
         bool const insertionAllowed    = Edit && tinfo != 'S' && tinfo != 'D' && substitutionAllowed;
         bool const deletionAllowed     = Edit && tinfo != 'S' && tinfo != 'I' && mismatchAllowed;
@@ -190,6 +185,7 @@ struct Search {
                 e += 1;
                 for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
                     auto const& newCur = cursors[i];
+                    if (newCur.count() == 0) continue;
 
                     auto r_lr = Restore{side->lastRank, i};
                     if (deletionAllowed) {
@@ -249,20 +245,20 @@ struct Search {
     }
 
     bool search_next_symb_single(cursor_t const& cur) const {
-        auto r_e   = Restore{e};
-        auto r_lqr = Restore{side->lastQRank};
-        auto r_i   = Restore{side->info};
-        auto r_qp  = Restore{side->queryPos};
-        auto r_p   = Restore{partitionPart};
+        auto r_e    = Restore{e};
+        auto r_lqr  = Restore{side->lastQRank};
+        auto r_i    = Restore{side->info};
+        auto r_qp   = Restore{side->queryPos};
+        auto r_p    = Restore{partitionPart};
 
         auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
             if (dir == dir_t::Right) {
                 auto symb = cur.symbolRight();
-                auto cur_  = cur.extendRight(symb);
+                auto cur_ = cur.extendRight(symb);
                 return {symb, cur_};
             } else {
                 auto symb = cur.symbolLeft();
-                auto cur_  = cur.extendLeft(symb);
+                auto cur_ = cur.extendLeft(symb);
                 return {symb, cur_};
             }
         }();
@@ -280,7 +276,7 @@ struct Search {
                         if (!mismatchAllowed) {
                             return search_next_part_no_errors(cur);
                         }
-                        auto r_lr  = Restore{side->lastRank, curQSymb};
+                        auto r_lr  = Restore{side->lastRank, curISymb};
                         auto r_lqr = Restore{side->lastQRank, curQSymb};
                         side->info = 'M';
                         bool f = check_and_search_next_symb(icursorNext);
@@ -299,7 +295,7 @@ struct Search {
                     auto r_e  = Restore{e, e+1};
                     auto r_lr = Restore{side->lastRank, curISymb};
                     side->info = 'D';
-                    bool f = search_next_symb(icursorNext);
+                    bool f = search_next_symb_single(icursorNext);
                     if (f) return true;
                 }
             }
