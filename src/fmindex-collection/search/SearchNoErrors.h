@@ -55,7 +55,7 @@ void search(index_t const & index, queries_t const& queries, delegate_t && deleg
                     for (size_t j{0}; j < KStep; ++j) {
                         buffer[j] = query[query.size() - cur.steps - 1 - j];
                     }
-                    cur = cur.extendLeftNStepImpl(buffer);
+                    cur = cur.extendLeftNStep(buffer);
                 } else {
                     auto sym = query[query.size() - cur.steps - 1];
                     cur = cur.extendLeft(sym);

@@ -138,7 +138,7 @@ struct BiFMIndexNStepCursor {
     /*
      * equal to extendLeft(symbs[0]).extendLeft(symbs[1])...
      */
-    auto extendLeftNStep(std::span<size_t, NStep> symbs) const -> BiFMIndexNStepCursor {
+    auto extendLeftNStep(std::span<size_t const, NStep> symbs) const -> BiFMIndexNStepCursor {
         size_t symb_pr{};
         for (size_t i{0}; i < NStep; ++i) {
             symb_pr = symb_pr*Sigma + symbs[i];
@@ -155,7 +155,7 @@ struct BiFMIndexNStepCursor {
     /*
      * equal to extendRight(symbs[0]).extendRight(symbs[1])...
      */
-    auto extendRightNStep(std::span<size_t, NStep> symbs) const -> BiFMIndexNStepCursor {
+    auto extendRightNStep(std::span<size_t const, NStep> symbs) const -> BiFMIndexNStepCursor {
         size_t symb_pr{};
         for (size_t i{0}; i < NStep; ++i) {
             symb_pr = symb_pr*Sigma + symbs[i];
@@ -214,7 +214,9 @@ auto end(BiFMIndexNStepCursor<Index> const& _cursor) {
 
 template <typename Index>
 struct LeftBiFMIndexNStepCursor {
-    static constexpr size_t Sigma    = Index::Sigma;
+    static constexpr size_t Sigma      = Index::Sigma;
+    static constexpr size_t SigmaNStep = Index::SigmaNStep;
+    static constexpr size_t NStep      = Index::NStep;
     static constexpr bool   Reversed = false;
 
     Index const* index;
@@ -276,6 +278,20 @@ struct LeftBiFMIndexNStepCursor {
         auto newCursor = LeftBiFMIndexNStepCursor{*index, newLb + index->C[symb], newLen, steps+1};
         return newCursor;
     }
+
+    auto extendLeftNStep(std::span<size_t const, NStep> symbs) const -> LeftBiFMIndexNStepCursor {
+        size_t symb_pr{};
+        for (size_t i{0}; i < NStep; ++i) {
+            symb_pr = symb_pr*Sigma + symbs[i];
+        }
+
+        auto& bwt = index->bwt_nstep;
+        size_t newLb    = bwt.rank(lb, symb_pr);
+        size_t newLen   = bwt.rank(lb+len, symb_pr) - newLb;
+        auto newCursor = LeftBiFMIndexNStepCursor{*index, newLb + index->C_nstep[symb_pr], newLen, steps+NStep};
+        return newCursor;
+    }
+
 };
 
 template <typename Index>
