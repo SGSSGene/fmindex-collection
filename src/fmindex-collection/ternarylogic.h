@@ -727,7 +727,7 @@ static std::array<std::bitset<N>, 2> mask_positive_or_negative = []() {
  *  has the same bit value as Value
  */
 template <size_t N1, size_t N2>
-auto mark_exact_large(size_t value, std::array<std::bitset<N1>, N2> const& _arr) -> std::bitset<N1> {
+auto mark_exact_large(size_t value, std::span<std::bitset<N1> const, N2> _arr) -> std::bitset<N1> {
     if constexpr (N2 == 2) {
         return mark_exact_v3(value, _arr[1], _arr[0]);
     } else if constexpr (N2 == 3) {
@@ -900,7 +900,7 @@ auto mark_exact_or_less_all(std::bitset<N> const& _a, std::bitset<N> const& _b, 
  *  has the same bit value as Value
  */
 template <size_t N1, size_t N2>
-auto mark_exact_or_less_large(size_t value, std::array<std::bitset<N1>, N2> const& _arr) -> std::bitset<N1> {
+auto mark_exact_or_less_large(size_t value, std::span<std::bitset<N1> const, N2> _arr) -> std::bitset<N1> {
     if constexpr (N2 == 1) {
         if (!value) return ~_arr[0];
         return mask_positive_or_negative<N1>[0];
@@ -1029,7 +1029,7 @@ auto mark_exact_or_less_large(size_t value, std::array<std::bitset<N1>, N2> cons
  *  has the same bit value as Value
  */
 template <size_t N1, size_t N2>
-auto mark_less_large(size_t value, std::array<std::bitset<N1>, N2> const& _arr) -> std::bitset<N1> {
+auto mark_less_large(size_t value, std::span<std::bitset<N1> const, N2> _arr) -> std::bitset<N1> {
     if (value == 0) return mask_positive_or_negative<N1>[1];
     return mark_exact_or_less_large(value-1, _arr);
 

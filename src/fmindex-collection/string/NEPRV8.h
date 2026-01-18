@@ -28,7 +28,7 @@ namespace neprv8_detail {
         if constexpr (bitct == 3) {
             return mark_exact_fast(symb, arr[2], arr[1], arr[0]);
         } else {
-            return mark_exact_large(symb, arr);
+            return mark_exact_large(symb, std::span<std::bitset<N> const, bitct>{arr});
         }
     }
 
@@ -119,7 +119,7 @@ namespace neprv8_detail {
         if constexpr (bitct == 3) {
             return mark_less_fast(symb, arr[2], arr[1], arr[0]);
         } else {
-            return mark_less_large(symb, arr);
+            return mark_less_large(symb, std::span<std::bitset<N> const, bitct>{arr});
         }
     }
 }
