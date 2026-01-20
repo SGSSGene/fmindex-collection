@@ -85,10 +85,10 @@ struct Search {
         }
         return 1;
     }();
-    constexpr bool static HasNStep = requires() {
-        { index_t::NStep };
+    constexpr bool static HasKStep = requires() {
+        { index_t::KStep };
     };
-    constexpr size_t static NStep = []() constexpr -> size_t { if constexpr(HasNStep) return index_t::NStep; return 1ul; }();
+    constexpr size_t static KStep = []() constexpr -> size_t { if constexpr(HasKStep) return index_t::KStep; return 1ul; }();
     using cursor_t = select_cursor_t<index_t>;
 
     index_t const& index;
@@ -152,11 +152,11 @@ struct Search {
     }
 
 
-    auto extendNStep(State const& state, std::span<size_t, NStep> symbs) const noexcept requires (HasNStep) {
+    auto extendKStep(State const& state, std::span<size_t, KStep> symbs) const noexcept requires (HasKStep) {
         if (state.Right) {
-            return state.cur.extendRightNStep(symbs);
+            return state.cur.extendRightKStep(symbs);
         } else {
-            return state.cur.extendLeftNStep(symbs);
+            return state.cur.extendLeftKStep(symbs);
         }
     }
 
@@ -168,11 +168,11 @@ struct Search {
         }
     }
 
-    auto extendNStep(State const& state) const noexcept requires (HasNStep) {
+    auto extendKStep(State const& state) const noexcept requires (HasKStep) {
         if (state.Right) {
-            return state.cur.extendRightNStep();
+            return state.cur.extendRightKStep();
         } else {
-            return state.cur.extendLeftNStep();
+            return state.cur.extendLeftKStep();
         }
     }
 
@@ -225,9 +225,9 @@ struct Search {
     }
 
     bool search_next_dir(State const& state) const {
-        if constexpr (HasNStep) {
+        if constexpr (HasKStep) {
             auto loops = state.partitionEntryValue;
-            if (loops >= index_t::NStep) {
+            if (loops >= index_t::KStep) {
                 return search_next_dir_kstep(state);
             }
         }
@@ -319,7 +319,7 @@ struct Search {
     }
 
     bool search_next_dir_kstep(State const& state) const
-        requires HasNStep
+        requires HasKStep
     {
         char const TInfo = state.Right ? state.RInfo : state.LInfo;
 
@@ -335,7 +335,7 @@ struct Search {
         char const OnInsertionL  = state.Right ? state.LInfo : 'I';
         char const OnInsertionR  = state.Right ? 'I'   : state.RInfo;
 
-        uint8_t constexpr static KStep = index_t::NStep;
+        uint8_t constexpr static KStep = index_t::KStep;
 
         auto nextSymbs = std::array<size_t, KStep>{};
         if (state.Right) {
@@ -368,7 +368,7 @@ struct Search {
 
         if (matchAllowed) {
             auto newState = state;
-            newState.cur = extendNStep(state, nextSymbs);
+            newState.cur = extendKStep(state, nextSymbs);
             newState.side[state.Right].lastRank = lastSymb;
             newState.side[state.Right].lastQRank = lastSymb;
             newState.LInfo = OnMatchL;
@@ -421,7 +421,7 @@ struct Search {
                     else             newState.LInfo = OnSubstituteL;
                 }
 
-                newState.cur  = extendNStep(state, altSymbs);
+                newState.cur  = extendKStep(state, altSymbs);
                 newState.side[state.Right].lastRank  = altSymbs.back();
                 newState.side[state.Right].lastQRank = nextSymbs.back();
                 newState.NextPos = KStep;
@@ -448,20 +448,20 @@ struct Search {
         auto nextSymb = decltype(query[0]){};
 
 
-        if constexpr (HasNStep) {
-            size_t max_loop_nstep = (loops / NStep)*NStep;
-            for (size_t i{0}; i < max_loop_nstep; i += NStep) {
-                auto symbs = std::array<size_t, NStep>{};
-                for (size_t j{0}; j < NStep; ++j) {
+        if constexpr (HasKStep) {
+            size_t max_loop_kstep = (loops / KStep)*KStep;
+            for (size_t i{0}; i < max_loop_kstep; i += KStep) {
+                auto symbs = std::array<size_t, KStep>{};
+                for (size_t j{0}; j < KStep; ++j) {
                     auto s = query[state.Right?(state.queryPosR+i+j):(state.queryPosL-i-j)];
                     symbs[j] = s;
                 }
 
-                nextSymb = query[state.Right?(state.queryPosR+i+(NStep-1)):(state.queryPosL-i-(NStep-1))];
-                state.cur = extendNStep(state, symbs);
+                nextSymb = query[state.Right?(state.queryPosR+i+(KStep-1)):(state.queryPosL-i-(KStep-1))];
+                state.cur = extendKStep(state, symbs);
                 if (state.cur.count() == 0) return false;
             }
-            for (size_t i{max_loop_nstep}; i < loops; ++i) {
+            for (size_t i{max_loop_kstep}; i < loops; ++i) {
                 nextSymb = query[state.Right?(state.queryPosR+i):(state.queryPosL-i)];
                 state.cur = extend(state, nextSymb);
                 if (state.cur.count() == 0) return false;

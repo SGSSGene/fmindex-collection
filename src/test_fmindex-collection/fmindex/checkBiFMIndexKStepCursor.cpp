@@ -5,15 +5,15 @@
 #include "../string/utils.h"
 
 #include <catch2/catch_all.hpp>
-#include <fmindex-collection/fmindex/BiFMIndexNStep.h>
-#include <fmindex-collection/fmindex/BiFMIndexNStepCursor.h>
+#include <fmindex-collection/fmindex/BiFMIndexKStep.h>
+#include <fmindex-collection/fmindex/BiFMIndexKStepCursor.h>
 
-TEST_CASE("checking bidirectional fm index with nstep cursor", "[bifmindexcursor_nstep]") {
+TEST_CASE("checking bidirectional fm index with kstep cursor", "[bifmindexcursor_kstep]") {
     auto data = std::vector<std::vector<uint8_t>>{std::vector<uint8_t>{1, 1, 1, 1, 2, 2, 2}};
-    using Index = fmc::BiFMIndexNStep<4>;
+    using Index = fmc::BiFMIndexKStep<4>;
     auto index = Index{data, /*.samplingRate=*/1, /*.threadNbr=*/1};
 
-    auto cursor = fmc::BiFMIndexNStepCursor{index};
+    auto cursor = fmc::BiFMIndexKStepCursor{index};
     REQUIRE(cursor.count() == index.size());
     REQUIRE(!cursor.empty());
     REQUIRE(cursor.lb == 0);
@@ -69,7 +69,7 @@ TEST_CASE("checking bidirectional fm index with nstep cursor", "[bifmindexcursor
 
         SECTION("check if cursor can be extended twice, searching for 12") {
             auto symbs = std::array<size_t, 2>{2, 1};
-            auto cursor2 = cursor.extendLeftNStep(symbs);
+            auto cursor2 = cursor.extendLeftKStep(symbs);
             CHECK(cursor2.count() == 1);
             CHECK(cursor2.lb == 4);
             CHECK(cursor2.lbRev == 5);
@@ -127,7 +127,7 @@ TEST_CASE("checking bidirectional fm index with nstep cursor", "[bifmindexcursor
 
         SECTION("check if cursor can be extended twice, searching for 21") {
             auto symbs = std::array<size_t, 2>{1, 2};
-            auto cursor2 = cursor.extendRightNStep(symbs);
+            auto cursor2 = cursor.extendRightKStep(symbs);
             CHECK(cursor2.count() == 1);
             CHECK(cursor2.lb == 4);
             CHECK(cursor2.lbRev == 5);

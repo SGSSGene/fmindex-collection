@@ -26,9 +26,9 @@ struct Search {
     }();
 
     constexpr bool static HasKStep = requires() {
-        { index_t::NStep };
+        { index_t::KStep };
     };
-    constexpr size_t static KStep = []() constexpr -> size_t { if constexpr(HasKStep) return index_t::NStep; return 1ul; }();
+    constexpr size_t static KStep = []() constexpr -> size_t { if constexpr(HasKStep) return index_t::KStep; return 1ul; }();
     using cursor_t = select_cursor_t<index_t>;
 
     index_t const& index;
@@ -111,8 +111,8 @@ struct Search {
             auto buffer = std::span{side->symbBuffer}.first(side->usedSymbBuffer);
             buffer.back() = symb;
             if (side->usedSymbBuffer % KStep == 0) {
-                if (dir == dir_t::Right) return cur.extendRightNStep(buffer.template last<KStep>());
-                else return cur.extendLeftNStep(buffer.template last<KStep>());
+                if (dir == dir_t::Right) return cur.extendRightKStep(buffer.template last<KStep>());
+                else return cur.extendLeftKStep(buffer.template last<KStep>());
             }
             return cur;
         } else {

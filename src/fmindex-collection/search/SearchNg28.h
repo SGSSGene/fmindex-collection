@@ -29,7 +29,7 @@ struct Search {
     }();
 
     constexpr bool static HasKStep = requires() {
-        { index_t::NStep };
+        { index_t::KStep };
     };
 
     index_t const& index;

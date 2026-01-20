@@ -2,19 +2,19 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "BiFMIndexNStep.h"
+#include "BiFMIndexKStep.h"
 #include "BiFMIndexCursor.h"
 
 namespace fmc {
 
 template <typename Index>
-struct LeftBiFMIndexNStepCursor;
+struct LeftBiFMIndexKStepCursor;
 
 template <typename Index>
-struct BiFMIndexNStepCursor {
+struct BiFMIndexKStepCursor {
     static constexpr size_t Sigma      = Index::Sigma;
-    static constexpr size_t SigmaNStep = Index::SigmaNStep;
-    static constexpr size_t NStep      = Index::NStep;
+    static constexpr size_t SigmaKStep = Index::SigmaKStep;
+    static constexpr size_t KStep      = Index::KStep;
     static constexpr bool   Reversed = false;
 
     constexpr static size_t FirstSymb = []() -> size_t {
@@ -29,11 +29,11 @@ struct BiFMIndexNStepCursor {
     size_t lbRev;
     size_t len{};
     size_t steps{}; // number of extension steps taken
-    BiFMIndexNStepCursor() noexcept = default;
-    BiFMIndexNStepCursor(Index const& index) noexcept
-        : BiFMIndexNStepCursor{index, 0, 0, index.size(), 0}
+    BiFMIndexKStepCursor() noexcept = default;
+    BiFMIndexKStepCursor(Index const& index) noexcept
+        : BiFMIndexKStepCursor{index, 0, 0, index.size(), 0}
     {}
-    BiFMIndexNStepCursor(Index const& index, size_t lb, size_t lbRev, size_t len, size_t steps) noexcept
+    BiFMIndexKStepCursor(Index const& index, size_t lb, size_t lbRev, size_t len, size_t steps) noexcept
         : index{&index}
         , lb{lb}
         , lbRev{lbRev}
@@ -41,14 +41,14 @@ struct BiFMIndexNStepCursor {
         , steps{steps}
     {}
 
-    bool isEqual(BiFMIndexNStepCursor const& o) const noexcept {
+    bool isEqual(BiFMIndexKStepCursor const& o) const noexcept {
         return lb    == o.lb
             && lbRev == o.lbRev
             && len   == o.len
             && steps == o.steps;
     }
 
-    bool operator==(BiFMIndexNStepCursor const& _other) const noexcept {
+    bool operator==(BiFMIndexKStepCursor const& _other) const noexcept {
         return lb == _other.lb
                && len == _other.len;
     }
@@ -75,30 +75,30 @@ struct BiFMIndexNStepCursor {
         }
     }
     auto fetchRightBwtKStep() const -> auto const& {
-        if constexpr (std::same_as<typename Index::RevBwtNStepType, std::nullptr_t>) {
-            return index->bwt_nstep;
+        if constexpr (std::same_as<typename Index::RevBwtKStepType, std::nullptr_t>) {
+            return index->bwt_kstep;
         } else {
-            return index->bwtRev_nstep;
+            return index->bwtRev_kstep;
         }
     }
-    auto extendLeft() const -> std::array<BiFMIndexNStepCursor, Sigma> {
+    auto extendLeft() const -> std::array<BiFMIndexKStepCursor, Sigma> {
         return extendLeftFlex();
-/*        auto cursors = std::array<BiFMIndexNStepCursor, Sigma>{};
+/*        auto cursors = std::array<BiFMIndexKStepCursor, Sigma>{};
 
         auto const& bwt = index->bwt;
         auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lb);
         auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lb+len);
 
         for (size_t i{0}; i < cursors.size(); ++i) {
-            cursors[i] = BiFMIndexNStepCursor{*index, rs1[i] + index->C[i], lbRev + prs2[i] - prs1[i], rs2[i] - rs1[i], steps+1};
+            cursors[i] = BiFMIndexKStepCursor{*index, rs1[i] + index->C[i], lbRev + prs2[i] - prs1[i], rs2[i] - rs1[i], steps+1};
         }
 
         return cursors;*/
     }
 
-    auto extendRight() const -> std::array<BiFMIndexNStepCursor, Sigma> {
+    auto extendRight() const -> std::array<BiFMIndexKStepCursor, Sigma> {
         return extendRightFlex();
-/*        auto cursors = std::array<BiFMIndexNStepCursor, Sigma>{};
+/*        auto cursors = std::array<BiFMIndexKStepCursor, Sigma>{};
 
         auto const& bwt = fetchRightBwt();
 
@@ -106,30 +106,30 @@ struct BiFMIndexNStepCursor {
         auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lbRev+len);
 
         for (size_t i{0}; i < cursors.size(); ++i) {
-            cursors[i] = BiFMIndexNStepCursor{*index, lb + prs2[i] - prs1[i], rs1[i] + index->C[i], rs2[i] - rs1[i], steps+1};
+            cursors[i] = BiFMIndexKStepCursor{*index, lb + prs2[i] - prs1[i], rs1[i] + index->C[i], rs2[i] - rs1[i], steps+1};
         }
 
         return cursors;*/
     }
-    auto extendLeftFlex() const -> std::array<BiFMIndexNStepCursor, Sigma> {
-        auto ret = std::array<BiFMIndexNStepCursor, Sigma>{};
+    auto extendLeftFlex() const -> std::array<BiFMIndexKStepCursor, Sigma> {
+        auto ret = std::array<BiFMIndexKStepCursor, Sigma>{};
         auto& bwt = index->bwt;
         bwt.all_ranks_dual(lb, lb+len, [&](size_t symb, size_t rs1, size_t rs2, size_t prs1, size_t prs2) {
             auto newLb    = index->C[symb] + rs1;
             auto newLen   = rs2 - rs1;
             auto newLbRev = lbRev + prs2 - prs1;
-            ret[symb] = BiFMIndexNStepCursor{*index, newLb, newLbRev, newLen, steps+1};
+            ret[symb] = BiFMIndexKStepCursor{*index, newLb, newLbRev, newLen, steps+1};
         });
         return ret;
     }
-    auto extendRightFlex() const -> std::array<BiFMIndexNStepCursor, Sigma> {
-        auto ret = std::array<BiFMIndexNStepCursor, Sigma>{};
+    auto extendRightFlex() const -> std::array<BiFMIndexKStepCursor, Sigma> {
+        auto ret = std::array<BiFMIndexKStepCursor, Sigma>{};
         auto& bwt = fetchRightBwt();
         bwt.all_ranks_dual(lbRev, lbRev+len, [&](size_t symb, size_t rs1, size_t rs2, size_t prs1, size_t prs2) {
             auto newLbRev = index->C[symb] + rs1;
             auto newLen   = rs2 - rs1;
             auto newLb    = lb + prs2 - prs1;
-            ret[symb] = BiFMIndexNStepCursor{*index, newLb, newLbRev, newLen, steps+1};
+            ret[symb] = BiFMIndexKStepCursor{*index, newLb, newLbRev, newLen, steps+1};
         });
         return ret;
     }
@@ -139,27 +139,27 @@ struct BiFMIndexNStepCursor {
     void prefetchRight() const {
     }
 
-    auto extendLeft(size_t symb) const -> BiFMIndexNStepCursor {
+    auto extendLeft(size_t symb) const -> BiFMIndexKStepCursor {
         auto& bwt = index->bwt;
         size_t newLb    = bwt.rank(lb, symb);
         size_t newLbRev = lbRev + bwt.prefix_rank(lb+len, symb) - bwt.prefix_rank(lb, symb);
         size_t newLen   = bwt.rank(lb+len, symb) - newLb;
-        auto newCursor = BiFMIndexNStepCursor{*index, newLb + index->C[symb], newLbRev, newLen, steps+1};
+        auto newCursor = BiFMIndexKStepCursor{*index, newLb + index->C[symb], newLbRev, newLen, steps+1};
         return newCursor;
     }
-    auto extendRight(size_t symb) const -> BiFMIndexNStepCursor {
+    auto extendRight(size_t symb) const -> BiFMIndexKStepCursor {
         auto const& bwt = fetchRightBwt();
         size_t newLb    = lb + bwt.prefix_rank(lbRev+len, symb) - bwt.prefix_rank(lbRev, symb);
         size_t newLbRev = bwt.rank(lbRev, symb);
         size_t newLen   = bwt.rank(lbRev+len, symb) - newLbRev;
-        auto newCursor = BiFMIndexNStepCursor{*index, newLb, newLbRev + index->C[symb], newLen, steps+1};
+        auto newCursor = BiFMIndexKStepCursor{*index, newLb, newLbRev + index->C[symb], newLen, steps+1};
         return newCursor;
     }
 
     // This requires that all rows have the same BWT entry (or only a single one is available)
     // - must have at least marked a single row
     // - all rows must have the same 'bwt' symbol
-    auto extendLeftBySymbol(size_t symb) const -> BiFMIndexNStepCursor {
+    auto extendLeftBySymbol(size_t symb) const -> BiFMIndexKStepCursor {
         auto& bwt = index->bwt;
 
         assert(count() > 0);
@@ -175,17 +175,17 @@ struct BiFMIndexNStepCursor {
         size_t newLb    = bwt.rank(lb, symb);
         size_t newLbRev = lbRev;
         size_t newLen   = len;
-        auto newCursor  = BiFMIndexNStepCursor{*index, newLb + index->C[symb], newLbRev, newLen, steps+1};
+        auto newCursor  = BiFMIndexKStepCursor{*index, newLb + index->C[symb], newLbRev, newLen, steps+1};
         return newCursor;
     }
 
     // see extendLeftBySymbol
-    auto extendRightBySymbol(size_t symb) const -> BiFMIndexNStepCursor {
+    auto extendRightBySymbol(size_t symb) const -> BiFMIndexKStepCursor {
         auto const& bwt = fetchRightBwt();
         size_t newLb    = lb;
         size_t newLbRev = bwt.rank(lbRev, symb);
         size_t newLen   = len;
-        auto newCursor = BiFMIndexNStepCursor{*index, newLb, newLbRev + index->C[symb], newLen, steps+1};
+        auto newCursor = BiFMIndexKStepCursor{*index, newLb, newLbRev + index->C[symb], newLen, steps+1};
         return newCursor;
     }
 
@@ -193,14 +193,14 @@ struct BiFMIndexNStepCursor {
     // This requires that all rows have the same BWT entry (or only a single one is available)
     // - must have at least marked a single row
     // - all rows must have the same 'bwt' symbol
-    auto extendLeftBySymbol() const -> std::tuple<size_t, BiFMIndexNStepCursor> {
+    auto extendLeftBySymbol() const -> std::tuple<size_t, BiFMIndexKStepCursor> {
         auto& bwt = index->bwt;
         auto symb = bwt.symbol(lb);
         return {symb, extendLeftBySymbol(symb)};
     }
 
     // see extendLeftBySymbol
-    auto extendRightBySymbol() const -> std::tuple<size_t, BiFMIndexNStepCursor> {
+    auto extendRightBySymbol() const -> std::tuple<size_t, BiFMIndexKStepCursor> {
         auto const& bwt = fetchRightBwt();
         auto symb = bwt.symbol(lbRev);
         return {symb, extendRightBySymbol(symb)};
@@ -210,26 +210,26 @@ struct BiFMIndexNStepCursor {
     /*
      * equal to extendLeft(symbs[0]).extendLeft(symbs[1])...
      */
-    auto extendLeftNStep(std::span<size_t const, NStep> symbs) const -> BiFMIndexNStepCursor {
+    auto extendLeftKStep(std::span<size_t const, KStep> symbs) const -> BiFMIndexKStepCursor {
         size_t symb_pr{};
-        for (size_t i{0}; i < NStep; ++i) {
+        for (size_t i{0}; i < KStep; ++i) {
             symb_pr = symb_pr*Sigma + symbs[i];
         }
 
-        auto& bwt = index->bwt_nstep;
+        auto& bwt = index->bwt_kstep;
         size_t newLb    = bwt.rank(lb, symb_pr);
         size_t newLbRev = lbRev + bwt.prefix_rank(lb+len, symb_pr) - bwt.prefix_rank(lb, symb_pr);
         size_t newLen   = bwt.rank(lb+len, symb_pr) - newLb;
-        auto newCursor = BiFMIndexNStepCursor{*index, newLb + index->C_nstep[symb_pr], newLbRev, newLen, steps+NStep};
+        auto newCursor = BiFMIndexKStepCursor{*index, newLb + index->C_kstep[symb_pr], newLbRev, newLen, steps+KStep};
         return newCursor;
     }
 
     /*
      * equal to extendRight(symbs[0]).extendRight(symbs[1])...
      */
-    auto extendRightNStep(std::span<size_t const, NStep> symbs) const -> BiFMIndexNStepCursor {
+    auto extendRightKStep(std::span<size_t const, KStep> symbs) const -> BiFMIndexKStepCursor {
         size_t symb_pr{};
-        for (size_t i{0}; i < NStep; ++i) {
+        for (size_t i{0}; i < KStep; ++i) {
             symb_pr = symb_pr*Sigma + symbs[i];
         }
 
@@ -237,7 +237,7 @@ struct BiFMIndexNStepCursor {
         size_t newLb    = lb + bwt.prefix_rank(lbRev+len, symb_pr) - bwt.prefix_rank(lbRev, symb_pr);
         size_t newLbRev = bwt.rank(lbRev, symb_pr);
         size_t newLen   = bwt.rank(lbRev+len, symb_pr) - newLbRev;
-        auto newCursor = BiFMIndexNStepCursor{*index, newLb, newLbRev + index->C_nstep[symb_pr], newLen, steps+NStep};
+        auto newCursor = BiFMIndexKStepCursor{*index, newLb, newLbRev + index->C_kstep[symb_pr], newLen, steps+KStep};
         return newCursor;
     }
 
@@ -249,10 +249,10 @@ struct BiFMIndexNStepCursor {
         return bwt.symbol(lbRev);
     }
 
-    auto symbolLeftNStep() const -> size_t {
-        return index->bwt_nstep.symbol(lb);
+    auto symbolLeftKStep() const -> size_t {
+        return index->bwt_kstep.symbol(lb);
     }
-    auto symbolRightNStep() const -> size_t {
+    auto symbolRightKStep() const -> size_t {
         auto const& kbwt = fetchRightBwtKStep();
         return kbwt.symbol(lbRev);
     }
@@ -260,38 +260,38 @@ struct BiFMIndexNStepCursor {
 };
 
 template <typename Index>
-auto begin(BiFMIndexNStepCursor<Index> const& _cursor) {
+auto begin(BiFMIndexKStepCursor<Index> const& _cursor) {
     return IntIterator{_cursor.lb};
 }
 template <typename Index>
-auto end(BiFMIndexNStepCursor<Index> const& _cursor) {
+auto end(BiFMIndexKStepCursor<Index> const& _cursor) {
     return IntIterator{_cursor.lb + _cursor.len};
 }
 
 template <typename Index>
-struct LeftBiFMIndexNStepCursor {
+struct LeftBiFMIndexKStepCursor {
     static constexpr size_t Sigma      = Index::Sigma;
-    static constexpr size_t SigmaNStep = Index::SigmaNStep;
-    static constexpr size_t NStep      = Index::NStep;
+    static constexpr size_t SigmaKStep = Index::SigmaKStep;
+    static constexpr size_t KStep      = Index::KStep;
     static constexpr bool   Reversed = false;
 
     Index const* index;
     size_t lb;
     size_t len;
     size_t steps;
-    LeftBiFMIndexNStepCursor(BiFMIndexNStepCursor<Index> const& _other)
+    LeftBiFMIndexKStepCursor(BiFMIndexKStepCursor<Index> const& _other)
         : index{_other.index}
         , lb{_other.lb}
         , len{_other.len}
         , steps{_other.steps}
     {}
-    LeftBiFMIndexNStepCursor()
+    LeftBiFMIndexKStepCursor()
         : index{nullptr}
     {}
-    LeftBiFMIndexNStepCursor(Index const& index)
-        : LeftBiFMIndexNStepCursor{index, 0, index.size(), 0}
+    LeftBiFMIndexKStepCursor(Index const& index)
+        : LeftBiFMIndexKStepCursor{index, 0, index.size(), 0}
     {}
-    LeftBiFMIndexNStepCursor(Index const& index, size_t lb, size_t len, size_t steps)
+    LeftBiFMIndexKStepCursor(Index const& index, size_t lb, size_t len, size_t steps)
         : index{&index}
         , lb{lb}
         , len{len}
@@ -308,7 +308,7 @@ struct LeftBiFMIndexNStepCursor {
         return LeftBiFMIndexCursor{*index, lb, len, steps};
     }
 
-    auto extendLeft() const -> std::array<LeftBiFMIndexNStepCursor, Sigma> {
+    auto extendLeft() const -> std::array<LeftBiFMIndexKStepCursor, Sigma> {
         auto const& bwt = index->bwt;
         auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lb);
         auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lb+len);
@@ -318,44 +318,44 @@ struct LeftBiFMIndexNStepCursor {
             rs2[i] += index->C[i];
         }
 
-        auto cursors = std::array<LeftBiFMIndexNStepCursor, Sigma>{};
-        cursors[0] = LeftBiFMIndexNStepCursor{*index, rs1[0], rs2[0] - rs1[0], steps+1};
+        auto cursors = std::array<LeftBiFMIndexKStepCursor, Sigma>{};
+        cursors[0] = LeftBiFMIndexKStepCursor{*index, rs1[0], rs2[0] - rs1[0], steps+1};
         for (size_t i{1}; i < Sigma; ++i) {
-            cursors[i] = LeftBiFMIndexNStepCursor{*index, rs1[i], rs2[i] - rs1[i], steps+1};
+            cursors[i] = LeftBiFMIndexKStepCursor{*index, rs1[i], rs2[i] - rs1[i], steps+1};
         }
         return cursors;
     }
 
-    auto extendLeft(size_t symb) const -> LeftBiFMIndexNStepCursor {
+    auto extendLeft(size_t symb) const -> LeftBiFMIndexKStepCursor {
         auto& bwt = index->bwt;
 
         size_t newLb    = bwt.rank(lb, symb);
         size_t newLen   = bwt.rank(lb+len, symb) - newLb;
-        auto newCursor = LeftBiFMIndexNStepCursor{*index, newLb + index->C[symb], newLen, steps+1};
+        auto newCursor = LeftBiFMIndexKStepCursor{*index, newLb + index->C[symb], newLen, steps+1};
         return newCursor;
     }
 
-    auto extendLeftNStep(std::span<size_t const, NStep> symbs) const -> LeftBiFMIndexNStepCursor {
+    auto extendLeftKStep(std::span<size_t const, KStep> symbs) const -> LeftBiFMIndexKStepCursor {
         size_t symb_pr{};
-        for (size_t i{0}; i < NStep; ++i) {
+        for (size_t i{0}; i < KStep; ++i) {
             symb_pr = symb_pr*Sigma + symbs[i];
         }
 
-        auto& bwt = index->bwt_nstep;
+        auto& bwt = index->bwt_kstep;
         size_t newLb    = bwt.rank(lb, symb_pr);
         size_t newLen   = bwt.rank(lb+len, symb_pr) - newLb;
-        auto newCursor = LeftBiFMIndexNStepCursor{*index, newLb + index->C_nstep[symb_pr], newLen, steps+NStep};
+        auto newCursor = LeftBiFMIndexKStepCursor{*index, newLb + index->C_kstep[symb_pr], newLen, steps+KStep};
         return newCursor;
     }
 
 };
 
 template <typename Index>
-auto begin(LeftBiFMIndexNStepCursor<Index> const& _cursor) {
+auto begin(LeftBiFMIndexKStepCursor<Index> const& _cursor) {
     return IntIterator{_cursor.lb};
 }
 template <typename Index>
-auto end(LeftBiFMIndexNStepCursor<Index> const& _cursor) {
+auto end(LeftBiFMIndexKStepCursor<Index> const& _cursor) {
     return IntIterator{_cursor.lb + _cursor.len};
 }
 
@@ -364,8 +364,8 @@ auto end(LeftBiFMIndexNStepCursor<Index> const& _cursor) {
 namespace std {
 
 template <typename index_t>
-struct hash<fmc::BiFMIndexNStepCursor<index_t>> {
-    auto operator()(fmc::BiFMIndexNStepCursor<index_t> const& cursor) const -> size_t {
+struct hash<fmc::BiFMIndexKStepCursor<index_t>> {
+    auto operator()(fmc::BiFMIndexKStepCursor<index_t> const& cursor) const -> size_t {
         return hash<size_t>()(cursor.lb)
             ^ hash<size_t>()(cursor.len);
     }

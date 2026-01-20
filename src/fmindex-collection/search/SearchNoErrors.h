@@ -42,9 +42,9 @@ void search(index_t const & index, queries_t const& queries, delegate_t && deleg
     };
 
     constexpr bool static HasKStep = requires() {
-        { index_t::NStep };
+        { index_t::KStep };
     };
-    constexpr size_t static KStep = []() constexpr -> size_t { if constexpr(HasKStep) return index_t::NStep; return 1ul; }();
+    constexpr size_t static KStep = []() constexpr -> size_t { if constexpr(HasKStep) return index_t::KStep; return 1ul; }();
 
     auto buffer = std::array<size_t, KStep>{};
     auto doBatchJump = [&]() {
@@ -55,7 +55,7 @@ void search(index_t const & index, queries_t const& queries, delegate_t && deleg
                     for (size_t j{0}; j < KStep; ++j) {
                         buffer[j] = query[query.size() - cur.steps - 1 - j];
                     }
-                    cur = cur.extendLeftNStep(buffer);
+                    cur = cur.extendLeftKStep(buffer);
                 } else {
                     auto sym = query[query.size() - cur.steps - 1];
                     cur = cur.extendLeft(sym);
