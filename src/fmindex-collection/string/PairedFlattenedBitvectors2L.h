@@ -302,6 +302,13 @@ public:
         return {rs, prs};
     }
 
+    /* This is a special variant of the `all_ranks_and_prefix_ranks` function.
+     *
+     * Differences:
+     *  - it looks up the values for two positions at the same time.
+     *  - it uses a callback function
+     *  - it does not report (prefix) ranks for symbols that have 0-values
+     */
     void all_ranks_dual(size_t idx1, size_t idx2, auto const& cb) const {
         assert(idx1 < totalLength);
         assert(idx2 < totalLength);
@@ -363,47 +370,50 @@ public:
 
         /** Heart of the algorithm
          *
-         * A recursive algorithm checks if decending to left and/or right is required.
+         * A recursive algorithm checks if descending to left and/or right is required.
          * Aborts if any of the ranges have no characters. This accelerates computation on large alphabets.
          */
-        auto rec = [&](this auto&& self, word_of_bits const& b1, word_of_bits const& b2, int level, size_t smaller, size_t larger, size_t pr1_S, size_t pr2_S, size_t pr1_E, size_t pr2_E, size_t symb) -> void {
+        auto rec = [&](this auto&& self, word_of_bits const& b1, word_of_bits const& b2, int level, size_t pr1_S, size_t pr2_S, size_t pr1_E, size_t pr2_E, size_t symb) -> void {
             auto lsymb = symb | (1 << level);
             auto [pr1, pr2] = count_pr(b1, b2, lsymb);
 
             assert(This->prefix_rank(idx1, lsymb) == pr1);
             assert(This->prefix_rank(idx2, lsymb) == pr2);
+
+            auto rank_l_lb = pr1-pr1_S;
+            auto rank_l_rb = pr2-pr2_S;
+
+            auto rank_r_lb = pr1_E-pr1;
+            auto rank_r_rb = pr2_E-pr2;
             if (level == 0) {
                 assert(This->prefix_rank(idx1, symb) == pr1_S);
                 assert(This->prefix_rank(idx2, symb) == pr2_S);
-                cb( symb, pr1-pr1_S, pr2-pr2_S, pr1_S, pr2_S);
-                cb(lsymb, pr1_E-pr1, pr2_E-pr2, pr1, pr2);
+                cb( symb, rank_l_lb, rank_l_rb, pr1_S, pr2_S);
+                cb(lsymb, rank_r_lb, rank_r_rb, pr1, pr2);
             } else {
-                auto range = pr2 - pr1;
+                auto countLeft  = rank_l_rb - rank_l_lb;
+                auto countRight = rank_r_rb - rank_r_lb;
 
-                auto countLeft  = range - (smaller+larger);
-                auto countRight = (idx2 - idx1) - range - (smaller+larger);
-                // recurse left
+                // recursion left
                 if (countLeft > 0) {
                     auto b1_2 = b1 & ~bits_lb[level-1];
                     auto b2_2 = b2 & ~bits_rb[level-1];
-                    self(b1_2, b2_2, level-1, smaller, larger + countRight, pr1_S, pr2_S, pr1, pr2, symb);
+                    self(b1_2, b2_2, level-1, pr1_S, pr2_S, pr1, pr2, symb);
                 }
-                // recurse rigt
+                // recursion right
                 if (countRight > 0) {
                     auto b1_2 = b1 | ~bits_lb[level-1];
                     auto b2_2 = b2 | ~bits_rb[level-1];
-                    self(b1_2, b2_2, level-1, smaller + countLeft, larger, pr1, pr2, pr1_E, pr2_E, lsymb);
+                    self(b1_2, b2_2, level-1, pr1, pr2, pr1_E, pr2_E, lsymb);
                 }
             }
         };
         rec (
-            /*.b1=*/        ~bits_lb.back(),
-            /*.b2=*/        ~bits_rb.back(),
-            /*.level=*/     bitct-1,
-            /*.smaller=*/   0,
-            /*.larger=*/    0,
+            /*.b1=*/         ~bits_lb.back(),
+            /*.b2=*/         ~bits_rb.back(),
+            /*.level=*/      bitct-1,
             0, 0, idx1, idx2,
-            /*.symb=*/      0
+            /*.symb=*/       0
         );
     }
 
