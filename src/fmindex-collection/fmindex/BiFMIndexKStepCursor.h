@@ -17,12 +17,9 @@ struct BiFMIndexKStepCursor {
     static constexpr size_t KStep      = Index::KStep;
     static constexpr bool   Reversed = false;
 
-    constexpr static size_t FirstSymb = []() -> size_t {
-        if constexpr (requires() { { Index::FirstSymb }; }) {
-            return Index::FirstSymb;
-        }
-        return 1;
-    }();
+    constexpr bool static HasDualRank = requires(Index::String str, size_t idx) {
+        { str.all_ranks_dual(idx, idx, [](size_t, size_t, size_t, size_t, size_t) {}) };
+    };
 
     Index const* index{};
     size_t lb;
@@ -81,9 +78,9 @@ struct BiFMIndexKStepCursor {
             return index->bwtRev_kstep;
         }
     }
-    auto extendLeft() const -> std::array<BiFMIndexKStepCursor, Sigma> {
-        return extendLeftFlex();
-/*        auto cursors = std::array<BiFMIndexKStepCursor, Sigma>{};
+
+    auto extendLeft() const -> std::array<BiFMIndexKStepCursor, Sigma> requires (!HasDualRank) {
+        auto cursors = std::array<BiFMIndexKStepCursor, Sigma>{};
 
         auto const& bwt = index->bwt;
         auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lb);
@@ -92,26 +89,22 @@ struct BiFMIndexKStepCursor {
         for (size_t i{0}; i < cursors.size(); ++i) {
             cursors[i] = BiFMIndexKStepCursor{*index, rs1[i] + index->C[i], lbRev + prs2[i] - prs1[i], rs2[i] - rs1[i], steps+1};
         }
-
-        return cursors;*/
+        return cursors;
     }
 
-    auto extendRight() const -> std::array<BiFMIndexKStepCursor, Sigma> {
-        return extendRightFlex();
-/*        auto cursors = std::array<BiFMIndexKStepCursor, Sigma>{};
+    auto extendRight() const -> std::array<BiFMIndexKStepCursor, Sigma> requires (!HasDualRank) {
+        auto cursors = std::array<BiFMIndexKStepCursor, Sigma>{};
 
         auto const& bwt = fetchRightBwt();
-
         auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lbRev);
         auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lbRev+len);
 
         for (size_t i{0}; i < cursors.size(); ++i) {
             cursors[i] = BiFMIndexKStepCursor{*index, lb + prs2[i] - prs1[i], rs1[i] + index->C[i], rs2[i] - rs1[i], steps+1};
         }
-
-        return cursors;*/
+        return cursors;
     }
-    auto extendLeftFlex() const -> std::array<BiFMIndexKStepCursor, Sigma> {
+    auto extendLeft() const -> std::array<BiFMIndexKStepCursor, Sigma> requires HasDualRank {
         auto ret = std::array<BiFMIndexKStepCursor, Sigma>{};
         auto& bwt = index->bwt;
         bwt.all_ranks_dual(lb, lb+len, [&](size_t symb, size_t rs1, size_t rs2, size_t prs1, size_t prs2) {
@@ -122,7 +115,7 @@ struct BiFMIndexKStepCursor {
         });
         return ret;
     }
-    auto extendRightFlex() const -> std::array<BiFMIndexKStepCursor, Sigma> {
+    auto extendRight() const -> std::array<BiFMIndexKStepCursor, Sigma> requires HasDualRank {
         auto ret = std::array<BiFMIndexKStepCursor, Sigma>{};
         auto& bwt = fetchRightBwt();
         bwt.all_ranks_dual(lbRev, lbRev+len, [&](size_t symb, size_t rs1, size_t rs2, size_t prs1, size_t prs2) {
@@ -309,19 +302,14 @@ struct LeftBiFMIndexKStepCursor {
     }
 
     auto extendLeft() const -> std::array<LeftBiFMIndexKStepCursor, Sigma> {
+        auto cursors = std::array<LeftBiFMIndexKStepCursor, Sigma>{};
+
         auto const& bwt = index->bwt;
         auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lb);
         auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lb+len);
 
-        for (size_t i{0}; i < rs1.size(); ++i) {
-            rs1[i] += index->C[i];
-            rs2[i] += index->C[i];
-        }
-
-        auto cursors = std::array<LeftBiFMIndexKStepCursor, Sigma>{};
-        cursors[0] = LeftBiFMIndexKStepCursor{*index, rs1[0], rs2[0] - rs1[0], steps+1};
-        for (size_t i{1}; i < Sigma; ++i) {
-            cursors[i] = LeftBiFMIndexKStepCursor{*index, rs1[i], rs2[i] - rs1[i], steps+1};
+        for (size_t i{0}; i < Sigma; ++i) {
+            cursors[i] = LeftBiFMIndexKStepCursor{*index, rs1[i] + index->C[i], rs2[i] - rs1[i], steps+1};
         }
         return cursors;
     }

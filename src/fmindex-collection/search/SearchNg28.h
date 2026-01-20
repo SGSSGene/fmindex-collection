@@ -28,10 +28,6 @@ struct Search {
         return 1;
     }();
 
-    constexpr bool static HasKStep = requires() {
-        { index_t::KStep };
-    };
-
     index_t const& index;
     query_t const& query;
     search_t const& search;

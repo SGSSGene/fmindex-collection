@@ -27,40 +27,42 @@ constexpr static size_t my_pow_base(size_t e) {
 }
 
 
-template <size_t TSigma, template <size_t> typename String = string::FlattenedBitvectors_512_64k, SparseArray_c TSparseArray = suffixarray::SparseArray<std::tuple<uint32_t, uint32_t>>, bool TDelim=true, bool TReuseRev=false, size_t TKStep=2>
-    requires String_c<String<TSigma>>
+template <size_t TSigma, template <size_t> typename TString = string::FlattenedBitvectors_512_64k, SparseArray_c TSparseArray = suffixarray::SparseArray<std::tuple<uint32_t, uint32_t>>, bool TDelim=true, bool TReuseRev=false, size_t TKStep=2>
+    requires String_c<TString<TSigma>>
 struct BiFMIndexKStep {
     using DocumentEntries = TSparseArray::value_t;
     using ADEntry = DocumentEntries;
     using SparseArray = TSparseArray;
 
-    using NoDelim = BiFMIndexKStep<TSigma, String, TSparseArray, false, TReuseRev, TKStep>;
-    using ReuseRev = BiFMIndexKStep<TSigma, String, TSparseArray, TDelim, true, TKStep>;
+    using NoDelim = BiFMIndexKStep<TSigma, TString, TSparseArray, false, TReuseRev, TKStep>;
+    using ReuseRev = BiFMIndexKStep<TSigma, TString, TSparseArray, TDelim, true, TKStep>;
 
     template <size_t TNewKStep>
-    using SetKStep = BiFMIndexKStep<TSigma, String, TSparseArray, TDelim, TReuseRev, TNewKStep>;
+    using SetKStep = BiFMIndexKStep<TSigma, TString, TSparseArray, TDelim, TReuseRev, TNewKStep>;
 
     static size_t constexpr Sigma     = TSigma;
     static size_t constexpr FirstSymb = TDelim?1:0;
     static bool constexpr Delim_v     = TDelim;
     static bool constexpr ReuseRev_v  = TReuseRev;
 
-
     static size_t constexpr KStep = TKStep;
     static size_t constexpr SigmaKStep = my_pow_base<Sigma>(KStep);
 
+    using String = TString<Sigma>;
+    using StringKStep = TString<SigmaKStep>;
+
     // Set RevBwtType to std::nullptr_t to indicate that it should not be used
-    using RevBwtType = std::conditional_t<TReuseRev, std::nullptr_t, String<Sigma>>;
-    using RevBwtKStepType = std::conditional_t<TReuseRev, std::nullptr_t, String<SigmaKStep>>;
+    using RevBwtType = std::conditional_t<TReuseRev, std::nullptr_t, String>;
+    using RevBwtKStepType = std::conditional_t<TReuseRev, std::nullptr_t, StringKStep>;
     static_assert(
         std::same_as<RevBwtType, std::nullptr_t> == std::same_as<RevBwtKStepType, std::nullptr_t>
         , "either RevBWTType and RevBwtKStepType have nullptr_t or none"
     );
 
 
-    String<Sigma> bwt;
+    String bwt;
     RevBwtType bwtRev;
-    String<SigmaKStep> bwt_kstep;
+    StringKStep bwt_kstep;
     RevBwtKStepType bwtRev_kstep;
 
     std::array<size_t, Sigma+1> C{};
