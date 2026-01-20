@@ -302,6 +302,102 @@ public:
         return {rs, prs};
     }
 
+    void all_ranks_dual(size_t idx1, size_t idx2, auto const& cb) const {
+        assert(idx1 < totalLength);
+        assert(idx2 < totalLength);
+
+        /*
+         * The below is a "optimized version" of the following easy code
+            size_t prevPrefixRank1{};
+            size_t prevPrefixRank2{};
+            for (size_t symb{0}; symb < TSigma; ++symb) {
+                auto pr1 = prefix_rank(idx1, symb+1);
+                auto pr2 = prefix_rank(idx2, symb+1);
+                cb(symb, pr1-prevPrefixRank1, pr2-prevPrefixRank2, prevPrefixRank1, prevPrefixRank2);
+                prevPrefixRank1 = pr1;
+                prevPrefixRank2 = pr2;
+            }
+        */
+
+        // takes an index and splits it into the indices required for partial-paired-blocks
+        auto split = [&](size_t idx) -> std::tuple<size_t, size_t, size_t, int64_t, int64_t> {
+            auto bitId = idx % (l1_bits_ct*2);
+            auto l1Id = idx / l1_bits_ct;
+            auto l0Id = idx / l0_bits_ct;
+            assert(l1Id < bits.size());
+            assert(l1Id/2 < l1.size());
+            assert(l0Id/2 < l0.size());
+            int64_t right_l1 = (l1Id%2)*2-1;
+            int64_t right_l0 = (l0Id%2)*2-1;
+            assert(bitId <= l1_bits_ct*2);
+            return {bitId, l1Id, l0Id, right_l1, right_l0};
+        };
+
+        // compute indices for idx1 (_lb) and idx2 (_rb)
+        auto [bitId_lb, l1Id_lb, l0Id_lb, right_l1_lb, right_l0_lb] = split(idx1);
+        auto [bitId_rb, l1Id_rb, l0Id_rb, right_l1_rb, right_l0_rb] = split(idx2);
+
+        // compute blocks
+        auto const& l0_lb = l0[l0Id_lb/2];
+        auto const& l0_rb = l0[l0Id_rb/2];
+        auto const& l1_lb = l1[l1Id_lb/2];
+        auto const& l1_rb = l1[l1Id_rb/2];
+        auto const& bits_lb = bits[l1Id_lb].bits;
+        auto const& bits_rb = bits[l1Id_rb].bits;
+
+        // computes prefix rank for symbol (symb)
+        auto count_pr = [&](auto const& b1, auto const& b2, size_t symb) -> std::tuple<size_t, size_t> {
+            auto count_lb = skip_first_or_last_n_bits_and_count(b1, bitId_lb);
+            auto count_rb = skip_first_or_last_n_bits_and_count(b2, bitId_rb);
+
+            auto pr1 = l0_lb[symb] + right_l0_lb * l1_lb[symb] + right_l1_lb * count_lb;
+            auto pr2 = l0_rb[symb] + right_l0_rb * l1_rb[symb] + right_l1_rb * count_rb;
+            assert(pr1 <= idx1);
+            assert(pr2 <= idx2);
+
+            return {pr1, pr2};
+        };
+
+        using word_of_bits = std::bitset<l1_bits_ct>;
+        auto This = this; //!TODO !WORKAROUND otherwise crashes gcc
+
+        /** Heart of the algorithm
+         *
+         * A recursive algorithm checks if decending to left and/or right is required.
+         * Aborts if any of the ranges have no characters. This accelerates computation on large alphabets.
+         */
+        auto rec = [&](this auto&& self, word_of_bits const& b1, word_of_bits const& b2, int level, size_t smaller, size_t larger, size_t pr1_S, size_t pr2_S, size_t pr1_E, size_t pr2_E, size_t symb) -> void {
+            auto lsymb = symb | (1 << level);
+            auto [pr1, pr2] = count_pr(b1, b2, lsymb);
+
+            assert(This->prefix_rank(idx1, lsymb) == pr1);
+            assert(This->prefix_rank(idx2, lsymb) == pr2);
+            if (level == 0) {
+                assert(This->prefix_rank(idx1, symb) == pr1_S);
+                assert(This->prefix_rank(idx2, symb) == pr2_S);
+                cb( symb, pr1-pr1_S, pr2-pr2_S, pr1_S, pr2_S);
+                cb(lsymb, pr1_E-pr1, pr2_E-pr2, pr1, pr2);
+            } else {
+                auto range = pr2 - pr1;
+
+                auto countLeft  = range - (smaller+larger);
+                auto countRight = (idx2 - idx1) - range - (smaller+larger);
+                // recurse left
+                if (countLeft > 0) {
+                    auto b1_2 = b1 & ~bits_lb[level-1];
+                    auto b2_2 = b2 & ~bits_rb[level-1];
+                    self(b1_2, b2_2, level-1, smaller, larger + countRight, pr1_S, pr2_S, pr1, pr2, symb);
+                }
+                // recurse rigt
+                if (countRight > 0) {
+                    auto b1_2 = b1 | ~bits_lb[level-1];
+                    auto b2_2 = b2 | ~bits_rb[level-1];
+                    self(b1_2, b2_2, level-1, smaller + countLeft, larger, pr1, pr2, pr1_E, pr2_E, lsymb);
+                }
+            }
+        };
+    }
+
     template <typename Archive>
     void serialize(this auto&& self, Archive& ar) {
         ar(self.l0, self.l1, self.bits, self.totalLength);
