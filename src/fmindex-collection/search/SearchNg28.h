@@ -18,6 +18,8 @@ namespace fmc::search_ng28 {
 
 template <bool Edit, typename index_t, typename query_t, typename search_t, typename delegate_t>
 struct Search {
+    using cursor_t = select_cursor_t<index_t>;
+
     constexpr static size_t Sigma = index_t::Sigma;
     constexpr static size_t FirstSymb = []() -> size_t {
         if constexpr (requires() { { index_t::FirstSymb }; }) {
@@ -26,7 +28,9 @@ struct Search {
         return 1;
     }();
 
-    using cursor_t = select_cursor_t<index_t>;
+    constexpr bool static HasKStep = requires() {
+        { index_t::NStep };
+    };
 
     index_t const& index;
     query_t const& query;
@@ -164,13 +168,13 @@ struct Search {
         }
 
         if (mismatchAllowed) {
-            auto cursors = extend(cur);
-
             auto r_i   = Restore{side->info};
             auto r_lqr = Restore{side->lastQRank};
             auto r_qp  = Restore{side->queryPos};
             auto r_p   = Restore{partitionPart};
             auto r_e   = Restore{e};
+
+            auto cursors = extend(cur);
 
             while (true) {
                 if (matchAllowed) {
@@ -252,14 +256,22 @@ struct Search {
         auto r_p    = Restore{partitionPart};
 
         auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
-            if (dir == dir_t::Right) {
-                auto symb = cur.symbolRight();
-                auto cur_ = cur.extendRight(symb);
-                return {symb, cur_};
+            if constexpr (requires() { { cur.extendRightBySymbol() }; }) {
+                if (dir == dir_t::Right) {
+                    return cur.extendRightBySymbol();
+                } else {
+                    return cur.extendLeftBySymbol();
+                }
             } else {
-                auto symb = cur.symbolLeft();
-                auto cur_ = cur.extendLeft(symb);
-                return {symb, cur_};
+                if (dir == dir_t::Right) {
+                    auto symb = cur.symbolRight();
+                    auto cur_ = cur.extendRight(symb);
+                    return {symb, cur_};
+                } else {
+                    auto symb = cur.symbolLeft();
+                    auto cur_ = cur.extendLeft(symb);
+                    return {symb, cur_};
+                }
             }
         }();
 
