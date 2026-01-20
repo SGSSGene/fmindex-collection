@@ -396,6 +396,15 @@ public:
                 }
             }
         };
+        rec (
+            /*.b1=*/        ~bits_lb.back(),
+            /*.b2=*/        ~bits_rb.back(),
+            /*.level=*/     bitct-1,
+            /*.smaller=*/   0,
+            /*.larger=*/    0,
+            0, 0, idx1, idx2,
+            /*.symb=*/      0
+        );
     }
 
     template <typename Archive>
