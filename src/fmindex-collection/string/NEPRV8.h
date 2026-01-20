@@ -113,14 +113,19 @@ namespace neprv8_detail {
         }
     }
 
-
     template <size_t N, size_t bitct>
-    auto prefix_rank(std::array<std::bitset<N>, bitct> const& arr, uint64_t symb) {
+    auto prefix_rank(std::span<std::bitset<N> const, bitct> arr, uint64_t symb) {
         if constexpr (bitct == 3) {
             return mark_less_fast(symb, arr[2], arr[1], arr[0]);
         } else {
-            return mark_less_large(symb, std::span<std::bitset<N> const, bitct>{arr});
+            return mark_less_large(symb, arr);
         }
+    }
+
+
+    template <size_t N, size_t bitct>
+    auto prefix_rank(std::array<std::bitset<N>, bitct> const& arr, uint64_t symb) {
+        return prefix_rank(std::span<std::bitset<N> const, bitct>{arr}, symb);
     }
 }
 /*
