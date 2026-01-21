@@ -230,9 +230,109 @@ struct BiFMIndexKStepCursor {
         size_t newLb    = lb + bwt.prefix_rank(lbRev+len, symb_pr) - bwt.prefix_rank(lbRev, symb_pr);
         size_t newLbRev = bwt.rank(lbRev, symb_pr);
         size_t newLen   = bwt.rank(lbRev+len, symb_pr) - newLbRev;
-        auto newCursor = BiFMIndexKStepCursor{*index, newLb, newLbRev + index->C_kstep[symb_pr], newLen, steps+KStep};
+        auto newCursor = BiFMIndexKStepCursor{*index, newLb, newLbRev + index->CRev_kstep[symb_pr], newLen, steps+KStep};
         return newCursor;
     }
+
+    auto extendLeftKStep() const -> std::array<BiFMIndexKStepCursor, SigmaKStep> requires (!HasDualRank) {
+        auto cursors = std::array<BiFMIndexKStepCursor, SigmaKStep>{};
+
+        auto const& bwt = index->bwt_kstep;
+        auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lb);
+        auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lb+len);
+
+        for (size_t i{0}; i < cursors.size(); ++i) {
+            cursors[i] = BiFMIndexKStepCursor{*index, rs1[i] + index->C_kstep[i], lbRev + prs2[i] - prs1[i], rs2[i] - rs1[i], steps+1};
+        }
+        return cursors;
+    }
+
+    auto extendRightKStep() const -> std::array<BiFMIndexKStepCursor, SigmaKStep> requires (!HasDualRank) {
+        auto cursors = std::array<BiFMIndexKStepCursor, SigmaKStep>{};
+
+        auto const& bwt = fetchRightBwtKStep();
+        auto [rs1, prs1] = bwt.all_ranks_and_prefix_ranks(lbRev);
+        auto [rs2, prs2] = bwt.all_ranks_and_prefix_ranks(lbRev+len);
+
+        for (size_t i{0}; i < cursors.size(); ++i) {
+            cursors[i] = BiFMIndexKStepCursor{*index, lb + prs2[i] - prs1[i], rs1[i] + index->CRev_kstep[i], rs2[i] - rs1[i], steps+1};
+        }
+        return cursors;
+    }
+    auto extendLeftKStep() const -> std::array<BiFMIndexKStepCursor, SigmaKStep> requires HasDualRank {
+        auto ret = std::array<BiFMIndexKStepCursor, SigmaKStep>{};
+        auto& bwt = index->bwt_kstep;
+        bwt.all_ranks_dual(lb, lb+len, [&](size_t symb, size_t rs1, size_t rs2, size_t prs1, size_t prs2) {
+            auto newLb    = index->C_kstep[symb] + rs1;
+            auto newLen   = rs2 - rs1;
+            auto newLbRev = lbRev + prs2 - prs1;
+            ret[symb] = BiFMIndexKStepCursor{*index, newLb, newLbRev, newLen, steps+1};
+        });
+        return ret;
+    }
+    auto extendRightKStep() const -> std::array<BiFMIndexKStepCursor, SigmaKStep> requires HasDualRank {
+        auto ret = std::array<BiFMIndexKStepCursor, SigmaKStep>{};
+        auto& bwt = fetchRightBwtKStep();
+        bwt.all_ranks_dual(lbRev, lbRev+len, [&](size_t symb, size_t rs1, size_t rs2, size_t prs1, size_t prs2) {
+            auto newLbRev = index->CRev_kstep[symb] + rs1;
+            auto newLen   = rs2 - rs1;
+            auto newLb    = lb + prs2 - prs1;
+            ret[symb] = BiFMIndexKStepCursor{*index, newLb, newLbRev, newLen, steps+1};
+        });
+        return ret;
+    }
+
+    // This requires that all rows have the same BWT entry (or only a single one is available)
+    // - must have at least marked a single row
+    // - all rows must have the same 'bwt' symbol
+    auto extendLeftBySymbolKStep(size_t symb) const -> BiFMIndexKStepCursor {
+        auto& bwt = index->bwt_kstep;
+
+        assert(count() > 0);
+        assert([&]() {
+            for (size_t i{lb}; i < lb + len; ++i) {
+                if (symb != bwt.symbol(i)) {
+                    return false;
+                }
+            }
+            return true;
+        }());
+
+        size_t newLb    = bwt.rank(lb, symb);
+        size_t newLbRev = lbRev;
+        size_t newLen   = len;
+        auto newCursor  = BiFMIndexKStepCursor{*index, newLb + index->C_kstep[symb], newLbRev, newLen, steps+1};
+        return newCursor;
+    }
+
+    // see extendLeftBySymbol
+    auto extendRightBySymbolKStep(size_t symb) const -> BiFMIndexKStepCursor {
+        auto const& bwt = fetchRightBwtKStep();
+        size_t newLb    = lb;
+        size_t newLbRev = bwt.rank(lbRev, symb);
+        size_t newLen   = len;
+        auto newCursor = BiFMIndexKStepCursor{*index, newLb, newLbRev + index->CRev_kstep[symb], newLen, steps+1};
+        return newCursor;
+    }
+
+
+    // This requires that all rows have the same BWT entry (or only a single one is available)
+    // - must have at least marked a single row
+    // - all rows must have the same 'bwt' symbol
+    auto extendLeftBySymbolKStep() const -> std::tuple<size_t, BiFMIndexKStepCursor> {
+        auto& bwt = index->bwt_kstep;
+        auto symb = bwt.symbol(lb);
+        return {symb, extendLeftBySymbolKStep(symb)};
+    }
+
+    // see extendLeftBySymbol
+    auto extendRightBySymbolKStep() const -> std::tuple<size_t, BiFMIndexKStepCursor> {
+        auto const& bwt = fetchRightBwtKStep();
+        auto symb = bwt.symbol(lbRev);
+        return {symb, extendRightBySymbolKStep(symb)};
+    }
+
+
 
     auto symbolLeft() const -> size_t {
         return index->bwt.symbol(lb);
@@ -335,7 +435,6 @@ struct LeftBiFMIndexKStepCursor {
         auto newCursor = LeftBiFMIndexKStepCursor{*index, newLb + index->C_kstep[symb_pr], newLen, steps+KStep};
         return newCursor;
     }
-
 };
 
 template <typename Index>

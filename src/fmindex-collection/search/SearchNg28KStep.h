@@ -29,6 +29,7 @@ struct Search {
         { index_t::KStep };
     };
     constexpr size_t static KStep = []() constexpr -> size_t { if constexpr(HasKStep) return index_t::KStep; return 1ul; }();
+    constexpr size_t static SigmaKStep = []() constexpr -> size_t { if constexpr(HasKStep) return index_t::SigmaKStep; return Sigma; }();
     using cursor_t = select_cursor_t<index_t>;
 
     index_t const& index;
@@ -57,6 +58,10 @@ struct Search {
     mutable dir_t dir{dir_t::Right};
     mutable size_t partitionPart{};
     mutable uint8_t lb, ub;
+
+    mutable std::array<cursor_t, SigmaKStep> const* nextCursors{};
+    mutable cursor_t const* nextSingleCursor{};
+    mutable std::array<size_t, KStep> const* nextSingleCursorSymb{};
 
     Search(index_t const& _index, query_t const& _query, search_t const& _search, std::vector<size_t> const& _partition, delegate_t const& _delegate)
         : index     {_index}
@@ -88,8 +93,9 @@ struct Search {
         return search_next_part(cur);
     }
 
-    auto flushCursor(cursor_t cur) const noexcept {
+/*    auto flushCursor(cursor_t cur) const noexcept {
         if constexpr (HasKStep) {
+            assert(sideImpl[0].usedSymbBuffer == 0 || sideImpl[2].usedSymbBuffer == 0);
             auto flush = [&](size_t side) {
                 auto rest = sideImpl[side].usedSymbBuffer % KStep;
                 if (rest % KStep == 0) return;
@@ -103,24 +109,54 @@ struct Search {
             flush(2);
         }
         return cur;
+    }*/
+
+    auto clearCursor(cursor_t const& _cur, auto&& cb) const noexcept {
+        if constexpr (HasKStep) {
+            assert((sideImpl[0].usedSymbBuffer % KStep == 0) || (sideImpl[2].usedSymbBuffer % KStep == 0));
+            if (auto& side = sideImpl[0]; side.usedSymbBuffer % KStep > 0) {
+                auto cur = _cur;
+                auto offset = side.usedSymbBuffer % KStep;
+                auto start  = side.usedSymbBuffer - offset;
+                for (size_t i{0}; i < offset; ++i) {
+                    cur = extend(cur, side.symbBuffer[start+i]);
+                }
+                auto r_used = RestoreAdd{side.usedSymbBuffer, KStep - offset};
+                auto f = cb(cur);
+                return f;
+            }
+
+            if (auto& side = sideImpl[2]; side.usedSymbBuffer % KStep > 0) {
+                auto cur = _cur;
+                auto offset = side.usedSymbBuffer % KStep;
+                auto start  = side.usedSymbBuffer - offset;
+                for (size_t i{0}; i < offset; ++i) {
+                    cur = extend(cur, side.symbBuffer[start+i]);
+                }
+                auto r_used = RestoreAdd{side.usedSymbBuffer, KStep - offset};
+                auto f = cb(cur);
+                return f;
+            }
+        }
+        return cb(_cur);
     }
 
+
     auto extend(cursor_t const& cur, uint64_t symb) const noexcept {
-        if constexpr (HasKStep) {
-            side->usedSymbBuffer += 1;
-            auto buffer = std::span{side->symbBuffer}.first(side->usedSymbBuffer);
-            buffer.back() = symb;
-            if (side->usedSymbBuffer % KStep == 0) {
-                if (dir == dir_t::Right) return cur.extendRightKStep(buffer.template last<KStep>());
-                else return cur.extendLeftKStep(buffer.template last<KStep>());
-            }
-            return cur;
+        if (dir == dir_t::Right) {
+            return cur.extendRight(symb);
         } else {
-            if (dir == dir_t::Right) {
-                return cur.extendRight(symb);
-            } else {
-                return cur.extendLeft(symb);
-            }
+            return cur.extendLeft(symb);
+        }
+    }
+
+    auto extendKStep(cursor_t const& cur, std::span<size_t const, KStep> symb) const noexcept {
+        if constexpr (HasKStep) {
+            if (dir == dir_t::Right) return cur.extendRightKStep(symb);
+            else return cur.extendLeftKStep(symb);
+        } else {
+            static_assert(KStep == 1);
+            return extend(cur, symb[0]);
         }
     }
 
@@ -129,53 +165,15 @@ struct Search {
         return cur.extendLeft();
     }
 
-    /*
-     * Searches for the next part
-     */
-    bool search_next_part(cursor_t const& cur) const {
-        if (cur.count() == 0) {
-            return false;
+    auto extendKStep(cursor_t const& cur) const noexcept {
+        if constexpr (HasKStep) {
+            if (dir == dir_t::Right) return cur.extendRightKStep();
+            return cur.extendLeftKStep();
+        } else {
+            return extend(cur);
         }
-        auto r_p = RestoreAdd{part, 1};
-        if (part == partition.size()) {
-            auto newCur = flushCursor(cur);
-            if (newCur.count() == 0) {
-                return false;
-            }
-            auto il = sideImpl[0].info;
-            auto ir = sideImpl[2].info;
-            if (!Edit || ((il == 'M' or il == 'I') and (ir == 'M' or ir == 'I'))) {
-                if (search.l.back() <= e and e <= search.u.back()) {
-                    return delegate(newCur, e);
-                }
-            }
-            return false;
-        }
-
-        bool right = (part==0) || (search.pi[part-1] < search.pi[part]);
-        auto r_dir = Restore{dir, right?dir_t::Right:dir_t::Left};
-        auto r_side = Restore{side, right?&sideImpl[2]:&sideImpl[0]};
-        auto r_part = Restore{partitionPart, partition[search.pi[part]]};
-        auto r_lb   = Restore{lb, search.l[part]};
-        auto r_ub   = Restore{ub, search.u[part]};
-
-        return search_next_symb(cur);
     }
 
-    /**
-     * move search position to next character, check if partition is ending
-     * if required start a new part/partition search
-     */
-    bool check_and_search_next_symb(cursor_t const& cur) const {
-        if (cur.count() == 0) return false;
-        auto r_qp = RestoreAdd{side->queryPos, dir};
-        auto r_p  = RestoreSub{partitionPart, 1};
-
-        if (partitionPart == 0) {
-            return search_next_part(cur);
-        }
-        return search_next_symb(cur);
-    }
 
     auto computeErrorCases() const {
         auto const tinfo               = side->info;
@@ -196,28 +194,91 @@ struct Search {
         return matchAllowed;
     }
 
-    bool search_next_symb(cursor_t const& cur) const {
-        auto nextSymb = query[side->queryPos];
-
-        auto matchAllowed = computeMatchCase(nextSymb);
-        auto [mismatchAllowed, substitutionAllowed, insertionAllowed, deletionAllowed] = computeErrorCases();
-
-        if (!mismatchAllowed && matchAllowed) {
-            return search_next_part_no_errors(cur);
+    /*
+     * Searches for the next part
+     */
+    bool search_next_part(cursor_t const& cur) const {
+        if (cur.count() == 0) {
+            return false;
+        }
+        auto r_p = RestoreAdd{part, 1};
+        if (part == partition.size()) {
+            return clearCursor(cur, [&](auto const& cur) {
+                auto il = sideImpl[0].info;
+                auto ir = sideImpl[2].info;
+                if (!Edit || ((il == 'M' or il == 'I') and (ir == 'M' or ir == 'I'))) {
+                    if (search.l.back() <= e and e <= search.u.back()) {
+                        return delegate(cur, e);
+                    }
+                }
+                return false;
+            });
         }
 
-        if (mismatchAllowed) {
-            auto cursors = std::array<std::optional<cursor_t>, Sigma>{};
-            auto fetch = [&](size_t nextSymb) -> cursor_t const& {
-                auto& opt = cursors[nextSymb];
-                if (!opt) {
-                    auto r_symb = RestoreSub{side->usedSymbBuffer, 1};
-                    opt = extend(cur, nextSymb);
-                }
-                side->symbBuffer[side->usedSymbBuffer-1] = nextSymb;
-                return *opt;
-            };
+        bool right = (part==0) || (search.pi[part-1] < search.pi[part]);
+        auto r_side = Restore{side, right?&sideImpl[2]:&sideImpl[0]};
+        auto r_part = Restore{partitionPart, partition[search.pi[part]]};
+        auto r_lb   = Restore{lb, search.l[part]};
+        auto r_ub   = Restore{ub, search.u[part]};
 
+        auto newDir = right?dir_t::Right:dir_t::Left;
+        if (newDir == dir) {
+            return search_next_symb(cur);
+        } else {
+            // clearCursor and search other direction
+            return clearCursor(cur, [&](auto const& _cur) {
+                auto r_dir = Restore{dir, newDir};
+                return search_next_symb(_cur);
+            });
+        }
+    }
+
+    /**
+     * move search position to next character, check if partition is ending
+     * if required start a new part/partition search
+     */
+    bool check_and_search_next_symb(cursor_t const& cur) const {
+        if (cur.count() == 0) return false;
+        auto r_qp = RestoreAdd{side->queryPos, dir};
+        auto r_p  = RestoreSub{partitionPart, 1};
+
+        if (partitionPart == 0) {
+            return search_next_part(cur);
+        }
+        return search_next_symb(cur);
+    }
+
+    template <bool ExtendCursor = true>
+    bool search_next_symb(cursor_t const& cur) const {
+        if (cur.count() == 1) {
+            return clearCursor(cur, [&](auto const& cur) {
+                return search_next_symb_single(cur);
+            });
+        }
+
+        if (side->usedSymbBuffer % KStep == 0) {
+            auto nextSymb = query[side->queryPos];
+
+            auto matchAllowed = computeMatchCase(nextSymb);
+            auto [mismatchAllowed, substitutionAllowed, insertionAllowed, deletionAllowed] = computeErrorCases();
+
+            if (!mismatchAllowed && matchAllowed) {
+                return search_next_part_no_errors(cur);
+            }
+        }
+        // Is the next step reached?
+        if constexpr (ExtendCursor) {
+            if (side->usedSymbBuffer % KStep == 0) {
+                // require expansion of cursor buffer
+                auto cursors = extendKStep(cur);
+                auto r_nextCursor = Restore{nextCursors, &cursors};
+                return search_next_symb<false>(cur);
+            }
+        }
+
+
+        // will not need a new extension
+        if (side->usedSymbBuffer % KStep + 1 < KStep) {
             auto r_i    = Restore{side->info};
             auto r_lqr  = Restore{side->lastQRank};
             auto r_qp   = Restore{side->queryPos};
@@ -227,8 +288,110 @@ struct Search {
 
             side->usedSymbBuffer += 1;
             while (true) {
+                auto nextSymb = query[side->queryPos];
+
+                auto matchAllowed = computeMatchCase(nextSymb);
+                auto [mismatchAllowed, substitutionAllowed, insertionAllowed, deletionAllowed] = computeErrorCases();
+
+                if (!mismatchAllowed && matchAllowed) {
+                    auto r_lr  = Restore{side->lastRank, nextSymb};
+                    auto r_lqr = Restore{side->lastQRank, nextSymb};
+                    side->info = 'M';
+                    side->symbBuffer[side->usedSymbBuffer-1] = nextSymb;
+
+                    // copied from check_and_search_next_symb
+                    auto r_qp = RestoreAdd{side->queryPos, dir};
+                    auto r_p  = RestoreSub{partitionPart, 1};
+
+                    if (partitionPart == 0) {
+                        return search_next_part(cur);
+                    }
+
+                    return search_next_part_no_errors(cur);
+                }
+
+
                 if (matchAllowed) {
-                    auto const& newCur = fetch(nextSymb);
+                    auto r_lr  = Restore{side->lastRank, nextSymb};
+                    auto r_lqr = Restore{side->lastQRank, nextSymb};
+                    side->info = 'M';
+                    side->symbBuffer[side->usedSymbBuffer-1] = nextSymb;
+                    auto f = check_and_search_next_symb(cur);
+                    if (f) return true;
+                }
+                if (!mismatchAllowed) break;
+                e += 1;
+                for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
+                    side->symbBuffer[side->usedSymbBuffer-1] = i;
+                    auto r_lr = Restore{side->lastRank, i};
+                    if (deletionAllowed) {
+                        side->info = 'D';
+                        auto f = search_next_symb(cur); // deletion occurred in query
+                        if (f) return true;
+                    }
+                    if (!substitutionAllowed) continue;
+                    if (i == nextSymb) continue;
+
+                    auto r_lqr = Restore{side->lastQRank, nextSymb};
+                    side->info = 'S';
+                    auto f = check_and_search_next_symb(cur);
+                    if (f) return true;
+                }
+
+                if (!insertionAllowed) break;
+                side->lastQRank = nextSymb;
+                side->info = 'I';
+                side->queryPos += dir;
+                partitionPart -= 1;
+                if (partitionPart == 0) {
+                    side->usedSymbBuffer -= 1;
+                    return search_next_part(cur);
+                }
+            }
+            return false;
+        } else { // new extension will be required
+            auto r_i    = Restore{side->info};
+            auto r_lqr  = Restore{side->lastQRank};
+            auto r_qp   = Restore{side->queryPos};
+            auto r_p    = Restore{partitionPart};
+            auto r_e    = Restore{e};
+            auto r_used = Restore{side->usedSymbBuffer};
+
+            auto const& cursors = *nextCursors;
+
+            side->usedSymbBuffer += 1;
+            auto kstepSymb = size_t{};
+            for (size_t i{0}; i < KStep-1; ++i) {
+                kstepSymb = kstepSymb*Sigma + side->symbBuffer[side->usedSymbBuffer-KStep+i];
+            }
+            kstepSymb = kstepSymb*Sigma;
+            while (true) {
+                auto nextSymb = query[side->queryPos];
+
+                auto matchAllowed = computeMatchCase(nextSymb);
+                auto [mismatchAllowed, substitutionAllowed, insertionAllowed, deletionAllowed] = computeErrorCases();
+
+                if (!mismatchAllowed && matchAllowed) {
+                    auto const& newCur = cursors[kstepSymb + nextSymb];
+                    if (newCur.count() == 0) return false;
+
+                    auto r_lr  = Restore{side->lastRank, nextSymb};
+                    auto r_lqr = Restore{side->lastQRank, nextSymb};
+                    side->info = 'M';
+
+                    // copied from check_and_search_next_symb
+                    auto r_qp = RestoreAdd{side->queryPos, dir};
+                    auto r_p  = RestoreSub{partitionPart, 1};
+
+                    if (partitionPart == 0) {
+                        return search_next_part(newCur);
+                    }
+
+                    return search_next_part_no_errors(newCur);
+                }
+
+                if (matchAllowed) {
+                    auto const& newCur = cursors[kstepSymb + nextSymb];
 
                     auto r_lr  = Restore{side->lastRank, nextSymb};
                     auto r_lqr = Restore{side->lastQRank, nextSymb};
@@ -239,7 +402,7 @@ struct Search {
                 if (!mismatchAllowed) break;
                 e += 1;
                 for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
-                    auto const& newCur = fetch(i);
+                    auto const& newCur = cursors[kstepSymb + i];
                     if (newCur.count() == 0) continue;
 
                     auto r_lr = Restore{side->lastRank, i};
@@ -266,39 +429,126 @@ struct Search {
                     side->usedSymbBuffer -= 1;
                     return search_next_part(cur);
                 }
-
-                nextSymb = query[side->queryPos];
-
-                matchAllowed = computeMatchCase(nextSymb);
-                std::tie(mismatchAllowed, substitutionAllowed, insertionAllowed, deletionAllowed) = computeErrorCases();
             }
+            return false;
         }
-        return false;
     }
 
     /** Searches the (rest of) a part without any errors
      *
      * May only be called if no errors are allowed
      */
-    bool search_next_part_no_errors(cursor_t cur) const {
+    bool search_next_part_no_errors(cursor_t const& _cur) const {
+        auto r_qp   = Restore{side->queryPos};
         assert(e == ub);
 
-        auto loops = partitionPart;
-        auto nextSymb = decltype(query[0]){};
-        auto r_used = Restore{side->usedSymbBuffer};
-        for (size_t i{0}; i < loops; ++i) {
-            auto pos = side->queryPos + i*dir;
-            nextSymb = query[pos];
-            cur = extend(cur, nextSymb);
-            if (cur.count() == 0) return false; // early abort, if results are empty
-        }
+        return clearCursor(_cur, [&](auto cur) {
+            assert(side->usedSymbBuffer % KStep == 0);
 
-        auto r_lr   = Restore{side->lastRank, nextSymb};
-        auto r_lqr  = Restore{side->lastQRank, nextSymb};
-        auto r_p    = Restore{partitionPart, 0};
-        auto r_qp   = RestoreAdd{side->queryPos, loops * dir};
-        auto r_i    = Restore{side->info, 'M'};
-        return search_next_part(cur);
+            auto kstep_loops = partitionPart / KStep;               // number of k-steps
+            auto loop_tail   = partitionPart - kstep_loops * KStep; // trailing number of single steps
+
+            auto buffer = std::array<size_t, KStep>{};
+            for (size_t i{0}; i < kstep_loops; ++i) {
+                for (size_t j{0}; j < KStep; ++j) {
+                    buffer[j] = query[side->queryPos];
+                    side->queryPos = side->queryPos + dir;
+                }
+                cur = extendKStep(cur, buffer);
+                if (cur.count() == 0) return false; // early abort, if results are empty
+            }
+
+            auto nextSymb = buffer.back();
+            for (size_t i{0}; i < loop_tail; ++i) {
+                nextSymb = query[side->queryPos];
+                side->queryPos = side->queryPos + dir;
+                cur = extend(cur, nextSymb);
+                if (cur.count() == 0) return false; // early abort, if results are empty
+            }
+            auto r_lr   = Restore{side->lastRank, nextSymb};
+            auto r_lqr  = Restore{side->lastQRank, nextSymb};
+            auto r_p    = Restore{partitionPart, 0};
+            auto r_i    = Restore{side->info, 'M'};
+            return search_next_part(cur);
+        });
+    }
+
+    bool search_next_symb_single(cursor_t const& cur) const {
+        auto r_e    = Restore{e};
+        auto r_lqr  = Restore{side->lastQRank};
+        auto r_i    = Restore{side->info};
+        auto r_qp   = Restore{side->queryPos};
+        auto r_p    = Restore{partitionPart};
+
+        auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
+            if constexpr (requires() { { cur.extendRightBySymbol() }; }) {
+                if (dir == dir_t::Right) {
+                    return cur.extendRightBySymbol();
+                } else {
+                    return cur.extendLeftBySymbol();
+                }
+            } else {
+                if (dir == dir_t::Right) {
+                    auto symb = cur.symbolRight();
+                    auto cur_ = cur.extendRight(symb);
+                    return {symb, cur_};
+                } else {
+                    auto symb = cur.symbolLeft();
+                    auto cur_ = cur.extendLeft(symb);
+                    return {symb, cur_};
+                }
+            }
+        }();
+
+        while (true) {
+            auto [mismatchAllowed, substitutionAllowed, insertionAllowed, deletionAllowed] = computeErrorCases();
+            auto curQSymb = query[side->queryPos];
+
+            // only insertions are possible
+            if (curISymb >= FirstSymb) {
+                auto const matchAllowed = computeMatchCase(curQSymb);
+
+                if (curISymb == curQSymb) {
+                    if (matchAllowed) {
+                        if (!mismatchAllowed) {
+                            return search_next_part_no_errors(cur);
+                        }
+                        auto r_lr  = Restore{side->lastRank, curISymb};
+                        auto r_lqr = Restore{side->lastQRank, curQSymb};
+                        side->info = 'M';
+                        bool f = check_and_search_next_symb(icursorNext);
+                        if (f) return true;
+                    }
+                } else if (substitutionAllowed) {
+                    // search substitute
+                    auto r_e = Restore{e, e+1};
+                    auto r_lr  = Restore{side->lastRank, curISymb};
+                    auto r_lqr = Restore{side->lastQRank, curQSymb};
+                    side->info = 'S';
+                    bool f = check_and_search_next_symb(icursorNext);
+                    if (f) return true;
+                }
+                if (deletionAllowed) {
+                    auto r_e  = Restore{e, e+1};
+                    auto r_lr = Restore{side->lastRank, curISymb};
+                    side->info = 'D';
+                    bool f = search_next_symb_single(icursorNext);
+                    if (f) return true;
+                }
+            }
+
+            if (!insertionAllowed) break;
+            e += 1;
+            side->lastQRank = curQSymb;
+            side->info = 'I';
+
+            side->queryPos += dir;
+            partitionPart -= 1;
+            if (partitionPart == 0) {
+                return search_next_part(cur);
+            }
+        }
+        return false;
     }
 };
 

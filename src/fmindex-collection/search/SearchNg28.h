@@ -86,6 +86,24 @@ struct Search {
         return cur.extendLeft();
     }
 
+    auto computeErrorCases() const {
+        auto const tinfo               = side->info;
+        bool const mismatchAllowed     = e+1 <= ub;
+        if (!mismatchAllowed) return std::make_tuple(false, false, false, false);
+        bool const substitutionAllowed = lb <= e+partitionPart and e+1 <= ub;
+        bool const insertionAllowed    = Edit && tinfo != 'S' && tinfo != 'D' && substitutionAllowed;
+        bool const deletionAllowed     = Edit && tinfo != 'S' && tinfo != 'I' && mismatchAllowed;
+        return std::make_tuple(mismatchAllowed, substitutionAllowed, insertionAllowed, deletionAllowed);
+    }
+    auto computeMatchCase(size_t nextSymb) const {
+        auto const tinfo        = side->info;
+        bool const matchAllowed = (partitionPart > 1 or lb <= e)
+                                 and e <= ub
+                                 and (tinfo != 'I' or nextSymb != side->lastQRank)
+                                 and (tinfo != 'D' or nextSymb != side->lastRank);
+        return matchAllowed;
+    }
+
     /*
      * Searches for the next part
      */
@@ -128,25 +146,6 @@ struct Search {
             return search_next_part(cur);
         }
         return search_next_symb(cur);
-    }
-
-
-    auto computeErrorCases() const {
-        auto const tinfo               = side->info;
-        bool const mismatchAllowed     = e+1 <= ub;
-        if (!mismatchAllowed) return std::make_tuple(false, false, false, false);
-        bool const substitutionAllowed = lb <= e+partitionPart and e+1 <= ub;
-        bool const insertionAllowed    = Edit && tinfo != 'S' && tinfo != 'D' && substitutionAllowed;
-        bool const deletionAllowed     = Edit && tinfo != 'S' && tinfo != 'I' && mismatchAllowed;
-        return std::make_tuple(mismatchAllowed, substitutionAllowed, insertionAllowed, deletionAllowed);
-    }
-    auto computeMatchCase(size_t nextSymb) const {
-        auto const tinfo        = side->info;
-        bool const matchAllowed = (partitionPart > 1 or lb <= e)
-                                 and e <= ub
-                                 and (tinfo != 'I' or nextSymb != side->lastQRank)
-                                 and (tinfo != 'D' or nextSymb != side->lastRank);
-        return matchAllowed;
     }
 
     bool search_next_symb(cursor_t const& cur) const {

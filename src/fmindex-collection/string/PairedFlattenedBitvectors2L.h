@@ -310,8 +310,8 @@ public:
      *  - it does not report (prefix) ranks for symbols that have 0-values
      */
     void all_ranks_dual(size_t idx1, size_t idx2, auto const& cb) const {
-        assert(idx1 < totalLength);
-        assert(idx2 < totalLength);
+        assert(idx1 <= totalLength);
+        assert(idx2 <= totalLength);
 
         /*
          * The below is a "optimized version" of the following easy code
@@ -368,13 +368,66 @@ public:
         using word_of_bits = std::bitset<l1_bits_ct>;
         auto This = this; //!TODO !WORKAROUND otherwise crashes gcc
 
+
+
+        /*
+
+        0      ~b3 & ~b2 & ~b1 | ~b0
+        1      ~b3 & ~b2 & ~b1
+        2      ~b3 & ~b2 & (~b1 | ~b0)
+        3
+        4
+        5
+        6
+        7
+
+
+        0
+        1         ~b1 & ~b0
+        2    ~b1
+        3         ~b1 | ~b0
+
+
+
+  000   0
+  001   1                      ~b2 & ~b1 & ~b0
+  010   2        ~b2 & ~b1
+  011   3                      (~b2 & ~b1) | ~b0 but it should be (~b2 & (~b1 | ~b0)) => (~b2 & ~b1) | (~b2 & ~b0))
+  100   4   ~b2
+  101   5                      (~b2 | ~b1) & ~b0
+  110   6        ~b2 | ~b1
+  111   7                      (~b2 | ~b1) | ~b0
+
+ 0000   0
+ 0001   1                                                  ~b3 & ~b2 & ~b1 & ~b0
+ 0010   2                          ~b3 & ~b2 & ~b1
+ 0011   3                                                  ~b3 & ~b2 & (~b1 | ~b0)
+ 0100   4            ~b3 & ~b2
+ 0101   5                                                  ~b3 & (~(~b2 | ~b1) & ~b0
+ 0110   6                          (~b3 & ~b2) | (~b3 & ~b1)
+ 0111   7                                                  (~b2 | ~b1) | ~b0
+ 1000   8   ~b3 | (true & ~b3)
+ 1001   9                                                       ~b3 | ((~b3 | ~b2) & ~b1 & ~b0)
+ 1010  10                          ~b3 | ((~b3 | ~b2) & ~b1)
+ 1011  11
+ 1100  12            ~b3 | (true & ~b2)
+ 1101  13
+ 1110  14                          ~b3 | ~b2 | ~b1
+ 1111  15                                                  ~b3 | ~b2 | ~b1 | ~b0
+
+
+        */
+
         /** Heart of the algorithm
          *
          * A recursive algorithm checks if descending to left and/or right is required.
          * Aborts if any of the ranges have no characters. This accelerates computation on large alphabets.
          */
-        auto rec = [&](this auto&& self, word_of_bits const& b1, word_of_bits const& b2, int level, size_t pr1_S, size_t pr2_S, size_t pr1_E, size_t pr2_E, size_t symb) -> void {
+        auto rec = [&](this auto&& self, word_of_bits const& l_b1, word_of_bits const& r_b1, word_of_bits const& l_b2, word_of_bits const& r_b2, int level, size_t pr1_S, size_t pr2_S, size_t pr1_E, size_t pr2_E, size_t symb) -> void {
             auto lsymb = symb | (1 << level);
+            auto b1 = l_b1 | (r_b1 & ~bits_lb[level]);
+            auto b2 = l_b2 | (r_b2 & ~bits_rb[level]);
+
             auto [pr1, pr2] = count_pr(b1, b2, lsymb);
 
             assert(This->prefix_rank(idx1, lsymb) == pr1);
@@ -396,21 +449,17 @@ public:
 
                 // recursion left
                 if (countLeft > 0) {
-                    auto b1_2 = b1 & ~bits_lb[level-1];
-                    auto b2_2 = b2 & ~bits_rb[level-1];
-                    self(b1_2, b2_2, level-1, pr1_S, pr2_S, pr1, pr2, symb);
+                    self(l_b1, b1, l_b2, b2, level-1, pr1_S, pr2_S, pr1, pr2, symb);
                 }
                 // recursion right
                 if (countRight > 0) {
-                    auto b1_2 = b1 | ~bits_lb[level-1];
-                    auto b2_2 = b2 | ~bits_rb[level-1];
-                    self(b1_2, b2_2, level-1, pr1, pr2, pr1_E, pr2_E, lsymb);
+                    self(b1, r_b1, b2, r_b2, level-1, pr1, pr2, pr1_E, pr2_E, lsymb);
                 }
             }
         };
         rec (
-            /*.b1=*/         ~bits_lb.back(),
-            /*.b2=*/         ~bits_rb.back(),
+            mask_positive_or_negative<l1_bits_ct>[1], mask_positive_or_negative<l1_bits_ct>[0],
+            mask_positive_or_negative<l1_bits_ct>[1], mask_positive_or_negative<l1_bits_ct>[0],
             /*.level=*/      bitct-1,
             0, 0, idx1, idx2,
             /*.symb=*/       0
