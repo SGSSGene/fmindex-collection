@@ -90,14 +90,15 @@ struct Search {
         auto const tinfo               = side->info;
         bool const mismatchAllowed     = e+1 <= ub;
         if (!mismatchAllowed) return std::make_tuple(false, false, false, false);
-        bool const substitutionAllowed = lb <= e+partitionPart and e+1 <= ub;
+        bool const substitutionAllowed = ((Edit && (partitionPart > 1 || lb <= e+1)) || (!Edit && lb <= e+partitionPart)) && mismatchAllowed;
         bool const insertionAllowed    = Edit && tinfo != 'S' && tinfo != 'D' && substitutionAllowed;
         bool const deletionAllowed     = Edit && tinfo != 'S' && tinfo != 'I' && mismatchAllowed;
         return std::make_tuple(mismatchAllowed, substitutionAllowed, insertionAllowed, deletionAllowed);
     }
     auto computeMatchCase(size_t nextSymb) const {
         auto const tinfo        = side->info;
-        bool const matchAllowed = (partitionPart > 1 or lb <= e)
+        bool const matchAllowed = (!Edit && (partitionPart > 1 || lb <= e)
+                                    || (Edit && lb <= e + partitionPart-1))
                                  and e <= ub
                                  and (tinfo != 'I' or nextSymb != side->lastQRank)
                                  and (tinfo != 'D' or nextSymb != side->lastRank);
@@ -231,7 +232,19 @@ struct Search {
         for (size_t i{0}; i < loops; ++i) {
             auto pos = side->queryPos + i*dir;
             nextSymb = query[pos];
-            cur = extend(cur, nextSymb);
+            if (cur.count() == 1) {
+                if (dir == dir_t::Right) { if (cur.symbolRight() != nextSymb) return false; }
+                else                     { if (cur.symbolLeft() != nextSymb) return false; }
+                if constexpr (requires() { { cur.extendRightBySymbol() }; }) {
+                    if (dir == dir_t::Right) cur = cur.extendRightBySymbol(nextSymb);
+                    else                     cur = cur.extendLeftBySymbol(nextSymb);
+                } else {
+                    if (dir == dir_t::Right) cur = cur.extendRight(nextSymb);
+                    else                     cur = cur.extendLeft(nextSymb);
+                }
+            } else {
+                cur = extend(cur, nextSymb);
+            }
             if (cur.count() == 0) return false; // early abort, if results are empty
         }
 
