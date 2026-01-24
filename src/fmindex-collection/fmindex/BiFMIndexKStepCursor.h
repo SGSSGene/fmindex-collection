@@ -342,6 +342,15 @@ struct BiFMIndexKStepCursor {
         return bwt.symbol(lbRev);
     }
 
+    auto symbolLeft(size_t idx) const -> size_t {
+        return index->bwt.symbol(lb+idx);
+    }
+    auto symbolRight(size_t idx) const -> size_t {
+        auto const& bwt = fetchRightBwt();
+        return bwt.symbol(lbRev+idx);
+    }
+
+
     auto symbolLeftKStep() const -> size_t {
         return index->bwt_kstep.symbol(lb);
     }

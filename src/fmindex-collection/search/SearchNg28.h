@@ -233,14 +233,12 @@ struct Search {
             auto pos = side->queryPos + i*dir;
             nextSymb = query[pos];
             if (cur.count() == 1) {
-                if (dir == dir_t::Right) { if (cur.symbolRight() != nextSymb) return false; }
-                else                     { if (cur.symbolLeft() != nextSymb) return false; }
+                auto s = (dir == dir_t::Right)?cur.symbolRight():cur.symbolLeft();
+                if (s != nextSymb) return false;
                 if constexpr (requires() { { cur.extendRightBySymbol() }; }) {
-                    if (dir == dir_t::Right) cur = cur.extendRightBySymbol(nextSymb);
-                    else                     cur = cur.extendLeftBySymbol(nextSymb);
+                    cur = (dir == dir_t::Right)?cur.extendRightBySymbol(nextSymb):cur.extendLeftBySymbol(nextSymb);
                 } else {
-                    if (dir == dir_t::Right) cur = cur.extendRight(nextSymb);
-                    else                     cur = cur.extendLeft(nextSymb);
+                    cur = (dir == dir_t::Right)?cur.extendRight(nextSymb):cur.extendLeft(nextSymb);
                 }
             } else {
                 cur = extend(cur, nextSymb);
