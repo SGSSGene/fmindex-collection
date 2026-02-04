@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstdint>
 #include <functional>
+#include <span>
 
 namespace fmc {
 
@@ -742,6 +743,23 @@ auto mark_exact_large(size_t value, std::span<std::bitset<N1> const, N2> _arr) -
     }
 };
 
+template <size_t N1, size_t N2>
+auto mark_rank_cb(size_t value, auto const& _arrCb) -> std::bitset<N1> {
+    if constexpr (N2 == 2) {
+        return mark_exact_v3(value, _arrCb(1), _arrCb(0));
+    } else if constexpr (N2 == 3) {
+        return mark_exact_v3(value, _arrCb(2), _arrCb(1), _arrCb(0));
+    } else {
+        auto const& mask = mask_positive_or_negative<N1>;
+        auto r = _arrCb(0) ^ mask[value & 1];
+        for (size_t i{1}; i < N2; ++i) {
+            r = r & (_arrCb(i) ^ mask[(value>>i) & 1]);
+        }
+        return r;
+    }
+};
+
+
 
 /** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
  *  has the same bit value as Value
@@ -1029,10 +1047,92 @@ auto mark_exact_or_less_large(size_t value, std::span<std::bitset<N1> const, N2>
  *  has the same bit value as Value
  */
 template <size_t N1, size_t N2>
+auto mark_exact_or_less_large_cb(size_t value, auto const& _arrCb) -> std::bitset<N1> {
+    if constexpr (N2 == 1) {
+        if (!value) return ~_arrCb(0);
+        return mask_positive_or_negative<N1>[0];
+    } else if constexpr (N2 == 2) {
+        switch(value) {
+        case 0x00: return ~_arrCb(1) & ~_arrCb(0);
+        case 0x01: return ~_arrCb(1);
+        case 0x02: return ~_arrCb(1) | ~_arrCb(0);
+        default: return mask_positive_or_negative<N1>[0];
+        }
+    } else if constexpr (N2 < 9) {
+        auto v       = mark_exact_or_less_v3(value & 7, _arrCb(2), _arrCb(1), _arrCb(0));
+        auto tail1 = [&](size_t value, size_t i) {
+            if (!value) return ~_arrCb(i) & v;
+            return ~_arrCb(i) | v;
+        };
+
+        auto tail2 = [&](size_t value, size_t i0, size_t i1) {
+            switch(value) {
+            case 0x00: return ~_arrCb(i1) &  ~_arrCb(i0) & v;
+            case 0x01: return ~_arrCb(i1) & (~_arrCb(i0) | v);
+            case 0x02: return ~_arrCb(i1) | (~_arrCb(i0) & v);
+            default:   return ~_arrCb(i1) |  ~_arrCb(i0) | v;
+            }
+        };
+        if constexpr (N2 == 3) {
+            return v;
+        } else if constexpr (N2 == 4) {
+            return tail1((value>>3)&1, 3);
+        } else {
+            v = tail2((value>>3)&3, 3, 4);
+            if constexpr (N2 == 5) {
+                return v;
+            } else if constexpr (N2 == 6) {
+                return tail1(value>>5, 5);
+            } else {
+                v = tail2((value>>5)&3, 5, 6);
+                if constexpr (N2 == 7) {
+                    return v;
+                } else { // N2 == 8
+                    return tail1(value>>7, 7);
+                }
+            }
+        }
+    } else {
+        auto v       = mark_exact_or_less_v3(value & 7, _arrCb(2), _arrCb(1), _arrCb(0));
+        auto tail1 = [&](size_t value, size_t i) {
+            if (!value) return ~_arrCb(i) & v;
+            return ~_arrCb(i) | v;
+        };
+
+        auto tail2 = [&](size_t value, size_t i0, size_t i1) {
+            switch(value) {
+            case 0x00: return ~_arrCb(i1) &  ~_arrCb(i0) & v;
+            case 0x01: return ~_arrCb(i1) & (~_arrCb(i0) | v);
+            case 0x02: return ~_arrCb(i1) | (~_arrCb(i0) & v);
+            default:   return ~_arrCb(i1) |  ~_arrCb(i0) | v;
+            }
+        };
+        size_t i{3};
+        for (;i+1 < N2; i += 2) {
+            v = tail2((value>>i)&3, i, i+1);
+        }
+
+        if (i < N2) {
+            v = tail1((value>>i)&1, i);
+        }
+        return v;
+    }
+};
+
+/** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
+ *  has the same bit value as Value
+ */
+template <size_t N1, size_t N2>
 auto mark_less_large(size_t value, std::span<std::bitset<N1> const, N2> _arr) -> std::bitset<N1> {
     if (value == 0) return mask_positive_or_negative<N1>[1];
     return mark_exact_or_less_large(value-1, _arr);
 
+}
+
+template <size_t N1, size_t N2>
+auto mark_prefix_rank_cb(size_t value, auto const& _arrCb) -> std::bitset<N1> {
+    if (value == 0) return mask_positive_or_negative<N1>[1];
+    return mark_exact_or_less_large_cb<N1, N2>(value-1, _arrCb);
 }
 
 }
