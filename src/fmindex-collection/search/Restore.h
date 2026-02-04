@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 
 template <typename T, typename T2=std::nullptr_t>
 struct Restore {
@@ -55,5 +56,18 @@ struct RestoreSub {
     RestoreSub(RestoreSub&&) = delete;
     ~RestoreSub() {
         *value = oldValue;
+    }
+};
+template <typename CB>
+struct RestoreCB {
+    std::function<void()> cb {};
+    RestoreCB(CB const& _cb)
+        : cb{_cb}
+    {}
+
+    RestoreCB(RestoreCB const&) = delete;
+    RestoreCB(RestoreCB&&) = delete;
+    ~RestoreCB() {
+        cb();
     }
 };
