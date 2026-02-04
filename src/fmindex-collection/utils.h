@@ -206,7 +206,7 @@ auto computeC(String const& s) -> std::array<size_t, String::Sigma+1> {
 }
 
 template <size_t Sigma>
-auto computeCSpan(std::span<uint8_t> const& s) -> std::array<size_t, Sigma+1> {
+auto computeCSpan(std::span<uint8_t const> s) -> std::array<size_t, Sigma+1> {
     auto res = std::array<size_t, Sigma+1>{};
     for (auto c : s) {
         res[c+1] += 1;

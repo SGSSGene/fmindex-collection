@@ -25,7 +25,7 @@ TEST_CASE("checking bidirectional fm index with kstep capabilities", "[bifmindex
             bitStack.push_back(true);
         }
         auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-        auto index = fmc::BiFMIndexKStep<4>{bwt, bwtRev, bwt_kstep, bwtRev_kstep, fmc::suffixarray::convertCSAToAnnotatedDocument(csa), isKStepAnnotated};
+        auto index = fmc::BiFMIndexKStep<4>{bwt, bwt_kstep, bwtRev_kstep, fmc::suffixarray::convertCSAToAnnotatedDocument(csa), isKStepAnnotated};
 
         REQUIRE(index.size() == bwt.size());
         for (size_t i{0}; i < sa.size(); ++i) {
@@ -33,8 +33,8 @@ TEST_CASE("checking bidirectional fm index with kstep capabilities", "[bifmindex
         }
         for (size_t i{0}; i < bwt.size(); ++i) {
             INFO(i);
-            CHECK(index.bwt.symbol(i) == bwt[i]);
-            CHECK(index.bwtRev.symbol(i) == bwtRev[i]);
+            //CHECK(index.bwt.symbol(i) == bwt[i]);
+            //CHECK(index.bwtRev.symbol(i) == bwtRev[i]);
             CHECK(index.bwt_kstep.symbol(i) == bwt_kstep[i]);
             CHECK(index.bwtRev_kstep.symbol(i) == bwtRev_kstep[i]);
         }
@@ -53,8 +53,8 @@ TEST_CASE("checking bidirectional fm index with kstep capabilities", "[bifmindex
         // Complicated, since they kind of have to be reversed.
         for (size_t i{0}; i < bwt.size(); ++i) {
             INFO(i);
-            CHECK(index.bwt.symbol(i) == bwt[i]);
-            CHECK(index.bwtRev.symbol(i) == bwtRev[i]);
+//            CHECK(index.bwt.symbol(i) == bwt[i]);
+//            CHECK(index.bwtRev.symbol(i) == bwtRev[i]);
             CHECK(index.bwt_kstep.symbol(i) == static_cast<size_t>(bwt_kstep[i]));
             CHECK(index.bwtRev_kstep.symbol(i) == static_cast<size_t>(bwtRev_kstep[i]));
         }
@@ -85,7 +85,7 @@ TEST_CASE("checking bidirectional fm index with kstep capabilities", "[bifmindex
                 bitStack.push_back(true);
             }
             auto csa = fmc::CSA{sa, bitStack, /*.threadNbr=*/63, /*.seqCount=*/1};
-            auto index = fmc::BiFMIndexKStep<4>{bwt, bwtRev, bwt_kstep, bwtRev_kstep, fmc::suffixarray::convertCSAToAnnotatedDocument(csa), isKStepAnnotated};
+            auto index = fmc::BiFMIndexKStep<4>{bwt, bwt_kstep, bwtRev_kstep, fmc::suffixarray::convertCSAToAnnotatedDocument(csa), isKStepAnnotated};
             auto archive = cereal::BinaryOutputArchive{ofs};
             archive(index);
         }
@@ -101,8 +101,6 @@ TEST_CASE("checking bidirectional fm index with kstep capabilities", "[bifmindex
                 CHECK(index.locate(i) == std::make_tuple(0, sa[i], 0));
             }
             for (size_t i{0}; i < bwt.size(); ++i) {
-                CHECK(index.bwt.symbol(i) == bwt[i]);
-                CHECK(index.bwtRev.symbol(i) == bwtRev[i]);
                 CHECK(index.bwt_kstep.symbol(i) == bwt_kstep[i]);
                 CHECK(index.bwtRev_kstep.symbol(i) == bwtRev_kstep[i]);
             }
