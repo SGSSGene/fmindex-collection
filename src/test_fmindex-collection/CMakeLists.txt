@@ -20,6 +20,7 @@ add_executable(${PROJECT_NAME}
     checkDenseMultiVector.cpp
     checkTernarylogic.cpp
     fmindex/benchmark_fmindex.cpp
+    fmindex/benchmark_extend_left.4.cpp
     fmindex/checkBiFMIndex.cpp
     fmindex/checkBiFMIndexKStep.cpp
     fmindex/checkBiFMIndexCursor.cpp
@@ -69,6 +70,8 @@ add_executable(${PROJECT_NAME}
     string/benchmark_alphabet_4096.cpp
     string/benchmark_alphabet_16384.cpp
     string/benchmark_alphabet_65536.cpp
+    string/benchmark_rank.4.cpp
+    string/test_dual_limit.cpp
     string/unittest.cpp
     sparsearray/benchmark.cpp
     suffixarray/checkCSA.cpp
