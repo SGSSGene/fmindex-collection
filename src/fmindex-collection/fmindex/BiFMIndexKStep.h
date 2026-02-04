@@ -46,22 +46,15 @@ struct BiFMIndexKStep {
     static bool constexpr ReuseRev_v  = TReuseRev;
 
     static size_t constexpr KStep = TKStep;
-    static size_t constexpr SigmaKStep = my_pow_base<Sigma>(KStep);
+
+    static constexpr auto bitct = std::bit_width(TSigma-1);
+    static size_t constexpr SigmaKStep = size_t{1}<<(bitct*KStep);
 
     using String = TString<Sigma>;
     using StringKStep = TString<SigmaKStep>;
 
-    // Set RevBwtType to std::nullptr_t to indicate that it should not be used
-    using RevBwtType = std::conditional_t<TReuseRev, std::nullptr_t, String>;
     using RevBwtKStepType = std::conditional_t<TReuseRev, std::nullptr_t, StringKStep>;
-    static_assert(
-        std::same_as<RevBwtType, std::nullptr_t> == std::same_as<RevBwtKStepType, std::nullptr_t>
-        , "either RevBWTType and RevBwtKStepType have nullptr_t or none"
-    );
 
-
-    String bwt;
-    RevBwtType bwtRev;
     StringKStep bwt_kstep;
     RevBwtKStepType bwtRev_kstep;
 
@@ -115,38 +108,32 @@ struct BiFMIndexKStep {
 
     BiFMIndexKStep(
         std::span<uint8_t const> _bwt,
-        std::span<uint8_t const> _bwtRev,
         std::span<uint8_t const> _bwt_kstep,
         std::span<uint8_t const> _bwtRev_kstep,
         SparseArray _annotatedArray,
         VectorBool _annotatedArrayIsKStep)
 
         requires(!TReuseRev)
-        : bwt{_bwt}
-        , bwtRev{_bwtRev}
-        , bwt_kstep{_bwt_kstep}
+        : bwt_kstep{_bwt_kstep}
         , bwtRev_kstep{_bwtRev_kstep}
-        , C{computeC(bwt)}
+        , C{computeCSpan<Sigma>(_bwt)} //!TODO this should be possible with some smart call to bwt_kstep
         , C_kstep{computeC(bwtRev_kstep)}
         , CRev_kstep{computeC(bwt_kstep)}
         , annotatedArray{std::move(_annotatedArray)}
         , annotatedArrayIsKStep{std::move(_annotatedArrayIsKStep)}
     {
-        assert(bwt.size() == bwtRev.size());
         if (
-            bwt.size() != bwtRev.size()
-            || bwt.size() != bwt_kstep.size()
-            || bwt.size() != bwtRev_kstep.size()
+            _bwt.size() == bwtRev_kstep.size()
+            || _bwt.size() == bwt_kstep.size()
         ) {
-            throw std::runtime_error("bwt don't have the same size: " + std::to_string(bwt.size()) + " " + std::to_string(bwtRev.size()));
+            throw std::runtime_error{"bwt don't have the same size: " + std::to_string(_bwt.size()) + " " + std::to_string(bwtRev_kstep.size()) + " " + std::to_string(bwt_kstep.size())};
         }
     }
 
     BiFMIndexKStep(std::span<uint8_t const> _bwt, std::span<uint8_t const> _bwt_kstep, SparseArray _annotatedArray, VectorBool _annotatedArrayIsKStep)
         requires(TReuseRev)
-        : bwt{_bwt}
-        , bwt_kstep{_bwt_kstep}
-        , C{computeC(bwt)}
+        : bwt_kstep{_bwt_kstep}
+        , C{computeCSpan<Sigma>(_bwt)}
         , C_kstep{computeC(bwt_kstep)}
         , annotatedArray{std::move(_annotatedArray)}
         , annotatedArrayIsKStep{std::move(_annotatedArrayIsKStep)}
@@ -185,14 +172,12 @@ struct BiFMIndexKStep {
             #endif
             auto [_bwtRev, _bwtRev_kstep] = createBWTKStep<KStep, Sigma>(inputText, _threadNbr, omegaSorting);
             decltype(inputText){}.swap(inputText); // inputText memory can be deleted
-            bwtRev       = {_bwtRev};
             bwtRev_kstep = {_bwtRev_kstep};
         }
 
         // initialize this BiFMIndex properly
-        bwt = {_bwt};
         bwt_kstep = {_bwt_kstep};
-        C = computeC(bwt);
+        C = computeCSpan<Sigma>(_bwt);//!TODO
 
         if constexpr (!TReuseRev) {
             C_kstep = computeC(bwtRev_kstep);
@@ -318,15 +303,15 @@ struct BiFMIndexKStep {
     auto operator=(BiFMIndexKStep&& _other) noexcept -> BiFMIndexKStep& = default;
 
     size_t size() const {
-        return bwt.size();
+        return bwt_kstep.size();
     }
 
     using LEntry = decltype(std::tuple_cat(DocumentEntries{}, std::tuple<size_t>{}));
     auto locate(size_t idx) const -> LEntry {
         uint64_t steps{};
         while (!annotatedArrayIsKStep[idx]) {
-            auto symb = bwt.symbol(idx);
-            idx = bwt.rank(idx, symb) + C[symb];
+            auto symb = bwt_kstep.template symbol_limit<bitct>(idx);
+            idx = bwt_kstep.template rank_limit<bitct>(idx, symb) + C[symb];
             steps += 1;
         }
 
@@ -342,10 +327,10 @@ struct BiFMIndexKStep {
 
     template <typename Archive>
     void serialize(this auto&& self, Archive& ar) {
-        ar(self.bwt, self.bwt_kstep, self.C, self.C_kstep, self.annotatedArray, self.annotatedArrayIsKStep);
+        ar(/*self.bwt, */self.bwt_kstep, self.C, self.C_kstep, self.annotatedArray, self.annotatedArrayIsKStep);
 
-        if constexpr (!std::same_as<RevBwtType, std::nullptr_t>) {
-            ar(self.bwtRev);
+        if constexpr (!std::same_as<RevBwtKStepType, std::nullptr_t>) {
+            /*ar(self.bwtRev);*/
             ar(self.bwtRev_kstep);
             ar(self.CRev_kstep);
         }
