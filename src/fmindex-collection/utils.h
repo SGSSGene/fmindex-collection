@@ -205,6 +205,18 @@ auto computeC(String const& s) -> std::array<size_t, String::Sigma+1> {
     return res;
 }
 
+template <size_t Sigma>
+auto computeCSpan(std::span<uint8_t> const& s) -> std::array<size_t, Sigma+1> {
+    auto res = std::array<size_t, Sigma+1>{};
+    for (auto c : s) {
+        res[c+1] += 1;
+    };
+    for (size_t i{1}; i < Sigma+1; ++i) {
+        res[i] = res[i] + res[i-1];
+    }
+    return res;
+}
+
 template <typename SparseArray>
 auto createBWTAndAnnotatedArray(std::span<uint8_t const> inputText, SparseArray const& _annotatedSequence, size_t _threadNbr, bool _omegaSorting) {
     auto f = [&]<typename word_t>() {
