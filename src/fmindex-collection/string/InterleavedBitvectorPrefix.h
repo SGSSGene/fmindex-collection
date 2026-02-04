@@ -12,6 +12,9 @@ namespace fmc::string {
 
 template <size_t TSigma, uint64_t TAlignment, typename block_t>
 struct InterleavedBitvectorPrefix {
+    // number of full length bit vectors needed `2^bitct > TSigma`
+    static constexpr auto bitct = std::bit_width(TSigma-1);
+
     struct alignas(TAlignment) Block {
         std::array<block_t, TSigma> blocks{};
         std::array<uint64_t, TSigma> bits{};
@@ -35,6 +38,13 @@ struct InterleavedBitvectorPrefix {
             auto bitset = std::bitset<64>(bits[symb] << (63-idx));
             return blocks[symb] + bitset.count();
         }
+
+        template <size_t L>
+        uint64_t prefix_rank_limit(uint64_t idx, uint64_t symb) const {
+            auto bitset = std::bitset<64>(bits[symb] << (63-idx));
+            return blocks[symb] + bitset.count();
+        }
+
 
         uint64_t symbol(uint64_t idx) const {
             auto bit = (1ull << idx);
@@ -122,6 +132,13 @@ struct InterleavedBitvectorPrefix {
         return r;
     }
 
+    template <size_t L>
+    uint64_t rank_limit(uint64_t idx, uint64_t symb) const {
+        auto pr0 = prefix_rank_limit<L>(idx, symb);
+        auto pr1 = prefix_rank_limit<L>(idx, symb+1);
+        return pr1 - pr0;
+    }
+
     uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
         if (symb == 0) return 0;
         symb -= 1;
@@ -130,6 +147,32 @@ struct InterleavedBitvectorPrefix {
         auto bitId        = idx &  63;
         return blocks[blockId].prefix_rank(bitId, symb) + superBlocks[superBlockId][symb];
     }
+
+    template <size_t L>
+    uint64_t prefix_rank_limit(uint64_t idx, uint64_t symb) const {
+        if (symb == 0) return 0;
+        symb = symb*(size_t{1}<<(bitct-L));
+        symb -= 1;
+        auto blockId      = idx >>  6;
+        auto superBlockId = idx >> block_size;
+        auto bitId        = idx &  63;
+        return blocks[blockId].template prefix_rank_limit<L>(bitId, symb) + superBlocks[superBlockId][symb];
+    }
+
+
+    auto prefix_rank_and_rank(uint64_t idx, uint64_t symb) const -> std::tuple<size_t, size_t> {
+        auto pr0 = prefix_rank(idx, symb);
+        auto pr1 = prefix_rank(idx, symb+1);
+        return {pr0, pr1-pr0};
+    }
+
+    template <size_t L>
+    auto prefix_rank_and_rank_limit(uint64_t idx, uint64_t symb) const -> std::tuple<size_t, size_t> {
+        auto pr0 = prefix_rank_limit<L>(idx, symb);
+        auto pr1 = prefix_rank_limit<L>(idx, symb+1);
+        return {pr0, pr1-pr0};
+    }
+
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
         auto res = std::array<uint64_t, TSigma>{};
