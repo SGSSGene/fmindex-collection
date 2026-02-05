@@ -123,8 +123,8 @@ struct BiFMIndexKStep {
         , annotatedArrayIsKStep{std::move(_annotatedArrayIsKStep)}
     {
         if (
-            _bwt.size() == bwtRev_kstep.size()
-            || _bwt.size() == bwt_kstep.size()
+            _bwt.size() != bwtRev_kstep.size()
+            || _bwt.size() != bwt_kstep.size()
         ) {
             throw std::runtime_error{"bwt don't have the same size: " + std::to_string(_bwt.size()) + " " + std::to_string(bwtRev_kstep.size()) + " " + std::to_string(bwt_kstep.size())};
         }
