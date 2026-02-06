@@ -5,7 +5,7 @@
 
 #include <fmindex-collection/string/PairedFlattenedBitvectors2L_b.h>
 
-TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string][dual_limit]") {
+TEST_CASE("check if rank on strings with 'dual_limit' functions work", "[string][dual_limit]") {
     size_t const Sigma = 4;
     auto input1 = std::vector<uint8_t>{
         0, 1, 2, 3
@@ -17,7 +17,7 @@ TEST_CASE("check if rank on the symbol vectors is working, all sizes", "[string]
         }
     }*/
 
-    auto const& input2 = generateText<0, 16>();
+    auto input2 = generateText<0, 16>(1000);
 
     auto p = fmc::string::PairedFlattenedBitvectors2L_b<16, 2, 512, 65536>{input2};
 //    auto p2 = fmc::string::PairedFlattenedBitvectors2L<16, 512, 65536>{input2};
