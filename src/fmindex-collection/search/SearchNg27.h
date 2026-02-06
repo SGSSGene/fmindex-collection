@@ -323,17 +323,17 @@ struct Search {
     {
         char const TInfo = state.Right ? state.RInfo : state.LInfo;
 
-        bool const Deletion     = (TInfo != 'S' && TInfo != 'I') && Edit && false;
-        bool const Insertion    = (TInfo != 'S' && TInfo != 'D') && Edit && false;
+        //bool const Deletion     = (TInfo != 'S' && TInfo != 'I') && Edit && false;
+        //bool const Insertion    = (TInfo != 'S' && TInfo != 'D') && Edit && false;
 
         char const OnMatchL      = state.Right ? state.LInfo : 'M';
         char const OnMatchR      = state.Right ? 'M'   : state.RInfo;
         char const OnSubstituteL = state.Right ? state.LInfo : 'S';
         char const OnSubstituteR = state.Right ? 'S'   : state.RInfo;
-        char const OnDeletionL   = state.Right ? state.LInfo : 'D';
-        char const OnDeletionR   = state.Right ? 'D'   : state.RInfo;
-        char const OnInsertionL  = state.Right ? state.LInfo : 'I';
-        char const OnInsertionR  = state.Right ? 'I'   : state.RInfo;
+        //char const OnDeletionL   = state.Right ? state.LInfo : 'D';
+        //char const OnDeletionR   = state.Right ? 'D'   : state.RInfo;
+        //char const OnInsertionL  = state.Right ? state.LInfo : 'I';
+        //char const OnInsertionR  = state.Right ? 'I'   : state.RInfo;
 
         uint8_t constexpr static KStep = index_t::KStep;
 

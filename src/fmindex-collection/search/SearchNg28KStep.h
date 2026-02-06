@@ -101,7 +101,7 @@ struct Search {
         auto ub = search.u[node.part];
 
         auto const tinfo        = node.side[node.dir].info;
-        bool const matchAllowed = (!Edit && (node.partitionPart > 0 || lb <= node.e)
+        bool const matchAllowed = ((!Edit && (node.partitionPart > 0 || lb <= node.e))
                                     || (Edit && lb <= node.e + node.partitionPart))
                                  and node.e <= ub
                                  and (tinfo != 'I' or nextSymb != node.side[node.dir].lastQRank)
@@ -114,7 +114,7 @@ struct Search {
         auto ub = search.u[node.part];
 
         auto const tinfo        = node.side[node.dir].info;
-        bool const matchAllowed = (!Edit && (node.partitionPart > 0 || lb <= node.e)
+        bool const matchAllowed = ((!Edit && (node.partitionPart > 0 || lb <= node.e))
                                     || (Edit && lb <= node.e + node.partitionPart))
                                  and node.e <= ub;
         return matchAllowed;

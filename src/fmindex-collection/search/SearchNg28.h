@@ -97,7 +97,7 @@ struct Search {
     }
     auto computeMatchCase(size_t nextSymb) const {
         auto const tinfo        = side->info;
-        bool const matchAllowed = (!Edit && (partitionPart > 1 || lb <= e)
+        bool const matchAllowed = ((!Edit && (partitionPart > 1 || lb <= e))
                                     || (Edit && lb <= e + partitionPart-1))
                                  and e <= ub
                                  and (tinfo != 'I' or nextSymb != side->lastQRank)
