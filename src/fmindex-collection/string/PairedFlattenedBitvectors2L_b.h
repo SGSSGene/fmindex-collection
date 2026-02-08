@@ -380,12 +380,12 @@ public:
         return r;
     }
 
-    auto prefix_rank_and_rank(uint64_t idx, uint64_t symb) const -> std::tuple<size_t, size_t> {
+    auto prefix_rank_and_rank(uint64_t idx, uint64_t symb) const -> std::tuple<uint64_t, uint64_t> {
         return prefix_rank_and_rank_limit<bitct>(idx, symb);
     }
 
     template <size_t L2 = L>
-    auto prefix_rank_and_rank_limit(uint64_t idx, uint64_t symb) const -> std::tuple<size_t, size_t> {
+    auto prefix_rank_and_rank_limit(uint64_t idx, uint64_t symb) const -> std::tuple<uint64_t, uint64_t> {
         /*auto pr0 = prefix_rank_limit<L2>(idx, symb);
         auto pr1 = prefix_rank_limit<L2>(idx, symb+1);
         return {pr0, pr1 - pr0};*/

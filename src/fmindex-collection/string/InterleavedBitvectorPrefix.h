@@ -165,14 +165,14 @@ struct InterleavedBitvectorPrefix {
     }
 
 
-    auto prefix_rank_and_rank(uint64_t idx, uint64_t symb) const -> std::tuple<size_t, size_t> {
+    auto prefix_rank_and_rank(uint64_t idx, uint64_t symb) const -> std::tuple<uint64_t, uint64_t> {
         auto pr0 = prefix_rank(idx, symb);
         auto pr1 = prefix_rank(idx, symb+1);
         return {pr0, pr1-pr0};
     }
 
     template <size_t L>
-    auto prefix_rank_and_rank_limit(uint64_t idx, uint64_t symb) const -> std::tuple<size_t, size_t> {
+    auto prefix_rank_and_rank_limit(uint64_t idx, uint64_t symb) const -> std::tuple<uint64_t, uint64_t> {
         auto pr0 = prefix_rank_limit<L>(idx, symb);
         auto pr1 = prefix_rank_limit<L>(idx, symb+1);
         return {pr0, pr1-pr0};
