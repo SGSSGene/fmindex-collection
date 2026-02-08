@@ -4,6 +4,7 @@
 
 #include "concepts.h"
 
+#include <bit>
 #include <ranges>
 
 /** Takes a normal string that fulfills String_c concept
