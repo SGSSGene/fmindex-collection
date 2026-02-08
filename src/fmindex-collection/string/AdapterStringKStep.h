@@ -75,7 +75,7 @@ struct AdapterStringKStep {
     }
 
     template <size_t L2 = TL>
-    auto prefix_rank_and_rank_limit(size_t idx, uint64_t symb) const -> std::tuple<size_t, size_t> {
+    auto prefix_rank_and_rank_limit(size_t idx, uint64_t symb) const -> std::tuple<uint64_t, uint64_t> {
         static_assert(L2 == TL, "Only works for L same as L2");
         auto r  = string_limit.rank(idx, symb);
         auto pr = string_limit.prefix_rank(idx, symb);
