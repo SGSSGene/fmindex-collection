@@ -59,6 +59,12 @@ TEST_CASE("checking bidirectional fm index with kstep capabilities", "[bifmindex
             CHECK(index.bwtRev_kstep.symbol(i) == static_cast<size_t>(bwtRev_kstep[i]));
         }
     }
+    SECTION("check creation for InterleavedBitvectorPrefix16") {
+        auto text = std::vector<std::vector<uint8_t>>{
+            { 3, 1, 2, 1, 2, 1, 1, 3, 2}
+        };
+        auto index = fmc::BiFMIndexKStep<4, fmc::string::InterleavedBitvectorPrefix16>{text, /*.samplingRate=*/1, /*.threadNbr=*/1};
+    }
 
     SECTION("sa with only every third value given - text sampled") {
         auto text = std::vector<std::vector<uint8_t>>{

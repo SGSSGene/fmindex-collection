@@ -65,10 +65,14 @@ struct InterleavedBitvectorPrefix {
     size_t totalLength{};
 
     InterleavedBitvectorPrefix() = default;
-    InterleavedBitvectorPrefix(std::span<uint8_t const> _symbols) {
-        totalLength = _symbols.size();
-        auto length = _symbols.size();
-        blocks.reserve(length/64+2);
+
+    template <std::ranges::range range_t>
+        requires std::convertible_to<std::ranges::range_value_t<range_t>, uint64_t>
+    InterleavedBitvectorPrefix(range_t&& _symbols) {
+
+        if constexpr (requires() { _symbols.size(); }) {
+            blocks.reserve(_symbols.size()/64+2);
+        }
 
         blocks.emplace_back();
         superBlocks.emplace_back();
@@ -76,19 +80,18 @@ struct InterleavedBitvectorPrefix {
         auto sblock_acc = std::array<uint64_t, TSigma>{0};
         auto block_acc = std::array<block_t, TSigma>{0};
 
-        for (uint64_t size{1}; size <= length; ++size) {
-            if (size % (1ull<<block_size) == 0) { // new super block + new block
+        for (auto _symb : _symbols) {
+            totalLength += 1;
+            if (totalLength % (1ull<<block_size) == 0) { // new super block + new block
                 superBlocks.emplace_back(sblock_acc);
                 blocks.emplace_back();
                 block_acc = {};
-            } else if (size % 64 == 0) { // new block
+            } else if (totalLength % 64 == 0) { // new block
                 blocks.emplace_back();
                 blocks.back().blocks = block_acc;
             }
-            auto blockId      = size >>  6;
-            auto bitId        = size &  63;
-
-            auto _symb = _symbols[size-1];
+            auto blockId      = totalLength >>  6;
+            auto bitId        = totalLength &  63;
 
             for (size_t symb{_symb}; symb < Sigma; ++symb) {
                 auto& bits = blocks[blockId].bits[symb];
