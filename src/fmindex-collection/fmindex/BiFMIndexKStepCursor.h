@@ -160,9 +160,13 @@ struct BiFMIndexKStepCursor {
     }
     auto extendRight(size_t symb) const -> BiFMIndexKStepCursor {
         auto const& bwt = fetchRightBwtKStep();
-        size_t newLb    = lb + bwt.template prefix_rank_limit<bitct>(lbRev+len, symb) - bwt.template prefix_rank_limit<bitct>(lbRev, symb);
-        size_t newLbRev = bwt.template rank_limit<bitct>(lbRev, symb);
-        size_t newLen   = bwt.template rank_limit<bitct>(lbRev+len, symb) - newLbRev;
+
+        auto [lb_pr, lb_r] = bwt.template prefix_rank_and_rank_limit<bitct>(lbRev, symb);
+        auto [rb_pr, rb_r] = bwt.template prefix_rank_and_rank_limit<bitct>(lbRev+len, symb);
+
+        size_t newLbRev = lb_r;
+        size_t newLb    = lb + rb_pr - lb_pr;
+        size_t newLen   = rb_r - newLbRev;
         auto newCursor = BiFMIndexKStepCursor{*index, newLb, newLbRev + index->C[symb], newLen, steps+1};
         return newCursor;
     }

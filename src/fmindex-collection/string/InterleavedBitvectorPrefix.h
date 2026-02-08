@@ -40,13 +40,6 @@ struct InterleavedBitvectorPrefix {
             return blocks[symb] + bitset.count();
         }
 
-        template <size_t L>
-        uint64_t prefix_rank_limit(uint64_t idx, uint64_t symb) const {
-            auto bitset = std::bitset<64>(bits[symb] << (63-idx));
-            return blocks[symb] + bitset.count();
-        }
-
-
         uint64_t symbol(uint64_t idx) const {
             auto bit = (1ull << idx);
             for (uint64_t symb{0}; symb < TSigma-1; ++symb) {
@@ -122,6 +115,14 @@ struct InterleavedBitvectorPrefix {
         return blocks[blockId].symbol(bitId);
     }
 
+    template <size_t L>
+    uint8_t symbol_limit(uint64_t idx) const {
+        idx += 1;
+        auto blockId      = idx >>  6;
+        auto bitId        = idx &  63;
+        return blocks[blockId].template symbol_limit<L>(bitId);
+    }
+
     uint64_t rank(uint64_t idx, uint64_t symb) const {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> block_size;
@@ -157,7 +158,7 @@ struct InterleavedBitvectorPrefix {
         auto blockId      = idx >>  6;
         auto superBlockId = idx >> block_size;
         auto bitId        = idx &  63;
-        return blocks[blockId].template prefix_rank_limit<L>(bitId, symb) + superBlocks[superBlockId][symb];
+        return blocks[blockId].prefix_rank(bitId, symb) + superBlocks[superBlockId][symb];
     }
 
 

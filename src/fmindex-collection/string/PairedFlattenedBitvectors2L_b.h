@@ -10,7 +10,6 @@
 #include "concepts.h"
 #include "utils.h"
 
-
 #include <bit>
 #include <limits>
 #include <vector>
@@ -19,9 +18,7 @@
 #include <cereal/types/bitset.hpp>
 #endif
 
-
 namespace fmc::string {
-
 
 template <size_t TSigma, size_t L, size_t l1_bits_ct, size_t l0_bits_ct, bool Align=true>
 struct PairedFlattenedBitvectors2L_b {
@@ -517,12 +514,12 @@ template <size_t Sigma> using PairedFlattenedBitvectors_b_512_4k  = PairedFlatte
 template <size_t Sigma> using PairedFlattenedBitvectors_b_1024_4k = PairedFlattenedBitvectors2L_b<Sigma, 2, 1024, 4096>;
 template <size_t Sigma> using PairedFlattenedBitvectors_b_2048_4k = PairedFlattenedBitvectors2L_b<Sigma, 2, 2048, 4096>;
 
-static_assert(checkString_c<PairedFlattenedBitvectors_b_64_4k>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_128_4k>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_256_4k>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_512_4k>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_1024_4k>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_2048_4k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_64_4k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_128_4k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_256_4k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_512_4k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_1024_4k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_2048_4k>);
 
 template <size_t Sigma> using PairedFlattenedBitvectors_b_64_64k   = PairedFlattenedBitvectors2L_b<Sigma, 2, 64, 65536>;
 template <size_t Sigma> using PairedFlattenedBitvectors_b_128_64k  = PairedFlattenedBitvectors2L_b<Sigma, 2, 128, 65536>;
@@ -532,13 +529,13 @@ template <size_t Sigma> using PairedFlattenedBitvectors_b_1024_64k = PairedFlatt
 template <size_t Sigma> using PairedFlattenedBitvectors_b_2048_64k = PairedFlattenedBitvectors2L_b<Sigma, 2, 2048, 65536>;
 template <size_t Sigma> using PairedFlattenedBitvectors_b_4096_64k = PairedFlattenedBitvectors2L_b<Sigma, 2, 4096, 65536>;
 
-static_assert(checkString_c<PairedFlattenedBitvectors_b_64_64k>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_128_64k>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_256_64k>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_512_64k>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_1024_64k>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_2048_64k>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_4096_64k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_64_64k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_128_64k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_256_64k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_512_64k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_1024_64k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_2048_64k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_4096_64k>);
 
 template <size_t Sigma> using PairedFlattenedBitvectors_b_64_64kUA   = PairedFlattenedBitvectors2L_b<Sigma, 2, 64, 65536, false>;
 template <size_t Sigma> using PairedFlattenedBitvectors_b_128_64kUA  = PairedFlattenedBitvectors2L_b<Sigma, 2, 128, 65536, false>;
@@ -548,12 +545,12 @@ template <size_t Sigma> using PairedFlattenedBitvectors_b_1024_64kUA = PairedFla
 template <size_t Sigma> using PairedFlattenedBitvectors_b_2048_64kUA = PairedFlattenedBitvectors2L_b<Sigma, 2, 2048, 65536, false>;
 template <size_t Sigma> using PairedFlattenedBitvectors_b_4096_64kUA = PairedFlattenedBitvectors2L_b<Sigma, 2, 4096, 65536, false>;
 
-static_assert(checkString_c<PairedFlattenedBitvectors_b_64_64kUA>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_128_64kUA>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_256_64kUA>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_512_64kUA>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_1024_64kUA>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_2048_64kUA>);
-static_assert(checkString_c<PairedFlattenedBitvectors_b_4096_64kUA>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_64_64kUA>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_128_64kUA>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_256_64kUA>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_512_64kUA>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_1024_64kUA>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_2048_64kUA>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_4096_64kUA>);
 
 }

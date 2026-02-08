@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../string/PairedFlattenedBitvectors2L_b.h"
+#include "../string/AdapterStringKStep.h"
 #include "../string/concepts.h"
 #include "../suffixarray/SparseArray.h"
 #include "../suffixarray/utils.h"
@@ -50,8 +51,13 @@ struct BiFMIndexKStep {
     static constexpr auto bitct = std::bit_width(TSigma-1);
     static size_t constexpr SigmaKStep = size_t{1}<<(bitct*KStep);
 
-    using String = TString<Sigma>;
-    using StringKStep = TString<SigmaKStep>;
+    // If String class does not fulfill StringKStep_c concept, wrap it in
+    // AdapterStringKStep such that it does.
+    using StringKStep = std::conditional_t<
+        StringKStep_c<TString<SigmaKStep>>,
+        TString<SigmaKStep>,
+        fmc::string::AdapterStringKStep<SigmaKStep, bitct, TString>
+    >;
 
     using RevBwtKStepType = std::conditional_t<TReuseRev, std::nullptr_t, StringKStep>;
 

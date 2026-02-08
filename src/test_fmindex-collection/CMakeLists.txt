@@ -72,6 +72,7 @@ add_executable(${PROJECT_NAME}
     string/benchmark_alphabet_65536.cpp
     string/benchmark_rank.4.cpp
     string/test_dual_limit.cpp
+    string/test_string_limit.cpp
     string/unittest.cpp
     sparsearray/benchmark.cpp
     suffixarray/checkCSA.cpp
