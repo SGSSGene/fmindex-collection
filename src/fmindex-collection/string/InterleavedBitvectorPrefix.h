@@ -118,7 +118,7 @@ struct InterleavedBitvectorPrefix {
         return blocks[blockId].symbol(bitId);
     }
 
-    template <size_t L>
+    template <size_t L = 2>
     uint8_t symbol_limit(uint64_t idx) const {
         idx += 1;
         auto blockId      = idx >>  6;
@@ -137,7 +137,7 @@ struct InterleavedBitvectorPrefix {
         return r;
     }
 
-    template <size_t L>
+    template <size_t L = 2>
     uint64_t rank_limit(uint64_t idx, uint64_t symb) const {
         auto pr0 = prefix_rank_limit<L>(idx, symb);
         auto pr1 = prefix_rank_limit<L>(idx, symb+1);
@@ -153,7 +153,7 @@ struct InterleavedBitvectorPrefix {
         return blocks[blockId].prefix_rank(bitId, symb) + superBlocks[superBlockId][symb];
     }
 
-    template <size_t L>
+    template <size_t L = 2>
     uint64_t prefix_rank_limit(uint64_t idx, uint64_t symb) const {
         if (symb == 0) return 0;
         symb = symb*(size_t{1}<<(bitct-L));
@@ -171,7 +171,7 @@ struct InterleavedBitvectorPrefix {
         return {pr0, pr1-pr0};
     }
 
-    template <size_t L>
+    template <size_t L = 2>
     auto prefix_rank_and_rank_limit(uint64_t idx, uint64_t symb) const -> std::tuple<uint64_t, uint64_t> {
         auto pr0 = prefix_rank_limit<L>(idx, symb);
         auto pr1 = prefix_rank_limit<L>(idx, symb+1);
@@ -212,11 +212,11 @@ template <size_t TSigma> using InterleavedBitvectorPrefix16Aligned = Interleaved
 template <size_t TSigma> using InterleavedBitvectorPrefix32Aligned = InterleavedBitvectorPrefix<TSigma, 64, uint32_t>;
 
 
-static_assert(checkString_c<InterleavedBitvectorPrefix8>);
-static_assert(checkString_c<InterleavedBitvectorPrefix16>);
-static_assert(checkString_c<InterleavedBitvectorPrefix32>);
-static_assert(checkString_c<InterleavedBitvectorPrefix8Aligned>);
-static_assert(checkString_c<InterleavedBitvectorPrefix16Aligned>);
-static_assert(checkString_c<InterleavedBitvectorPrefix32Aligned>);
+static_assert(checkStringKStep_c<InterleavedBitvectorPrefix8>);
+static_assert(checkStringKStep_c<InterleavedBitvectorPrefix16>);
+static_assert(checkStringKStep_c<InterleavedBitvectorPrefix32>);
+static_assert(checkStringKStep_c<InterleavedBitvectorPrefix8Aligned>);
+static_assert(checkStringKStep_c<InterleavedBitvectorPrefix16Aligned>);
+static_assert(checkStringKStep_c<InterleavedBitvectorPrefix32Aligned>);
 
 }
