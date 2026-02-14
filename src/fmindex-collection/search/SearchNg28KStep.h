@@ -9,18 +9,29 @@
 #include <array>
 #include <cstddef>
 
-#define opt1 0
-#define opt1_1r 0
-#define opt2 0 // not available for == 2
-#define opt3 0 // not available for == 1
+//#define opt1 1
+//#define opt1_1r 0
+//#define opt2 0
+//#define opt3 0 // not available for == 1
 /**
  * like search_ng28 but:
  *  - optimized for KStep approach
  */
 namespace fmc::search_ng28_kstep {
 
-template <bool Edit, typename index_t, typename query_t, typename search_t, typename report_t>
+struct Optimizations {
+    size_t opt1{2};
+    bool opt1_1r{true};
+    size_t opt2{2};
+    size_t opt3{2};
+};
+
+template <bool Edit, typename index_t, typename query_t, typename search_t, typename report_t, Optimizations OPT>
 struct Search {
+    static_assert(OPT.opt1 == 0 || OPT.opt1 == 1 || OPT.opt1 == 2);
+    static_assert(OPT.opt2 == 0 || OPT.opt2 == 1 || OPT.opt2 == 2);
+    static_assert(OPT.opt3 == 0 || OPT.opt3 == 2);
+
     constexpr static size_t Sigma = index_t::Sigma;
     constexpr static size_t FirstSymb = []() -> size_t {
         if constexpr (requires() { { index_t::FirstSymb }; }) {
@@ -187,94 +198,95 @@ struct Search {
             auto dirStep = node.dir == dir_t::Right?1:-1;
 
             // Optimization: if no errors are allowed, extend cursor directly
-            #if opt1 > 0
-            auto nextSymb = This->query[node.side[node.dir].queryPos];
-            auto noErrors = This->computeNoErrors(node, nextSymb);
-            if (noErrors) {
-                auto& side = node.side[node.dir];
-                auto newCur = cur;
-                auto loops = node.partitionPart;
-                auto dir = node.dir;
-                for (size_t i{0}; i < loops; ++i) {
-                    auto pos = side.queryPos + i*dirStep;
-                    nextSymb = This->query[pos];
+            if constexpr (OPT.opt1 > 0) {
+                auto nextSymb = This->query[node.side[node.dir].queryPos];
+                auto noErrors = This->computeNoErrors(node, nextSymb);
+                if (noErrors) {
+                    auto& side = node.side[node.dir];
+                    auto newCur = cur;
+                    auto loops = node.partitionPart;
+                    auto dir = node.dir;
+                    for (size_t i{0}; i < loops; ++i) {
+                        auto pos = side.queryPos + i*dirStep;
+                        nextSymb = This->query[pos];
 
-                    // Optimization: if no errors and only a single row is available
-                    #if opt1_1r > 0
-                    if (newCur.count() == 1) {
-                        auto s = (dir == dir_t::Right)?newCur.symbolRight():newCur.symbolLeft();
-                        if (s != nextSymb) return false;
-                        if constexpr (requires() { { newCur.extendRightBySymbol(nextSymb) }; }) {
-                            newCur = (dir == dir_t::Right)?newCur.extendRightBySymbol(nextSymb):newCur.extendLeftBySymbol(nextSymb);
+                        // Optimization: if no errors and only a single row is available
+                        if constexpr (OPT.opt1_1r) {
+                            if (newCur.count() == 1) {
+                                auto s = (dir == dir_t::Right)?newCur.symbolRight():newCur.symbolLeft();
+                                if (s != nextSymb) return false;
+                                if constexpr (requires() { { newCur.extendRightBySymbol(nextSymb) }; }) {
+                                    newCur = (dir == dir_t::Right)?newCur.extendRightBySymbol(nextSymb):newCur.extendLeftBySymbol(nextSymb);
+                                } else {
+                                    newCur = (dir == dir_t::Right)?newCur.extendRight(nextSymb):newCur.extendLeft(nextSymb);
+                                }
+                            } else {
+                                newCur = This->extend(newCur, nextSymb, dir);
+                            }
                         } else {
-                            newCur = (dir == dir_t::Right)?newCur.extendRight(nextSymb):newCur.extendLeft(nextSymb);
+                            newCur = This->extend(newCur, nextSymb, dir);
                         }
-                    } else {
-                        newCur = This->extend(newCur, nextSymb, dir);
+                        if (newCur.count() == 0) return false; // early abort, if results are empty
                     }
-                    #else
-                    newCur = This->extend(newCur, nextSymb, dir);
-                    #endif
-                    if (newCur.count() == 0) return false; // early abort, if results are empty
+                    node.partitionPart = 0;
+                    side.queryPos += loops * dirStep;
+                    side.info = 'M';
+                    side.lastQRank = nextSymb;
+                    side.lastIRank = nextSymb;
+                    return self(newCur, node);
                 }
-                node.partitionPart = 0;
-                side.queryPos += loops * dirStep;
-                side.info = 'M';
-                side.lastQRank = nextSymb;
-                side.lastIRank = nextSymb;
-                return self(newCur, node);
             }
-            #endif
-            #if opt2 > 0
-            // Optimization: if cursor only covers a single row, we only need to expand that
-            if (cur.count() == 1) {
+
+            if constexpr (OPT.opt2 > 0) {
                 // Optimization: if cursor only covers a single row, we only need to expand that
-                auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
-                    if constexpr (requires() { { cur.extendRightBySymbol() }; }) {
-                        return (node.dir == dir_t::Right)?cur.extendRightBySymbol():cur.extendLeftBySymbol();
-                    }
-                    if (node.dir == dir_t::Right) {
-                        auto symb = cur.symbolRight();
-                        auto cur_ = cur.extendRight(symb);
-                        return {symb, cur_};
-                    } else {
-                        auto symb = cur.symbolLeft();
-                        auto cur_ = cur.extendLeft(symb);
-                        return {symb, cur_};
-                    }
-                }();
-                auto optInsert = std::optional<Node>{};
-                bool abort{};
-                This->expandNode(node, [&](Node& child) {
-                    if (abort) return;
-                    switch(child.side[node.dir].info) {
-                    case 'I':
-                        optInsert = child;
-                        return;
-                    case 'M':
-                        if (child.side[node.dir].lastIRank != curISymb) return;
-                        abort = self(icursorNext, child);
-                        break;
-                    case 'S':
-                        if (curISymb == child.side[node.dir].lastQRank) return;
-                    case 'D': // fallthrough
-                    default: // not reachable
-                        {
-                            auto r_irank = Restore{child.side[node.dir].lastIRank, curISymb};
-                            abort = self(icursorNext, child);
+                if (cur.count() == 1) {
+                    // Optimization: if cursor only covers a single row, we only need to expand that
+                    auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
+                        if constexpr (requires() { { cur.extendRightBySymbol() }; }) {
+                            return (node.dir == dir_t::Right)?cur.extendRightBySymbol():cur.extendLeftBySymbol();
                         }
-                        break;
+                        if (node.dir == dir_t::Right) {
+                            auto symb = cur.symbolRight();
+                            auto cur_ = cur.extendRight(symb);
+                            return {symb, cur_};
+                        } else {
+                            auto symb = cur.symbolLeft();
+                            auto cur_ = cur.extendLeft(symb);
+                            return {symb, cur_};
+                        }
+                    }();
+                    auto optInsert = std::optional<Node>{};
+                    bool abort{};
+                    This->expandNode(node, [&](Node& child) {
+                        if (abort) return;
+                        switch(child.side[node.dir].info) {
+                        case 'I':
+                            optInsert = child;
+                            return;
+                        case 'M':
+                            if (child.side[node.dir].lastIRank != curISymb) return;
+                            abort = self(icursorNext, child);
+                            break;
+                        case 'S':
+                            if (curISymb == child.side[node.dir].lastQRank) return;
+                        case 'D': // fallthrough
+                        default: // not reachable
+                            {
+                                auto r_irank = Restore{child.side[node.dir].lastIRank, curISymb};
+                                abort = self(icursorNext, child);
+                            }
+                            break;
+                        }
+                    });
+                    if (abort) return true;
+                    if (optInsert) {
+                        auto const& child = *optInsert;
+                        // inserted into query
+                        if (auto f = self(cur, child)) return true;
                     }
-                });
-                if (abort) return true;
-                if (optInsert) {
-                    auto const& child = *optInsert;
-                    // inserted into query
-                    if (auto f = self(cur, child)) return true;
+                    return false;
                 }
-                return false;
             }
-            #endif
 
 
             // standard, expand node by following the direct connected edges
@@ -430,259 +442,488 @@ struct Search {
             }
             auto dirStep = node.dir == dir_t::Right?1:-1;
 
-            #if opt1 == 1
-            auto nextSymb = This->query[node.side[node.dir].queryPos];
-            auto noErrors = This->computeNoErrors(node, nextSymb);
-            if (noErrors) {
-                auto& side = node.side[node.dir];
-                auto newCur = cur;
-                auto loops = node.partitionPart;
-                auto dir = node.dir;
-                for (size_t i{0}; i < loops; ++i) {
-                    auto pos = side.queryPos + i*dirStep;
-                    nextSymb = This->query[pos];
+            if constexpr (OPT.opt1 == 1) {
+                auto nextSymb = This->query[node.side[node.dir].queryPos];
+                auto noErrors = This->computeNoErrors(node, nextSymb);
+                if (noErrors) {
+                    auto& side = node.side[node.dir];
+                    auto newCur = cur;
+                    auto loops = node.partitionPart;
+                    auto dir = node.dir;
+                    for (size_t i{0}; i < loops; ++i) {
+                        auto pos = side.queryPos + i*dirStep;
+                        nextSymb = This->query[pos];
 
-                    // Optimization: if no errors and only a single row is available
-                    #if opt1_1r > 0
-                    if (newCur.count() == 1) {
-                        auto s = (dir == dir_t::Right)?newCur.symbolRight():newCur.symbolLeft();
-                        if (s != nextSymb) return false;
-                        if constexpr (requires() { { newCur.extendRightBySymbol(nextSymb) }; }) {
-                            newCur = (dir == dir_t::Right)?newCur.extendRightBySymbol(nextSymb):newCur.extendLeftBySymbol(nextSymb);
+                        // Optimization: if no errors and only a single row is available
+                        if constexpr (OPT.opt1_1r) {
+                            if (newCur.count() == 1) {
+                                auto s = (dir == dir_t::Right)?newCur.symbolRight():newCur.symbolLeft();
+                                if (s != nextSymb) return false;
+                                if constexpr (requires() { { newCur.extendRightBySymbol(nextSymb) }; }) {
+                                    newCur = (dir == dir_t::Right)?newCur.extendRightBySymbol(nextSymb):newCur.extendLeftBySymbol(nextSymb);
+                                } else {
+                                    newCur = (dir == dir_t::Right)?newCur.extendRight(nextSymb):newCur.extendLeft(nextSymb);
+                                }
+                            } else {
+                                newCur = This->extend(newCur, nextSymb, dir);
+                            }
                         } else {
-                            newCur = (dir == dir_t::Right)?newCur.extendRight(nextSymb):newCur.extendLeft(nextSymb);
+                            newCur = This->extend(newCur, nextSymb, dir);
                         }
-                    } else {
-                        newCur = This->extend(newCur, nextSymb, dir);
+                        if (newCur.count() == 0) return false; // early abort, if results are empty
                     }
-                    #else
-                        newCur = This->extend(newCur, nextSymb, dir);
-                    #endif
-                    if (newCur.count() == 0) return false; // early abort, if results are empty
+                    node.partitionPart = 0;
+                    side.queryPos += loops * dirStep;
+                    side.info = 'M';
+                    side.lastQRank = nextSymb;
+                    side.lastIRank = nextSymb;
+                    return self(newCur, node);
                 }
-                node.partitionPart = 0;
-                side.queryPos += loops * dirStep;
-                side.info = 'M';
-                side.lastQRank = nextSymb;
-                side.lastIRank = nextSymb;
-                return self(newCur, node);
             }
-            #endif
-            #if opt1 == 2
-            // Optimization: if no errors are allowed, extend cursor directly
-            auto nextSymb = This->query[node.side[node.dir].queryPos];
-            auto noErrors = This->computeNoErrors(node, nextSymb);
-            if (noErrors) {
-                auto& side = node.side[node.dir];
-                auto newCur = cur;
-                auto loops = node.partitionPart/KStep;
-                auto dir = node.dir;
-                auto offset = node.partitionPart % KStep;
+            if constexpr (OPT.opt1 == 2) {
+                // Optimization: if no errors are allowed, extend cursor directly
+                auto nextSymb = This->query[node.side[node.dir].queryPos];
+                auto noErrors = This->computeNoErrors(node, nextSymb);
+                if (noErrors) {
+                    auto& side = node.side[node.dir];
+                    auto newCur = cur;
+                    auto loops = node.partitionPart/KStep;
+                    auto dir = node.dir;
+                    auto offset = node.partitionPart % KStep;
 
-                for (size_t i{0}; i < loops; ++i) {
-                    auto pos1 = side.queryPos + (i*KStep)*dirStep;
-                    auto pos2 = side.queryPos + (i*KStep+1)*dirStep;
-                    auto s1 = This->query[pos1];
-                    auto s2 = This->query[pos2];
+                    for (size_t i{0}; i < loops; ++i) {
+                        auto pos1 = side.queryPos + (i*KStep)*dirStep;
+                        auto pos2 = side.queryPos + (i*KStep+1)*dirStep;
+                        auto s1 = This->query[pos1];
+                        auto s2 = This->query[pos2];
 
-                    //!TODO only works for KStep==2
-                    auto symbs = std::array<size_t, KStep> {
-                        s1,
-                        s2
-                    };
-                    auto kSymb = s1 * Sigma + s2;
+                        //!TODO only works for KStep==2
+                        auto symbs = std::array<size_t, KStep> {
+                            s1,
+                            s2
+                        };
+                        auto kSymb = s1 * Sigma + s2;
 
 
-                    #if opt1_1r > 0
-                    // Optimization if only a single row exists
-                    if (newCur.count() == 1) {
-                        auto s = (dir == dir_t::Right)?newCur.symbolRightKStep():newCur.symbolLeftKStep();
-                        if (s != kSymb) return false;
-                        if constexpr (requires() { { newCur.extendRightBySymbolKStep(kSymb) }; }) {
-                            newCur = (dir == dir_t::Right)?newCur.extendRightBySymbolKStep(kSymb):newCur.extendLeftBySymbolKStep(kSymb);
+                        if constexpr (OPT.opt1_1r) {
+                            // Optimization if only a single row exists
+                            if (newCur.count() == 1) {
+                                auto s = (dir == dir_t::Right)?newCur.symbolRightKStep():newCur.symbolLeftKStep();
+                                if (s != kSymb) return false;
+                                if constexpr (requires() { { newCur.extendRightBySymbolKStep(kSymb) }; }) {
+                                    newCur = (dir == dir_t::Right)?newCur.extendRightBySymbolKStep(kSymb):newCur.extendLeftBySymbolKStep(kSymb);
+                                } else {
+                                    newCur = (dir == dir_t::Right)?newCur.extendRightKStep(symbs):newCur.extendLeftKStep(symbs);
+                                }
+                            } else {
+                                newCur = This->extendKStep(newCur, symbs, dir);
+                            }
                         } else {
-                            newCur = (dir == dir_t::Right)?newCur.extendRightKStep(symbs):newCur.extendLeftKStep(symbs);
+                            newCur = This->extendKStep(newCur, symbs, dir);
                         }
-                    } else {
-                        newCur = This->extendKStep(newCur, symbs, dir);
+
+                        if (newCur.count() == 0) return false; // early abort, if results are empty
+                        nextSymb = s2;
                     }
-                    #else
-                    newCur = This->extendKStep(newCur, symbs, dir);
-                    #endif
+                    side.queryPos += (loops * KStep) * dirStep;
+                    for (size_t i{0}; i < offset; ++i) {
+                        if (newCur.count() == 0) return false;
+                        nextSymb = This->query[side.queryPos];
+                        newCur = This->extend(newCur, nextSymb, dir);
+                        side.queryPos += dirStep;
+                    }
 
-                    if (newCur.count() == 0) return false; // early abort, if results are empty
-                    nextSymb = s2;
+                    node.partitionPart = 0;
+                    side.info = 'M';
+                    side.lastQRank = nextSymb;
+                    side.lastIRank = nextSymb;
+                    return self(newCur, node);
                 }
-                side.queryPos += (loops * KStep) * dirStep;
-                for (size_t i{0}; i < offset; ++i) {
-                    if (newCur.count() == 0) return false;
-                    nextSymb = This->query[side.queryPos];
-                    newCur = This->extend(newCur, nextSymb, dir);
-                    side.queryPos += dirStep;
-                }
-
-                node.partitionPart = 0;
-                side.info = 'M';
-                side.lastQRank = nextSymb;
-                side.lastIRank = nextSymb;
-                return self(newCur, node);
             }
-            #endif
 
-
-
-
-
-            #if opt2 == 1
-            // Optimization: if cursor only covers a single row, we only need to expand that
-            if (cur.count() == 1) {
+            if constexpr (OPT.opt2 == 1) {
                 // Optimization: if cursor only covers a single row, we only need to expand that
-                auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
-                    if constexpr (requires() { { cur.extendRightBySymbol() }; }) {
-                        return (node.dir == dir_t::Right)?cur.extendRightBySymbol():cur.extendLeftBySymbol();
-                    }
-                    if (node.dir == dir_t::Right) {
-                        auto symb = cur.symbolRight();
-                        auto cur_ = cur.extendRight(symb);
-                        return {symb, cur_};
-                    } else {
-                        auto symb = cur.symbolLeft();
-                        auto cur_ = cur.extendLeft(symb);
-                        return {symb, cur_};
-                    }
-                }();
-                auto optInsert = std::optional<Node>{};
-                bool abort{};
-                This->expandNode(node, [&](Node& child) {
-                    if (abort) return;
-                    switch(child.side[node.dir].info) {
-                    case 'I':
-                        optInsert = child;
-                        return;
-                    case 'M':
-                        if (child.side[node.dir].lastIRank != curISymb) return;
-                        abort = self(icursorNext, child);
-                        break;
-                    case 'S':
-                        if (curISymb == child.side[node.dir].lastQRank) return;
-                    case 'D': // fallthrough
-                    default: // not reachable
-                        {
-                            auto r_irank = Restore{child.side[node.dir].lastIRank, curISymb};
-                            abort = self(icursorNext, child);
+                if (cur.count() == 1) {
+                    // Optimization: if cursor only covers a single row, we only need to expand that
+                    auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
+                        if constexpr (requires() { { cur.extendRightBySymbol() }; }) {
+                            return (node.dir == dir_t::Right)?cur.extendRightBySymbol():cur.extendLeftBySymbol();
                         }
-                        break;
+                        if (node.dir == dir_t::Right) {
+                            auto symb = cur.symbolRight();
+                            auto cur_ = cur.extendRight(symb);
+                            return {symb, cur_};
+                        } else {
+                            auto symb = cur.symbolLeft();
+                            auto cur_ = cur.extendLeft(symb);
+                            return {symb, cur_};
+                        }
+                    }();
+                    auto optInsert = std::optional<Node>{};
+                    bool abort{};
+                    This->expandNode(node, [&](Node& child) {
+                        if (abort) return;
+                        switch(child.side[node.dir].info) {
+                        case 'I':
+                            optInsert = child;
+                            return;
+                        case 'M':
+                            if (child.side[node.dir].lastIRank != curISymb) return;
+                            abort = self(icursorNext, child);
+                            break;
+                        case 'S':
+                            if (curISymb == child.side[node.dir].lastQRank) return;
+                        case 'D': // fallthrough
+                        default: // not reachable
+                            {
+                                auto r_irank = Restore{child.side[node.dir].lastIRank, curISymb};
+                                abort = self(icursorNext, child);
+                            }
+                            break;
+                        }
+                    });
+                    if (abort) return true;
+                    if (optInsert) {
+                        auto const& child = *optInsert;
+                        // inserted into query
+                        if (auto f = self(cur, child)) return true;
                     }
+                    return false;
+                }
+            }
+
+            if constexpr (OPT.opt2 == 2) {
+                // Optimization: if cursor only covers a single row, we only need to expand that
+                if (cur.count() == 1) {
+                    // Optimization: if cursor only covers a single row, we only need to expand that
+                    auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
+                        if constexpr (requires() { { cur.extendRightBySymbolKStep() }; }) {
+                            return (node.dir == dir_t::Right)?cur.extendRightBySymbolKStep():cur.extendLeftBySymbolKStep();
+                        }
+                        if (node.dir == dir_t::Right) {
+                            auto symb = cur.symbolRightKStep();
+                            auto cur_ = cur.extendRightKStep(symb);
+                            return {symb, cur_};
+                        } else {
+                            auto symb = cur.symbolLeftKStep();
+                            auto cur_ = cur.extendLeftKStep(symb);
+                            return {symb, cur_};
+                        }
+                    }();
+                    auto optInsert = std::optional<Node>{};
+                    bool abort{};
+                    This->expandNode(node, [&](Node& child) {
+                        if (abort) return;
+                        switch(child.side[node.dir].info) {
+                        case 'I':
+                            optInsert = child;
+                            return;
+                        case 'M':
+                            if (child.side[node.dir].lastIRank != curISymb) return;
+                            abort = self(icursorNext, child);
+                            break;
+                        case 'S':
+                            if (curISymb == child.side[node.dir].lastQRank) return;
+                        case 'D': // fallthrough
+                        default: // not reachable
+                            {
+                                auto r_irank = Restore{child.side[node.dir].lastIRank, curISymb};
+                                abort = self(icursorNext, child);
+                            }
+                            break;
+                        }
+                    });
+                    if (abort) return true;
+                    if (optInsert) {
+                        auto const& child = *optInsert;
+                        // inserted into query
+                        if (auto f = self(cur, child)) return true;
+                    }
+                    return false;
+                }
+            }
+
+            if constexpr (OPT.opt3 == 2) {
+                // standard, expand node by following the direct connected edges
+                auto startIdx = This->stackNode.size();
+                auto startIdx2 = This->stackNode2.size();
+
+    //            auto r_stack  = RestoreCB{[=]() { This->stackNode.resize(startIdx); }};
+    //            auto r_stack2 = RestoreCB{[=]() { This->stackNode2.resize(startIdx2); }};
+                //This->stackNode.resize(startIdx);
+                //This->stackNode2.resize(startIdx2);
+
+
+
+
+                std::vector<Node> optInsert;
+                std::vector<std::tuple<Node, Node>> optInsert2;
+    //            auto optInsert = std::optional<Node>{};
+                bool errorMatch{};
+                bool errorMatch2{};
+                This->expandNode_2Step(node, [&](Node const& child) {
+                    if (child.side[node.dir].info == 'I') {
+                        optInsert.push_back(child);
+    //                    optInsert = child;
+                        return;
+                    }
+                    if (child.side[node.dir].info != 'M') errorMatch = true;
+                    This->stackNode.push_back(child);
+                }, [&](Node const& child1, Node const& child2) {
+                    if (child1.side[node.dir].info == 'I') {
+                        throw std::runtime_error{"this should not happen 4"};
+                    }
+                    if (child2.side[node.dir].info == 'I') {
+                        optInsert2.emplace_back(child1, child2);
+                        //!TODO optInsert2 is not handled anywhere
+                        return;
+                    }
+                    if (child1.side[node.dir].info != 'M'
+                        || child2.side[node.dir].info != 'M') {
+                        errorMatch2 = true;
+                    }
+                    This->stackNode2.emplace_back(child1, child2);
                 });
-                if (abort) return true;
-                if (optInsert) {
-                    auto const& child = *optInsert;
+                auto endIdx = This->stackNode.size();
+                auto endIdx2 = This->stackNode2.size();
+                assert(endIdx >= startIdx);
+                assert(endIdx2 >= startIdx2);
+
+               if (endIdx > startIdx) {
+                    if (!errorMatch) {
+                        // Optimization: if only matches exist
+                        // do not expand cursor to all possibilities
+                        for (size_t i{startIdx}; i < endIdx; ++i) {
+                            auto const& child = This->stackNode[i];
+
+                            // match/substitution
+                            auto newCur = This->extend(cur, child.side[node.dir].lastIRank, node.dir);
+                            if (newCur.count() == 0) continue;
+                            if (auto f = self(newCur, child)) return true;
+                        }
+                    } else {
+                        // Expand cursor to all paths
+                        auto cursors = This->extend(cur, node.dir);
+                        for (size_t i{startIdx}; i < endIdx; ++i) {
+                            auto& child = This->stackNode[i];
+                            switch(child.side[node.dir].info) {
+                            case 'M': {
+                                auto const& newCur = cursors[child.side[node.dir].lastIRank];
+                                if (newCur.count() == 0) continue;
+                                if (auto f = self(newCur, child)) return true;
+                                }
+                                break;
+                            case 'S':
+                                for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
+                                    if (i == child.side[node.dir].lastQRank) continue;
+                                    auto const& newCur = cursors[i];
+                                    if (newCur.count() == 0) continue;
+                                    child.side[node.dir].lastIRank = i;
+                                    if (auto f = self(newCur, child)) return true;
+                                }
+                                break;
+                            case 'D':
+                                for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
+                                    auto const& newCur = cursors[i];
+                                    if (newCur.count() == 0) continue;
+                                    child.side[node.dir].lastIRank = i;
+                                    if (auto f = self(newCur, child)) return true;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (endIdx2 > startIdx2) {
+                    if (!errorMatch2) {
+                        // Optimization: if only matches exist
+                        // do not expand cursor to all possibilities
+                        for (size_t i{startIdx2}; i < endIdx2; ++i) {
+                            auto const& [child1, child2] = This->stackNode2[i];
+                            auto symb = std::array<size_t, KStep>{ //!TODO this only works for KStep == 2
+                                child1.side[node.dir].lastIRank,
+                                child2.side[node.dir].lastIRank
+                            };
+
+
+                            bool insertHappened = child1.side[node.dir].queryPos + dirStep != child2.side[node.dir].queryPos;
+                            if (insertHappened) {
+                                auto nextSymb2 = child2.side[node.dir].lastQRank;
+                                auto posI = child2.side[node.dir].queryPos - dirStep*2;
+                                auto prevSymbI = This->query[posI];
+                                if (nextSymb2 == prevSymbI) continue;
+                            }
+
+                            // match
+                            auto newCur = This->extendKStep(cur, symb, node.dir);
+                            if (newCur.count() == 0) continue;
+                            if (auto f = self(newCur, child2)) return true;
+                        }
+                    } else {
+                        // Expand cursor to all k-step paths
+    //                    auto cursors = This->extend(cur, node.dir);
+                        auto cursors2 = This->extendKStep(cur, node.dir); //!TODO could also produce them for 1 steps
+                        for (size_t i{startIdx2}; i < endIdx2; ++i) {
+
+     /*                       auto& [child, child2] = This->stackNode2[i];
+                            switch(child.side[node.dir].info) {
+                            case 'M': {
+                                auto const& newCur = cursors[child.side[node.dir].lastIRank];
+                                if (newCur.count() == 0) continue;
+                                if (auto f = self(newCur, child)) return true;
+                                break;
+                            }
+                            }*/
+
+                            #if 1
+                            auto& [child1, child2] = This->stackNode2[i];
+
+                            auto step2 = [&]() -> bool {
+                                switch(child2.side[node.dir].info) {
+                                case 'M': {
+                                    auto tinfo1 = child1.side[node.dir].info;
+                                    auto nextSymb2 = child2.side[node.dir].lastQRank;
+                                    auto posI = child2.side[node.dir].queryPos - dirStep*2;
+                                    auto prevSymbI = This->query[posI];
+                                    //bool insertHappened = child1.side[node.dir].queryPos + dirStep != child2.side[node.dir].queryPos;
+                                    //Here is the mistake, tinfo1 is not the previous node, but the one before that (last 'M' movement)
+                                    //This causes do let this one falsly slide through.....
+                                    bool insertHappened = child1.side[node.dir].queryPos + dirStep != child2.side[node.dir].queryPos;
+                                    if (insertHappened) {
+                                        auto nextSymb2 = child2.side[node.dir].lastQRank;
+                                        auto posI = child2.side[node.dir].queryPos - dirStep*2;
+                                        auto prevSymbI = This->query[posI];
+                                        if (nextSymb2 == prevSymbI) break;;
+                                    }
+    //                                if (tinfo1 == 'I' && nextSymb2 == child1.side[node.dir].lastQRank) break;
+                                    if (tinfo1 == 'D' && nextSymb2 == child1.side[node.dir].lastIRank) break;
+                                    auto symb1 = child1.side[node.dir].lastIRank;
+                                    auto symb2 = child2.side[node.dir].lastIRank;
+                                    auto symb = symb1 * Sigma + symb2;
+                                    auto const& newCur = cursors2[symb];
+                                    if (newCur.count() == 0) return false;;
+                                    if (auto f = self(newCur, child2)) return true;
+                                    return false;
+                                }
+                                case 'S': {
+                                    auto symb1 = child1.side[node.dir].lastIRank;
+                                    for (uint64_t i2{FirstSymb}; i2 < Sigma; ++i2) {
+                                        if (i2 == child2.side[node.dir].lastQRank) continue;
+                                        auto symb = symb1 * Sigma + i2;
+                                        auto const& newCur = cursors2[symb];
+                                        if (newCur.count() == 0) continue;
+                                        child2.side[node.dir].lastIRank = i;
+                                        if (auto f = self(newCur, child2)) return true;
+                                    }
+                                    return false;
+                                }
+                                case 'D': {
+                                    auto symb1 = child1.side[node.dir].lastIRank;
+                                    for (uint64_t i2{FirstSymb}; i2 < Sigma; ++i2) {
+                                        auto symb = symb1 * Sigma + i2;
+                                        auto const& newCur = cursors2[symb];
+                                        if (newCur.count() == 0) continue;
+                                        child2.side[node.dir].lastIRank = i2;
+                                        if (auto f = self(newCur, child2)) return true;
+                                    }
+                                    return false;
+                                }
+                                case 'I': {
+    //                                if (auto f = self(cur, child2)) return true;
+                                    throw std::runtime_error{"this should not happen 1"};
+                                    //!TODO
+                                }
+                                }
+                                return false;
+                            };
+
+                            switch(child1.side[node.dir].info) {
+                            case 'M': {
+                                if (step2()) return true;
+                                break;
+                            }
+                            case 'S':
+                                for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
+                                    if (i == child1.side[node.dir].lastQRank) continue;
+                                    child1.side[node.dir].lastIRank = i;
+                                    if (step2()) return true;
+                                }
+                                break;
+                            case 'D':
+                                for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
+                                    child1.side[node.dir].lastIRank = i;
+                                    if (step2()) return true;
+                                }
+                                break;
+                            case 'I':
+                                throw std::runtime_error{"does not happen"};
+                            }
+                        #endif
+                        }
+                    }
+                }
+
+                for (auto const& child : optInsert) {
                     // inserted into query
                     if (auto f = self(cur, child)) return true;
                 }
-                return false;
-            }
-            #endif
-
-
-            #if opt2 == 2
-            // Optimization: if cursor only covers a single row, we only need to expand that
-            if (cur.count() == 1) {
-                // Optimization: if cursor only covers a single row, we only need to expand that
-                auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
-                    if constexpr (requires() { { cur.extendRightBySymbolKStep() }; }) {
-                        return (node.dir == dir_t::Right)?cur.extendRightBySymbolKStep():cur.extendLeftBySymbolKStep();
-                    }
-                    if (node.dir == dir_t::Right) {
-                        auto symb = cur.symbolRightKStep();
-                        auto cur_ = cur.extendRightKStep(symb);
-                        return {symb, cur_};
-                    } else {
-                        auto symb = cur.symbolLeftKStep();
-                        auto cur_ = cur.extendLeftKStep(symb);
-                        return {symb, cur_};
-                    }
-                }();
-                auto optInsert = std::optional<Node>{};
-                bool abort{};
-                This->expandNode(node, [&](Node& child) {
-                    if (abort) return;
-                    switch(child.side[node.dir].info) {
-                    case 'I':
-                        optInsert = child;
-                        return;
-                    case 'M':
-                        if (child.side[node.dir].lastIRank != curISymb) return;
-                        abort = self(icursorNext, child);
-                        break;
-                    case 'S':
-                        if (curISymb == child.side[node.dir].lastQRank) return;
-                    case 'D': // fallthrough
-                    default: // not reachable
-                        {
-                            auto r_irank = Restore{child.side[node.dir].lastIRank, curISymb};
-                            abort = self(icursorNext, child);
+                if (optInsert2.size() > 0) {
+                    auto cursors = This->extend(cur, node.dir);
+                    for (auto const& [child1, _child2] : optInsert2) {
+                        auto child2 = _child2;
+                        switch(child1.side[node.dir].info) {
+                        case 'M': {
+                            auto const& newCur = cursors[child1.side[node.dir].lastIRank];
+                            if (newCur.count() == 0) continue;
+                            //if (auto f = self(newCur, child1)) return true;
+                            if (auto f = self(newCur, child2)) return true;
+                            break;
                         }
-                        break;
+                        case 'S':
+                            for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
+                                if (i == child1.side[node.dir].lastQRank) continue;
+                                auto const& newCur = cursors[i];
+                                if (newCur.count() == 0) continue;
+                                child2.side[node.dir].lastIRank = i;
+                                if (auto f = self(newCur, child2)) return true;
+                            }
+                            break;
+                        case 'D':
+                            for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
+                                auto const& newCur = cursors[i];
+                                if (newCur.count() == 0) continue;
+                                child2.side[node.dir].lastIRank = i;
+                                if (auto f = self(newCur, child2)) return true;
+                            }
+                            break;
+                        case 'I':
+                            throw std::runtime_error{"does not happen"};
+                        }
                     }
-                });
-                if (abort) return true;
-                if (optInsert) {
+                }
+                /*if (optInsert) {
                     auto const& child = *optInsert;
                     // inserted into query
                     if (auto f = self(cur, child)) return true;
-                }
-                return false;
-            }
-            #endif
+                }*/
+                This->stackNode.resize(startIdx);
+                This->stackNode2.resize(startIdx2);
+            } else {
+                // standard, expand node by following the direct connected edges
+                auto startIdx = This->stackNode.size();
+                auto optInsert = std::optional<Node>{};
+                bool errorMatch{};
+                This->expandNode(node, [&](Node const& child) {
+                    if (child.side[node.dir].info == 'I') {
+                        optInsert = child;
+                    } else {
+                        if (child.side[node.dir].info != 'M') errorMatch = true;
+                        This->stackNode.push_back(child);
+                    }
+                });
+                auto endIdx = This->stackNode.size();
+                assert(endIdx >= startIdx);
 
-            #if opt3 == 2
-            // standard, expand node by following the direct connected edges
-            auto startIdx = This->stackNode.size();
-            auto startIdx2 = This->stackNode2.size();
-
-//            auto r_stack  = RestoreCB{[=]() { This->stackNode.resize(startIdx); }};
-//            auto r_stack2 = RestoreCB{[=]() { This->stackNode2.resize(startIdx2); }};
-            //This->stackNode.resize(startIdx);
-            //This->stackNode2.resize(startIdx2);
-
-
-
-
-            std::vector<Node> optInsert;
-            std::vector<std::tuple<Node, Node>> optInsert2;
-//            auto optInsert = std::optional<Node>{};
-            bool errorMatch{};
-            bool errorMatch2{};
-            This->expandNode_2Step(node, [&](Node const& child) {
-                if (child.side[node.dir].info == 'I') {
-                    optInsert.push_back(child);
-//                    optInsert = child;
-                    return;
-                }
-                if (child.side[node.dir].info != 'M') errorMatch = true;
-                This->stackNode.push_back(child);
-            }, [&](Node const& child1, Node const& child2) {
-                if (child1.side[node.dir].info == 'I') {
-                    throw std::runtime_error{"this should not happen 4"};
-                }
-                if (child2.side[node.dir].info == 'I') {
-                    optInsert2.emplace_back(child1, child2);
-                    //!TODO optInsert2 is not handled anywhere
-                    return;
-                }
-                if (child1.side[node.dir].info != 'M'
-                    || child2.side[node.dir].info != 'M') {
-                    errorMatch2 = true;
-                }
-                This->stackNode2.emplace_back(child1, child2);
-            });
-            auto endIdx = This->stackNode.size();
-            auto endIdx2 = This->stackNode2.size();
-            assert(endIdx >= startIdx);
-            assert(endIdx2 >= startIdx2);
-
-           if (endIdx > startIdx) {
                 if (!errorMatch) {
                     // Optimization: if only matches exist
                     // do not expand cursor to all possibilities
@@ -726,248 +967,14 @@ struct Search {
                         }
                     }
                 }
-            }
-            if (endIdx2 > startIdx2) {
-                if (!errorMatch2) {
-                    // Optimization: if only matches exist
-                    // do not expand cursor to all possibilities
-                    for (size_t i{startIdx2}; i < endIdx2; ++i) {
-                        auto const& [child1, child2] = This->stackNode2[i];
-                        auto symb = std::array<size_t, KStep>{ //!TODO this only works for KStep == 2
-                            child1.side[node.dir].lastIRank,
-                            child2.side[node.dir].lastIRank
-                        };
 
-
-                        bool insertHappened = child1.side[node.dir].queryPos + dirStep != child2.side[node.dir].queryPos;
-                        if (insertHappened) {
-                            auto nextSymb2 = child2.side[node.dir].lastQRank;
-                            auto posI = child2.side[node.dir].queryPos - dirStep*2;
-                            auto prevSymbI = This->query[posI];
-                            if (nextSymb2 == prevSymbI) continue;
-                        }
-
-                        // match
-                        auto newCur = This->extendKStep(cur, symb, node.dir);
-                        if (newCur.count() == 0) continue;
-                        if (auto f = self(newCur, child2)) return true;
-                    }
-                } else {
-                    // Expand cursor to all k-step paths
-//                    auto cursors = This->extend(cur, node.dir);
-                    auto cursors2 = This->extendKStep(cur, node.dir); //!TODO could also produce them for 1 steps
-                    for (size_t i{startIdx2}; i < endIdx2; ++i) {
-
- /*                       auto& [child, child2] = This->stackNode2[i];
-                        switch(child.side[node.dir].info) {
-                        case 'M': {
-                            auto const& newCur = cursors[child.side[node.dir].lastIRank];
-                            if (newCur.count() == 0) continue;
-                            if (auto f = self(newCur, child)) return true;
-                            break;
-                        }
-                        }*/
-
-                        #if 1
-                        auto& [child1, child2] = This->stackNode2[i];
-
-                        auto step2 = [&]() -> bool {
-                            switch(child2.side[node.dir].info) {
-                            case 'M': {
-                                auto tinfo1 = child1.side[node.dir].info;
-                                auto nextSymb2 = child2.side[node.dir].lastQRank;
-                                auto posI = child2.side[node.dir].queryPos - dirStep*2;
-                                auto prevSymbI = This->query[posI];
-                                //bool insertHappened = child1.side[node.dir].queryPos + dirStep != child2.side[node.dir].queryPos;
-                                //Here is the mistake, tinfo1 is not the previous node, but the one before that (last 'M' movement)
-                                //This causes do let this one falsly slide through.....
-                                bool insertHappened = child1.side[node.dir].queryPos + dirStep != child2.side[node.dir].queryPos;
-                                if (insertHappened) {
-                                    auto nextSymb2 = child2.side[node.dir].lastQRank;
-                                    auto posI = child2.side[node.dir].queryPos - dirStep*2;
-                                    auto prevSymbI = This->query[posI];
-                                    if (nextSymb2 == prevSymbI) break;;
-                                }
-//                                if (tinfo1 == 'I' && nextSymb2 == child1.side[node.dir].lastQRank) break;
-                                if (tinfo1 == 'D' && nextSymb2 == child1.side[node.dir].lastIRank) break;
-                                auto symb1 = child1.side[node.dir].lastIRank;
-                                auto symb2 = child2.side[node.dir].lastIRank;
-                                auto symb = symb1 * Sigma + symb2;
-                                auto const& newCur = cursors2[symb];
-                                if (newCur.count() == 0) return false;;
-                                if (auto f = self(newCur, child2)) return true;
-                                return false;
-                            }
-                            case 'S': {
-                                auto symb1 = child1.side[node.dir].lastIRank;
-                                for (uint64_t i2{FirstSymb}; i2 < Sigma; ++i2) {
-                                    if (i2 == child2.side[node.dir].lastQRank) continue;
-                                    auto symb = symb1 * Sigma + i2;
-                                    auto const& newCur = cursors2[symb];
-                                    if (newCur.count() == 0) continue;
-                                    child2.side[node.dir].lastIRank = i;
-                                    if (auto f = self(newCur, child2)) return true;
-                                }
-                                return false;
-                            }
-                            case 'D': {
-                                auto symb1 = child1.side[node.dir].lastIRank;
-                                for (uint64_t i2{FirstSymb}; i2 < Sigma; ++i2) {
-                                    auto symb = symb1 * Sigma + i2;
-                                    auto const& newCur = cursors2[symb];
-                                    if (newCur.count() == 0) continue;
-                                    child2.side[node.dir].lastIRank = i2;
-                                    if (auto f = self(newCur, child2)) return true;
-                                }
-                                return false;
-                            }
-                            case 'I': {
-//                                if (auto f = self(cur, child2)) return true;
-                                throw std::runtime_error{"this should not happen 1"};
-                                //!TODO
-                            }
-                            }
-                            return false;
-                        };
-
-                        switch(child1.side[node.dir].info) {
-                        case 'M': {
-                            if (step2()) return true;
-                            break;
-                        }
-                        case 'S':
-                            for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
-                                if (i == child1.side[node.dir].lastQRank) continue;
-                                child1.side[node.dir].lastIRank = i;
-                                if (step2()) return true;
-                            }
-                            break;
-                        case 'D':
-                            for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
-                                child1.side[node.dir].lastIRank = i;
-                                if (step2()) return true;
-                            }
-                            break;
-                        case 'I':
-                            throw std::runtime_error{"does not happen"};
-                        }
-                    #endif
-                    }
+                if (optInsert) {
+                    auto const& child = *optInsert;
+                    // inserted into query
+                    if (auto f = self(cur, child)) return true;
                 }
+                This->stackNode.resize(startIdx);
             }
-
-            for (auto const& child : optInsert) {
-                // inserted into query
-                if (auto f = self(cur, child)) return true;
-            }
-            if (optInsert2.size() > 0) {
-                auto cursors = This->extend(cur, node.dir);
-                for (auto const& [child1, _child2] : optInsert2) {
-                    auto child2 = _child2;
-                    switch(child1.side[node.dir].info) {
-                    case 'M': {
-                        auto const& newCur = cursors[child1.side[node.dir].lastIRank];
-                        if (newCur.count() == 0) continue;
-                        //if (auto f = self(newCur, child1)) return true;
-                        if (auto f = self(newCur, child2)) return true;
-                        break;
-                    }
-                    case 'S':
-                        for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
-                            if (i == child1.side[node.dir].lastQRank) continue;
-                            auto const& newCur = cursors[i];
-                            if (newCur.count() == 0) continue;
-                            child2.side[node.dir].lastIRank = i;
-                            if (auto f = self(newCur, child2)) return true;
-                        }
-                        break;
-                    case 'D':
-                        for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
-                            auto const& newCur = cursors[i];
-                            if (newCur.count() == 0) continue;
-                            child2.side[node.dir].lastIRank = i;
-                            if (auto f = self(newCur, child2)) return true;
-                        }
-                        break;
-                    case 'I':
-                        throw std::runtime_error{"does not happen"};
-                    }
-                }
-            }
-            /*if (optInsert) {
-                auto const& child = *optInsert;
-                // inserted into query
-                if (auto f = self(cur, child)) return true;
-            }*/
-            This->stackNode.resize(startIdx);
-            This->stackNode2.resize(startIdx2);
-            #else
-            // standard, expand node by following the direct connected edges
-            auto startIdx = This->stackNode.size();
-            auto optInsert = std::optional<Node>{};
-            bool errorMatch{};
-            This->expandNode(node, [&](Node const& child) {
-                if (child.side[node.dir].info == 'I') {
-                    optInsert = child;
-                } else {
-                    if (child.side[node.dir].info != 'M') errorMatch = true;
-                    This->stackNode.push_back(child);
-                }
-            });
-            auto endIdx = This->stackNode.size();
-            assert(endIdx >= startIdx);
-
-            if (!errorMatch) {
-                // Optimization: if only matches exist
-                // do not expand cursor to all possibilities
-                for (size_t i{startIdx}; i < endIdx; ++i) {
-                    auto const& child = This->stackNode[i];
-
-                    // match/substitution
-                    auto newCur = This->extend(cur, child.side[node.dir].lastIRank, node.dir);
-                    if (newCur.count() == 0) continue;
-                    if (auto f = self(newCur, child)) return true;
-                }
-            } else {
-                // Expand cursor to all paths
-                auto cursors = This->extend(cur, node.dir);
-                for (size_t i{startIdx}; i < endIdx; ++i) {
-                    auto& child = This->stackNode[i];
-                    switch(child.side[node.dir].info) {
-                    case 'M': {
-                        auto const& newCur = cursors[child.side[node.dir].lastIRank];
-                        if (newCur.count() == 0) continue;
-                        if (auto f = self(newCur, child)) return true;
-                        }
-                        break;
-                    case 'S':
-                        for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
-                            if (i == child.side[node.dir].lastQRank) continue;
-                            auto const& newCur = cursors[i];
-                            if (newCur.count() == 0) continue;
-                            child.side[node.dir].lastIRank = i;
-                            if (auto f = self(newCur, child)) return true;
-                        }
-                        break;
-                    case 'D':
-                        for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
-                            auto const& newCur = cursors[i];
-                            if (newCur.count() == 0) continue;
-                            child.side[node.dir].lastIRank = i;
-                            if (auto f = self(newCur, child)) return true;
-                        }
-                        break;
-                    }
-                }
-            }
-
-            if (optInsert) {
-                auto const& child = *optInsert;
-                // inserted into query
-                if (auto f = self(cur, child)) return true;
-            }
-            This->stackNode.resize(startIdx);
-            #endif
 
             return false;
         };
@@ -1026,7 +1033,7 @@ struct Search {
 };
 
 
-template <bool Edit, typename index_t, Sequence query_t, typename report_t>
+template <bool Edit, Optimizations OPT, typename index_t, Sequence query_t, typename report_t>
 void search_impl(index_t const& index, query_t const& query, search_scheme::Scheme const& search_scheme, std::vector<size_t> const& partition, report_t&& report) {
     using cursor_t = select_cursor_t<index_t>;
     using R = std::decay_t<decltype(report(std::declval<cursor_t>(), 0))>;
@@ -1043,7 +1050,7 @@ void search_impl(index_t const& index, query_t const& query, search_scheme::Sche
     }();
 
     for (auto const& search : search_scheme) {
-        bool f = Search<Edit, index_t, query_t, decltype(search), decltype(internal_report)>{index, query, search, partition, internal_report}.run();
+        bool f = Search<Edit, index_t, query_t, decltype(search), decltype(internal_report), OPT>{index, query, search, partition, internal_report}.run();
         if (f) {
             return;
         }
@@ -1064,14 +1071,14 @@ void search_impl(index_t const& index, query_t const& query, search_scheme::Sche
  * \param searchSelectSearchScheme_t: callback that helps selecting a proper search scheme, Must accept one parameters: size_t length
  *          length: length of query
  */
-template <bool Edit, typename index_t, Sequences queries_t, typename selectSearchScheme_t, typename report_t>
+template <bool Edit, Optimizations OPT, typename index_t, Sequences queries_t, typename selectSearchScheme_t, typename report_t>
 void search_n_impl(index_t const& index, queries_t&& queries, selectSearchScheme_t&& selectSearchScheme, std::vector<size_t> const& partition, report_t&& report, size_t n) {
     if (queries.empty()) return;
     if (n == 0) return;
     for (size_t qidx{}; qidx < queries.size(); ++qidx) {
         size_t ct{};
         auto const& search_scheme = selectSearchScheme(queries[qidx].size());
-        search_impl<Edit>(index, queries[qidx], search_scheme, partition, [&] (auto cur, size_t e) {
+        search_impl<Edit, OPT>(index, queries[qidx], search_scheme, partition, [&] (auto cur, size_t e) {
             if (cur.count() + ct > n) {
                 cur.len = n-ct;
             }
@@ -1084,13 +1091,13 @@ void search_n_impl(index_t const& index, queries_t&& queries, selectSearchScheme
 
 
 // convenience function, with passed search scheme and multiple queries
-template <bool Edit=true, typename index_t, Sequences queries_t, typename report_t>
+template <bool Edit=true, Optimizations OPT = {}, typename index_t, Sequences queries_t, typename report_t>
 void search(index_t const& index, queries_t&& queries, search_scheme::Scheme const& search_scheme, std::vector<size_t> const& partition, report_t&& report, size_t n = std::numeric_limits<size_t>::max()) {
     // function that selects a search scheme
     auto selectSearchScheme = [&]([[maybe_unused]] size_t length) -> auto& {
         return search_scheme;
     };
-    search_n_impl<Edit>(index, queries, selectSearchScheme, partition, report, n);
+    search_n_impl<Edit, OPT>(index, queries, selectSearchScheme, partition, report, n);
 }
 
 }
