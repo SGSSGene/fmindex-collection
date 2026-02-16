@@ -492,22 +492,19 @@ struct Search {
                     auto offset = node.partitionPart % KStep;
 
                     for (size_t i{0}; i < loops; ++i) {
-                        auto pos1 = side.queryPos + (i*KStep)*dirStep;
-                        auto pos2 = side.queryPos + (i*KStep+1)*dirStep;
-                        auto s1 = This->query[pos1];
-                        auto s2 = This->query[pos2];
-
-                        //!TODO only works for KStep==2
-                        auto symbs = std::array<size_t, KStep> {
-                            s1,
-                            s2
-                        };
-                        auto kSymb = s1 * Sigma + s2;
-
+                        auto symbs = std::array<size_t, KStep>{};
+                        for (size_t j{}; j < KStep; ++j) {
+                            auto pos = side.queryPos + (i*KStep+j)*dirStep;
+                            symbs[j] = This->query[pos];
+                        }
 
                         if constexpr (OPT.opt1_1r) {
                             // Optimization if only a single row exists
                             if (newCur.count() == 1) {
+                                size_t kSymb = symbs[0];
+                                for (size_t j{1}; j < KStep; ++j) {
+                                    kSymb = kSymb * Sigma + symbs[j];
+                                }
                                 auto s = (dir == dir_t::Right)?newCur.symbolRightKStep():newCur.symbolLeftKStep();
                                 if (s != kSymb) return false;
                                 if constexpr (requires() { { newCur.extendRightBySymbolKStep(kSymb) }; }) {
@@ -523,7 +520,7 @@ struct Search {
                         }
 
                         if (newCur.count() == 0) return false; // early abort, if results are empty
-                        nextSymb = s2;
+                        nextSymb = symbs.back();
                     }
                     side.queryPos += (loops * KStep) * dirStep;
                     for (size_t i{0}; i < offset; ++i) {
