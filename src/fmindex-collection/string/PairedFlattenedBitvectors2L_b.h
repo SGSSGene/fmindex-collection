@@ -75,7 +75,6 @@ struct PairedFlattenedBitvectors2L_b {
     using BlockL1 = std::array<uint16_t, TSigma>;
     using BlockL0 = std::array<uint64_t, TSigma>;
 
-//    mmser::vector<InBits> bits{{}};
     mmser::vector<InBitsLow>  bits_low{{}};
     mmser::vector<InBitsHigh> bits_high{{}};
     mmser::vector<BlockL1> l1{{}};
@@ -112,7 +111,6 @@ private:
 
         if constexpr (requires() { _symbols.size(); }) {
             auto const _length = _symbols.size();
-            //bits.reserve(_length/l1_bits_ct + 2);
             bits_low.reserve(_length/l1_bits_ct + 2);
             bits_high.reserve(_length/l1_bits_ct + 2);
         }
@@ -156,7 +154,7 @@ private:
             BlockL0 l0_acc{};
             // walk through all superblocks
             for (size_t l0I{0}; l0I < l0BlockCt; ++l0I) {
-                // walk left to right and set l1 values (as if they are the begining of a superblock)
+                // walk left to right and set l1 values (as if they are the beginning of a superblock)
 
                 // left part
                 BlockL0 acc{};
@@ -164,8 +162,6 @@ private:
                     auto idx = l0I*l1_block_ct*2 + i;
                     auto& b_low  = bits_low[idx];
                     auto& b_high = bits_high[idx];
-//                    auto& b = bits[idx];
-//                    auto counts = b.all_ranks(0);
                     auto counts = std::array<size_t, Sigma>{};
                     for (size_t symb{0}; symb < Sigma; ++symb) {
                         auto v = mark_rank_cb<l1_bits_ct, bitct>(symb, [&](size_t idx) -> auto const& {
@@ -206,8 +202,6 @@ private:
                     auto idx = l0I*l1_block_ct*2 + i;
                     auto& b_low  = bits_low[idx];
                     auto& b_high = bits_high[idx];
-//                    auto& b = bits[idx];
-//                    auto counts = b.all_ranks(0);
                     auto counts = std::array<size_t, Sigma>{};
                     for (size_t symb{0}; symb < Sigma; ++symb) {
                         auto v = mark_rank_cb<l1_bits_ct, bitct>(symb, [&](size_t idx) -> auto const& {
@@ -233,22 +227,6 @@ private:
                     l0_acc[symb] += acc[symb];
                 }
             }
-
-/*            for (auto& v : bits.owningBuffer) {
-                auto a = InBitsLow{};
-                for (size_t i{0}; i < bitct-L; ++i) {
-                    a.bits[i] = v.bits[i];
-                }
-                bits_low.push_back(a);
-            }
-
-            for (auto& v : bits.owningBuffer) {
-                auto a = InBitsHigh{};
-                for (size_t i{0}; i < L; ++i) {
-                    a.bits[i] = v.bits[i+bitct-L];
-                }
-                bits_high.push_back(a);
-            }*/
         }
     }
 
@@ -279,7 +257,22 @@ public:
 
     template <size_t L2 = L>
     uint64_t symbol_limit(uint64_t idx) const {
-        return (symbol(idx) >> (bitct-L2)); //!TODO
+        assert(idx < totalLength);
+        auto bitId = idx % l1_bits_ct;
+        auto l1Id  = idx / l1_bits_ct;
+        assert(l1Id < bits_low.size());
+
+        uint64_t symb{};
+        for (uint64_t i{0}; i < L2; ++i) {
+            auto bit = [&](size_t i) {
+                i += (bitct - L2);
+                if (i < bitct - L) return bits_low[l1Id].bits[i].test(bitId);
+                else               return bits_high[l1Id].bits[i-bitct+L].test(bitId);
+            }(i);
+            symb = symb | (bit << i);
+        }
+        assert(symb < Sigma);
+        return symb;
     }
 
     uint64_t rank(uint64_t idx, uint64_t symb) const {
@@ -299,7 +292,7 @@ public:
 
         auto count = [&]() {
             auto v = mark_rank_cb<l1_bits_ct, L2>(symb, [&](size_t idx) -> auto const& {
-                idx = idx + bitct - L2;
+                idx += bitct - L2;
                 if (idx < bitct - L) return bits_low[l1Id].bits[idx];
                 else                 return bits_high[l1Id].bits[idx-bitct+L];
             });
@@ -352,8 +345,9 @@ public:
 
         auto count = [&]() {
             auto v = mark_prefix_rank_cb<l1_bits_ct, L2>(symb, [&](size_t idx) -> auto const& {
-                if (idx + bitct - L2 < bitct - L) return bits_low[l1Id].bits[idx];
-                else                              return bits_high[l1Id].bits[idx-(bitct-L) + bitct - L2];
+                idx += bitct - L2;
+                if (idx < bitct - L) return bits_low[l1Id].bits[idx];
+                else                 return bits_high[l1Id].bits[idx - bitct + L];
             });
             return skip_first_or_last_n_bits_and_count(v, bitId);
         }();
@@ -363,8 +357,6 @@ public:
         auto symb0 = symb<<(bitct - L2);
         auto superblock = l0[l0Id/2][symb0-1];
         auto block      = l1[l1Id/2][symb0-1];
-        //auto superblock = l0_small[l0Id/2][symb-1];
-        //auto block      = l1_small[l1Id/2][symb-1];
         auto r = [&]() {
             if (right_l0 && right_l1) {
                 return superblock + block + count;
@@ -386,9 +378,6 @@ public:
 
     template <size_t L2 = L>
     auto prefix_rank_and_rank_limit(uint64_t idx, uint64_t symb) const -> std::tuple<uint64_t, uint64_t> {
-        /*auto pr0 = prefix_rank_limit<L2>(idx, symb);
-        auto pr1 = prefix_rank_limit<L2>(idx, symb+1);
-        return {pr0, pr1 - pr0};*/
         assert(idx <= totalLength);
         assert(symb < size_t{1}<<L2);
         auto bitId = idx % (l1_bits_ct*2);
@@ -415,12 +404,12 @@ public:
 
             auto count_pr = [&]() {
                 auto v = mark_prefix_rank_cb<l1_bits_ct, L2>(symb, [&](size_t idx) -> auto const& {
-                    if (idx + bitct - L2 < bitct - L) return bits_low[l1Id].bits[idx];
-                    else                              return bits_high[l1Id].bits[idx-(bitct-L) + bitct - L2];
+                    idx += bitct - L2;
+                    if (idx < bitct - L) return bits_low[l1Id].bits[idx];
+                    else                 return bits_high[l1Id].bits[idx - bitct + L];
                 });
                 return skip_first_or_last_n_bits_and_count(v, bitId);
             }();
-            //auto count_pr = bits[l1Id].prefix_rank(bitId, symb);
             if (right_l0 && right_l1) {
                 return superblock_pr + block_pr + count_pr;
             } else if (right_l0) {
@@ -432,12 +421,11 @@ public:
             }
         }();
 
-//        auto count_r = bits[l1Id].rank(bitId, symb);
-//        auto count_r = bits[l1Id].prefix_rank(bitId, symb+1);
         auto count_r = [&]() {
             auto v = mark_prefix_rank_cb<l1_bits_ct, L2>(symb+1, [&](size_t idx) -> auto const& {
-                if (idx + bitct - L2 < bitct - L) return bits_low[l1Id].bits[idx];
-                else                              return bits_high[l1Id].bits[idx-(bitct-L) + bitct - L2];
+                idx += bitct - L2;
+                if (idx < bitct - L) return bits_low[l1Id].bits[idx];
+                else                 return bits_high[l1Id].bits[idx - bitct + L];
             });
             return skip_first_or_last_n_bits_and_count(v, bitId);
         }();
@@ -446,9 +434,6 @@ public:
         auto symb1 = ((symb+1)<<(bitct-L2));
         auto superblock_r = l0[l0Id/2][symb1-1];
         auto block_r      = l1[l1Id/2][symb1-1];
-/*        auto symb1 = symb+1;
-        auto superblock_r = l0_small[l0Id/2][symb1];
-        auto block_r      = l1_small[l1Id/2][symb1];*/
 
         auto r = [&]() {
             if (right_l0 && right_l1) {
@@ -465,26 +450,11 @@ public:
         assert(pr <= idx);
         assert(r <= idx);
         return {pr, r - pr};
-
     }
-
-
-
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
         assert(idx <= totalLength);
         auto r = std::array<uint64_t, TSigma>{};
-/*        for (size_t symb{0}; symb < TSigma; ++symb) {
-            r[symb] = prefix_rank(idx, symb+1);
-        }
-
-        for (size_t symb{1}; symb < TSigma; ++symb) {
-            r[symb] = r[symb] - r[symb-1];
-        }*/
-/*        r[0] = prefix_rank(idx, 1);
-        for (size_t symb{1}; symb < TSigma; ++symb) {
-            r[symb] = prefix_rank(idx, symb+1) - r[symb-1];
-        }*/
         for (size_t symb{0}; symb < TSigma; ++symb) {
             r[symb] = rank(idx, symb);
         }

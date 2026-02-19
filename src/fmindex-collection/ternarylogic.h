@@ -1043,8 +1043,9 @@ auto mark_exact_or_less_large(size_t value, std::span<std::bitset<N1> const, N2>
 //    case 0x06: return ~_a | ~_b | ~_c;
 };
 
-/** Computes for each bit position (seen as spread over _a, _b and _c with _a being the most significant bit) if it
- *  has the same bit value as Value
+/** Computes for each bit position if it has the same bit value as Value.
+ *
+ * _arrCb(0) is the least significant bit, _arrCb(N2-1) most significant bit
  */
 template <size_t N1, size_t N2>
 auto mark_exact_or_less_large_cb(size_t value, auto const& _arrCb) -> std::bitset<N1> {

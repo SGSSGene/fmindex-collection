@@ -149,6 +149,8 @@ struct Search {
         return search_next_symb(cur);
     }
 
+    /* match next symbol
+     */
     bool search_next_symb(cursor_t const& cur) const {
         if (cur.count() == 1) {
             return search_next_symb_single(cur);
@@ -254,6 +256,10 @@ struct Search {
         return search_next_part(cur);
     }
 
+    /** Assumes only a single row is marked.
+     *
+     * Searches for the next symbol
+     */
     bool search_next_symb_single(cursor_t const& cur) const {
         auto r_e    = Restore{e};
         auto r_lqr  = Restore{side->lastQRank};
@@ -261,6 +267,7 @@ struct Search {
         auto r_qp   = Restore{side->queryPos};
         auto r_p    = Restore{partitionPart};
 
+        // detect next symbol/cursor
         auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
             if constexpr (requires() { { cur.extendRightBySymbol() }; }) {
                 if (dir == dir_t::Right) {
