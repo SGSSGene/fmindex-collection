@@ -3,12 +3,12 @@
 #include "allStrings.h"
 #include "utils.h"
 
-#include <fmindex-collection/string/PairedFlattenedBitvectors2L_b.h>
+#include <fmindex-collection/string/PairedFlattenedBitvectors2LPartialSymb.h>
 #include <fmindex-collection/string/AdapterStringKStep.h>
 
 
 TEST_CASE("check if rank on strings with 'dual_limit' functions work", "[string][string_limit]") {
-    using T1 = fmc::string::PairedFlattenedBitvectors2L_b<16, 2, 512, 65536>;
+    using T1 = fmc::string::PairedFlattenedBitvectors2LPartialSymb<16, 2, 512, 65536>;
     static_assert(fmc::StringKStep_c<T1>);
 
     using T2 = fmc::string::InterleavedBitvector16<16>;

@@ -5,7 +5,7 @@
 
 #include <fmindex-collection/fmindex/BiFMIndexKStep.h>
 #include <fmindex-collection/search/SelectCursor.h>
-#include <fmindex-collection/string/PairedFlattenedBitvectors2L_b.h>
+#include <fmindex-collection/string/PairedFlattenedBitvectors2LPartialSymb.h>
 #include <fmindex-collection/suffixarray/CSA.h>
 #include <fstream>
 
@@ -13,7 +13,7 @@
 using String = fmc::string::PairedFlattenedBitvectors_512_64k<Sigma>;*/
 
 template <size_t Sigma>
-using String = fmc::string::PairedFlattenedBitvectors_b_512_64k<Sigma>;
+using String = fmc::string::PairedFlattenedBitvectorsPartialSymb_512_64k<Sigma>;
 
 /*template <size_t Sigma>
 using String = fmc::string::InterleavedBitvectorPrefix16<Sigma>;*/

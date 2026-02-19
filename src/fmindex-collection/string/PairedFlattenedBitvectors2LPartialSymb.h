@@ -20,8 +20,8 @@
 
 namespace fmc::string {
 
-template <size_t TSigma, size_t L, size_t l1_bits_ct, size_t l0_bits_ct, bool Align=true>
-struct PairedFlattenedBitvectors2L_b {
+template <size_t TSigma, size_t K, size_t l1_bits_ct, size_t l0_bits_ct, bool Align=true>
+struct PairedFlattenedBitvectors2LPartialSymb {
     static_assert(l1_bits_ct < l0_bits_ct, "first level must be smaller than second level");
     static_assert(l0_bits_ct-l1_bits_ct <= std::numeric_limits<uint16_t>::max(), "l0_bits_ct can only hold up to uint16_t bits");
 
@@ -32,10 +32,10 @@ struct PairedFlattenedBitvectors2L_b {
     // next full power of 2
     static constexpr auto bvct  = (1ull << bitct);
 
-    static constexpr auto AlignVHigh = Align?alignAsValue(l1_bits_ct):alignof(std::array<std::bitset<l1_bits_ct>, L>);
-    static constexpr auto AlignVLow  = Align?alignAsValue(l1_bits_ct):alignof(std::array<std::bitset<l1_bits_ct>, bitct<L?size_t{0}:(bitct-L)>);
+    static constexpr auto AlignVHigh = Align?alignAsValue(l1_bits_ct):alignof(std::array<std::bitset<l1_bits_ct>, K>);
+    static constexpr auto AlignVLow  = Align?alignAsValue(l1_bits_ct):alignof(std::array<std::bitset<l1_bits_ct>, bitct<K?size_t{0}:(bitct-K)>);
     struct alignas(AlignVHigh) InBitsHigh {
-        std::array<std::bitset<l1_bits_ct>, L> bits;
+        std::array<std::bitset<l1_bits_ct>, K> bits;
 
         template <typename Archive>
         void load(Archive& ar) {
@@ -51,7 +51,7 @@ struct PairedFlattenedBitvectors2L_b {
         }
     };
     struct alignas(AlignVLow) InBitsLow {
-        std::array<std::bitset<l1_bits_ct>, bitct<L?size_t{0}:bitct-L> bits;
+        std::array<std::bitset<l1_bits_ct>, bitct<K?size_t{0}:bitct-K> bits;
 
         template <typename Archive>
         void load(Archive& ar) {
@@ -83,22 +83,22 @@ struct PairedFlattenedBitvectors2L_b {
 
     size_t totalLength{};
 
-    PairedFlattenedBitvectors2L_b()
-        : PairedFlattenedBitvectors2L_b{internal_tag{}, std::span<uint8_t const>{}}
+    PairedFlattenedBitvectors2LPartialSymb()
+        : PairedFlattenedBitvectors2LPartialSymb{internal_tag{}, std::span<uint8_t const>{}}
     {}
 
-    PairedFlattenedBitvectors2L_b(std::span<uint8_t const> _symbols)
-        : PairedFlattenedBitvectors2L_b{internal_tag{}, _symbols}
+    PairedFlattenedBitvectors2LPartialSymb(std::span<uint8_t const> _symbols)
+        : PairedFlattenedBitvectors2LPartialSymb{internal_tag{}, _symbols}
     {}
 
-    PairedFlattenedBitvectors2L_b(std::span<uint64_t const> _symbols)
-        : PairedFlattenedBitvectors2L_b{internal_tag{}, _symbols}
+    PairedFlattenedBitvectors2LPartialSymb(std::span<uint64_t const> _symbols)
+        : PairedFlattenedBitvectors2LPartialSymb{internal_tag{}, _symbols}
     {}
 
     template <std::ranges::range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint64_t>
-    PairedFlattenedBitvectors2L_b(range_t&& _symbols)
-        : PairedFlattenedBitvectors2L_b{internal_tag{}, _symbols}
+    PairedFlattenedBitvectors2LPartialSymb(range_t&& _symbols)
+        : PairedFlattenedBitvectors2LPartialSymb{internal_tag{}, _symbols}
     {}
 
 
@@ -107,7 +107,7 @@ private:
 
     template <std::ranges::range range_t>
         requires std::convertible_to<std::ranges::range_value_t<range_t>, uint64_t>
-    PairedFlattenedBitvectors2L_b(internal_tag, range_t&& _symbols) {
+    PairedFlattenedBitvectors2LPartialSymb(internal_tag, range_t&& _symbols) {
 
         if constexpr (requires() { _symbols.size(); }) {
             auto const _length = _symbols.size();
@@ -119,10 +119,10 @@ private:
         for (auto c : _symbols) {
             auto bitId = totalLength % l1_bits_ct;
             for (size_t j{0}; j < bitct; ++j) {
-                if (j < bitct - L) {
+                if (j < bitct - K) {
                     bits_low.back().bits[j][bitId] = (c>>j) & 1;
                 } else {
-                    bits_high.back().bits[j - bitct + L][bitId] = (c>>j) & 1;
+                    bits_high.back().bits[j - bitct + K][bitId] = (c>>j) & 1;
                 }
             }
 
@@ -165,8 +165,8 @@ private:
                     auto counts = std::array<size_t, Sigma>{};
                     for (size_t symb{0}; symb < Sigma; ++symb) {
                         auto v = mark_rank_cb<l1_bits_ct, bitct>(symb, [&](size_t idx) -> auto const& {
-                            if (idx < bitct - L) return b_low.bits[idx];
-                            else                 return b_high.bits[idx-bitct+L];
+                            if (idx < bitct - K) return b_low.bits[idx];
+                            else                 return b_high.bits[idx-bitct+K];
                         });
                         counts[symb] = skip_first_or_last_n_bits_and_count(v, 0);
                     }
@@ -205,8 +205,8 @@ private:
                     auto counts = std::array<size_t, Sigma>{};
                     for (size_t symb{0}; symb < Sigma; ++symb) {
                         auto v = mark_rank_cb<l1_bits_ct, bitct>(symb, [&](size_t idx) -> auto const& {
-                            if (idx < bitct - L) return b_low.bits[idx];
-                            else                 return b_high.bits[idx-bitct+L];
+                            if (idx < bitct - K) return b_low.bits[idx];
+                            else                 return b_high.bits[idx-bitct+K];
                         });
                         counts[symb] = skip_first_or_last_n_bits_and_count(v, 0);
                     }
@@ -236,26 +236,10 @@ public:
     }
 
     uint64_t symbol(uint64_t idx) const {
-        assert(idx < totalLength);
-        auto bitId = idx % l1_bits_ct;
-        auto l1Id  = idx / l1_bits_ct;
-        assert(l1Id < bits_low.size());
-
-        uint64_t symb{};
-        for (uint64_t _i{bitct}; _i > 0; --_i) {
-            auto i = _i-1;
-
-            auto bit = [&]() {
-                if (i < bitct - L) return bits_low[l1Id].bits[i].test(bitId);
-                else               return bits_high[l1Id].bits[i-bitct+L].test(bitId);
-            }();
-            symb = (symb<<1) | bit;
-        }
-        assert(symb < Sigma);
-        return symb;
+        return symbol_limit<bitct>(idx);
     }
 
-    template <size_t L2 = L>
+    template <size_t L = K>
     uint64_t symbol_limit(uint64_t idx) const {
         assert(idx < totalLength);
         auto bitId = idx % l1_bits_ct;
@@ -263,11 +247,11 @@ public:
         assert(l1Id < bits_low.size());
 
         uint64_t symb{};
-        for (uint64_t i{0}; i < L2; ++i) {
+        for (uint64_t i{0}; i < L; ++i) {
             auto bit = [&](size_t i) {
-                i += (bitct - L2);
-                if (i < bitct - L) return bits_low[l1Id].bits[i].test(bitId);
-                else               return bits_high[l1Id].bits[i-bitct+L].test(bitId);
+                i += (bitct - L);
+                if (i < bitct - K) return bits_low[l1Id].bits[i].test(bitId);
+                else               return bits_high[l1Id].bits[i-bitct+K].test(bitId);
             }(i);
             symb = symb | (bit << i);
         }
@@ -279,10 +263,10 @@ public:
         return rank_limit<bitct>(idx, symb);
     }
 
-    template <size_t L2 = L>
+    template <size_t L = K>
     uint64_t rank_limit(uint64_t idx, uint64_t symb) const {
         assert(idx <= totalLength);
-        assert(symb < (size_t{1}<<L2));
+        assert(symb < (size_t{1}<<L));
         auto bitId = idx % (l1_bits_ct*2);
         auto l1Id = idx / l1_bits_ct;
         auto l0Id = idx / l0_bits_ct;
@@ -291,20 +275,20 @@ public:
         assert(l0Id/2 < l0.size());
 
         auto count = [&]() {
-            auto v = mark_rank_cb<l1_bits_ct, L2>(symb, [&](size_t idx) -> auto const& {
-                idx += bitct - L2;
-                if (idx < bitct - L) return bits_low[l1Id].bits[idx];
-                else                 return bits_high[l1Id].bits[idx-bitct+L];
+            auto v = mark_rank_cb<l1_bits_ct, L>(symb, [&](size_t idx) -> auto const& {
+                idx += bitct - L;
+                if (idx < bitct - K) return bits_low[l1Id].bits[idx];
+                else                 return bits_high[l1Id].bits[idx-bitct+K];
             });
             return skip_first_or_last_n_bits_and_count(v, bitId);
         }();
 
-        auto symb1 = ((symb+1)<<(bitct-L2))-1;
+        auto symb1 = ((symb+1)<<(bitct-L))-1;
         auto right_l1 = (l1Id%2);
         auto right_l0 = (l0Id%2);
         auto [superblock, block] = [&]() -> std::tuple<size_t, size_t> {
             if (symb == 0) return {l0[l0Id/2][symb1], l1[l1Id/2][symb1]};
-            auto symb0 = (symb<<(bitct-L2))-1;
+            auto symb0 = (symb<<(bitct-L))-1;
             return {
                 (l0[l0Id/2][symb1] - l0[l0Id/2][symb0]),
                 (l1[l1Id/2][symb1] - l1[l1Id/2][symb0])
@@ -330,12 +314,12 @@ public:
         return prefix_rank_limit<bitct>(idx, symb);
     }
 
-    template <size_t L2 = L>
+    template <size_t L = K>
     uint64_t prefix_rank_limit(uint64_t idx, uint64_t symb) const {
         if (symb == 0) return 0;
-        if (symb == (size_t{1}<<L2)) return idx;
+        if (symb == (size_t{1}<<L)) return idx;
         assert(idx <= totalLength);
-        assert(symb <= (size_t{1}<<L2));
+        assert(symb <= (size_t{1}<<L));
         auto bitId = idx % (l1_bits_ct*2);
         auto l1Id = idx / l1_bits_ct;
         auto l0Id = idx / l0_bits_ct;
@@ -344,17 +328,17 @@ public:
         assert(l0Id/2 < l0.size());
 
         auto count = [&]() {
-            auto v = mark_prefix_rank_cb<l1_bits_ct, L2>(symb, [&](size_t idx) -> auto const& {
-                idx += bitct - L2;
-                if (idx < bitct - L) return bits_low[l1Id].bits[idx];
-                else                 return bits_high[l1Id].bits[idx - bitct + L];
+            auto v = mark_prefix_rank_cb<l1_bits_ct, L>(symb, [&](size_t idx) -> auto const& {
+                idx += bitct - L;
+                if (idx < bitct - K) return bits_low[l1Id].bits[idx];
+                else                 return bits_high[l1Id].bits[idx - bitct + K];
             });
             return skip_first_or_last_n_bits_and_count(v, bitId);
         }();
 
         auto right_l1 = (l1Id%2);
         auto right_l0 = (l0Id%2);
-        auto symb0 = symb<<(bitct - L2);
+        auto symb0 = symb<<(bitct - L);
         auto superblock = l0[l0Id/2][symb0-1];
         auto block      = l1[l1Id/2][symb0-1];
         auto r = [&]() {
@@ -376,10 +360,10 @@ public:
         return prefix_rank_and_rank_limit<bitct>(idx, symb);
     }
 
-    template <size_t L2 = L>
+    template <size_t L = K>
     auto prefix_rank_and_rank_limit(uint64_t idx, uint64_t symb) const -> std::tuple<uint64_t, uint64_t> {
         assert(idx <= totalLength);
-        assert(symb < size_t{1}<<L2);
+        assert(symb < size_t{1}<<L);
         auto bitId = idx % (l1_bits_ct*2);
         auto l1Id = idx / l1_bits_ct;
         auto l0Id = idx / l0_bits_ct;
@@ -392,21 +376,21 @@ public:
 
         auto [superblock_pr, block_pr] = [&]() -> std::tuple<size_t, size_t> {
             if (symb == 0) return {0, 0};
-            auto symb0 = symb<<(bitct - L2);
+            auto symb0 = symb<<(bitct - L);
             return {l0[l0Id/2][symb0-1], l1[l1Id/2][symb0-1]};
         }();
 
 
         auto pr = [&]() -> size_t {
             if (symb == 0) return 0;
-            if (symb == (size_t{1}<<L2)) return idx;
+            if (symb == (size_t{1}<<L)) return idx;
 
 
             auto count_pr = [&]() {
-                auto v = mark_prefix_rank_cb<l1_bits_ct, L2>(symb, [&](size_t idx) -> auto const& {
-                    idx += bitct - L2;
-                    if (idx < bitct - L) return bits_low[l1Id].bits[idx];
-                    else                 return bits_high[l1Id].bits[idx - bitct + L];
+                auto v = mark_prefix_rank_cb<l1_bits_ct, L>(symb, [&](size_t idx) -> auto const& {
+                    idx += bitct - L;
+                    if (idx < bitct - K) return bits_low[l1Id].bits[idx];
+                    else                 return bits_high[l1Id].bits[idx - bitct + K];
                 });
                 return skip_first_or_last_n_bits_and_count(v, bitId);
             }();
@@ -422,16 +406,16 @@ public:
         }();
 
         auto count_r = [&]() {
-            auto v = mark_prefix_rank_cb<l1_bits_ct, L2>(symb+1, [&](size_t idx) -> auto const& {
-                idx += bitct - L2;
-                if (idx < bitct - L) return bits_low[l1Id].bits[idx];
-                else                 return bits_high[l1Id].bits[idx - bitct + L];
+            auto v = mark_prefix_rank_cb<l1_bits_ct, L>(symb+1, [&](size_t idx) -> auto const& {
+                idx += bitct - L;
+                if (idx < bitct - K) return bits_low[l1Id].bits[idx];
+                else                 return bits_high[l1Id].bits[idx - bitct + K];
             });
             return skip_first_or_last_n_bits_and_count(v, bitId);
         }();
 
 
-        auto symb1 = ((symb+1)<<(bitct-L2));
+        auto symb1 = ((symb+1)<<(bitct-L));
         auto superblock_r = l0[l0Id/2][symb1-1];
         auto block_r      = l1[l1Id/2][symb1-1];
 
@@ -477,50 +461,50 @@ public:
     }
 };
 
-template <size_t Sigma> using PairedFlattenedBitvectors_b_64_4k   = PairedFlattenedBitvectors2L_b<Sigma, 2, 64, 4096>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_128_4k  = PairedFlattenedBitvectors2L_b<Sigma, 2, 128, 4096>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_256_4k  = PairedFlattenedBitvectors2L_b<Sigma, 2, 256, 4096>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_512_4k  = PairedFlattenedBitvectors2L_b<Sigma, 2, 512, 4096>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_1024_4k = PairedFlattenedBitvectors2L_b<Sigma, 2, 1024, 4096>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_2048_4k = PairedFlattenedBitvectors2L_b<Sigma, 2, 2048, 4096>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_64_4k   = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 64, 4096>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_128_4k  = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 128, 4096>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_256_4k  = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 256, 4096>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_512_4k  = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 512, 4096>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_1024_4k = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 1024, 4096>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_2048_4k = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 2048, 4096>;
 
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_64_4k>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_128_4k>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_256_4k>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_512_4k>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_1024_4k>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_2048_4k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_64_4k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_128_4k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_256_4k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_512_4k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_1024_4k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_2048_4k>);
 
-template <size_t Sigma> using PairedFlattenedBitvectors_b_64_64k   = PairedFlattenedBitvectors2L_b<Sigma, 2, 64, 65536>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_128_64k  = PairedFlattenedBitvectors2L_b<Sigma, 2, 128, 65536>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_256_64k  = PairedFlattenedBitvectors2L_b<Sigma, 2, 256, 65536>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_512_64k  = PairedFlattenedBitvectors2L_b<Sigma, 2, 512, 65536>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_1024_64k = PairedFlattenedBitvectors2L_b<Sigma, 2, 1024, 65536>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_2048_64k = PairedFlattenedBitvectors2L_b<Sigma, 2, 2048, 65536>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_4096_64k = PairedFlattenedBitvectors2L_b<Sigma, 2, 4096, 65536>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_64_64k   = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 64, 65536>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_128_64k  = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 128, 65536>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_256_64k  = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 256, 65536>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_512_64k  = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 512, 65536>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_1024_64k = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 1024, 65536>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_2048_64k = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 2048, 65536>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_4096_64k = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 4096, 65536>;
 
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_64_64k>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_128_64k>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_256_64k>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_512_64k>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_1024_64k>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_2048_64k>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_4096_64k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_64_64k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_128_64k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_256_64k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_512_64k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_1024_64k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_2048_64k>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_4096_64k>);
 
-template <size_t Sigma> using PairedFlattenedBitvectors_b_64_64kUA   = PairedFlattenedBitvectors2L_b<Sigma, 2, 64, 65536, false>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_128_64kUA  = PairedFlattenedBitvectors2L_b<Sigma, 2, 128, 65536, false>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_256_64kUA  = PairedFlattenedBitvectors2L_b<Sigma, 2, 256, 65536, false>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_512_64kUA  = PairedFlattenedBitvectors2L_b<Sigma, 2, 512, 65536, false>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_1024_64kUA = PairedFlattenedBitvectors2L_b<Sigma, 2, 1024, 65536, false>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_2048_64kUA = PairedFlattenedBitvectors2L_b<Sigma, 2, 2048, 65536, false>;
-template <size_t Sigma> using PairedFlattenedBitvectors_b_4096_64kUA = PairedFlattenedBitvectors2L_b<Sigma, 2, 4096, 65536, false>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_64_64kUA   = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 64, 65536, false>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_128_64kUA  = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 128, 65536, false>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_256_64kUA  = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 256, 65536, false>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_512_64kUA  = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 512, 65536, false>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_1024_64kUA = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 1024, 65536, false>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_2048_64kUA = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 2048, 65536, false>;
+template <size_t Sigma> using PairedFlattenedBitvectorsPartialSymb_4096_64kUA = PairedFlattenedBitvectors2LPartialSymb<Sigma, 2, 4096, 65536, false>;
 
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_64_64kUA>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_128_64kUA>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_256_64kUA>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_512_64kUA>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_1024_64kUA>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_2048_64kUA>);
-static_assert(checkStringKStep_c<PairedFlattenedBitvectors_b_4096_64kUA>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_64_64kUA>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_128_64kUA>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_256_64kUA>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_512_64kUA>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_1024_64kUA>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_2048_64kUA>);
+static_assert(checkStringKStep_c<PairedFlattenedBitvectorsPartialSymb_4096_64kUA>);
 
 }

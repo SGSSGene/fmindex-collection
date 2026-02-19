@@ -3,7 +3,7 @@
 #include "allStrings.h"
 #include "utils.h"
 
-#include <fmindex-collection/string/PairedFlattenedBitvectors2L_b.h>
+#include <fmindex-collection/string/PairedFlattenedBitvectors2LPartialSymb.h>
 
 TEST_CASE("check if rank on strings with 'dual_limit' functions work", "[string][dual_limit]") {
     size_t const Sigma = 4;
@@ -13,10 +13,7 @@ TEST_CASE("check if rank on strings with 'dual_limit' functions work", "[string]
 
     auto input2 = generateText<0, 64>(1000);
 
-    auto p = fmc::string::PairedFlattenedBitvectors2L_b<64, 2, 512, 65536>{input2};
-//    auto p2 = fmc::string::PairedFlattenedBitvectors2L<16, 512, 65536>{input2};
-//    (void)p2;
-//    auto p = fmc::string::InterleavedBitvectorPrefix16<16>{input2};
+    auto p = fmc::string::PairedFlattenedBitvectors2LPartialSymb<64, 2, 512, 65536>{input2};
 //
     auto countR1_arr  = std::vector<std::array<size_t, 4>>{};
     {
