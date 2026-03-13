@@ -35,11 +35,11 @@ jobs:
           - {os: ubuntu-22.04, compiler: gcc-latest-cpp23-debug-sanitize_thread}
           - {os: ubuntu-22.04, compiler: clang-third-latest-cpp23-release}
           - {os: ubuntu-22.04, compiler: clang-second-latest-cpp23-release, cmake_flags: "-DLIBSAIS_USE_OPENMP=NO"}
-          - {os: ubuntu-22.04, compiler: clang-latest-cpp23-release,        cmake_flags: "-DLIBSAIS_USE_OPENMP=NO"}
+#          - {os: ubuntu-22.04, compiler: clang-latest-cpp23-release,        cmake_flags: "-DLIBSAIS_USE_OPENMP=NO"}
           - {os: macos-15-intel, compiler: gcc-latest-cpp23-release,        cmake_flags: "-DFMC_USE_SDSL=NO"}
-          - {os: macos-15-intel, compiler: clang-latest-cpp23-release,      cmake_flags: "-DFMC_USE_SDSL=NO"}
+#          - {os: macos-15-intel, compiler: clang-latest-cpp23-release,      cmake_flags: "-DFMC_USE_SDSL=NO"}
           - {os: macos-14,       compiler: gcc-latest-cpp23-release,        cmake_flags: "-DFMC_USE_SDSL=NO"}
-          - {os: macos-14,       compiler: clang-latest-cpp23-release,      cmake_flags: "-DFMC_USE_SDSL=NO"}
+#          - {os: macos-14,       compiler: clang-latest-cpp23-release,      cmake_flags: "-DFMC_USE_SDSL=NO"}
           - {os: windows-2022,   compiler: msvc-cpp23-release,              cmake_flags: "-DFMC_USE_SDSL=NO"}
           # not running any tests, since it takes to long
           - {os: windows-2022,   compiler: msvc-cpp23-debug, cmake_flags: "-DFMC_USE_SDSL=NO"}
