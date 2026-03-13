@@ -64,22 +64,45 @@ struct AdapterStringKStep {
 
     template <size_t L2 = TL>
     auto symbol_limit(size_t idx) const {
-        static_assert(L2 == TL, "Only works for L same as L2");
-        return string_limit.symbol(idx);
+        if constexpr (L2 == bitct) {
+            return string.symbol(idx);
+        } else if constexpr (L2 == TL) {
+            return string_limit.symbol(idx);
+        } else {
+            []<bool b = false>() {
+                static_assert(b, "Only works for L2 is either TL or bitct");
+            }();
+        }
     }
 
     template <size_t L2 = TL>
     auto rank_limit(size_t idx, uint64_t symb) const {
-        static_assert(L2 == TL, "Only works for L same as L2");
-        return string_limit.rank(idx, symb);
+        if constexpr (L2 == bitct) {
+            return string.rank(idx, symb);
+        } else if constexpr (L2 == TL) {
+            return string_limit.rank(idx, symb);
+        } else {
+            []<bool b = false>() {
+                static_assert(b, "Only works for L2 is either TL or bitct");
+            }();
+        }
     }
 
     template <size_t L2 = TL>
     auto prefix_rank_and_rank_limit(size_t idx, uint64_t symb) const -> std::tuple<uint64_t, uint64_t> {
-        static_assert(L2 == TL, "Only works for L same as L2");
-        auto r  = string_limit.rank(idx, symb);
-        auto pr = string_limit.prefix_rank(idx, symb);
-        return {pr, r};
+        if constexpr (L2 == bitct) {
+            auto r  = string.rank(idx, symb);
+            auto pr = string.prefix_rank(idx, symb);
+            return {pr, r};
+        } else if constexpr (L2 == TL) {
+            auto r  = string_limit.rank(idx, symb);
+            auto pr = string_limit.prefix_rank(idx, symb);
+            return {pr, r};
+        } else {
+            []<bool b = false>() {
+                static_assert(b, "Only works for L2 is either TL or bitct");
+            }();
+        }
     }
 
 
