@@ -77,9 +77,9 @@ TEST_CASE("check if rank on strings with 'dual_limit' functions work", "[string]
         return ct;
     };
 
-/*    for (size_t i{0}; i <= input2.size(); ++i) {
+    for (size_t i{0}; i <= input2.size(); ++i) {
         p.all_ranks_dual_limit<6>(i, input2.size(), [&](size_t symb, size_t rs1, size_t rs2, size_t prs1, size_t prs2) {
-            CHECK(symb <= Sigma*Sigma*Sigma);
+            CHECK(symb < Sigma*Sigma*Sigma);
             CHECK(rs1 == countR3(i, symb));
             CHECK(rs2 == countR3(input2.size(), symb));
             CHECK(prs1 == countPR3(i, symb));
@@ -87,10 +87,9 @@ TEST_CASE("check if rank on strings with 'dual_limit' functions work", "[string]
         });
     }
 
-
     for (size_t i{0}; i <= input2.size(); ++i) {
         p.all_ranks_dual_limit<4>(i, input2.size(), [&](size_t symb, size_t rs1, size_t rs2, size_t prs1, size_t prs2) {
-            CHECK(symb <= Sigma*Sigma);
+            CHECK(symb < Sigma*Sigma);
             CHECK(rs1 == countR2(i, symb));
             CHECK(rs2 == countR2(input2.size(), symb));
             CHECK(prs1 == countPR2(i, symb));
@@ -100,13 +99,13 @@ TEST_CASE("check if rank on strings with 'dual_limit' functions work", "[string]
 
     for (size_t i{0}; i <= input2.size(); ++i) {
         p.all_ranks_dual_limit<2>(i, input2.size(), [&](size_t symb, size_t rs1, size_t rs2, size_t prs1, size_t prs2) {
-            CHECK(symb <= Sigma);
+            CHECK(symb < Sigma);
             CHECK(rs1 == countR1(i, symb));
             CHECK(rs2 == countR1(input2.size(), symb));
             CHECK(prs1 == countPR1(i, symb));
             CHECK(prs2 == countPR1(input2.size(), symb));
         });
-    }*/
+    }
 
     for (size_t i{0}; i < input2.size(); ++i) {
         CHECK(p.symbol(i) == input2[i]);

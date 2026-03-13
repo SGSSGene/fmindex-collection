@@ -3,15 +3,13 @@
 #include "allStrings.h"
 #include "utils.h"
 
-#include <fmindex-collection/string/PairedFlattenedBitvectors2L_b.h>
-
 #include <fstream>
 
 template <size_t Sigma>
 using String = fmc::string::PairedFlattenedBitvectors_512_64k<Sigma>;
 
 template <size_t Sigma>
-using String_b = fmc::string::PairedFlattenedBitvectors_b_512_64k<Sigma>;
+using StringPartialSymb = fmc::string::PairedFlattenedBitvectorsPartialSymb_512_64k<Sigma>;
 
 template <size_t Sigma>
 using String2 = fmc::string::InterleavedBitvectorPrefix16<Sigma>;
@@ -33,8 +31,8 @@ TEST_CASE("benchmark string rank/prefix_rank with _limit", "[string][!benchmark]
 
     auto s16 = String<16>(text16);
     auto s4  = String<4>(text4);
-    auto s16_b = String_b<16>(text16);
-    auto s4_b  = String_b<4>(text4);
+    auto s16_b = StringPartialSymb<16>(text16);
+    auto s4_b  = StringPartialSymb<4>(text4);
     auto s16_i = String2<16>(text16);
     auto s4_i  = String2<16>(text16);
 

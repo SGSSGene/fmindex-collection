@@ -455,6 +455,143 @@ public:
         return {rs, prs};
     }
 
+    /* This is a special variant of the `all_ranks_and_prefix_ranks` function.
+     *
+     * Differences:
+     *  - it looks up the values for two positions at the same time.
+     *  - it uses a callback function
+     *  - it does not report (prefix) ranks for symbols that have 0-values
+     */
+    template <size_t L>
+    void all_ranks_dual_limit(size_t idx1, size_t idx2, auto const& cb) const {
+        assert(idx1 <= totalLength);
+        assert(idx2 <= totalLength);
+
+        // takes an index and splits it into the indices required for partial-paired-blocks
+        auto split = [&](size_t idx) -> std::tuple<size_t, size_t, size_t, int64_t, int64_t> {
+            auto bitId = idx % (l1_bits_ct*2);
+            auto l1Id = idx / l1_bits_ct;
+            auto l0Id = idx / l0_bits_ct;
+            assert(l1Id < bits_low.size());
+            assert(l1Id/2 < l1.size());
+            assert(l0Id/2 < l0.size());
+            int64_t right_l1 = l1Id%2;
+            int64_t right_l0 = l0Id%2;
+            assert(bitId <= l1_bits_ct*2);
+            return {bitId, l1Id, l0Id, right_l1, right_l0};
+        };
+
+        // compute indices for idx1 (_lb) and idx2 (_rb)
+        auto [bitId_lb, l1Id_lb, l0Id_lb, right_l1_lb, right_l0_lb] = split(idx1);
+        auto [bitId_rb, l1Id_rb, l0Id_rb, right_l1_rb, right_l0_rb] = split(idx2);
+
+        // compute blocks
+        auto const& l0_lb = l0[l0Id_lb/2];
+        auto const& l0_rb = l0[l0Id_rb/2];
+        auto const& l1_lb = l1[l1Id_lb/2];
+        auto const& l1_rb = l1[l1Id_rb/2];
+
+        auto bits_lb = [&](size_t idx) {
+            if (idx < bitct - K) return bits_low[l1Id_lb].bits[idx];
+            else                 return bits_high[l1Id_lb].bits[idx - bitct + K];
+        };
+        auto bits_rb = [&](size_t idx) {
+            if (idx < bitct - K) return bits_low[l1Id_rb].bits[idx];
+            else                 return bits_high[l1Id_rb].bits[idx - bitct + K];
+        };
+//        auto const& bits_lb = bits[l1Id_lb].bits;
+//        auto const& bits_rb = bits[l1Id_rb].bits;
+
+
+        // computes prefix rank for symbol (symb)
+        auto count_pr = [&](auto const& b1, auto const& b2, size_t symb) -> std::tuple<size_t, size_t> {
+            auto count_lb = skip_first_or_last_n_bits_and_count(b1, bitId_lb);
+            auto count_rb = skip_first_or_last_n_bits_and_count(b2, bitId_rb);
+
+            auto pr1 = [&]() {
+                auto const& superblock = (symb>0)?l0_lb[symb-1]:size_t{0};
+                auto const& block      = (symb>0)?l1_lb[symb-1]:size_t{0};
+                auto const& count      = count_lb;
+                auto const& right_l0   = right_l0_lb;
+                auto const& right_l1   = right_l1_lb;
+
+                if (right_l0 && right_l1) return superblock + block + count;
+                else if (right_l0)        return superblock + block - count;
+                else if (right_l1)        return superblock - block + count;
+                else                      return superblock - block - count;
+            }();
+
+            auto pr2 = [&]() {
+                auto const& superblock = (symb>0)?l0_rb[symb-1]:size_t{0};
+                auto const& block      = (symb>0)?l1_rb[symb-1]:size_t{0};
+                auto const& count      = count_rb;
+                auto const& right_l0   = right_l0_rb;
+                auto const& right_l1   = right_l1_rb;
+
+                if (right_l0 && right_l1) return superblock + block + count;
+                else if (right_l0)        return superblock + block - count;
+                else if (right_l1)        return superblock - block + count;
+                else                      return superblock - block - count;
+            }();
+
+            assert(pr1 <= idx1);
+            assert(pr2 <= idx2);
+
+            return {pr1, pr2};
+        };
+
+        using word_of_bits = std::bitset<l1_bits_ct>;
+        auto This = this; //!TODO !WORKAROUND otherwise crashes gcc
+        (void)This;
+
+        /** Heart of the algorithm
+         *
+         * A recursive algorithm checks if descending to left and/or right is required.
+         * Aborts if any of the ranges have no characters. This accelerates computation on large alphabets.
+         */
+        auto rec = [&](this auto&& self, word_of_bits const& l_b1, word_of_bits const& r_b1, word_of_bits const& l_b2, word_of_bits const& r_b2, int level, size_t pr1_S, size_t pr2_S, size_t pr1_E, size_t pr2_E, size_t symb) -> void {
+            auto lsymb = symb | (1 << level);
+            auto b1 = l_b1 | (r_b1 & ~bits_lb(level));
+            auto b2 = l_b2 | (r_b2 & ~bits_rb(level));
+
+            auto [pr1, pr2] = count_pr(b1, b2, lsymb);
+
+            assert(This->prefix_rank(idx1, lsymb) == pr1);
+            assert(This->prefix_rank(idx2, lsymb) == pr2);
+
+            auto rank_l_lb = pr1-pr1_S;
+            auto rank_l_rb = pr2-pr2_S;
+
+            auto rank_r_lb = pr1_E-pr1;
+            auto rank_r_rb = pr2_E-pr2;
+            if (level == bitct-L) {
+                assert(This->prefix_rank(idx1, symb) == pr1_S);
+                assert(This->prefix_rank(idx2, symb) == pr2_S);
+                cb( symb >> (bitct-L), rank_l_lb, rank_l_rb, pr1_S, pr2_S);
+                cb(lsymb >> (bitct-L), rank_r_lb, rank_r_rb, pr1, pr2);
+            } else {
+                auto countLeft  = rank_l_rb - rank_l_lb;
+                auto countRight = rank_r_rb - rank_r_lb;
+
+                // recursion left
+                if (countLeft > 0) {
+                    self(l_b1, b1, l_b2, b2, level-1, pr1_S, pr2_S, pr1, pr2, symb);
+                }
+                // recursion right
+                if (countRight > 0) {
+                    self(b1, r_b1, b2, r_b2, level-1, pr1, pr2, pr1_E, pr2_E, lsymb);
+                }
+            }
+        };
+        rec (
+            mask_positive_or_negative<l1_bits_ct>[1], mask_positive_or_negative<l1_bits_ct>[0],
+            mask_positive_or_negative<l1_bits_ct>[1], mask_positive_or_negative<l1_bits_ct>[0],
+            /*.level=*/      bitct-1,
+            0, 0, idx1, idx2,
+            /*.symb=*/       0
+        );
+    }
+
     template <typename Archive>
     void serialize(this auto&& self, Archive& ar) {
         ar(self.l0, self.l1, self.bits_low, self.bits_high, self.totalLength);

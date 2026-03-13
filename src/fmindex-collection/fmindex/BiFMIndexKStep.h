@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include "../string/PairedFlattenedBitvectors2L_b.h"
+#include "../string/PairedFlattenedBitvectors2LPartialSymb.h"
 #include "../string/AdapterStringKStep.h"
 #include "../string/concepts.h"
 #include "../suffixarray/SparseArray.h"
@@ -28,7 +28,7 @@ constexpr static size_t my_pow_base(size_t e) {
 }
 
 
-template <size_t TSigma, template <size_t> typename TString = string::PairedFlattenedBitvectors_b_512_64k, SparseArray_c TSparseArray = suffixarray::SparseArray<std::tuple<uint32_t, uint32_t>>, bool TDelim=true, bool TReuseRev=false, size_t TKStep=2>
+template <size_t TSigma, template <size_t> typename TString = string::PairedFlattenedBitvectorsPartialSymb_512_64k, SparseArray_c TSparseArray = suffixarray::SparseArray<std::tuple<uint32_t, uint32_t>>, bool TDelim=true, bool TReuseRev=false, size_t TKStep=2>
     requires String_c<TString<TSigma>>
 struct BiFMIndexKStep {
     using DocumentEntries = TSparseArray::value_t;

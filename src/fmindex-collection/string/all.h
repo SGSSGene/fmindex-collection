@@ -21,6 +21,7 @@
 #include "NEPRV8.h"
 #include "Naive.h"
 #include "PairedFlattenedBitvectors2L.h"
+#include "PairedFlattenedBitvectors2LPartialSymb.h"
 #include "PartialPairedL0L1L2_NEPRV8.h"
 #include "RunBlockEncoding.h"
 #include "RunBlockEncodingV2.h"
