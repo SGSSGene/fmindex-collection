@@ -237,7 +237,7 @@ struct Search {
             if (cur.count() == 1) {
                 auto s = (dir == dir_t::Right)?cur.symbolRight():cur.symbolLeft();
                 if (s != nextSymb) return false;
-                if constexpr (requires() { { cur.extendRightBySymbol() }; }) {
+                if constexpr (requires() { { cur.extendRightBySymbol(nextSymb) }; }) {
                     cur = (dir == dir_t::Right)?cur.extendRightBySymbol(nextSymb):cur.extendLeftBySymbol(nextSymb);
                 } else {
                     cur = (dir == dir_t::Right)?cur.extendRight(nextSymb):cur.extendLeft(nextSymb);

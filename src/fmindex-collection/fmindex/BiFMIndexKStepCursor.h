@@ -80,8 +80,8 @@ struct BiFMIndexKStepCursor {
             auto& bwt = index->bwt_kstep;
             bwt.template all_ranks_dual_limit<bitct>(lb, lb+len, [&](size_t symb, size_t rs1, size_t rs2, size_t prs1, size_t prs2) {
                 auto newLb    = index->C[symb] + rs1;
-                auto newLen   = rs2 - rs1;
                 auto newLbRev = lbRev + prs2 - prs1;
+                auto newLen   = rs2 - rs1;
                 cursors[symb] = BiFMIndexKStepCursor{*index, newLb, newLbRev, newLen, steps+1};
             });
         } else {
@@ -96,14 +96,14 @@ struct BiFMIndexKStepCursor {
         if constexpr (HasDualRank) {
             auto& bwt = fetchRightBwtKStep();
             bwt.template all_ranks_dual_limit<bitct>(lbRev, lbRev+len, [&](size_t symb, size_t rs1, size_t rs2, size_t prs1, size_t prs2) {
+                auto newLb    = lb + prs2 - prs1;
                 auto newLbRev = index->C[symb] + rs1;
                 auto newLen   = rs2 - rs1;
-                auto newLb    = lb + prs2 - prs1;
                 cursors[symb] = BiFMIndexKStepCursor{*index, newLb, newLbRev, newLen, steps+1};
             });
         } else {
             for (size_t i{0}; i < Sigma; ++i) {
-                cursors[i] = extendLeft(i);
+                cursors[i] = extendRight(i);
             }
         }
         return cursors;
@@ -114,10 +114,10 @@ struct BiFMIndexKStepCursor {
         auto [lb_pr, lb_r] = bwt.template prefix_rank_and_rank_limit<bitct>(lb, symb);
         auto [rb_pr, rb_r] = bwt.template prefix_rank_and_rank_limit<bitct>(lb+len, symb);
 
-        size_t newLb    = lb_r;
+        size_t newLb    = lb_r + index->C[symb];
         size_t newLbRev = lbRev + rb_pr - lb_pr;
-        size_t newLen   = rb_r - newLb;
-        auto newCursor = BiFMIndexKStepCursor{*index, newLb + index->C[symb], newLbRev, newLen, steps+1};
+        size_t newLen   = rb_r - lb_r;
+        auto newCursor = BiFMIndexKStepCursor{*index, newLb, newLbRev, newLen, steps+1};
         return newCursor;
     }
     auto extendRight(size_t symb) const -> BiFMIndexKStepCursor {
@@ -126,10 +126,10 @@ struct BiFMIndexKStepCursor {
         auto [lb_pr, lb_r] = bwt.template prefix_rank_and_rank_limit<bitct>(lbRev, symb);
         auto [rb_pr, rb_r] = bwt.template prefix_rank_and_rank_limit<bitct>(lbRev+len, symb);
 
-        size_t newLbRev = lb_r;
         size_t newLb    = lb + rb_pr - lb_pr;
-        size_t newLen   = rb_r - newLbRev;
-        auto newCursor = BiFMIndexKStepCursor{*index, newLb, newLbRev + index->C[symb], newLen, steps+1};
+        size_t newLbRev = lb_r + index->C[symb];
+        size_t newLen   = rb_r - lb_r;
+        auto newCursor = BiFMIndexKStepCursor{*index, newLb, newLbRev, newLen, steps+1};
         return newCursor;
     }
 
@@ -247,7 +247,7 @@ struct BiFMIndexKStepCursor {
         size_t newLb    = bwt.rank(lb, kSymb);
         size_t newLbRev = lbRev;
         size_t newLen   = len;
-        auto newCursor  = BiFMIndexKStepCursor{*index, newLb + index->C_kstep[kSymb], newLbRev, newLen, steps+1};
+        auto newCursor  = BiFMIndexKStepCursor{*index, newLb + index->C_kstep[kSymb], newLbRev, newLen, steps+KStep};
         return newCursor;
     }
 
@@ -257,7 +257,7 @@ struct BiFMIndexKStepCursor {
         size_t newLb    = lb;
         size_t newLbRev = bwt.rank(lbRev, kSymb);
         size_t newLen   = len;
-        auto newCursor = BiFMIndexKStepCursor{*index, newLb, newLbRev + index->CRev_kstep[kSymb], newLen, steps+1};
+        auto newCursor = BiFMIndexKStepCursor{*index, newLb, newLbRev + index->CRev_kstep[kSymb], newLen, steps+KStep};
         return newCursor;
     }
 
