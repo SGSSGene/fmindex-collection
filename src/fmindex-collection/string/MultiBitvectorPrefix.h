@@ -17,6 +17,9 @@ template <size_t TSigma, Bitvector_c Bitvector = ::fmc::bitvector::Bitvector>
 struct MultiBitvectorPrefix {
     static constexpr size_t Sigma = TSigma;
 
+    // number of full length bit vectors needed `2^bitct > TSigma`
+    static constexpr auto bitct = std::bit_width(TSigma-1);
+
     std::array<Bitvector, TSigma-1> bitvectors{};
 
     MultiBitvectorPrefix() = default;
@@ -54,6 +57,12 @@ struct MultiBitvectorPrefix {
         return Sigma-1;
     }
 
+    template <size_t L = 2>
+    uint64_t symbol_limit(uint64_t idx) const {
+        return (symbol(idx) >> (bitct-L)); //!TODO
+    }
+
+
     uint64_t rank(uint64_t idx, uint64_t symb) const {
         assert(symb < TSigma);
         assert(idx <= size());
@@ -64,6 +73,13 @@ struct MultiBitvectorPrefix {
         return v;
     }
 
+    template <size_t L = 2>
+    uint64_t rank_limit(uint64_t idx, uint64_t symb) const {
+        auto pr0 = prefix_rank_limit<L>(idx, symb);
+        auto pr1 = prefix_rank_limit<L>(idx, symb+1);
+        return pr1 - pr0;
+    }
+
     uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
         assert(symb <= TSigma);
         assert(idx <= size());
@@ -72,6 +88,25 @@ struct MultiBitvectorPrefix {
         auto v = bitvectors[symb-1].rank(idx);
         assert(v <= idx);
         return v;
+    }
+
+    template <size_t L = 2>
+    uint64_t prefix_rank_limit(uint64_t idx, uint64_t symb) const {
+        symb = symb*(size_t{1}<<(bitct-L));
+        return prefix_rank(idx, symb);
+    }
+
+    auto prefix_rank_and_rank(uint64_t idx, uint64_t symb) const -> std::tuple<uint64_t, uint64_t> {
+        auto pr0 = prefix_rank(idx, symb);
+        auto pr1 = prefix_rank(idx, symb+1);
+        return {pr0, pr1-pr0};
+    }
+
+    template <size_t L = 2>
+    auto prefix_rank_and_rank_limit(uint64_t idx, uint64_t symb) const -> std::tuple<uint64_t, uint64_t> {
+        auto pr0 = prefix_rank_limit<L>(idx, symb);
+        auto pr1 = prefix_rank_limit<L>(idx, symb+1);
+        return {pr0, pr1-pr0};
     }
 
     auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
@@ -112,6 +147,6 @@ struct MultiBitvectorPrefix {
 template <uint64_t TSigma>
 using MultiBitvectorPrefix_Bitvector = MultiBitvectorPrefix<TSigma>;
 
-static_assert(checkString_c<MultiBitvectorPrefix_Bitvector>);
+static_assert(checkStringKStep_c<MultiBitvectorPrefix_Bitvector>);
 
 }

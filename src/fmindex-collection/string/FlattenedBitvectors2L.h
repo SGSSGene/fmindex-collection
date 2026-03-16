@@ -51,21 +51,21 @@ struct FlattenedBitvectors2L {
         uint64_t rank(uint64_t idx, uint64_t symb) const {
             assert(symb < Sigma);
             assert(idx <= l1_bits_ct);
-            auto v = mark_exact_large(symb, bits);
+            auto v = mark_exact_large(symb, std::span{bits});
             return lshift_and_count(v, l1_bits_ct-idx);
         }
 
         uint64_t prefix_rank(uint64_t idx, uint64_t symb) const {
             assert(symb <= Sigma);
             assert(idx <= l1_bits_ct);
-            auto v = neprv8_detail::prefix_rank(bits, symb);
+            auto v = neprv8_detail::prefix_rank(std::span{bits}, symb);
             return lshift_and_count(v, l1_bits_ct-idx);
         }
 
         auto all_ranks(uint64_t idx) const -> std::array<uint64_t, TSigma> {
             assert(idx <= l1_bits_ct);
 
-            auto vs = neprv8_detail::rank_all<(1ull<<bitct)>(bits);
+            auto vs = neprv8_detail::rank_all<(1ull<<bitct)>(std::span{bits});
             auto v = std::array<uint64_t, TSigma>{};
             static_assert(v.size() <= vs.size());
             for (size_t i{0}; i < v.size(); ++i) {

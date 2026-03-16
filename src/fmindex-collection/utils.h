@@ -174,8 +174,8 @@ auto createBWT(std::span<uint8_t const> input, std::span<T const> sa) -> std::ve
     }
 }
 
-template <size_t NStep, size_t Sigma, typename T>
-auto createBWTNStep(std::span<uint8_t const> input, std::span<T const> sa) -> std::vector<uint8_t> {
+template <size_t KStep, size_t Sigma, typename T>
+auto createBWTKStep(std::span<uint8_t const> input, std::span<T const> sa) -> std::vector<uint8_t> {
     static_assert(
         std::same_as<T, uint64_t>
         || std::same_as<T, uint32_t>
@@ -186,7 +186,7 @@ auto createBWTNStep(std::span<uint8_t const> input, std::span<T const> sa) -> st
     bwt.resize(input.size());
     for (size_t i{0}; i < sa.size(); ++i) {
         auto value = uint8_t{};
-        for (size_t j{0}; j < NStep; ++j) {
+        for (size_t j{0}; j < KStep; ++j) {
             auto pos = (sa[i] + input.size() - 1 - j) % input.size();
             auto v = input[pos];
             value = value*Sigma + v;
@@ -201,6 +201,18 @@ auto computeC(String const& s) -> std::array<size_t, String::Sigma+1> {
     auto res = std::array<size_t, String::Sigma+1>{};
     for (size_t symb{0}; symb < String::Sigma+1; ++symb) {
         res[symb] = s.prefix_rank(s.size(), symb);
+    }
+    return res;
+}
+
+template <size_t Sigma>
+auto computeCSpan(std::span<uint8_t const> s) -> std::array<size_t, Sigma+1> {
+    auto res = std::array<size_t, Sigma+1>{};
+    for (auto c : s) {
+        res[c+1] += 1;
+    };
+    for (size_t i{1}; i < Sigma+1; ++i) {
+        res[i] = res[i] + res[i-1];
     }
     return res;
 }
@@ -235,8 +247,8 @@ auto createBWTAndAnnotatedArray(std::span<uint8_t const> inputText, SparseArray 
     }
 }
 
-template <size_t NStep, size_t Sigma, typename SparseArray>
-auto createBWTNStepAndAnnotatedArray(std::span<uint8_t const> inputText, SparseArray const& _annotatedSequence, fmc::VectorBool const& _annotatedSequenceIsNStep, size_t _threadNbr, bool _omegaSorting) {
+template <size_t KStep, size_t Sigma, typename SparseArray>
+auto createBWTKStepAndAnnotatedArray(std::span<uint8_t const> inputText, SparseArray const& _annotatedSequence, fmc::VectorBool const& _annotatedSequenceIsKStep, size_t _threadNbr, bool _omegaSorting) {
     auto f = [&]<typename word_t>() {
         auto sa  = createSA<word_t>(inputText, _threadNbr);
 
@@ -251,19 +263,19 @@ auto createBWTNStepAndAnnotatedArray(std::span<uint8_t const> inputText, SparseA
         }
 
         auto bwt       = createBWT<word_t>(inputText, sa);
-        auto bwt_nstep = createBWTNStep<NStep, Sigma, word_t>(inputText, sa);
+        auto bwt_kstep = createBWTKStep<KStep, Sigma, word_t>(inputText, sa);
         auto annotatedArray = SparseArray {sa | std::views::transform([&](size_t i) {
             return _annotatedSequence.value(i);
         })};
-        auto annotatedArrayIsNStep = fmc::VectorBool{};
-        annotatedArrayIsNStep.resize(_annotatedSequenceIsNStep.size());
+        auto annotatedArrayIsKStep = fmc::VectorBool{};
+        annotatedArrayIsKStep.resize(_annotatedSequenceIsKStep.size());
         {
             for (size_t i{0}; i < sa.size(); ++i) {
-                annotatedArrayIsNStep[i] = _annotatedSequenceIsNStep[sa[i]];
+                annotatedArrayIsKStep[i] = _annotatedSequenceIsKStep[sa[i]];
             }
         }
 
-        return std::make_tuple(std::move(bwt), std::move(bwt_nstep), std::move(annotatedArray), std::move(annotatedArrayIsNStep));
+        return std::make_tuple(std::move(bwt), std::move(bwt_kstep), std::move(annotatedArray), std::move(annotatedArrayIsKStep));
     };
 
     if (inputText.size() < std::numeric_limits<int32_t>::max()) {
@@ -299,8 +311,8 @@ inline auto createBWT(std::span<uint8_t const> inputText, size_t _threadNbr, boo
     }
 }
 
-template <size_t NStep, size_t Sigma>
-inline auto createBWTNStep(std::span<uint8_t const> inputText, size_t _threadNbr, bool _omegaSorting) {
+template <size_t KStep, size_t Sigma>
+inline auto createBWTKStep(std::span<uint8_t const> inputText, size_t _threadNbr, bool _omegaSorting) {
     auto f = [&]<typename word_t>() {
         auto sa  = createSA<word_t>(inputText, _threadNbr);
 
@@ -314,8 +326,8 @@ inline auto createBWTNStep(std::span<uint8_t const> inputText, size_t _threadNbr
             inputText = {inputText.begin(), inputText.begin() + inputText.size()/2};
         }
         auto bwt       = createBWT<word_t>(inputText, sa);
-        auto bwt_nstep = createBWTNStep<NStep, Sigma, word_t>(inputText, sa);
-        return std::make_tuple(std::move(bwt), std::move(bwt_nstep));
+        auto bwt_kstep = createBWTKStep<KStep, Sigma, word_t>(inputText, sa);
+        return std::make_tuple(std::move(bwt), std::move(bwt_kstep));
     };
 
     if (inputText.size() < std::numeric_limits<int32_t>::max()) {

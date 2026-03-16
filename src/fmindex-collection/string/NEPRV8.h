@@ -9,6 +9,7 @@
 #include "EPRV3.h"
 
 #include <bit>
+#include <span>
 #include <vector>
 
 #if __has_include(<cereal/types/bitset.hpp>)
@@ -24,7 +25,7 @@ namespace fmc::string {
 
 namespace neprv8_detail {
     template <size_t N, size_t bitct>
-    auto rank(std::array<std::bitset<N>, bitct> const& arr, uint64_t symb) {
+    auto rank(std::span<std::bitset<N> const, bitct> arr, uint64_t symb) {
         if constexpr (bitct == 3) {
             return mark_exact_fast(symb, arr[2], arr[1], arr[0]);
         } else {
@@ -33,7 +34,7 @@ namespace neprv8_detail {
     }
 
     template <size_t All, size_t N, size_t bitct>
-    auto rank_all(std::array<std::bitset<N>, bitct> const& arr) {
+    auto rank_all(std::span<std::bitset<N> const, bitct> arr) {
         if constexpr (bitct == 3) {
             return mark_exact_all(arr[2], arr[1], arr[0]);
         } else {
@@ -113,15 +114,15 @@ namespace neprv8_detail {
         }
     }
 
-
     template <size_t N, size_t bitct>
-    auto prefix_rank(std::array<std::bitset<N>, bitct> const& arr, uint64_t symb) {
+    auto prefix_rank(std::span<std::bitset<N> const, bitct> arr, uint64_t symb) {
         if constexpr (bitct == 3) {
             return mark_less_fast(symb, arr[2], arr[1], arr[0]);
         } else {
             return mark_less_large(symb, arr);
         }
     }
+
 }
 /*
 struct FillWidget {

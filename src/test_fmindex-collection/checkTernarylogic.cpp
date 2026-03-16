@@ -274,11 +274,11 @@ TEST_CASE("mark_exact_or_less_large - test to ternary logic function", "[ternary
                 INFO(CheckValue);
 
                 auto expected = dumbTernary();
-                auto r        = fmc::mark_exact_or_less_large<Bits>(CheckValue, b);
+                auto r        = fmc::mark_exact_or_less_large<Bits>(CheckValue, std::span{std::as_const(b)});
                 auto r_exact  = [&]() {
-                    auto r = fmc::mark_exact_large(0, b);
+                    auto r = fmc::mark_exact_large(0, std::span{std::as_const(b)});
                     for (size_t i{1}; i <= CheckValue; ++i) {
-                        r = r | fmc::mark_exact_large(i, b);
+                        r = r | fmc::mark_exact_large(i, std::span{std::as_const(b)});
                     }
                     return r;
                 }();
@@ -310,7 +310,7 @@ TEST_CASE("mark_exact_or_less_large - test to ternary logic function", "[ternary
             check_equality.operator()<65536>();
         });
     }
-    SECTION("check specific errornous configuration") {
+    SECTION("check specific erroneous configuration") {
         uint8_t symb = 32;
         auto arr = std::array<std::bitset<64>, 8>{};
         for (auto p : {1, 4, 6, 7}) arr[0].set(p);
@@ -322,10 +322,10 @@ TEST_CASE("mark_exact_or_less_large - test to ternary logic function", "[ternary
         for (auto p : {0, 1, 2, 3, 4, 6, 7, 8, 9}) arr[6].set(p);
 //        for (auto p : {}) arr[7].set(p);
 
-        auto v = fmc::mark_exact_or_less_large(symb, arr);
-        auto mask = fmc::mark_exact_large(0, arr);
+        auto v = fmc::mark_exact_or_less_large(symb, std::span{std::as_const(arr)});
+        auto mask = fmc::mark_exact_large(0, std::span{std::as_const(arr)});
         for (uint64_t i{1}; i <= symb; ++i) {
-            mask |= fmc::mark_exact_large(i, arr);
+            mask |= fmc::mark_exact_large(i, std::span{std::as_const(arr)});
         }
         CHECK(v == mask);
     }

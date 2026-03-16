@@ -41,12 +41,30 @@ void search(index_t const & index, queries_t const& queries, delegate_t && deleg
         }
     };
 
+    constexpr bool static HasKStep = requires() {
+        { index_t::KStep };
+    };
+    constexpr size_t static KStep = []() constexpr -> size_t { if constexpr(HasKStep) return index_t::KStep; return 1ul; }();
 
+    auto buffer = std::array<size_t, KStep>{};
     auto doBatchJump = [&]() {
         for (auto& [qidx, cur] : queryIndices) {
             auto const& query = queries[qidx];
-            auto sym = query[query.size() - cur.steps - 1];
-            cur = cur.extendLeft(sym);
+            if constexpr (HasKStep) {
+                if (query.size() - cur.steps >= KStep) {
+                    for (size_t j{0}; j < KStep; ++j) {
+                        buffer[j] = query[query.size() - cur.steps - 1 - j];
+                    }
+                    cur = cur.extendLeftKStep(buffer);
+                } else {
+                    auto sym = query[query.size() - cur.steps - 1];
+                    cur = cur.extendLeft(sym);
+                }
+            } else {
+                auto sym = query[query.size() - cur.steps - 1];
+                cur = cur.extendLeft(sym);
+            }
+
         }
         queryIndices.erase(std::remove_if(begin(queryIndices), end(queryIndices), [&](auto const& v) {
             auto const& [qidx, cur] = v;

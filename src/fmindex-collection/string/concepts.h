@@ -26,7 +26,7 @@ template <typename T, typename SymbolType = uint8_t>
 concept String_c =
     std::default_initializable<T>
     && std::movable<T>
-    && requires(T t, std::span<SymbolType const> symbols, size_t idx, SymbolType symb) {
+    && requires(T const t, std::span<SymbolType const> symbols, size_t idx, SymbolType symb) {
 
     /* Compile time variable indicating the number of symbols (including the delimiter)
      */
@@ -45,7 +45,7 @@ concept String_c =
      * \param idx - row index
      * \return - will be in range of [0, Sigma)
      */
-    { t.symbol(idx) };// -> std::same_as<SymbolType>;
+    { t.symbol(idx) };// -> std::same_as<SymbolType>; //!TODO
 
     /* Return the numbers of symbols at a certain row + all symbols smaller over all rows
      *
@@ -88,9 +88,43 @@ concept String_c =
 
 
 template<template <auto> typename T>
-concept checkString_c =    String_c<T<2>>
-                        && String_c<T<4>>
-                        && String_c<T<5>>
-                        && String_c<T<255>>
-                        && String_c<T<256>>;
+concept checkString_c =
+    String_c<T<2>>
+    && String_c<T<4>>
+    && String_c<T<5>>
+    && String_c<T<255>>
+    && String_c<T<256>>
+;
+
+template <typename T, typename SymbolType = uint8_t>
+concept StringKStep_c = String_c<T, SymbolType>
+    && requires(T const t, std::span<SymbolType const> symbols, size_t idx, SymbolType symb) {
+    /* Returns the symbol at a certain position only looking at the last L bits
+     *
+     * \tparam L  - number of bits at the end
+     * \param idx - row index
+     * \return - will be in range of [0, (1<<L))
+     */
+    { t.symbol_limit(idx) };// -> std::same_as<SymbolType>; //!TODO
+
+    /* Same as rank, but only looks at the last L bits
+     */
+    { t.rank_limit(idx, symb) } -> std::same_as<uint64_t>;
+
+    /* Fetches prefix rank and rank for the last L bits
+     */
+    { t.prefix_rank_and_rank_limit(idx, symb) } -> std::same_as<std::tuple<uint64_t, uint64_t>>;
+
+};
+
+template<template <auto> typename T>
+concept checkStringKStep_c =
+    StringKStep_c<T<2>>
+    && StringKStep_c<T<4>>
+    && StringKStep_c<T<5>>
+    && StringKStep_c<T<255>>
+    && StringKStep_c<T<256>>
+;
+
+
 }
