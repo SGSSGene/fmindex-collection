@@ -46,7 +46,7 @@
     {
       "if": "PROJECT_IS_TOP_LEVEL",
       "name": "Catch2",
-      "version": "3.13.0",
+      "version": "3.14.0",
       "github_repository": "catchorg/Catch2"
     },
     {
