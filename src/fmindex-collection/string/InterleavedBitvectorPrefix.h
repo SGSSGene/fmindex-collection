@@ -120,10 +120,7 @@ struct InterleavedBitvectorPrefix {
 
     template <size_t L = 2>
     uint8_t symbol_limit(uint64_t idx) const {
-        idx += 1;
-        auto blockId      = idx >>  6;
-        auto bitId        = idx &  63;
-        return blocks[blockId].template symbol_limit<L>(bitId);
+        return (symbol(idx) >> (bitct-L)); //!TODO
     }
 
     uint64_t rank(uint64_t idx, uint64_t symb) const {
