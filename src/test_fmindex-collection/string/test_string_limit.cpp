@@ -16,4 +16,9 @@ TEST_CASE("check if rank on strings with 'dual_limit' functions work", "[string]
 
     using T3 = fmc::string::AdapterStringKStep<16, 2, fmc::string::InterleavedBitvector16>;
     static_assert(fmc::StringKStep_c<T3>);
+
+    if (false) {
+        auto b = fmc::string::InterleavedBitvectorPrefix16<5>{};
+        b.symbol_limit<1>(0);
+    }
 }
