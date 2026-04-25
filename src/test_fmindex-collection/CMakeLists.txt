@@ -21,6 +21,7 @@ add_executable(${PROJECT_NAME}
     checkTernarylogic.cpp
     fmindex/benchmark_fmindex.cpp
     fmindex/benchmark_extend_left.4.cpp
+    fmindex/benchmark_linearfmindex.cpp
     fmindex/checkBiFMIndex.cpp
     fmindex/checkBiFMIndexKStep.cpp
     fmindex/checkBiFMIndexCursor.cpp
