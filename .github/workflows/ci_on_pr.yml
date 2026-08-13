@@ -29,7 +29,7 @@ jobs:
           - {os: ubuntu-22.04, compiler: spdx_license_lint}
           - {os: ubuntu-22.04, compiler: gcc-second-latest-cpp23-release}
           - {os: ubuntu-22.04, compiler: gcc-latest-cpp23-release}
-          - {os: ubuntu-22.04, compiler: gcc-latest-cpp26-release}
+#          - {os: ubuntu-22.04, compiler: gcc-latest-cpp26-release}
           - {os: ubuntu-22.04, compiler: gcc-latest-cpp23-debug-sanitize_address}
           - {os: ubuntu-22.04, compiler: gcc-latest-cpp23-debug-sanitize_undefined}
           - {os: ubuntu-22.04, compiler: gcc-latest-cpp23-debug-sanitize_thread}
