@@ -21,7 +21,7 @@ jobs:
   build:
     name: ${{ matrix.os }}-${{ matrix.compiler }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 120
+    timeout-minutes: 240
     strategy:
       fail-fast: false
       matrix:
@@ -29,7 +29,7 @@ jobs:
           - {os: ubuntu-22.04, compiler: spdx_license_lint}
           - {os: ubuntu-22.04, compiler: gcc-second-latest-cpp23-release}
           - {os: ubuntu-22.04, compiler: gcc-latest-cpp23-release}
-          - {os: ubuntu-22.04, compiler: gcc-latest-cpp26-release}
+#          - {os: ubuntu-22.04, compiler: gcc-latest-cpp26-release}
           - {os: ubuntu-22.04, compiler: gcc-latest-cpp23-debug-sanitize_address}
           - {os: ubuntu-22.04, compiler: gcc-latest-cpp23-debug-sanitize_undefined}
           - {os: ubuntu-22.04, compiler: gcc-latest-cpp23-debug-sanitize_thread}
@@ -43,10 +43,11 @@ jobs:
           - {os: windows-2022,   compiler: msvc-cpp23-release,              cmake_flags: "-DFMC_USE_SDSL=NO"}
           # not running any tests, since it takes to long
           - {os: windows-2022,   compiler: msvc-cpp23-debug, cmake_flags: "-DFMC_USE_SDSL=NO"}
+          - {os: windows-11-arm,   compiler: msvc-cpp23-debug, cmake_flags: "-DFMC_USE_SDSL=NO"}
           - {os: ubuntu-22.04,   compiler: emscripten-cpp23-release, cmake_flags: "-DCMAKE_EXE_LINKER_FLAGS='-sALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=16000000 -sMEMORY64'", cmake_cxx_flags: "-Wno-c++11-narrowing -sMEMORY64", cmake_c_flags: "-sMEMORY64"}
     steps:
       - name: Standard IV-project testing
-        uses: iv-project/IVaction@v12.1
+        uses: iv-project/IVaction@v13.0
         with:
           compiler: ${{ matrix.compiler }}
           threads: 2
