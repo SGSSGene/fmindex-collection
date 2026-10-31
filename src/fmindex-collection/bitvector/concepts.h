@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
+#include "builtins.h"
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
