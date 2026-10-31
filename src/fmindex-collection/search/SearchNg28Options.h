@@ -25,6 +25,7 @@ struct Options {
     bool indelCond{};
     bool matchCond{};
     bool reportCond{};
+    bool duplicateDetection{};
 };
 
 template <bool Edit, typename index_t, typename query_t, typename search_t, typename delegate_t>
@@ -65,13 +66,22 @@ struct Search {
     mutable size_t partitionPart{};
     mutable uint8_t lb, ub;
 
-    Search(index_t const& _index, query_t const& _query, search_t const& _search, std::vector<size_t> const& _partition, Options _options, delegate_t const& _delegate)
+    std::unordered_map<size_t, size_t>& knownHitsBegin;
+    std::unordered_map<size_t, size_t>& knownHitsEnd;
+    mutable bool touchLeft=false;
+    mutable bool touchRight=false;
+
+    Search(index_t const& _index, query_t const& _query, search_t const& _search, std::vector<size_t> const& _partition, Options _options, delegate_t const& _delegate,
+        std::unordered_map<size_t, size_t>& _knownHitsBegin,
+        std::unordered_map<size_t, size_t>& _knownHitsEnd)
         : index     {_index}
         , query     {_query}
         , search    {_search}
         , partition {_partition}
         , options   {_options}
         , delegate  {_delegate}
+        , knownHitsBegin{_knownHitsBegin}
+        , knownHitsEnd{_knownHitsEnd}
     {
         // check how many characters are before the first query char
         for (size_t i{0}; i < search.pi[0]; ++i) {
@@ -155,8 +165,40 @@ struct Search {
             return false;
         }
         auto r_p = RestoreAdd{part, 1};
+        // check if cursor is already
+        if (options.duplicateDetection) {
+            if (part > 0) {
+                touchLeft = touchLeft || (search.pi[part-1] == 0);
+                touchRight = touchRight || (search.pi[part-1] == search.pi.size()-1);
+            }
+
+            if (touchLeft) {
+                if (auto iter = knownHitsBegin.find(cur.lb); iter != knownHitsBegin.end()) {
+                    auto const& [p, l] = *iter;
+                    if (cur.lb >= p && cur.lb+cur.len <= p+l) {
+                        return false;
+                    }
+                }
+            }
+            if (touchRight) {
+                if (auto iter = knownHitsEnd.find(cur.lbRev); iter != knownHitsEnd.end()) {
+                    auto const& [p, l] = *iter;
+                    if (cur.lbRev >= p && cur.lbRev+cur.len <= p+l) {
+                        return false;
+                    }
+                }
+            }
+        }
         if (part == partition.size()) {
             if (computeReportCond()) {
+                if (options.duplicateDetection) {
+                    for (size_t i{0}; i < cur.len; ++i) {
+                        auto& lv = knownHitsBegin[cur.lb+i];
+                        auto& rv = knownHitsEnd[cur.lbRev-i];
+                        lv = std::max(lv, cur.len-i);
+                        rv = std::max(rv, cur.len-i);
+                    }
+                }
                 return delegate(cur, e);
             }
             return false;
@@ -396,8 +438,11 @@ void search_impl(index_t const& index, query_t const& query, search_scheme::Sche
         }
     }();
 
+    using TSearch = Search<Edit, index_t, query_t, decltype(*search_scheme.begin()), decltype(internal_delegate)>;
+
+    std::unordered_map<size_t, size_t> knownHitsBegin, knownHitsEnd;
     for (auto const& search : search_scheme) {
-        bool f = Search<Edit, index_t, query_t, decltype(search), decltype(internal_delegate)>{index, query, search, partition, options, internal_delegate}.run();
+        bool f = TSearch{index, query, search, partition, options, internal_delegate, knownHitsBegin, knownHitsEnd}.run();
         if (f) {
             return;
         }
