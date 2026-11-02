@@ -145,16 +145,11 @@ struct Search {
     auto computeReportCond() const {
         auto il = sideImpl[0].info;
         auto ir = sideImpl[2].info;
-        if (!Edit || ((il == 'M' or il == 'I') and (ir == 'M' or ir == 'I'))) {
-            if (options.reportCond) {
-                auto maxError = (e == search.u.back());
-                return maxError;
-            } else {
-                auto insideRange = search.l.back() <= e and e <= search.u.back();
-                return insideRange;
-            }
+        if (Edit && options.reportCond) {
+            return (il == 'M' or il == 'I') and (ir == 'M' or ir == 'I') and (options.duplicateDetection || e == search.u.back());
         }
-        return false;
+        auto insideRange = search.l.back() <= e and e <= search.u.back();
+        return insideRange;
     }
 
     /*
@@ -192,12 +187,15 @@ struct Search {
         if (part == partition.size()) {
             if (computeReportCond()) {
                 if (options.duplicateDetection) {
-                    for (size_t i{0}; i < cur.len; ++i) {
-                        auto& lv = knownHitsBegin[cur.lb+i];
-                        auto& rv = knownHitsEnd[cur.lbRev-i];
-                        lv = std::max(lv, cur.len-i);
-                        rv = std::max(rv, cur.len-i);
-                    }
+                    auto addCur = [&](auto const& cur) {
+                        for (size_t i{0}; i < cur.len; ++i) {
+                            auto& lv = knownHitsBegin[cur.lb+i];
+                            auto& rv = knownHitsEnd[cur.lbRev-i];
+                            lv = std::max(lv, cur.len-i);
+                            rv = std::max(rv, cur.len-i);
+                        }
+                    };
+                    addCur(cur);
                 }
                 return delegate(cur, e);
             }
@@ -236,6 +234,25 @@ struct Search {
             return search_next_symb_single(cur);
         }
 
+        if (options.duplicateDetection) {
+            if (touchLeft) {
+                if (auto iter = knownHitsBegin.find(cur.lb); iter != knownHitsBegin.end()) {
+                    auto const& [p, l] = *iter;
+                    if (cur.lb >= p && cur.lb+cur.len <= p+l) {
+                        return false;
+                    }
+                }
+            }
+            if (touchRight) {
+                if (auto iter = knownHitsEnd.find(cur.lbRev); iter != knownHitsEnd.end()) {
+                    auto const& [p, l] = *iter;
+                    if (cur.lbRev >= p && cur.lbRev+cur.len <= p+l) {
+                        return false;
+                    }
+                }
+            }
+        }
+
         auto nextSymb = query[side->queryPos];
 
         auto matchAllowed = computeMatchCase(nextSymb);
@@ -265,23 +282,25 @@ struct Search {
                 }
                 if (!mismatchAllowed) break;
                 e += 1;
-                for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
-                    auto const& newCur = cursors[i];
-                    if (newCur.count() == 0) continue;
+                if (substitutionAllowed || deletionAllowed) {
+                    for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
+                        auto const& newCur = cursors[i];
+                        if (newCur.count() == 0) continue;
 
-                    auto r_lr = Restore{side->lastRank, i};
-                    if (deletionAllowed) {
-                        side->info = 'D';
-                        auto f = search_next_symb(newCur); // deletion occurred in query
+                        auto r_lr = Restore{side->lastRank, i};
+                        if (deletionAllowed) {
+                            side->info = 'D';
+                            auto f = search_next_symb(newCur); // deletion occurred in query
+                            if (f) return true;
+                        }
+                        if (!substitutionAllowed) continue;
+                        if (i == nextSymb) continue;
+
+                        auto r_lqr = Restore{side->lastQRank, nextSymb};
+                        side->info = 'S';
+                        auto f = check_and_search_next_symb(newCur);
                         if (f) return true;
                     }
-                    if (!substitutionAllowed) continue;
-                    if (i == nextSymb) continue;
-
-                    auto r_lqr = Restore{side->lastQRank, nextSymb};
-                    side->info = 'S';
-                    auto f = check_and_search_next_symb(newCur);
-                    if (f) return true;
                 }
 
                 if (!insertionAllowed) break;
@@ -346,6 +365,25 @@ struct Search {
         auto r_i    = Restore{side->info};
         auto r_qp   = Restore{side->queryPos};
         auto r_p    = Restore{partitionPart};
+
+        if (options.duplicateDetection) {
+            if (touchLeft) {
+                if (auto iter = knownHitsBegin.find(cur.lb); iter != knownHitsBegin.end()) {
+                    auto const& [p, l] = *iter;
+                    if (cur.lb >= p && cur.lb+cur.len <= p+l) {
+                        return false;
+                    }
+                }
+            }
+            if (touchRight) {
+                if (auto iter = knownHitsEnd.find(cur.lbRev); iter != knownHitsEnd.end()) {
+                    auto const& [p, l] = *iter;
+                    if (cur.lbRev >= p && cur.lbRev+cur.len <= p+l) {
+                        return false;
+                    }
+                }
+            }
+        }
 
         // detect next symbol/cursor
         auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
