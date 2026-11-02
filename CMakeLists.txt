@@ -37,7 +37,7 @@ endif()
 
 find_package(OpenMP QUIET)
 include(cmake/CPM.cmake)
-CPMAddPackage("gh:SGSSGene/cpmpack@1.1.2")
+CPMAddPackage("gh:SGSSGene/cpmpack@1.1.4")
 loadCPMPack("${CMAKE_CURRENT_SOURCE_DIR}/cpmpack.json")
 
 include(fmindex_collection-config.cmake)

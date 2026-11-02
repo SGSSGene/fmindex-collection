@@ -69,6 +69,12 @@
       ]
     },
     {
+      "if": "PROJECT_IS_TOP_LEVEL",
+      "name": "unordered_dense",
+      "version": "4.10.0",
+      "github_repository": "martinus/unordered_dense"
+    },
+    {
       "if": "FMC_USE_PASTA",
       "name": "bit_vector",
       "version": "1.0.1-git",

@@ -86,6 +86,7 @@ target_link_libraries(${PROJECT_NAME}
     nanobench::nanobench
     reflect::reflect
     fmt::fmt
+    unordered_dense::unordered_dense
 )
 target_compile_definitions(${PROJECT_NAME} PRIVATE CATCH_CONFIG_ENABLE_ALL_STRINGMAKERS)
 
