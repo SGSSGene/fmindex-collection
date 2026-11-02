@@ -26,6 +26,48 @@ struct Options {
     bool matchCond{};
     bool reportCond{};
     bool duplicateDetection{};
+    bool duplicateDetection2{};
+};
+
+struct BoundCheck {
+    std::unordered_map<size_t, size_t> knownHitsLeft;
+    std::unordered_map<size_t, size_t> knownHitsRight;
+
+    void clear() {
+        knownHitsLeft.clear();
+        knownHitsRight.clear();
+    }
+
+    template <typename cursor_t>
+    void addHit(cursor_t const& cur) {
+        if (cur.len < 100) {
+            for (size_t i{0}; i < cur.len; ++i) {
+                auto& lv = knownHitsLeft[cur.lb+i];
+                auto& rv = knownHitsRight[cur.lbRev-i];
+                lv = std::max(lv, cur.len-i);
+                rv = std::max(rv, cur.len-i);
+            }
+        } else {
+                auto& lv = knownHitsLeft[cur.lb];
+                auto& rv = knownHitsRight[cur.lbRev];
+                lv = std::max(lv, cur.len);
+                rv = std::max(rv, cur.len);
+        }
+    }
+
+    template <typename cursor_t>
+    bool hasHitLeft(cursor_t const& cur) const {
+        auto iter = knownHitsLeft.find(cur.lb);
+        if (iter == knownHitsLeft.end()) return false;
+        return cur.len <= iter->second;
+    }
+
+    template <typename cursor_t>
+    bool hasHitRight(cursor_t const& cur) const {
+        auto iter = knownHitsRight.find(cur.lbRev);
+        if (iter == knownHitsRight.end()) return false;
+        return cur.len <= iter->second;
+    }
 };
 
 template <bool Edit, typename index_t, typename query_t, typename search_t, typename delegate_t>
@@ -66,22 +108,20 @@ struct Search {
     mutable size_t partitionPart{};
     mutable uint8_t lb, ub;
 
-    std::unordered_map<size_t, size_t>& knownHitsBegin;
-    std::unordered_map<size_t, size_t>& knownHitsEnd;
+    BoundCheck& boundCheck;
     mutable bool touchLeft=false;
     mutable bool touchRight=false;
 
-    Search(index_t const& _index, query_t const& _query, search_t const& _search, std::vector<size_t> const& _partition, Options _options, delegate_t const& _delegate,
-        std::unordered_map<size_t, size_t>& _knownHitsBegin,
-        std::unordered_map<size_t, size_t>& _knownHitsEnd)
+    mutable std::vector<BoundCheck> strictBoundCheck;
+
+    Search(index_t const& _index, query_t const& _query, search_t const& _search, std::vector<size_t> const& _partition, Options _options, delegate_t const& _delegate, BoundCheck& _boundCheck)
         : index     {_index}
         , query     {_query}
         , search    {_search}
         , partition {_partition}
         , options   {_options}
         , delegate  {_delegate}
-        , knownHitsBegin{_knownHitsBegin}
-        , knownHitsEnd{_knownHitsEnd}
+        , boundCheck{_boundCheck}
     {
         // check how many characters are before the first query char
         for (size_t i{0}; i < search.pi[0]; ++i) {
@@ -92,6 +132,7 @@ struct Search {
         // but that is fine, after an underflow this variable is not
         // being accessed before overflowing again.
         sideImpl[0].queryPos -= 1;
+        strictBoundCheck.resize(partition.size()+1);
     }
 
     bool run() {
@@ -159,7 +200,22 @@ struct Search {
         if (cur.count() == 0) {
             return false;
         }
+        if (!computeReportCond()) {
+            return false;
+        }
         auto r_p = RestoreAdd{part, 1};
+
+        // strict checking
+        if (options.duplicateDetection2) {
+            auto& bc = strictBoundCheck[part];
+            if (bc.hasHitLeft(cur) || bc.hasHitRight(cur)) {
+                return false;
+            }
+            if (part > 0) {
+                strictBoundCheck[part-1].addHit(cur);
+            }
+        }
+
         // check if cursor is already
         if (options.duplicateDetection) {
             if (part > 0) {
@@ -167,35 +223,17 @@ struct Search {
                 touchRight = touchRight || (search.pi[part-1] == search.pi.size()-1);
             }
 
-            if (touchLeft) {
-                if (auto iter = knownHitsBegin.find(cur.lb); iter != knownHitsBegin.end()) {
-                    auto const& [p, l] = *iter;
-                    if (cur.lb >= p && cur.lb+cur.len <= p+l) {
-                        return false;
-                    }
-                }
+            if (touchLeft && boundCheck.hasHitLeft(cur)) {
+                return false;
             }
-            if (touchRight) {
-                if (auto iter = knownHitsEnd.find(cur.lbRev); iter != knownHitsEnd.end()) {
-                    auto const& [p, l] = *iter;
-                    if (cur.lbRev >= p && cur.lbRev+cur.len <= p+l) {
-                        return false;
-                    }
-                }
+            if (touchRight && boundCheck.hasHitRight(cur)) {
+                return false;
             }
         }
         if (part == partition.size()) {
             if (computeReportCond()) {
                 if (options.duplicateDetection) {
-                    auto addCur = [&](auto const& cur) {
-                        for (size_t i{0}; i < cur.len; ++i) {
-                            auto& lv = knownHitsBegin[cur.lb+i];
-                            auto& rv = knownHitsEnd[cur.lbRev-i];
-                            lv = std::max(lv, cur.len-i);
-                            rv = std::max(rv, cur.len-i);
-                        }
-                    };
-                    addCur(cur);
+                    boundCheck.addHit(cur);
                 }
                 return delegate(cur, e);
             }
@@ -235,21 +273,21 @@ struct Search {
         }
 
         if (options.duplicateDetection) {
-            if (touchLeft) {
-                if (auto iter = knownHitsBegin.find(cur.lb); iter != knownHitsBegin.end()) {
-                    auto const& [p, l] = *iter;
-                    if (cur.lb >= p && cur.lb+cur.len <= p+l) {
-                        return false;
-                    }
-                }
+            if (touchLeft && boundCheck.hasHitLeft(cur)) {
+                return false;
             }
-            if (touchRight) {
-                if (auto iter = knownHitsEnd.find(cur.lbRev); iter != knownHitsEnd.end()) {
-                    auto const& [p, l] = *iter;
-                    if (cur.lbRev >= p && cur.lbRev+cur.len <= p+l) {
-                        return false;
-                    }
-                }
+            if (touchRight && boundCheck.hasHitRight(cur)) {
+                return false;
+            }
+        }
+
+        if (options.duplicateDetection2) {
+            auto& bc = strictBoundCheck[part];
+            if (part == dir_t::Left && bc.hasHitRight(cur)) {
+                return false;
+            }
+            if (part == dir_t::Right && bc.hasHitLeft(cur)) {
+                return false;
             }
         }
 
@@ -367,21 +405,21 @@ struct Search {
         auto r_p    = Restore{partitionPart};
 
         if (options.duplicateDetection) {
-            if (touchLeft) {
-                if (auto iter = knownHitsBegin.find(cur.lb); iter != knownHitsBegin.end()) {
-                    auto const& [p, l] = *iter;
-                    if (cur.lb >= p && cur.lb+cur.len <= p+l) {
-                        return false;
-                    }
-                }
+            if (touchLeft && boundCheck.hasHitLeft(cur)) {
+                return false;
             }
-            if (touchRight) {
-                if (auto iter = knownHitsEnd.find(cur.lbRev); iter != knownHitsEnd.end()) {
-                    auto const& [p, l] = *iter;
-                    if (cur.lbRev >= p && cur.lbRev+cur.len <= p+l) {
-                        return false;
-                    }
-                }
+            if (touchRight && boundCheck.hasHitRight(cur)) {
+                return false;
+            }
+        }
+
+        if (options.duplicateDetection2) {
+            auto& bc = strictBoundCheck[part];
+            if (part == dir_t::Left && bc.hasHitRight(cur)) {
+                return false;
+            }
+            if (part == dir_t::Right && bc.hasHitLeft(cur)) {
+                return false;
             }
         }
 
@@ -478,9 +516,9 @@ void search_impl(index_t const& index, query_t const& query, search_scheme::Sche
 
     using TSearch = Search<Edit, index_t, query_t, decltype(*search_scheme.begin()), decltype(internal_delegate)>;
 
-    std::unordered_map<size_t, size_t> knownHitsBegin, knownHitsEnd;
+    BoundCheck boundCheck;
     for (auto const& search : search_scheme) {
-        bool f = TSearch{index, query, search, partition, options, internal_delegate, knownHitsBegin, knownHitsEnd}.run();
+        bool f = TSearch{index, query, search, partition, options, internal_delegate, boundCheck}.run();
         if (f) {
             return;
         }
