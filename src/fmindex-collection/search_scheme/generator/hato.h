@@ -13,7 +13,7 @@ inline auto hato(int K) -> Scheme {
         return {
             {{0}, {0}, {0}} // not found by hato
         };
-    } else if (K == 1) { // not found by hatto
+    } else if (K == 1) { // not found by hato
         return {
             {{0, 1}, {0, 0}, {0, 1}},
             {{1, 0}, {0, 0}, {0, 1}}

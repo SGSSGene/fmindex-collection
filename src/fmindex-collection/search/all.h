@@ -29,6 +29,7 @@
 #include "SearchNg25.h"
 #include "SearchNg26.h"
 #include "SearchNg28Options.h"
+#include "SearchNg29Options.h"
 #include "SearchPseudo.h"
 #include "SearchNoErrors.h"
 #include "SearchOneError.h"
