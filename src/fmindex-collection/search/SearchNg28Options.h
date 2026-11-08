@@ -5,6 +5,7 @@
 #include "CachedSearchScheme.h"
 #include "Restore.h"
 #include "SelectCursor.h"
+#include "RangeSet.h"
 
 #include <array>
 #include <cstddef>
@@ -30,8 +31,8 @@ struct Options {
 };
 
 struct BoundCheck {
-    std::unordered_map<size_t, size_t> knownHitsLeft;
-    std::unordered_map<size_t, size_t> knownHitsRight;
+    RangeSet knownHitsLeft;
+    RangeSet knownHitsRight;
 
     void clear() {
         knownHitsLeft.clear();
@@ -40,33 +41,18 @@ struct BoundCheck {
 
     template <typename cursor_t>
     void addHit(cursor_t const& cur) {
-        if (cur.len < 100) {
-            for (size_t i{0}; i < cur.len; ++i) {
-                auto& lv = knownHitsLeft[cur.lb+i];
-                auto& rv = knownHitsRight[cur.lbRev-i];
-                lv = std::max(lv, cur.len-i);
-                rv = std::max(rv, cur.len-i);
-            }
-        } else {
-                auto& lv = knownHitsLeft[cur.lb];
-                auto& rv = knownHitsRight[cur.lbRev];
-                lv = std::max(lv, cur.len);
-                rv = std::max(rv, cur.len);
-        }
+        knownHitsLeft.insert(cur.lb, cur.len);
+        knownHitsRight.insert(cur.lbRev, cur.len);
     }
 
     template <typename cursor_t>
     bool hasHitLeft(cursor_t const& cur) const {
-        auto iter = knownHitsLeft.find(cur.lb);
-        if (iter == knownHitsLeft.end()) return false;
-        return cur.len <= iter->second;
+        return knownHitsLeft.contains(cur.lb, cur.len);
     }
 
     template <typename cursor_t>
     bool hasHitRight(cursor_t const& cur) const {
-        auto iter = knownHitsRight.find(cur.lbRev);
-        if (iter == knownHitsRight.end()) return false;
-        return cur.len <= iter->second;
+        return knownHitsRight.contains(cur.lbRev, cur.len);
     }
 };
 
