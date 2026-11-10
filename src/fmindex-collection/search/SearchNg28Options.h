@@ -183,9 +183,7 @@ struct Search {
         if (cur.count() == 0) {
             return false;
         }
-        if (!computeReportCond()) {
-            return false;
-        }
+
         auto r_p = RestoreAdd{part, 1};
         auto r_tl = Restore{touchLeft};
         auto r_tr = Restore{touchRight};
