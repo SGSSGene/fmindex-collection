@@ -55,6 +55,44 @@ struct LinearFMIndexCursor {
         return cursors;
     }
 
+    // This requires that all rows have the same BWT entry (or only a single one is available)
+    // - must have at least marked a single row
+    // - all rows must have the same 'bwt' symbol
+    auto extendLeftBySymbol(size_t symb) const -> LinearFMIndexCursor {
+        auto const& column = index->columns[col];
+        auto const& bwt    = column.bwt;
+
+        assert(count() > 0);
+        assert([&]() {
+            for (size_t i{lb}; i < lb + len; ++i) {
+                if (symb != bwt.symbol(i)) {
+                    return false;
+                }
+            }
+            return true;
+        }());
+
+        size_t newLb  = bwt.rank(lb, symb);
+        size_t newLen = len;
+        return {*index, newLb + column.C[symb], newLen, col-1};
+    }
+
+
+    // This requires that all rows have the same BWT entry (or only a single one is available)
+    // - must have at least marked a single row
+    // - all rows must have the same 'bwt' symbol
+    auto extendLeftBySymbol() const -> std::tuple<size_t, LinearFMIndexCursor> {
+        auto symb = symbolLeft();
+        return {symb, extendLeftBySymbol(symb)};
+    }
+
+    auto symbolLeft() const -> size_t {
+        auto const& column = index->columns[col];
+        auto const& bwt    = column.bwt;
+        return bwt.symbol(lb);
+    }
+
+
     bool empty() const {
         return len == 0;
     }

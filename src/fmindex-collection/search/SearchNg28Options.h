@@ -5,6 +5,7 @@
 #include "CachedSearchScheme.h"
 #include "Restore.h"
 #include "SelectCursor.h"
+#include "RangeSet.h"
 
 #include <array>
 #include <cstddef>
@@ -25,6 +26,33 @@ struct Options {
     bool indelCond{};
     bool matchCond{};
     bool reportCond{};
+    bool duplicateDetection{};
+};
+
+struct BoundCheck {
+    RangeSet knownHitsLeft;
+    RangeSet knownHitsRight;
+
+    void clear() {
+        knownHitsLeft.clear();
+        knownHitsRight.clear();
+    }
+
+    template <typename cursor_t>
+    void addHit(cursor_t const& cur) {
+        knownHitsLeft.insert(cur.lb, cur.len);
+        knownHitsRight.insert(cur.lbRev, cur.len);
+    }
+
+    template <typename cursor_t>
+    bool hasHitLeft(cursor_t const& cur) const {
+        return knownHitsLeft.contains(cur.lb, cur.len);
+    }
+
+    template <typename cursor_t>
+    bool hasHitRight(cursor_t const& cur) const {
+        return knownHitsRight.contains(cur.lbRev, cur.len);
+    }
 };
 
 template <bool Edit, typename index_t, typename query_t, typename search_t, typename delegate_t>
@@ -65,13 +93,19 @@ struct Search {
     mutable size_t partitionPart{};
     mutable uint8_t lb, ub;
 
-    Search(index_t const& _index, query_t const& _query, search_t const& _search, std::vector<size_t> const& _partition, Options _options, delegate_t const& _delegate)
+    BoundCheck& boundCheck;
+
+    mutable bool touchLeft=false;
+    mutable bool touchRight=false;
+
+    Search(index_t const& _index, query_t const& _query, search_t const& _search, std::vector<size_t> const& _partition, Options _options, delegate_t const& _delegate, BoundCheck& _boundCheck)
         : index     {_index}
         , query     {_query}
         , search    {_search}
         , partition {_partition}
         , options   {_options}
         , delegate  {_delegate}
+        , boundCheck{_boundCheck}
     {
         // check how many characters are before the first query char
         for (size_t i{0}; i < search.pi[0]; ++i) {
@@ -135,16 +169,11 @@ struct Search {
     auto computeReportCond() const {
         auto il = sideImpl[0].info;
         auto ir = sideImpl[2].info;
-        if (!Edit || ((il == 'M' or il == 'I') and (ir == 'M' or ir == 'I'))) {
-            if (options.reportCond) {
-                auto maxError = (e == search.u.back());
-                return maxError;
-            } else {
-                auto insideRange = search.l.back() <= e and e <= search.u.back();
-                return insideRange;
-            }
+        if (Edit && options.reportCond) {
+            return (il == 'M' or il == 'I') and (ir == 'M' or ir == 'I') and (options.duplicateDetection || e == search.u.back());
         }
-        return false;
+        auto insideRange = search.l.back() <= e and e <= search.u.back();
+        return insideRange;
     }
 
     /*
@@ -154,13 +183,36 @@ struct Search {
         if (cur.count() == 0) {
             return false;
         }
+
         auto r_p = RestoreAdd{part, 1};
+        auto r_tl = Restore{touchLeft};
+        auto r_tr = Restore{touchRight};
+
         if (part == partition.size()) {
             if (computeReportCond()) {
+                if (options.duplicateDetection) {
+                    boundCheck.addHit(cur);
+                }
                 return delegate(cur, e);
             }
             return false;
         }
+
+        // check if cursor is already
+        if (options.duplicateDetection) {
+            if (part > 0) {
+                touchLeft = touchLeft || (search.pi[part-1] == 0);
+                touchRight = touchRight || (search.pi[part-1] == search.pi.size()-1);
+            }
+
+            if (touchLeft && boundCheck.hasHitLeft(cur)) {
+                return false;
+            }
+            if (touchRight && boundCheck.hasHitRight(cur)) {
+                return false;
+            }
+        }
+
 
         bool right = (part==0) || (search.pi[part-1] < search.pi[part]);
         auto r_dir = Restore{dir, right?dir_t::Right:dir_t::Left};
@@ -194,6 +246,15 @@ struct Search {
             return search_next_symb_single(cur);
         }
 
+        if (options.duplicateDetection) {
+            if (touchLeft && boundCheck.hasHitLeft(cur)) {
+                return false;
+            }
+            if (touchRight && boundCheck.hasHitRight(cur)) {
+                return false;
+            }
+        }
+
         auto nextSymb = query[side->queryPos];
 
         auto matchAllowed = computeMatchCase(nextSymb);
@@ -223,23 +284,25 @@ struct Search {
                 }
                 if (!mismatchAllowed) break;
                 e += 1;
-                for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
-                    auto const& newCur = cursors[i];
-                    if (newCur.count() == 0) continue;
+                if (substitutionAllowed || deletionAllowed) {
+                    for (uint64_t i{FirstSymb}; i < Sigma; ++i) {
+                        auto const& newCur = cursors[i];
+                        if (newCur.count() == 0) continue;
 
-                    auto r_lr = Restore{side->lastRank, i};
-                    if (deletionAllowed) {
-                        side->info = 'D';
-                        auto f = search_next_symb(newCur); // deletion occurred in query
+                        auto r_lr = Restore{side->lastRank, i};
+                        if (deletionAllowed) {
+                            side->info = 'D';
+                            auto f = search_next_symb(newCur); // deletion occurred in query
+                            if (f) return true;
+                        }
+                        if (!substitutionAllowed) continue;
+                        if (i == nextSymb) continue;
+
+                        auto r_lqr = Restore{side->lastQRank, nextSymb};
+                        side->info = 'S';
+                        auto f = check_and_search_next_symb(newCur);
                         if (f) return true;
                     }
-                    if (!substitutionAllowed) continue;
-                    if (i == nextSymb) continue;
-
-                    auto r_lqr = Restore{side->lastQRank, nextSymb};
-                    side->info = 'S';
-                    auto f = check_and_search_next_symb(newCur);
-                    if (f) return true;
                 }
 
                 if (!insertionAllowed) break;
@@ -304,6 +367,15 @@ struct Search {
         auto r_i    = Restore{side->info};
         auto r_qp   = Restore{side->queryPos};
         auto r_p    = Restore{partitionPart};
+
+        if (options.duplicateDetection) {
+            if (touchLeft && boundCheck.hasHitLeft(cur)) {
+                return false;
+            }
+            if (touchRight && boundCheck.hasHitRight(cur)) {
+                return false;
+            }
+        }
 
         // detect next symbol/cursor
         auto [curISymb, icursorNext] = [&]() -> std::tuple<size_t, cursor_t> {
@@ -396,8 +468,11 @@ void search_impl(index_t const& index, query_t const& query, search_scheme::Sche
         }
     }();
 
+    using TSearch = Search<Edit, index_t, query_t, decltype(*search_scheme.begin()), decltype(internal_delegate)>;
+
+    BoundCheck boundCheck;
     for (auto const& search : search_scheme) {
-        bool f = Search<Edit, index_t, query_t, decltype(search), decltype(internal_delegate)>{index, query, search, partition, options, internal_delegate}.run();
+        bool f = TSearch{index, query, search, partition, options, internal_delegate, boundCheck}.run();
         if (f) {
             return;
         }
