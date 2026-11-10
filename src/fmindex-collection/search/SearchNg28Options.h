@@ -27,7 +27,6 @@ struct Options {
     bool matchCond{};
     bool reportCond{};
     bool duplicateDetection{};
-    bool duplicateDetection2{};
 };
 
 struct BoundCheck {
@@ -95,10 +94,9 @@ struct Search {
     mutable uint8_t lb, ub;
 
     BoundCheck& boundCheck;
+
     mutable bool touchLeft=false;
     mutable bool touchRight=false;
-
-    mutable std::vector<BoundCheck> strictBoundCheck;
 
     Search(index_t const& _index, query_t const& _query, search_t const& _search, std::vector<size_t> const& _partition, Options _options, delegate_t const& _delegate, BoundCheck& _boundCheck)
         : index     {_index}
@@ -118,7 +116,6 @@ struct Search {
         // but that is fine, after an underflow this variable is not
         // being accessed before overflowing again.
         sideImpl[0].queryPos -= 1;
-        strictBoundCheck.resize(partition.size()+1);
     }
 
     bool run() {
@@ -190,16 +187,17 @@ struct Search {
             return false;
         }
         auto r_p = RestoreAdd{part, 1};
+        auto r_tl = Restore{touchLeft};
+        auto r_tr = Restore{touchRight};
 
-        // strict checking
-        if (options.duplicateDetection2) {
-            auto& bc = strictBoundCheck[part];
-            if (bc.hasHitLeft(cur) || bc.hasHitRight(cur)) {
-                return false;
+        if (part == partition.size()) {
+            if (computeReportCond()) {
+                if (options.duplicateDetection) {
+                    boundCheck.addHit(cur);
+                }
+                return delegate(cur, e);
             }
-            if (part > 0) {
-                strictBoundCheck[part-1].addHit(cur);
-            }
+            return false;
         }
 
         // check if cursor is already
@@ -216,15 +214,7 @@ struct Search {
                 return false;
             }
         }
-        if (part == partition.size()) {
-            if (computeReportCond()) {
-                if (options.duplicateDetection) {
-                    boundCheck.addHit(cur);
-                }
-                return delegate(cur, e);
-            }
-            return false;
-        }
+
 
         bool right = (part==0) || (search.pi[part-1] < search.pi[part]);
         auto r_dir = Restore{dir, right?dir_t::Right:dir_t::Left};
@@ -263,16 +253,6 @@ struct Search {
                 return false;
             }
             if (touchRight && boundCheck.hasHitRight(cur)) {
-                return false;
-            }
-        }
-
-        if (options.duplicateDetection2) {
-            auto& bc = strictBoundCheck[part];
-            if (part == dir_t::Left && bc.hasHitRight(cur)) {
-                return false;
-            }
-            if (part == dir_t::Right && bc.hasHitLeft(cur)) {
                 return false;
             }
         }
@@ -395,16 +375,6 @@ struct Search {
                 return false;
             }
             if (touchRight && boundCheck.hasHitRight(cur)) {
-                return false;
-            }
-        }
-
-        if (options.duplicateDetection2) {
-            auto& bc = strictBoundCheck[part];
-            if (part == dir_t::Left && bc.hasHitRight(cur)) {
-                return false;
-            }
-            if (part == dir_t::Right && bc.hasHitLeft(cur)) {
                 return false;
             }
         }
