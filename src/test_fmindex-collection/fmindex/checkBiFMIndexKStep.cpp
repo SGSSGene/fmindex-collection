@@ -64,8 +64,9 @@ TEST_CASE("checking bidirectional fm index with kstep capabilities - ctor", "[bi
 
     }
 
-    mmser::saveFile("/tmp/test.mmser", index);
-    auto [index2, storageManager] = mmser::loadFile<Index>("/tmp/test.mmser");
+    auto tmpFile = std::filesystem::temp_directory_path() / "test.mmse,";
+    mmser::saveFile(tmpFile, index);
+    auto [index2, storageManager] = mmser::loadFile<Index>(tmpFile);
     for (size_t i{0}; i < bwt.size(); ++i) {
         INFO(i);
         CHECK(index2.bwt_kstep.symbol_limit<2>(i) == bwt[i]);
