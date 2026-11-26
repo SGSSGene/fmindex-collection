@@ -162,7 +162,7 @@ struct BiFMIndexKStep {
 
         // create bwt, bwtRev and annotatedArray
 //        auto [_bwt, _annotatedArray] = createBWTAndAnnotatedArray(inputText, _annotatedSequence, _threadNbr, omegaSorting);
-        auto [_bwt, _bwt_kstep, _annotatedArray, _annotatedArrayIsKStep] = createBWTKStepAndAnnotatedArray<KStep, Sigma>(inputText, _annotatedSequence, _annotatedSequenceIsKStep, _threadNbr, omegaSorting);
+        auto [_bwt, _bwt_kstep, _annotatedArray, _annotatedArrayIsKStep] = createBWTKStepAndAnnotatedArray<KStep, 1uz<<bitct>(inputText, _annotatedSequence, _annotatedSequenceIsKStep, _threadNbr, omegaSorting);
 
 
         if constexpr (!TReuseRev) {
@@ -176,9 +176,11 @@ struct BiFMIndexKStep {
             std::ranges::reverse(inputText);
 
             #endif
-            auto [_bwtRev, _bwtRev_kstep] = createBWTKStep<KStep, Sigma>(inputText, _threadNbr, omegaSorting);
+            auto [_bwtRev, _bwtRev_kstep] = createBWTKStep<KStep, 1uz<<bitct>(inputText, _threadNbr, omegaSorting);
             decltype(inputText){}.swap(inputText); // inputText memory can be deleted
             bwtRev_kstep = {_bwtRev_kstep};
+        } else {
+            decltype(inputText){}.swap(inputText); // inputText memory can be deleted
         }
 
         // initialize this BiFMIndex properly

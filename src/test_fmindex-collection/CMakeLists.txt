@@ -9,11 +9,12 @@ add_executable(${PROJECT_NAME}
     bitvector/bitset_popcount.cpp
     bitvector/benchmark.cpp
     bitvector/benchmark_bit_vector_size.cpp
-    bitvector/benchmark_bit_vector_size_vs_symbol.cpp
     bitvector/benchmark_bit_vector_size_vs_ctor.cpp
+    bitvector/benchmark_bit_vector_size_vs_symbol.cpp
     bitvector/benchmark_block_selection.cpp
-    bitvector/benchmark_sparse_bitdensity_vs_time.cpp
+    bitvector/benchmark_phd.cpp
     bitvector/benchmark_sparse_bitdensity_vs_space.cpp
+    bitvector/benchmark_sparse_bitdensity_vs_time.cpp
     bitvector/sparse_benchmark.cpp
     bitvector/unittest.cpp
     checkDenseVector.cpp
@@ -86,6 +87,7 @@ target_link_libraries(${PROJECT_NAME}
     nanobench::nanobench
     reflect::reflect
     fmt::fmt
+    unordered_dense::unordered_dense
 )
 target_compile_definitions(${PROJECT_NAME} PRIVATE CATCH_CONFIG_ENABLE_ALL_STRINGMAKERS)
 

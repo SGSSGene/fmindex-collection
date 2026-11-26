@@ -112,6 +112,7 @@ struct LinearFMIndex {
         return columns.size();
     }
 
+    using LEntry = size_t;
     auto locate(size_t idx) const -> size_t {
         return ordered[idx];
     }

@@ -13,6 +13,8 @@
 #include <unordered_map>
 
 #include "../BenchSize.h"
+#include "robin_hood.h"
+#include "ankerl/unordered_dense.h"
 
 
 TEST_CASE("benchmark sparse array", "[sparsearray][!benchmark][time]") {
@@ -191,6 +193,55 @@ TEST_CASE("benchmark sparse array", "[sparsearray][!benchmark][time]") {
                 ankerl::nanobench::doNotOptimizeAway(v);
             });
         }
+        if ((mode & 0x200) != 0) {
+            auto buffer = robin_hood::unordered_map<uint64_t, Load>{};
+            for (size_t i{}; i < indicatorBV.size(); ++i) {
+                if (indicatorBV.symbol(i)) {
+                    buffer[i] = Load{i};
+                }
+            }
+            bench.run("robin_hood::unordered_map", [&]() {
+                auto pos = rng.bounded(size);
+                auto iter = buffer.find(pos);
+                if (iter != buffer.end()) {
+                    auto v = iter->second;
+                    ankerl::nanobench::doNotOptimizeAway(v);
+                }
+            });
+        }
+        if ((mode & 0x400) != 0) {
+            auto buffer = robin_hood::unordered_flat_map<uint64_t, Load>{};
+            for (size_t i{}; i < indicatorBV.size(); ++i) {
+                if (indicatorBV.symbol(i)) {
+                    buffer[i] = Load{i};
+                }
+            }
+            bench.run("robin_hood::unordered_flat_map", [&]() {
+                auto pos = rng.bounded(size);
+                auto iter = buffer.find(pos);
+                if (iter != buffer.end()) {
+                    auto v = iter->second;
+                    ankerl::nanobench::doNotOptimizeAway(v);
+                }
+            });
+        }
+        if ((mode & 0x800) != 0) {
+            auto buffer = ankerl::unordered_dense::map<uint64_t, Load>{};
+            for (size_t i{}; i < indicatorBV.size(); ++i) {
+                if (indicatorBV.symbol(i)) {
+                    buffer[i] = Load{i};
+                }
+            }
+            bench.run("unordered_map::map", [&]() {
+                auto pos = rng.bounded(size);
+                auto iter = buffer.find(pos);
+                if (iter != buffer.end()) {
+                    auto v = iter->second;
+                    ankerl::nanobench::doNotOptimizeAway(v);
+                }
+            });
+        }
+
 
     }
 }
@@ -443,6 +494,70 @@ TEST_CASE("benchmark sparse array - size", "[sparsearray][!benchmark][size]") {
                 .name = "compressed sparse array v3",
                 .size = size,
                 .text_size = nbrOfOnes,
+                .bits_per_char = (size*8)/double(nbrOfOnes)
+            });*/
+        }
+
+        if ((mode & 0x200) != 0) {
+            auto buffer = robin_hood::unordered_map<uint64_t, Load>{};
+            for (size_t i{}; i < indicatorBV.size(); ++i) {
+                if (indicatorBV.symbol(i)) {
+                    buffer[i] = Load{i};
+                }
+            }
+/*            auto size = [&]() {
+                auto ofs     = std::stringstream{};
+                auto archive = cereal::BinaryOutputArchive{ofs};
+                archive(buffer);
+                return ofs.str().size();
+            }();
+
+            benchSize.addEntry({
+                .name = "rh::unordered_map",
+                .size = size,
+                .text_size = nbrOfOnes*64/rate,
+                .bits_per_char = (size*8)/double(nbrOfOnes)
+            });*/
+        }
+        if ((mode & 0x400) != 0) {
+            auto buffer = robin_hood::unordered_flat_map<uint64_t, Load>{};
+            for (size_t i{}; i < indicatorBV.size(); ++i) {
+                if (indicatorBV.symbol(i)) {
+                    buffer[i] = Load{i};
+                }
+            }
+/*            auto size = [&]() {
+                auto ofs     = std::stringstream{};
+                auto archive = cereal::BinaryOutputArchive{ofs};
+                archive(buffer);
+                return ofs.str().size();
+            }();
+
+            benchSize.addEntry({
+                .name = "rh::unordered_map",
+                .size = size,
+                .text_size = nbrOfOnes*64/rate,
+                .bits_per_char = (size*8)/double(nbrOfOnes)
+            });*/
+        }
+        if ((mode & 0x800) != 0) {
+            auto buffer = ankerl::unordered_dense::map<uint64_t, Load>{};
+            for (size_t i{}; i < indicatorBV.size(); ++i) {
+                if (indicatorBV.symbol(i)) {
+                    buffer[i] = Load{i};
+                }
+            }
+/*            auto size = [&]() {
+                auto ofs     = std::stringstream{};
+                auto archive = cereal::BinaryOutputArchive{ofs};
+                archive(buffer);
+                return ofs.str().size();
+            }();
+
+            benchSize.addEntry({
+                .name = "rh::unordered_map",
+                .size = size,
+                .text_size = nbrOfOnes*64/rate,
                 .bits_per_char = (size*8)/double(nbrOfOnes)
             });*/
         }
